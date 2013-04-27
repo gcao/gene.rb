@@ -13,5 +13,4 @@ group :development do
 end
 
 gem 'treetop'
-gem 'polyglot'
 

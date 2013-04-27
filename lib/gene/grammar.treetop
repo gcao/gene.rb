@@ -1,0 +1,51 @@
+module Gene
+  grammar Grammar
+    rule document
+      expr {
+      }
+    end
+
+    rule expr
+      comp_expr / array / atom {
+      }
+    end
+
+    rule comp_expr
+      '(' expr+ ')'
+    end
+
+    rule array
+      '[' (expr)* ']' {
+        def content
+          puts 'array content()'
+          elements.map{ |e| e.content }
+        end
+      }
+    end
+
+    rule atom
+      id / string / separator
+    end
+
+    rule id
+      ([^ '"]+) {
+        def content
+          Gene::Type::Ident.new(text_value)
+        end
+      }
+    end
+
+    rule string
+      (('"' [^"]* '"') / ("'" [^']* "'")) {
+        def content
+          text_value
+        end
+      }
+    end
+
+    rule separator
+      [ ]+
+    end
+  end
+end
+
