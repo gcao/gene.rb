@@ -13,4 +13,4 @@ group :development do
 end
 
 gem 'treetop'
-
+gem 'logem', :git => 'https://github.com/gcao/logem.git'

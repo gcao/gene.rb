@@ -2,11 +2,21 @@ module Gene
   grammar Grammar
     rule document
       expr {
+        def content
+          Gene.logger.trace 'document.content'
+          Gene.logger.trace elements.inspect
+          expr.content
+        end
       }
     end
 
     rule expr
-      comp_expr / array / atom {
+      (comp_expr / array / atom) {
+        def content
+          Gene.logger.trace 'expr.content'
+          Gene.logger.trace elements.inspect
+          elements[0].content
+        end
       }
     end
 
@@ -15,16 +25,27 @@ module Gene
     end
 
     rule array
-      '[' (expr)* ']' {
+      ('[' [ ]* (expr)* [ ]* ']') {
         def content
-          puts 'array content()'
-          elements.map{ |e| e.content }
+          Gene.logger.trace 'array.content'
+          Gene.logger.trace elements.inspect
+          if elements.size > 2
+            elements[1..elements.size - 2].map{ |e| e.content }
+          else
+            []
+          end
         end
       }
     end
 
     rule atom
-      id / string / separator
+      (id / string) {
+        def content
+          Gene.logger.trace 'atom.content'
+          Gene.logger.trace elements.inspect
+          elements[0].content
+        end
+      }
     end
 
     rule id
@@ -41,10 +62,6 @@ module Gene
           text_value
         end
       }
-    end
-
-    rule separator
-      [ ]+
     end
   end
 end

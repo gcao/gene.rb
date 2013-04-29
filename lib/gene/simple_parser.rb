@@ -1,7 +1,7 @@
 require 'strscan'
 
 module Gene
-  class Parser < StringScanner
+  class SimpleParser < StringScanner
     STRING                = /" ((?:[^\x0-\x1f"\\] |
                                  # escaped special characters:
                                 \\["\\\/bfnrt] |

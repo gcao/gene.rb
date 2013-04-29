@@ -4,6 +4,6 @@ describe Gene::Parser do
   it "should work" do
     input  = "[a]"
     result = [Gene::Type::Ident.new('a')]
-    Gene::Parser.new.parse(input).should == result
+    Gene::Parser.new(input).parse.should == result
   end
 end
