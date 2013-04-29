@@ -1,8 +1,10 @@
 #require 'treetop'
 #require 'logem'
 
-require 'gene/type/base'
-require 'gene/type/ident'
+#require 'gene/type/base'
+#require 'gene/type/ident'
+
+require 'gene/entity'
 
 require 'gene/parser_error'
 #require 'gene/grammar'

@@ -18,9 +18,9 @@ module Gene
                                 (?i:e[+-]?\d+)
                               )
                               )/x
-    NAN                   = /NaN/
-    INFINITY              = /Infinity/
-    MINUS_INFINITY        = /-Infinity/
+    ENTITY                = /([^\s\(\)\[\]\{\}]+)/
+    GENERIC_OPEN          = /\(/
+    GENERIC_CLOSE         = /\)/
     OBJECT_OPEN           = /\{/
     OBJECT_CLOSE          = /\}/
     ARRAY_OPEN            = /\[/
@@ -54,9 +54,6 @@ module Gene
     # * *max_nesting*: The maximum depth of nesting allowed in the parsed data
     #   structures. Disable depth checking with :max_nesting => false|nil|0,
     #   it defaults to 100.
-    # * *allow_nan*: If set to true, allow NaN, Infinity and -Infinity in
-    #   defiance of RFC 4627 to be parsed by the Parser. This option defaults
-    #   to false.
     # * *symbolize_names*: If set to true, returns symbols for the names
     #   (keys) in a JSON object. Otherwise strings are returned, which is also
     #   the default.
@@ -80,7 +77,6 @@ module Gene
       else
         @max_nesting = 0
       end
-      @allow_nan = !!opts[:allow_nan]
       @symbolize_names = !!opts[:symbolize_names]
       if opts.key?(:create_additions)
         @create_additions = !!opts[:create_additions]
@@ -263,12 +259,8 @@ module Gene
         obj = parse_object
         @current_nesting -= 1
         obj
-      when @allow_nan && scan(NAN)
-        NaN
-      when @allow_nan && scan(INFINITY)
-        Infinity
-      when @allow_nan && scan(MINUS_INFINITY)
-        MinusInfinity
+      when scan(ENTITY)
+        Gene::Entity.new(self[1])
       else
         UNPARSED
       end
