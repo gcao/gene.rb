@@ -19,8 +19,8 @@ module Gene
                               )
                               )/x
     ENTITY                = /([^\s\(\)\[\]\{\}]+)/
-    GENERIC_OPEN          = /\(/
-    GENERIC_CLOSE         = /\)/
+    GENE_OPEN             = /\(/
+    GENE_CLOSE            = /\)/
     OBJECT_OPEN           = /\{/
     OBJECT_CLOSE          = /\}/
     ARRAY_OPEN            = /\[/
@@ -51,17 +51,12 @@ module Gene
     #
     # It will be configured by the _opts_ hash. _opts_ can have the following
     # keys:
-    # * *max_nesting*: The maximum depth of nesting allowed in the parsed data
-    #   structures. Disable depth checking with :max_nesting => false|nil|0,
-    #   it defaults to 100.
     # * *symbolize_names*: If set to true, returns symbols for the names
     #   (keys) in a JSON object. Otherwise strings are returned, which is also
     #   the default.
     # * *create_additions*: If set to true, the Parser creates
     #   additions when if a matching class and create_id was found. This
     #   option defaults to false.
-    # * *object_class*: Defaults to Hash
-    # * *array_class*: Defaults to Array
     # * *quirks_mode*: Enables quirks_mode for parser, that is for example
     #   parsing single JSON values instead of documents is possible.
     def initialize(source, opts = {})
@@ -70,13 +65,6 @@ module Gene
         source = convert_encoding source
       end
       super source
-      if !opts.key?(:max_nesting) # defaults to 100
-        @max_nesting = 100
-      elsif opts[:max_nesting]
-        @max_nesting = opts[:max_nesting]
-      else
-        @max_nesting = 0
-      end
       @symbolize_names = !!opts[:symbolize_names]
       if opts.key?(:create_additions)
         @create_additions = !!opts[:create_additions]
@@ -84,8 +72,6 @@ module Gene
         @create_additions = false
       end
       @create_id = @create_additions ? JSON.create_id : nil
-      @object_class = opts[:object_class] || Hash
-      @array_class  = opts[:array_class] || Array
       @match_string = opts[:match_string]
     end
 
@@ -267,9 +253,8 @@ module Gene
     end
 
     def parse_array
-      raise NestingError, "nesting of #@current_nesting is too deep" if
-        @max_nesting.nonzero? && @current_nesting > @max_nesting
-      result = @array_class.new
+      result = Array.new
+      result << Gene::Entity.new('[]')
       delim = false
       until eos?
         case
@@ -299,9 +284,8 @@ module Gene
     end
 
     def parse_object
-      raise NestingError, "nesting of #@current_nesting is too deep" if
-        @max_nesting.nonzero? && @current_nesting > @max_nesting
-      result = @object_class.new
+      result = Array.new
+      result << Gene::Entity.new('{}')
       delim = false
       until eos?
         case

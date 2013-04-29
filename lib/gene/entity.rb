@@ -7,7 +7,7 @@ module Gene
     end
 
     def == other
-      return unless other.is_a? self.class
+      return false unless other.is_a? self.class
       @name == other.name
     end
   end
