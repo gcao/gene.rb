@@ -3,6 +3,11 @@ require File.expand_path(File.dirname(__FILE__) + '/../spec_helper')
 describe Gene::Parser do
   {
     '""'       => "",
+    '"a"'      => "a",
+    '1'        => 1,
+    '-1'       => -1,
+    '1.0'      => 1.0,
+    'true'     => true,
     '()'       => [],
     '("a")'    => ["a"],
     '(a)'      => [Gene::Entity.new('a')],
@@ -17,4 +22,15 @@ describe Gene::Parser do
       Gene::Parser.new(input).parse.should == result
     end
   end
+
+  [
+    'a b',
+  ].each do |input|
+    it "#{input} should fail" do
+      lambda {
+        Gene::Parser.new(input).parse
+      }.should raise_error(Gene::ParserError)
+    end
+  end
+
 end

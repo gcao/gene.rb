@@ -2,8 +2,6 @@ require 'strscan'
 
 module Gene
   class Parser < StringScanner
-    NOOP = Entity.new('')
-
     STRING                = /" ((?:[^\x0-\x1f"\\] |
                               # escaped special characters:
                               \\["\\\/bfnrt] |
@@ -41,57 +39,45 @@ module Gene
 
     UNPARSED = Object.new
 
-    # Creates a new JSON::Pure::Parser instance for the string _source_.
-    #
-    # It will be configured by the _opts_ hash. _opts_ can have the following
-    # keys:
-    # * *quirks_mode*: Enables quirks_mode for parser, that is for example
-    #   parsing single JSON values instead of documents is possible.
     def initialize(source, opts = {})
       opts ||= {}
-      unless @quirks_mode = opts[:quirks_mode]
-        source = convert_encoding source
-      end
       super source
     end
 
     alias source string
 
-    def quirks_mode?
-      !!@quirks_mode
-    end
-
     # Parses the current JSON string _source_ and returns the complete data
     # structure as a result.
     def parse
       reset
+
       obj = nil
-      if @quirks_mode
-        while !eos? && skip(IGNORE)
-        end
-        if eos?
-          raise ParserError, "source did not contain any JSON!"
+
+      until eos?
+        case
+        when (value = parse_string) != UNPARSED
+          obj = value
+        when (value = parse_float) != UNPARSED
+          obj = value
+        when (value = parse_int) != UNPARSED
+          obj = value
+        when (value = parse_true) != UNPARSED
+          obj = value
+        when (value = parse_false) != UNPARSED
+          obj = value
+        when (value = parse_null) != UNPARSED
+          obj = value
+        when scan(GENE_OPEN) || scan(ARRAY_OPEN) || scan(HASH_OPEN)
+          obj and raise ParserError, "source '#{peek(20)}' not in JSON!"
+          obj = parse_group
+        when skip(IGNORE)
+          ;
         else
-          obj = parse_value
-          obj == UNPARSED and raise ParserError, "source did not contain any JSON!"
+          raise ParserError, "source '#{peek(20)}' not in JSON!"
         end
-      else
-        until eos?
-          case
-          when (value = parse_string) != UNPARSED
-            obj = value
-          when scan(GENE_OPEN) || scan(ARRAY_OPEN) || scan(HASH_OPEN)
-            obj and raise ParserError, "source '#{peek(20)}' not in JSON!"
-            obj = parse_group
-          when skip(IGNORE)
-            ;
-          else
-            raise ParserError, "source '#{peek(20)}' not in JSON!"
-          end
-        end
-        obj or raise ParserError, "source did not contain any JSON!"
       end
-      obj
+
+      obj or raise ParserError, "source did not contain any JSON!"
     end
 
     private
@@ -164,16 +150,16 @@ module Gene
       case
       when (value = parse_string) != UNPARSED
         value
-      when scan(FLOAT)
-        Float(self[1])
-      when scan(INTEGER)
-        Integer(self[1])
-      when scan(TRUE)
-        true
-      when scan(FALSE)
-        false
-      when scan(NULL)
-        nil
+      when (value = parse_float) != UNPARSED
+        value
+      when (value = parse_int) != UNPARSED
+        value
+      when (value = parse_true) != UNPARSED
+        value
+      when (value = parse_false) != UNPARSED
+        value
+      when (value = parse_null) != UNPARSED
+        value
       when scan(GENE_OPEN) || scan(ARRAY_OPEN) || scan(HASH_OPEN)
         parse_group
       when scan(ESCAPE)
@@ -206,6 +192,36 @@ module Gene
         string.force_encoding(::Encoding::UTF_8)
       end
       string
+    end
+
+    def parse_int
+      return UNPARSED unless scan(INTEGER)
+
+      Integer(self[1])
+    end
+
+    def parse_float
+      return UNPARSED unless scan(FLOAT)
+
+      Float(self[1])
+    end
+
+    def parse_true
+      return UNPARSED unless scan(TRUE)
+
+      true
+    end
+
+    def parse_false
+      return UNPARSED unless scan(FALSE)
+
+      false
+    end
+
+    def parse_null
+      return UNPARSED unless scan(NULL)
+
+      nil
     end
 
     def parse_escaped
@@ -251,6 +267,5 @@ module Gene
       end
       result
     end
-
   end
 end
