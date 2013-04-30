@@ -2,7 +2,7 @@ require 'strscan'
 
 module Gene
   class Parser < StringScanner
-    NOOP       = Entity.new('')
+    NOOP = Entity.new('')
 
     STRING                = /" ((?:[^\x0-\x1f"\\] |
                               # escaped special characters:
@@ -78,6 +78,8 @@ module Gene
       else
         until eos?
           case
+          when (value = parse_string) != UNPARSED
+            obj = value
           when scan(GENE_OPEN) || scan(ARRAY_OPEN) || scan(HASH_OPEN)
             obj and raise ParserError, "source '#{peek(20)}' not in JSON!"
             obj = parse_group
@@ -160,25 +162,8 @@ module Gene
 
     def parse_value
       case
-      when scan(STRING)
-        return '' if self[1].empty?
-        string = self[1].gsub(%r((?:\\[\\bfnrt"/]|(?:\\u(?:[A-Fa-f\d]{4}))+|\\[\x20-\xff]))n) do |c|
-          if u = UNESCAPE_MAP[$&[1]]
-            u
-          else # \uXXXX
-            bytes = EMPTY_8BIT_STRING.dup
-            i = 0
-            while c[6 * i] == ?\\ && c[6 * i + 1] == ?u
-              bytes << c[6 * i + 2, 2].to_i(16) << c[6 * i + 4, 2].to_i(16)
-              i += 1
-            end
-            JSON.iconv('utf-8', 'utf-16be', bytes)
-          end
-        end
-        if string.respond_to?(:force_encoding)
-          string.force_encoding(::Encoding::UTF_8)
-        end
-        string
+      when (value = parse_string) != UNPARSED
+        value
       when scan(FLOAT)
         Float(self[1])
       when scan(INTEGER)
@@ -198,6 +183,29 @@ module Gene
       else
         UNPARSED
       end
+    end
+
+    def parse_string
+      return UNPARSED unless scan(STRING)
+
+      return '' if self[1].empty?
+      string = self[1].gsub(%r((?:\\[\\bfnrt"/]|(?:\\u(?:[A-Fa-f\d]{4}))+|\\[\x20-\xff]))n) do |c|
+        if u = UNESCAPE_MAP[$&[1]]
+          u
+        else # \uXXXX
+          bytes = EMPTY_8BIT_STRING.dup
+          i = 0
+          while c[6 * i] == ?\\ && c[6 * i + 1] == ?u
+            bytes << c[6 * i + 2, 2].to_i(16) << c[6 * i + 4, 2].to_i(16)
+            i += 1
+          end
+          JSON.iconv('utf-8', 'utf-16be', bytes)
+        end
+      end
+      if string.respond_to?(:force_encoding)
+        string.force_encoding(::Encoding::UTF_8)
+      end
+      string
     end
 
     def parse_escaped
