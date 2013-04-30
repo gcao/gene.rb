@@ -22,7 +22,6 @@ GEM
       rake
       rdoc
     json (1.7.7)
-    polyglot (0.3.3)
     rake (10.0.4)
     rb-fsevent (0.9.3)
     rdoc (3.12.2)
@@ -36,9 +35,6 @@ GEM
       diff-lcs (~> 1.1.2)
     rspec-mocks (2.8.0)
     thor (0.14.6)
-    treetop (1.4.12)
-      polyglot
-      polyglot (>= 0.3.1)
 
 PLATFORMS
   ruby
@@ -53,4 +49,3 @@ DEPENDENCIES
   rb-fsevent (>= 0.4.3.1)
   rdoc (~> 3.12)
   rspec (~> 2.8.0)
-  treetop
