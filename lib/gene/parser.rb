@@ -2,6 +2,8 @@ require 'strscan'
 
 module Gene
   class Parser < StringScanner
+    NOOP       = Entity.new('')
+
     STRING                = /" ((?:[^\x0-\x1f"\\] |
                               # escaped special characters:
                               \\["\\\/bfnrt] |
@@ -25,21 +27,14 @@ module Gene
     HASH_CLOSE            = /\}/
     ARRAY_OPEN            = /\[/
     ARRAY_CLOSE           = /\]/
+    ESCAPE                = /\\/
     TRUE                  = /true/
     FALSE                 = /false/
     NULL                  = /null/
     IGNORE                = %r(
       (?:
-       //[^\n\r]*[\n\r]| # line comments
-       /\*               # c-style comments
-       (?:
-        [^*/]|           # normal chars
-        /[^*]|           # slashes that do not start a nested comment
-        \*[^/]|          # asterisks that do not end this comment
-        /(?=\*/)         # single slash before this comment's end
-       )*
-         \*/             # the End of this comment
-         |[ \t\r\n]+     # whitespaces: space, horicontal tab, lf, cr
+       \#[^\n\r]*[\n\r]| # line comments
+       [ \t\r\n]+        # whitespaces: space, horicontal tab, lf, cr
       )+
     )mx
 
@@ -65,11 +60,6 @@ module Gene
       !!@quirks_mode
     end
 
-    def reset
-      super
-      @current_nesting = 0
-    end
-
     # Parses the current JSON string _source_ and returns the complete data
     # structure as a result.
     def parse
@@ -87,18 +77,9 @@ module Gene
       else
         until eos?
           case
-          when scan(GENE_OPEN)
+          when scan(GENE_OPEN) || scan(ARRAY_OPEN) || scan(HASH_OPEN)
             obj and raise ParserError, "source '#{peek(20)}' not in JSON!"
-            @current_nesting = 1
-            obj = parse_gene
-          when scan(ARRAY_OPEN)
-            obj and raise ParserError, "source '#{peek(20)}' not in JSON!"
-            @current_nesting = 1
-            obj = parse_array
-          when scan(HASH_OPEN)
-            obj and raise ParserError, "source '#{peek(20)}' not in JSON!"
-            @current_nesting = 1
-            obj = parse_hash
+            obj = parse_group
           when skip(IGNORE)
             ;
           else
@@ -207,32 +188,47 @@ module Gene
         false
       when scan(NULL)
         nil
-      #when (string = parse_string) != UNPARSED
-      #  string
-      when scan(ARRAY_OPEN)
-        @current_nesting += 1
-        ary = parse_array
-        @current_nesting -= 1
-        ary
-      when scan(HASH_OPEN)
-        @current_nesting += 1
-        obj = parse_hash
-        @current_nesting -= 1
-        obj
+      when scan(GENE_OPEN) || scan(ARRAY_OPEN) || scan(HASH_OPEN)
+        parse_group
+      when scan(ESCAPE)
+        Entity.new(parse_escaped)
       when scan(ENTITY)
-        Gene::Entity.new(self[1])
+        Entity.new(self[1])
       else
         UNPARSED
       end
     end
 
-    def parse_gene
+    def parse_escaped
+      value = getch
+      until eos?
+        case
+        when check(IGNORE) || check(GENERIC_OPEN)
+        else
+        end
+      end
+      value
+    end
+
+    def parse_group
       result = Array.new
+      open_char = self[0]
+
+      if open_char == '['
+        result << Entity.new('[]')
+      elsif open_char == '{'
+        result << Entity.new('{}')
+      end
+
       until eos?
         case
         when (value = parse_value) != UNPARSED
           result << value
-        when scan(GENE_CLOSE)
+        when open_char == '(' && scan(GENE_CLOSE)
+          break
+        when open_char == '[' && scan(ARRAY_CLOSE)
+          break
+        when open_char == '{' && scan(HASH_CLOSE)
           break
         when skip(IGNORE)
           ;
@@ -243,40 +239,5 @@ module Gene
       result
     end
 
-    def parse_array
-      result = Array.new
-      result << '[]'
-      until eos?
-        case
-        when (value = parse_value) != UNPARSED
-          result << value
-        when scan(ARRAY_CLOSE)
-          break
-        when skip(IGNORE)
-          ;
-        else
-          raise ParserError, "unexpected token in array at '#{peek(20)}'!"
-        end
-      end
-      result
-    end
-
-    def parse_hash
-      result = Array.new
-      result << '{}'
-      until eos?
-        case
-        when (value = parse_value) != UNPARSED
-          result << value
-        when scan(HASH_CLOSE)
-          break
-        when skip(IGNORE)
-          ;
-        else
-          raise ParserError, "unexpected token in object at '#{peek(20)}'!"
-        end
-      end
-      result
-    end
   end
 end
