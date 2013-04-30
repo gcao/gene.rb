@@ -4,7 +4,8 @@ describe Gene::Parser do
   {
     "(a)" => [Gene::Entity.new('a')],
     "[a]" => [Gene::Entity.new('[]'), Gene::Entity.new('a')],
-    "(\[\] a)" => [Gene::Entity.new('[]'), Gene::Entity.new('a')],
+    "[[a]]" => [Gene::Entity.new('[]'), [Gene::Entity.new('[]'), Gene::Entity.new('a')]],
+    "(\\[\\] a)" => [Gene::Entity.new('[]'), Gene::Entity.new('a')],
     "{a}" => [Gene::Entity.new('{}'), Gene::Entity.new('a')],
   }.each do |input, result|
     it "#{input} should work" do

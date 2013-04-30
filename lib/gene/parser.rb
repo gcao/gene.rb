@@ -21,6 +21,7 @@ module Gene
                               )
                             )/x
     ENTITY                = /([^\s\(\)\[\]\{\}]+)/
+    ENTITY_END            = /[ \t\r\n\(\)\[\]\{\}]/
     GENE_OPEN             = /\(/
     GENE_CLOSE            = /\)/
     HASH_OPEN             = /\{/
@@ -191,7 +192,7 @@ module Gene
       when scan(GENE_OPEN) || scan(ARRAY_OPEN) || scan(HASH_OPEN)
         parse_group
       when scan(ESCAPE)
-        Entity.new(parse_escaped)
+        parse_escaped
       when scan(ENTITY)
         Entity.new(self[1])
       else
@@ -203,11 +204,15 @@ module Gene
       value = getch
       until eos?
         case
-        when check(IGNORE) || check(GENERIC_OPEN)
+        when check(ENTITY_END)
+          break
+        when scan(ESCAPE)
+          value += getch
         else
+          value += getch
         end
       end
-      value
+      Entity.new(value)
     end
 
     def parse_group
