@@ -3,11 +3,11 @@ require 'strscan'
 module Gene
   class Parser < StringScanner
     STRING                = /" ((?:[^\x0-\x1f"\\] |
-                                 # escaped special characters:
-                                \\["\\\/bfnrt] |
-                                \\u[0-9a-fA-F]{4} |
-                                 # match all but escaped special characters:
-                                \\[\x20-\x21\x23-\x2e\x30-\x5b\x5d-\x61\x63-\x65\x67-\x6d\x6f-\x71\x73\x75-\xff])*)
+                              # escaped special characters:
+                              \\["\\\/bfnrt] |
+                              \\u[0-9a-fA-F]{4} |
+                              # match all but escaped special characters:
+                              \\[\x20-\x21\x23-\x2e\x30-\x5b\x5d-\x61\x63-\x65\x67-\x6d\x6f-\x71\x73\x75-\xff])*)
                             "/nx
     INTEGER               = /(-?0|-?[1-9]\d*)/
     FLOAT                 = /(-?
@@ -21,12 +21,10 @@ module Gene
     ENTITY                = /([^\s\(\)\[\]\{\}]+)/
     GENE_OPEN             = /\(/
     GENE_CLOSE            = /\)/
-    OBJECT_OPEN           = /\{/
-    OBJECT_CLOSE          = /\}/
+    HASH_OPEN             = /\{/
+    HASH_CLOSE            = /\}/
     ARRAY_OPEN            = /\[/
     ARRAY_CLOSE           = /\]/
-    PAIR_DELIMITER        = /:/
-    COLLECTION_DELIMITER  = /,/
     TRUE                  = /true/
     FALSE                 = /false/
     NULL                  = /null/
@@ -54,9 +52,6 @@ module Gene
     # * *symbolize_names*: If set to true, returns symbols for the names
     #   (keys) in a JSON object. Otherwise strings are returned, which is also
     #   the default.
-    # * *create_additions*: If set to true, the Parser creates
-    #   additions when if a matching class and create_id was found. This
-    #   option defaults to false.
     # * *quirks_mode*: Enables quirks_mode for parser, that is for example
     #   parsing single JSON values instead of documents is possible.
     def initialize(source, opts = {})
@@ -66,12 +61,6 @@ module Gene
       end
       super source
       @symbolize_names = !!opts[:symbolize_names]
-      if opts.key?(:create_additions)
-        @create_additions = !!opts[:create_additions]
-      else
-        @create_additions = false
-      end
-      @create_id = @create_additions ? JSON.create_id : nil
       @match_string = opts[:match_string]
     end
 
@@ -103,10 +92,10 @@ module Gene
       else
         until eos?
           case
-          when scan(OBJECT_OPEN)
+          when scan(HASH_OPEN)
             obj and raise ParserError, "source '#{peek(20)}' not in JSON!"
             @current_nesting = 1
-            obj = parse_object
+            obj = parse_hash
           when scan(ARRAY_OPEN)
             obj and raise ParserError, "source '#{peek(20)}' not in JSON!"
             @current_nesting = 1
@@ -188,8 +177,9 @@ module Gene
       EMPTY_8BIT_STRING.force_encoding Encoding::ASCII_8BIT
     end
 
-    def parse_string
-      if scan(STRING)
+    def parse_value
+      case
+      when scan(STRING)
         return '' if self[1].empty?
         string = self[1].gsub(%r((?:\\[\\bfnrt"/]|(?:\\u(?:[A-Fa-f\d]{4}))+|\\[\x20-\xff]))n) do |c|
           if u = UNESCAPE_MAP[$&[1]]
@@ -207,22 +197,7 @@ module Gene
         if string.respond_to?(:force_encoding)
           string.force_encoding(::Encoding::UTF_8)
         end
-        if @create_additions and @match_string
-          for (regexp, klass) in @match_string
-            klass.json_creatable? or next
-            string =~ regexp and return klass.json_create(string)
-          end
-        end
         string
-      else
-        UNPARSED
-      end
-    rescue => e
-      raise ParserError, "Caught #{e.class} at '#{peek(20)}': #{e}"
-    end
-
-    def parse_value
-      case
       when scan(FLOAT)
         Float(self[1])
       when scan(INTEGER)
@@ -233,16 +208,16 @@ module Gene
         false
       when scan(NULL)
         nil
-      when (string = parse_string) != UNPARSED
-        string
+      #when (string = parse_string) != UNPARSED
+      #  string
       when scan(ARRAY_OPEN)
         @current_nesting += 1
         ary = parse_array
         @current_nesting -= 1
         ary
-      when scan(OBJECT_OPEN)
+      when scan(HASH_OPEN)
         @current_nesting += 1
-        obj = parse_object
+        obj = parse_hash
         @current_nesting -= 1
         obj
       when scan(ENTITY)
@@ -254,25 +229,12 @@ module Gene
 
     def parse_array
       result = Array.new
-      result << Gene::Entity.new('[]')
-      delim = false
+      result << '[]'
       until eos?
         case
         when (value = parse_value) != UNPARSED
-          delim = false
           result << value
-          skip(IGNORE)
-          if scan(COLLECTION_DELIMITER)
-            delim = true
-          elsif match?(ARRAY_CLOSE)
-            ;
-          else
-            raise ParserError, "expected ',' or ']' in array at '#{peek(20)}'!"
-          end
         when scan(ARRAY_CLOSE)
-          if delim
-            raise ParserError, "expected next element in array at '#{peek(20)}'!"
-          end
           break
         when skip(IGNORE)
           ;
@@ -283,41 +245,14 @@ module Gene
       result
     end
 
-    def parse_object
+    def parse_hash
       result = Array.new
-      result << Gene::Entity.new('{}')
-      delim = false
+      result << '{}'
       until eos?
         case
-        when (string = parse_string) != UNPARSED
-          skip(IGNORE)
-          unless scan(PAIR_DELIMITER)
-            raise ParserError, "expected ':' in object at '#{peek(20)}'!"
-          end
-          skip(IGNORE)
-          unless (value = parse_value).equal? UNPARSED
-            result[@symbolize_names ? string.to_sym : string] = value
-            delim = false
-            skip(IGNORE)
-            if scan(COLLECTION_DELIMITER)
-              delim = true
-            elsif match?(OBJECT_CLOSE)
-              ;
-            else
-              raise ParserError, "expected ',' or '}' in object at '#{peek(20)}'!"
-            end
-          else
-            raise ParserError, "expected value in object at '#{peek(20)}'!"
-          end
-        when scan(OBJECT_CLOSE)
-          if delim
-            raise ParserError, "expected next name, value pair in object at '#{peek(20)}'!"
-          end
-          if @create_additions and klassname = result[@create_id]
-            klass = JSON.deep_const_get klassname
-            break unless klass and klass.json_creatable?
-            result = klass.json_create(result)
-          end
+        when (value = parse_value) != UNPARSED
+          result << value
+        when scan(HASH_CLOSE)
           break
         when skip(IGNORE)
           ;
