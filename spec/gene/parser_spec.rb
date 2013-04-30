@@ -2,6 +2,7 @@ require File.expand_path(File.dirname(__FILE__) + '/../spec_helper')
 
 describe Gene::Parser do
   {
+    "(a)" => [Gene::Entity.new('a')],
     "[a]" => ['[]', Gene::Entity.new('a')],
     "{a}" => ['{}', Gene::Entity.new('a')],
   }.each do |input, result|

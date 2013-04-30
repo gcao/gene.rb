@@ -87,14 +87,18 @@ module Gene
       else
         until eos?
           case
-          when scan(HASH_OPEN)
+          when scan(GENE_OPEN)
             obj and raise ParserError, "source '#{peek(20)}' not in JSON!"
             @current_nesting = 1
-            obj = parse_hash
+            obj = parse_gene
           when scan(ARRAY_OPEN)
             obj and raise ParserError, "source '#{peek(20)}' not in JSON!"
             @current_nesting = 1
             obj = parse_array
+          when scan(HASH_OPEN)
+            obj and raise ParserError, "source '#{peek(20)}' not in JSON!"
+            @current_nesting = 1
+            obj = parse_hash
           when skip(IGNORE)
             ;
           else
@@ -220,6 +224,23 @@ module Gene
       else
         UNPARSED
       end
+    end
+
+    def parse_gene
+      result = Array.new
+      until eos?
+        case
+        when (value = parse_value) != UNPARSED
+          result << value
+        when scan(GENE_CLOSE)
+          break
+        when skip(IGNORE)
+          ;
+        else
+          raise ParserError, "unexpected token in gene at '#{peek(20)}'!"
+        end
+      end
+      result
     end
 
     def parse_array
