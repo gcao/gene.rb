@@ -17,7 +17,7 @@ module Gene
                                 \.\d+ |
                                 (?i:e[+-]?\d+)
                               )
-                              )/x
+                            )/x
     ENTITY                = /([^\s\(\)\[\]\{\}]+)/
     GENE_OPEN             = /\(/
     GENE_CLOSE            = /\)/
@@ -33,13 +33,13 @@ module Gene
        //[^\n\r]*[\n\r]| # line comments
        /\*               # c-style comments
        (?:
-        [^*/]|        # normal chars
-        /[^*]|        # slashes that do not start a nested comment
-        \*[^/]|       # asterisks that do not end this comment
-        /(?=\*/)      # single slash before this comment's end
+        [^*/]|           # normal chars
+        /[^*]|           # slashes that do not start a nested comment
+        \*[^/]|          # asterisks that do not end this comment
+        /(?=\*/)         # single slash before this comment's end
        )*
-         \*/               # the End of this comment
-         |[ \t\r\n]+       # whitespaces: space, horicontal tab, lf, cr
+         \*/             # the End of this comment
+         |[ \t\r\n]+     # whitespaces: space, horicontal tab, lf, cr
       )+
     )mx
 
@@ -49,9 +49,6 @@ module Gene
     #
     # It will be configured by the _opts_ hash. _opts_ can have the following
     # keys:
-    # * *symbolize_names*: If set to true, returns symbols for the names
-    #   (keys) in a JSON object. Otherwise strings are returned, which is also
-    #   the default.
     # * *quirks_mode*: Enables quirks_mode for parser, that is for example
     #   parsing single JSON values instead of documents is possible.
     def initialize(source, opts = {})
@@ -60,8 +57,6 @@ module Gene
         source = convert_encoding source
       end
       super source
-      @symbolize_names = !!opts[:symbolize_names]
-      @match_string = opts[:match_string]
     end
 
     alias source string
