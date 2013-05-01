@@ -46,38 +46,47 @@ module Gene
 
     alias source string
 
-    # Parses the current JSON string _source_ and returns the complete data
-    # structure as a result.
     def parse
       reset
 
-      obj = nil
+      undefined = Object.new
+      obj = undefined
 
       until eos?
         case
         when (value = parse_string) != UNPARSED
+          obj != undefined and raise ParserError, "source '#{peek(20)}' is not valid GENE!"
           obj = value
         when (value = parse_float) != UNPARSED
+          obj != undefined and raise ParserError, "source '#{peek(20)}' is not valid GENE!"
           obj = value
         when (value = parse_int) != UNPARSED
+          obj != undefined and raise ParserError, "source '#{peek(20)}' is not valid GENE!"
           obj = value
         when (value = parse_true) != UNPARSED
+          obj != undefined and raise ParserError, "source '#{peek(20)}' is not valid GENE!"
           obj = value
         when (value = parse_false) != UNPARSED
+          obj != undefined and raise ParserError, "source '#{peek(20)}' is not valid GENE!"
           obj = value
         when (value = parse_null) != UNPARSED
+          obj != undefined and raise ParserError, "source '#{peek(20)}' is not valid GENE!"
           obj = value
-        when scan(GENE_OPEN) || scan(ARRAY_OPEN) || scan(HASH_OPEN)
-          obj and raise ParserError, "source '#{peek(20)}' not in JSON!"
-          obj = parse_group
+        when (value = parse_group) != UNPARSED
+          obj != undefined and raise ParserError, "source '#{peek(20)}' is not valid GENE!"
+          obj = value
+        when (value = parse_entity) != UNPARSED
+          obj != undefined and raise ParserError, "source '#{peek(20)}' is not valid GENE!"
+          obj = value
         when skip(IGNORE)
           ;
         else
-          raise ParserError, "source '#{peek(20)}' not in JSON!"
+          raise ParserError, "source '#{peek(20)}' is not valid GENE!"
         end
       end
 
-      obj or raise ParserError, "source did not contain any JSON!"
+      raise ParserError, "source does not contain any GENE!" if obj == undefined
+      obj
     end
 
     private
@@ -160,12 +169,10 @@ module Gene
         value
       when (value = parse_null) != UNPARSED
         value
-      when scan(GENE_OPEN) || scan(ARRAY_OPEN) || scan(HASH_OPEN)
-        parse_group
-      when scan(ESCAPE)
-        parse_escaped
-      when scan(ENTITY)
-        Entity.new(self[1])
+      when (value = parse_group) != UNPARSED
+        value
+      when (value = parse_entity) != UNPARSED
+        value
       else
         UNPARSED
       end
@@ -224,8 +231,11 @@ module Gene
       nil
     end
 
-    def parse_escaped
-      value = getch
+    def parse_entity
+      return UNPARSED unless check(ESCAPE) or check(ENTITY)
+
+      value = ''
+
       until eos?
         case
         when check(ENTITY_END)
@@ -236,33 +246,36 @@ module Gene
           value += getch
         end
       end
+
       Entity.new(value)
     end
 
     def parse_group
-      result = Array.new
-      open_char = self[0]
+      return UNPARSED unless scan(GENE_OPEN) || scan(ARRAY_OPEN) || scan(HASH_OPEN)
 
-      if open_char == '['
+      result = Array.new
+
+      case open_char = self[0]
+      when '['
         result << Entity.new('[]')
-      elsif open_char == '{'
+      when '{'
         result << Entity.new('{}')
       end
 
       until eos?
         case
-        when (value = parse_value) != UNPARSED
-          result << value
         when open_char == '(' && scan(GENE_CLOSE)
           break
         when open_char == '[' && scan(ARRAY_CLOSE)
           break
         when open_char == '{' && scan(HASH_CLOSE)
           break
+        when (value = parse_value) != UNPARSED
+          result << value
         when skip(IGNORE)
           ;
         else
-          raise ParserError, "unexpected token in gene at '#{peek(20)}'!"
+          raise ParserError, "unexpected token at '#{peek(20)}'!"
         end
       end
       result

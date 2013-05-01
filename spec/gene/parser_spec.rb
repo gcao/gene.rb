@@ -8,6 +8,7 @@ describe Gene::Parser do
     '-1'       => -1,
     '1.0'      => 1.0,
     'true'     => true,
+    'a'        => Gene::Entity.new('a'),
     '()'       => [],
     '("a")'    => ["a"],
     '(a)'      => [Gene::Entity.new('a')],
@@ -24,6 +25,10 @@ describe Gene::Parser do
   end
 
   [
+    '(',
+    ')',
+    '[)]',
+    'a ()',
     'a b',
   ].each do |input|
     it "#{input} should fail" do
