@@ -19,7 +19,7 @@ module Gene
                               )
                             )/x
     ENTITY                = /([^\s\(\)\[\]\{\}]+)/
-    ENTITY_END            = /[ \t\r\n\(\)\[\]\{\}]/
+    ENTITY_END            = /[\s\(\)\[\]\{\}]/
     GENE_OPEN             = /\(/
     GENE_CLOSE            = /\)/
     HASH_OPEN             = /\{/
@@ -33,50 +33,53 @@ module Gene
     IGNORE                = %r(
       (?:
        \#[^\n\r]*[\n\r]| # line comments
-       [ \t\r\n]+        # whitespaces: space, horicontal tab, lf, cr
+       [\s]+             # whitespaces: space, horicontal tab, lf, cr
       )+
     )mx
 
     UNPARSED = Object.new
 
+    #attr :logger
+
     def initialize(source, opts = {})
       opts ||= {}
+      #@logger = Logem::Logger.new self
       super source
     end
 
     alias source string
 
     def parse
+      #logger.trace 'parse'
       reset
 
-      undefined = Object.new
-      obj = undefined
+      obj = UNPARSED
 
       until eos?
         case
         when (value = parse_string) != UNPARSED
-          obj != undefined and raise ParserError, "source '#{peek(20)}' is not valid GENE!"
+          obj != UNPARSED and raise ParserError, "source '#{peek(20)}' is not valid GENE!"
           obj = value
         when (value = parse_float) != UNPARSED
-          obj != undefined and raise ParserError, "source '#{peek(20)}' is not valid GENE!"
+          obj != UNPARSED and raise ParserError, "source '#{peek(20)}' is not valid GENE!"
           obj = value
         when (value = parse_int) != UNPARSED
-          obj != undefined and raise ParserError, "source '#{peek(20)}' is not valid GENE!"
+          obj != UNPARSED and raise ParserError, "source '#{peek(20)}' is not valid GENE!"
           obj = value
         when (value = parse_true) != UNPARSED
-          obj != undefined and raise ParserError, "source '#{peek(20)}' is not valid GENE!"
+          obj != UNPARSED and raise ParserError, "source '#{peek(20)}' is not valid GENE!"
           obj = value
         when (value = parse_false) != UNPARSED
-          obj != undefined and raise ParserError, "source '#{peek(20)}' is not valid GENE!"
+          obj != UNPARSED and raise ParserError, "source '#{peek(20)}' is not valid GENE!"
           obj = value
         when (value = parse_null) != UNPARSED
-          obj != undefined and raise ParserError, "source '#{peek(20)}' is not valid GENE!"
+          obj != UNPARSED and raise ParserError, "source '#{peek(20)}' is not valid GENE!"
           obj = value
         when (value = parse_group) != UNPARSED
-          obj != undefined and raise ParserError, "source '#{peek(20)}' is not valid GENE!"
+          obj != UNPARSED and raise ParserError, "source '#{peek(20)}' is not valid GENE!"
           obj = value
         when (value = parse_entity) != UNPARSED
-          obj != undefined and raise ParserError, "source '#{peek(20)}' is not valid GENE!"
+          obj != UNPARSED and raise ParserError, "source '#{peek(20)}' is not valid GENE!"
           obj = value
         when skip(IGNORE)
           ;
@@ -85,7 +88,7 @@ module Gene
         end
       end
 
-      raise ParserError, "source does not contain any GENE!" if obj == undefined
+      raise ParserError, "source does not contain any GENE!" if obj == UNPARSED
       obj
     end
 
@@ -232,7 +235,7 @@ module Gene
     end
 
     def parse_entity
-      return UNPARSED unless check(ESCAPE) or check(ENTITY)
+      return UNPARSED unless check(ENTITY)
 
       value = ''
 
@@ -256,11 +259,11 @@ module Gene
       result = Array.new
 
       case open_char = self[0]
-      when '['
-        result << Entity.new('[]')
-      when '{'
-        result << Entity.new('{}')
+      when '[' then result << Entity.new('[]')
+      when '{' then result << Entity.new('{}')
       end
+
+      raise ParserError, "Incomplete content after '#{open_char}'" if eos?
 
       until eos?
         case
@@ -278,6 +281,7 @@ module Gene
           raise ParserError, "unexpected token at '#{peek(20)}'!"
         end
       end
+
       result
     end
   end
