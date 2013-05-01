@@ -12,6 +12,7 @@ describe Gene::Parser do
     'false'    => false,
     'null'     => nil,
     'a'        => Gene::Entity.new('a'),
+    '\\('      => Gene::Entity.new('('),
     '()'       => [],
     '("a")'    => ["a"],
     '(a)'      => [Gene::Entity.new('a')],

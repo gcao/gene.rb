@@ -162,17 +162,17 @@ module Gene
       case
       when (value = parse_string) != UNPARSED
         value
-      when (value = parse_float) != UNPARSED
+      when (value = parse_float ) != UNPARSED
         value
-      when (value = parse_int) != UNPARSED
+      when (value = parse_int   ) != UNPARSED
         value
-      when (value = parse_true) != UNPARSED
+      when (value = parse_true  ) != UNPARSED
         value
-      when (value = parse_false) != UNPARSED
+      when (value = parse_false ) != UNPARSED
         value
-      when (value = parse_null) != UNPARSED
+      when (value = parse_null  ) != UNPARSED
         value
-      when (value = parse_group) != UNPARSED
+      when (value = parse_group ) != UNPARSED
         value
       when (value = parse_entity) != UNPARSED
         value
