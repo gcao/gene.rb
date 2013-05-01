@@ -12,4 +12,4 @@ group :development do
   gem 'rb-fsevent', '>= 0.4.3.1', :platforms => [:mri]
 end
 
-#gem 'logem', :git => 'https://github.com/gcao/logem.git'
+gem 'logem', :git => 'https://github.com/gcao/logem.git'

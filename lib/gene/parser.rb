@@ -2,7 +2,7 @@ require 'strscan'
 
 module Gene
   class Parser < StringScanner
-    STRING                = /" ((?:[^\x0-\x1f"\\] |
+    STRING                = /"((?:[^\x0-\x1f"\\] |
                               # escaped special characters:
                               \\["\\\/bfnrt] |
                               \\u[0-9a-fA-F]{4} |
