@@ -1,11 +1,15 @@
 module Gene
   class Interpreter
-    def initialize data
+    def initialize
       @logger = Logem::Logger.new(self)
-      @data = data
+      @context = Context.new(self)
       @handlers = [
         Handler.new
       ]
+    end
+
+    def run data
+      handle_partial data
     end
 
     def handle_partial data
@@ -63,10 +67,6 @@ module Gene
         result << value if value != NOOP
       end
       result
-    end
-
-    def run
-      handle_partial @data
     end
   end
 end

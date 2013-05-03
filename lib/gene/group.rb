@@ -1,9 +1,15 @@
 module Gene
   class Group
+    attr_accessor :root, :parent
+
     attr :children
 
     def initialize *children
       @children = children
+    end
+
+    def context
+      @context ||= Context.new(self)
     end
 
     def first

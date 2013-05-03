@@ -3,6 +3,7 @@ require 'logem'
 require 'gene/entity'
 require 'gene/group'
 
+require 'gene/context'
 require 'gene/handler'
 
 require 'gene/parse_error'
