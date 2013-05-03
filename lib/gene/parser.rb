@@ -58,37 +58,37 @@ module Gene
       until eos?
         case
         when (value = parse_string) != UNPARSED
-          obj != UNPARSED and raise ParserError, "source '#{peek(20)}' is not valid GENE!"
+          obj != UNPARSED and raise ParseError, "source '#{peek(20)}' is not valid GENE!"
           obj = value
         when (value = parse_float) != UNPARSED
-          obj != UNPARSED and raise ParserError, "source '#{peek(20)}' is not valid GENE!"
+          obj != UNPARSED and raise ParseError, "source '#{peek(20)}' is not valid GENE!"
           obj = value
         when (value = parse_int) != UNPARSED
-          obj != UNPARSED and raise ParserError, "source '#{peek(20)}' is not valid GENE!"
+          obj != UNPARSED and raise ParseError, "source '#{peek(20)}' is not valid GENE!"
           obj = value
         when (value = parse_true) != UNPARSED
-          obj != UNPARSED and raise ParserError, "source '#{peek(20)}' is not valid GENE!"
+          obj != UNPARSED and raise ParseError, "source '#{peek(20)}' is not valid GENE!"
           obj = value
         when (value = parse_false) != UNPARSED
-          obj != UNPARSED and raise ParserError, "source '#{peek(20)}' is not valid GENE!"
+          obj != UNPARSED and raise ParseError, "source '#{peek(20)}' is not valid GENE!"
           obj = value
         when (value = parse_null) != UNPARSED
-          obj != UNPARSED and raise ParserError, "source '#{peek(20)}' is not valid GENE!"
+          obj != UNPARSED and raise ParseError, "source '#{peek(20)}' is not valid GENE!"
           obj = value
         when (value = parse_group) != UNPARSED
-          obj != UNPARSED and raise ParserError, "source '#{peek(20)}' is not valid GENE!"
+          obj != UNPARSED and raise ParseError, "source '#{peek(20)}' is not valid GENE!"
           obj = value
         when (value = parse_entity) != UNPARSED
-          obj != UNPARSED and raise ParserError, "source '#{peek(20)}' is not valid GENE!"
+          obj != UNPARSED and raise ParseError, "source '#{peek(20)}' is not valid GENE!"
           obj = value
         when skip(IGNORE)
           ;
         else
-          raise ParserError, "source '#{peek(20)}' is not valid GENE!"
+          raise ParseError, "source '#{peek(20)}' is not valid GENE!"
         end
       end
 
-      raise ParserError, "source does not contain any GENE!" if obj == UNPARSED
+      raise ParseError, "source does not contain any GENE!" if obj == UNPARSED
       obj
     end
 
@@ -263,7 +263,7 @@ module Gene
       when '{' then result << Entity.new('{}')
       end
 
-      raise ParserError, "Incomplete content after '#{open_char}'" if eos?
+      raise ParseError, "Incomplete content after '#{open_char}'" if eos?
 
       until eos?
         case
@@ -272,17 +272,18 @@ module Gene
         when open_char == '[' && scan(ARRAY_CLOSE)
           break
         when open_char == '{' && scan(HASH_CLOSE)
+          raise ParseError, "last value of Hash missing at '#{peek(20)}'!" if result.size.even?
           break
         when (value = parse_value) != UNPARSED
           result << value
         when skip(IGNORE)
           ;
         else
-          raise ParserError, "unexpected token at '#{peek(20)}'!"
+          raise ParseError, "unexpected token at '#{peek(20)}'!"
         end
       end
 
-      result
+      Group.new(*result)
     end
   end
 end
