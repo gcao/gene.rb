@@ -2,7 +2,6 @@ module Gene
   class Interpreter
     def initialize data
       @logger = Logem::Logger.new(self)
-      @logger.level = Logem::Logger::TRACE
       @data = data
       @handlers = [
         Handler.new

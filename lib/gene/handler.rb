@@ -2,7 +2,12 @@ module Gene
   NOT_HANDLED = Object.new
 
   class Handler
+    def initialize
+      @logger = Logem::Logger.new(self)
+    end
+
     def call group
+      @logger.debug('call', group)
       return NOT_HANDLED unless group.first.is_a? Entity and group.first.name == '$$'
 
       group.children.shift
@@ -10,10 +15,10 @@ module Gene
       case group.first
       when Entity
       else
-        if group.rest.size == 1
-          group.rest.first
+        if group.children.size == 1
+          group.children.first
         else
-          group.rest
+          group.children
         end
       end
     end
