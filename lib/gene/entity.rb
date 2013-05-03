@@ -10,6 +10,10 @@ module Gene
       return false unless other.is_a? self.class
       @name == other.name
     end
+
+    def to_s
+      "`#{name}'"
+    end
   end
 end
 

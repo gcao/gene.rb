@@ -4,12 +4,14 @@ describe Gene::Interpreter do
   {
     '1'     => 1,
     '"a"'   => "a",
+    'null'   => nil,
     '[]'    => [],
     '[1]'   => [1],
     '{}'    => {},
     '{1 2}' => {1 => 2},
     '()'    => Gene::NOOP,
-    #'((1))' => 1,
+    '[()]'  => [],
+    '($$ 1)' => 1,
     #'(($$set a 1) (a + 1))' => 2,
   }.each do |input, result|
     it "process #{input} should work" do

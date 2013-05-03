@@ -19,5 +19,17 @@ module Gene
 
       children == other.children
     end
+
+    def to_s
+      s = "("
+      s << children.map do |child|
+        if child.is_a? String
+          child.inspect
+        else
+          child.to_s
+        end
+      end.join(' ')
+      s << ")"
+    end
   end
 end
