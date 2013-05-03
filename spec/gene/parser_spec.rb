@@ -37,7 +37,7 @@ describe Gene::Parser do
     '[(]',
     '[)]',
     'a b',
-    '{a}',
+    #'{a}', # Whether we check this is not yet decided
     'a ()',
   ].each do |input|
     it "process #{input} should fail" do

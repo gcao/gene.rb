@@ -6,12 +6,27 @@ module Gene
 
     def run_partial data
       case data
-      when Array
+      when Group
+        run_group data
+      when Entity
         data
-      when Hash
-        data
+      #when Array
+      #  data.map {|item| run_partial item }
+      #when Hash
+      #  data
       else
         data
+      end
+    end
+
+    def run_group group
+      return Gene::NOOP if group.children.empty?
+
+      case group.first
+      when Entity.new('[]')
+        group.rest
+      when Entity.new('{}')
+        Hash[*group.rest]
       end
     end
 

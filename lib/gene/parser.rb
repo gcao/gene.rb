@@ -272,7 +272,7 @@ module Gene
         when open_char == '[' && scan(ARRAY_CLOSE)
           break
         when open_char == '{' && scan(HASH_CLOSE)
-          raise ParseError, "last value of Hash missing at '#{peek(20)}'!" if result.size.even?
+          #raise ParseError, "last value of Hash missing at '#{peek(20)}'!" if result.size.even?
           break
         when (value = parse_value) != UNPARSED
           result << value
