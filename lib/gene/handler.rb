@@ -17,14 +17,8 @@ module Gene
       case group.first
       when LET
 
-      when Entity
-
       else
-        if group.children.size == 1
-          group.children.first
-        else
-          group.children
-        end
+        group
       end
     end
   end
