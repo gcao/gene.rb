@@ -17,20 +17,18 @@ module Gene
 
       self.class.normalize data
 
-      @logger.debug('handle_special - after normalize', data.inspect)
-
       case data
       when Group
         handle_group data
-
-      when Entity
-        data
 
       when Array
         handle_array data
 
       #when Hash
       #  data
+
+      when Entity
+        data
 
       else
         data
@@ -40,7 +38,6 @@ module Gene
 
     def handle_group group
       @logger.debug('handle_group', group.inspect)
-      return NOOP if group.children.empty?
 
       case group.first
       when ARRAY
@@ -54,6 +51,7 @@ module Gene
         result = @handlers.each do |handler|
           result = handler.call group
           next if result == NOT_HANDLED
+
           handled = true
           break handle_partial(result)
         end
@@ -67,6 +65,7 @@ module Gene
 
     def handle_array array
       @logger.debug('handle_array', array.inspect)
+
       result = []
       array.each do |child| 
         next if child == NOOP
@@ -80,9 +79,9 @@ module Gene
     def self.normalize group_or_array
       case group_or_array
       when Group
-        group_or_array.children.reject!{|child| child == NOOP or child == EMPTY_GROUP }
+        group_or_array.children.reject!{|child| child == NOOP }
       when Array
-        group_or_array.reject!{|item| item == NOOP or item == EMPTY_GROUP }
+        group_or_array.reject!{|item| item == NOOP }
       end
 
       group_or_array

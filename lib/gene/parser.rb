@@ -24,6 +24,7 @@ module Gene
     GENE_CLOSE            = /\)/
     HASH_OPEN             = /\{/
     HASH_CLOSE            = /\}/
+    PAIR_DELIMITER        = /:/
     ARRAY_OPEN            = /\[/
     ARRAY_CLOSE           = /\]/
     ESCAPE                = /\\/
@@ -76,6 +77,9 @@ module Gene
           obj != UNPARSED and raise ParseError, "source '#{peek(20)}' is not valid GENE!"
           obj = value
         when (value = parse_group) != UNPARSED
+          obj != UNPARSED and raise ParseError, "source '#{peek(20)}' is not valid GENE!"
+          obj = value
+        when (value = parse_hash) != UNPARSED
           obj != UNPARSED and raise ParseError, "source '#{peek(20)}' is not valid GENE!"
           obj = value
         when (value = parse_entity) != UNPARSED
@@ -174,6 +178,8 @@ module Gene
         value
       when (value = parse_group ) != UNPARSED
         value
+      when (value = parse_hash ) != UNPARSED
+        value
       when (value = parse_entity) != UNPARSED
         value
       else
@@ -254,13 +260,13 @@ module Gene
     end
 
     def parse_group
-      return UNPARSED unless scan(GENE_OPEN) || scan(ARRAY_OPEN) || scan(HASH_OPEN)
+      return UNPARSED unless scan(GENE_OPEN) || scan(ARRAY_OPEN)
 
       result = Array.new
 
-      case open_char = self[0]
-      when '[' then result << Entity.new('[]')
-      when '{' then result << Entity.new('{}')
+      open_char = self[0]
+      if open_char == '[' 
+        result << Entity.new('[]')
       end
 
       raise ParseError, "Incomplete content after '#{open_char}'" if eos?
@@ -271,15 +277,58 @@ module Gene
           break
         when open_char == '[' && scan(ARRAY_CLOSE)
           break
-        when open_char == '{' && scan(HASH_CLOSE)
-          #raise ParseError, "last value of Hash missing at '#{peek(20)}'!" if result.size.even?
-          break
         when (value = parse_value) != UNPARSED
           result << value
         when skip(IGNORE)
           ;
         else
           raise ParseError, "unexpected token at '#{peek(20)}'!"
+        end
+      end
+
+      Group.new(*result)
+    end
+
+    def parse_hash
+      return UNPARSED unless scan(HASH_OPEN)
+
+      result = Array.new
+      result << Entity.new('{}')
+
+      expects = %w(key delimiter value)
+      expect_index = 0
+
+      raise ParseError, "Incomplete content after '#{open_char}'" if eos?
+
+      until eos?
+        next if skip(IGNORE)
+
+        case
+        when scan(HASH_CLOSE)
+          break
+        else
+          case expects[expect_index % expects.size]
+          when 'key'
+            if (parsed = parse_value) == UNPARSED
+              raise ParseError, "unexpected token at '#{peek(20)}'!"
+            else
+              key = parsed
+            end
+          when 'delimiter'
+            if !scan(PAIR_DELIMITER)
+              raise ParseError, "unexpected token at '#{peek(20)}'!"
+            end
+          when 'value'
+            if (parsed = parse_value) == UNPARSED
+              raise ParseError, "unexpected token at '#{peek(20)}'!"
+            else
+              value = parsed
+              result << Pair.new(key, value)
+            end
+          else
+
+          end
+          expect_index += 1
         end
       end
 
