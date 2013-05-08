@@ -47,9 +47,11 @@ describe Gene::Parser do
     '[(]',
     '[)]',
     'a b',
-    #'{a}', # Whether we check this is not yet decided
     'a ()',
+    '{:}',
+    '{a}',
     '{a b}',
+    '{a :}',
   ].each do |input|
     it "process #{input} should fail" do
       lambda {

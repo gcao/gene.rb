@@ -303,33 +303,32 @@ module Gene
       until eos?
         next if skip(IGNORE)
 
-        case
-        when scan(HASH_CLOSE)
-          break
-        else
-          case expects[expect_index % expects.size]
-          when 'key'
-            if (parsed = parse_value) == UNPARSED
-              raise ParseError, "unexpected token at '#{peek(20)}'!"
-            else
-              key = parsed
-            end
-          when 'delimiter'
-            if !scan(PAIR_DELIMITER)
-              raise ParseError, "unexpected token at '#{peek(20)}'!"
-            end
-          when 'value'
-            if (parsed = parse_value) == UNPARSED
-              raise ParseError, "unexpected token at '#{peek(20)}'!"
-            else
-              value = parsed
-              result << Pair.new(key, value)
-            end
+        case expects[expect_index % expects.size]
+        when 'key'
+          if scan(HASH_CLOSE)
+            break
+          elsif (parsed = parse_value) == UNPARSED
+            raise ParseError, "unexpected token at '#{peek(20)}'!"
           else
-
+            key = parsed
           end
-          expect_index += 1
+        when 'delimiter'
+          if !scan(PAIR_DELIMITER)
+            raise ParseError, "unexpected token at '#{peek(20)}'!"
+          end
+        when 'value'
+          if scan(HASH_CLOSE)
+            raise ParseError, "unexpected token at '#{peek(20)}'!"
+          elsif (parsed = parse_value) == UNPARSED
+            raise ParseError, "unexpected token at '#{peek(20)}'!"
+          else
+            value = parsed
+            result << Pair.new(key, value)
+          end
+        else
+
         end
+        expect_index += 1
       end
 
       Group.new(*result)
