@@ -24,9 +24,6 @@ module Gene
       when Array
         handle_array data
 
-      #when Hash
-      #  data
-
       when Entity
         data
 
@@ -44,7 +41,7 @@ module Gene
         handle_array group.rest
 
       when HASH
-        Hash[*group.rest]
+        Hash[*group.rest.reduce([]){|result, pair| result << pair.first << pair.second }]
 
       else
         handled = false
