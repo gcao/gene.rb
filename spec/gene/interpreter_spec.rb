@@ -5,7 +5,7 @@ describe Gene::Interpreter do
   # in vim command line, enter :rspec %:11
   {
   }.each do |input, result|
-    it "TEMP TEST should work" do
+    it "process #{input} should work !!!" do
       parsed = Gene::Parser.new(input).parse
       Gene::Interpreter.new.run(parsed).should == result
     end
@@ -19,6 +19,7 @@ describe Gene::Interpreter do
     '[1]'        => [1],
     '{}'         => {},
     '{1 : 2}'    => {1 => 2},
+    '{() : 2}'   => {},
     '()'         => Gene::NOOP,
     '[()]'       => [],
     '(1)'        => Gene::Group.new(1),

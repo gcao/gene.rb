@@ -40,18 +40,17 @@ module Gene
 
     UNPARSED = Object.new
 
-    #attr :logger
-
     def initialize(source, opts = {})
       opts ||= {}
-      #@logger = Logem::Logger.new self
+      @logger = Logem::Logger.new self
+      @logger.debug('initialize', source, opts)
       super source
     end
 
     alias source string
 
     def parse
-      #logger.trace 'parse'
+      @logger.debug 'parse'
       reset
 
       obj = UNPARSED

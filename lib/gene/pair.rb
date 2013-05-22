@@ -8,6 +8,8 @@ module Gene
     end
 
     def == other
+      return true if other == NOOP and (first == NOOP or second == NOOP)
+
       return unless other.is_a? self.class
 
       first == other.first and second == other.second
