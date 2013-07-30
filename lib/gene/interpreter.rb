@@ -1,11 +1,10 @@
 module Gene
   class Interpreter
-    def initialize
+    def initialize handlers = nil
       @logger = Logem::Logger.new(self)
       @context = Context.new(self)
-      @handlers = [
-        #Handler.new,
-        Gene::Handlers::ClassHandler.new
+      @handlers = handlers || [
+        Gene::Handlers::ClassHandler.new(@context)
       ]
     end
 

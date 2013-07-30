@@ -1,10 +1,6 @@
 module Gene
   module Handlers
-    class ClassHandler
-      def initialize
-        @logger = Logem::Logger.new(self)
-      end
-
+    class ClassHandler < Base
       def call group
         @logger.debug('call', group)
         return NOT_HANDLED unless group.first.is_a? Entity and group.first.name == 'class'
@@ -12,7 +8,7 @@ module Gene
         group.children.shift
 
         class_name = group.children.shift.name
-        eval "(class #{class_name}\n#TODO\nend)"
+        context.instance_eval "(class #{class_name}\n#TODO\nend; #{class_name})"
       end
     end
   end
