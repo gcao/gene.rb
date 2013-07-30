@@ -1,16 +1,21 @@
 module Gene
   class Interpreter
-    def initialize handlers = nil
+    attr :context
+
+    def initialize
       @logger = Logem::Logger.new(self)
       @context = Context.new(self)
-      @handlers = handlers || [
-        Gene::Handlers::ClassHandler.new(@context)
-      ]
+    end
+
+    def handlers= value
+      @handlers = value
     end
 
     def run data
       handle_partial data
     end
+
+    private
 
     def handle_partial data
       @logger.debug('handle_special', data.inspect)
