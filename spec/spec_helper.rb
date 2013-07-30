@@ -3,7 +3,7 @@ $LOAD_PATH.unshift(File.dirname(__FILE__))
 require 'rspec'
 require 'gene'
 
-ENV['LOGEM_LOG_LEVEL'] ||= 'trace'
+#ENV['LOGEM_LOG_LEVEL'] ||= 'trace'
 
 # Requires supporting files with custom matchers and macros, etc,
 # in ./support/ and its subdirectories.

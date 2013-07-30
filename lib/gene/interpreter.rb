@@ -4,7 +4,8 @@ module Gene
       @logger = Logem::Logger.new(self)
       @context = Context.new(self)
       @handlers = [
-        Handler.new
+        #Handler.new,
+        Gene::Handlers::ClassHandler.new
       ]
     end
 

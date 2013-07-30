@@ -6,6 +6,7 @@ require 'gene/pair'
 
 require 'gene/context'
 require 'gene/handler'
+require 'gene/handlers'
 
 require 'gene/parse_error'
 require 'gene/parser'

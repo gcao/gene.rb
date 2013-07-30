@@ -33,6 +33,13 @@ describe Gene::Interpreter do
     end
   end
 
+  it "process (class A) should work" do
+    parsed = Gene::Parser.new('(class A)').parse
+    result = Gene::Interpreter.new.run(parsed)
+    result.class.should == Class
+    result.name.should  == 'A'
+  end
+
   describe "self.normalize" do
     it "should work" do
       Gene::Interpreter.normalize(Gene::Group.new(Gene::NOOP)).should == Gene::Group.new()
