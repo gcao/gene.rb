@@ -43,42 +43,49 @@ describe Gene::Interpreter do
     end
   end
 
-  it "process (class A) should work" do
-    parsed = Gene::Parser.new('(class A)').parse
+  it "(class A)" do
+    parsed = Gene::Parser.new(example.description).parse
     result = eval @interpreter.run(parsed)
     result.class.should == Class
     result.name.should  == 'A'
   end
 
-  it "process (@a = 1) should work" do
-    parsed = Gene::Parser.new('(@a = 1)').parse
+  it "(@a = 1)" do
+    parsed = Gene::Parser.new(example.description).parse
     result = eval @interpreter.run(parsed)
     @a.should == 1
   end
 
-  it "process (class A (@a = 1)) should work" do
-    parsed = Gene::Parser.new('(class A (@a = 1))').parse
+  it "(class A (@a = 1))" do
+    parsed = Gene::Parser.new(example.description).parse
     output = @interpreter.run(parsed)
     result = eval output
     result.name.should == 'A'
     result.instance_variable_get(:@a).should == 1
   end
 
-  it "process (def meth 1) should work" do
-    parsed = Gene::Parser.new('(def meth 1)').parse
+  it "(def meth 1)" do
+    parsed = Gene::Parser.new(example.description).parse
     result = eval @interpreter.run(parsed)
     meth.should == 1
   end
 
-  it(input = "(def meth arg arg)") do
-    parsed = Gene::Parser.new(input).parse
+  it "(def meth arg arg)" do
+    parsed = Gene::Parser.new(example.description).parse
     output = @interpreter.run(parsed)
     result = eval output
     meth(1).should == 1
   end
 
-  it "process (class A (def meth 1)) should work" do
-    parsed = Gene::Parser.new('(class A (def meth 1))').parse
+  it "(def meth [arg1 arg2] arg2)" do
+    parsed = Gene::Parser.new(example.description).parse
+    output = @interpreter.run(parsed)
+    result = eval output
+    meth(1, 2).should == 2
+  end
+
+  it "(class A (def meth 1))" do
+    parsed = Gene::Parser.new(example.description).parse
     output = @interpreter.run(parsed)
     result = eval output
     result.name.should == 'A'

@@ -12,7 +12,14 @@ module Gene
         method_name = group.shift.name
 
         args = []
-        args << group.shift if group.size > 1
+        if group.size > 1
+          item = group.shift
+          if item.is_a? Group
+            args.concat item.rest
+          else
+            args << item
+          end
+        end
 
         "(def #{method_name}(#{args.join(',')})\n#{group.map{|item| interpreter.handle_partial(item)}.join("\n")}\nend;)"
       end
