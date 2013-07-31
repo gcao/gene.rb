@@ -15,8 +15,6 @@ module Gene
       handle_partial data
     end
 
-    private
-
     def handle_partial data
       @logger.debug('handle_special', data.inspect)
 
@@ -37,6 +35,8 @@ module Gene
 
       end
     end
+
+    private
 
     def handle_group group
       @logger.debug('handle_group', group.inspect)

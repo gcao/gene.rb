@@ -1,16 +1,17 @@
 module Gene
   module Handlers
     class Base
-      attr :context
+      attr :interpreter
 
-      def initialize context
+      def initialize interpreter
         @logger = Logem::Logger.new(self)
-        @context = context
+        @interpreter = interpreter
       end
 
       def call group
         @logger.debug('call', group)
-        NOT_HANDLED
+        group.to_s
+        #NOT_HANDLED
       end
     end
   end
