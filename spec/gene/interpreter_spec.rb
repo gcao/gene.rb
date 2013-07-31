@@ -70,6 +70,13 @@ describe Gene::Interpreter do
     meth.should == 1
   end
 
+  it(input = "(def meth arg arg)") do
+    parsed = Gene::Parser.new(input).parse
+    output = @interpreter.run(parsed)
+    result = eval output
+    meth(1).should == 1
+  end
+
   it "process (class A (def meth 1)) should work" do
     parsed = Gene::Parser.new('(class A (def meth 1))').parse
     output = @interpreter.run(parsed)
