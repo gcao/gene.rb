@@ -11,7 +11,7 @@ module Gene
         @logger.debug('call', group)
         return NOT_HANDLED unless group.first.is_a? Entity and group.first.name == '$$'
 
-        group.children.shift
+        group.shift
 
         case group.first
         when LET

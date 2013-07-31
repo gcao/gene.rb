@@ -81,7 +81,7 @@ module Gene
     def self.normalize group_or_array
       case group_or_array
       when Group
-        group_or_array.children.reject!{|child| child == NOOP }
+        group_or_array.reject!{|child| child == NOOP }
       when Array
         group_or_array.reject!{|item| item == NOOP }
       end

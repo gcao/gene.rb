@@ -1,34 +1,28 @@
 module Gene
-  class Group
+  class Group < Array
     attr_accessor :root, :parent
 
-    attr :children
-
-    def initialize *children
-      @children = children
+    def initialize *items
+      concat items
     end
 
     def context
       @context ||= Context.new(self)
     end
 
-    def first
-      children.first
-    end
-
     def rest
-      children[1..-1]
+      self[1..-1]
     end
 
     def == other
       return unless other.is_a? Group
 
-      children == other.children
+      super
     end
 
     def to_s
       s = "("
-      s << children.map do |child|
+      s << map do |child|
         if child.is_a? String
           child.inspect
         else

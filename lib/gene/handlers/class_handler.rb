@@ -7,10 +7,10 @@ module Gene
         @logger.debug('call', group)
         return NOT_HANDLED unless group.first == CLASS
 
-        group.children.shift
+        group.shift
 
-        class_name = group.children.shift.name
-        "(class #{class_name}\n#{group.children.map{|item| interpreter.handle_partial(item)}.join("\n")}\nend; #{class_name})"
+        class_name = group.shift.name
+        "(class #{class_name}\n#{group.map{|item| interpreter.handle_partial(item)}.join("\n")}\nend; #{class_name})"
       end
     end
   end
