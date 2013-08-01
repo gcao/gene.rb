@@ -56,6 +56,13 @@ describe Gene::Interpreter do
     @a.should == 1
   end
 
+  it "((a = 'ab') (a .length))" do
+    parsed = Gene::Parser.new(example.description).parse
+    output = @interpreter.run(parsed)
+    result = eval output
+    result.should == 2
+  end
+
   it "(class A (@a = 1))" do
     parsed = Gene::Parser.new(example.description).parse
     output = @interpreter.run(parsed)

@@ -10,7 +10,11 @@ module Gene
 
       def call group
         @logger.debug('call', group)
-        group.to_s
+        if group.is_a? Group
+          "(#{group.map{|item| @interpreter.handle_partial(item)}.join(' ')});"
+        else
+          group
+        end
         #NOT_HANDLED
       end
     end
