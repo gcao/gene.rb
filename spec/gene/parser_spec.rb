@@ -60,4 +60,11 @@ describe Gene::Parser do
     end
   end
 
+  describe "Parsing options" do
+    it ":entity_begin" do
+      input  = '>a'
+      result = Gene::Group.new(Gene::Entity.new('>'), Gene::Entity.new('a'))
+      Gene::Parser.new(input, :entity_begin => '>').parse.should == result
+    end
+  end
 end

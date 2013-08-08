@@ -40,14 +40,14 @@ module Gene
 
     UNPARSED = Object.new
 
-    def initialize(source, opts = {})
-      opts ||= {}
+    def initialize(source, options = {})
       @logger = Logem::Logger.new self
-      @logger.debug('initialize', source, opts)
+      @logger.debug('initialize', source, options)
+      @options = options
       super source
     end
 
-    alias source string
+    #alias source string
 
     def parse
       @logger.debug 'parse'
