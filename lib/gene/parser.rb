@@ -18,13 +18,14 @@ module Gene
                                 (?i:e[+-]?\d+)
                               )
                             )/x
-    ENTITY                = /([^\s\(\)\[\]\{\}]+)/
-    ENTITY_END            = /[\s\(\)\[\]\{\}]/
+    ENTITY                = /([^,\s\(\)\[\]\{\}]+)/
+    ENTITY_END            = /[,\s\(\)\[\]\{\}]/
     GENE_OPEN             = /\(/
     GENE_CLOSE            = /\)/
     HASH_OPEN             = /\{/
     HASH_CLOSE            = /\}/
     PAIR_DELIMITER        = /:/
+    COMMA                 = /,/
     ARRAY_OPEN            = /\[/
     ARRAY_CLOSE           = /\]/
     ESCAPE                = /\\/
@@ -306,6 +307,8 @@ module Gene
         when 'key'
           if scan(HASH_CLOSE)
             break
+          elsif scan(COMMA)
+            next
           elsif (parsed = parse_value) == UNPARSED
             raise ParseError, "unexpected token at '#{peek(20)}'!"
           else

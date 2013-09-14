@@ -23,7 +23,7 @@ describe Gene::Parser do
     'null'     => nil,
     'a'        => Gene::Entity.new('a'),
     '\\('      => Gene::Entity.new('('),
-    '()'       => Gene::Group.new(),
+    '()'       => Gene::NOOP,
     '("a")'    => Gene::Group.new("a"),
     '(a)'      => Gene::Group.new(Gene::Entity.new('a')),
     '(a b)'    => Gene::Group.new(Gene::Entity.new('a'), Gene::Entity.new('b')),
@@ -34,6 +34,14 @@ describe Gene::Parser do
     '{}'       => Gene::Group.new(Gene::Entity.new('{}')),
     '(\{\})'   => Gene::Group.new(Gene::Entity.new('{}')),
     '{a : b}'  => Gene::Group.new(Gene::Entity.new('{}'), Gene::Pair.new(Gene::Entity.new('a'), Gene::Entity.new('b'))),
+    '{a : b c : d}' => Gene::Group.new(Gene::Entity.new('{}'), 
+                                       Gene::Pair.new(Gene::Entity.new('a'), Gene::Entity.new('b')),
+                                       Gene::Pair.new(Gene::Entity.new('c'), Gene::Entity.new('d'))
+                                      ),
+    '{a : b, c : d}' => Gene::Group.new(Gene::Entity.new('{}'), 
+                                       Gene::Pair.new(Gene::Entity.new('a'), Gene::Entity.new('b')),
+                                       Gene::Pair.new(Gene::Entity.new('c'), Gene::Entity.new('d'))
+                                      ),
   }.each do |input, result|
     it "parse #{input} should work" do
       Gene::Parser.new(input).parse.should == result
@@ -57,14 +65,6 @@ describe Gene::Parser do
       lambda {
         Gene::Parser.new(input).parse
       }.should raise_error(Gene::ParseError)
-    end
-  end
-
-  describe "Parsing options" do
-    it ":entity_begin" do
-      input  = '>a'
-      result = Gene::Group.new(Gene::Entity.new('>'), Gene::Entity.new('a'))
-      Gene::Parser.new(input, :entity_begin => '>').parse.should == result
     end
   end
 end
