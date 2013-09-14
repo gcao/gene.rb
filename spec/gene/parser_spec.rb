@@ -12,6 +12,7 @@ describe Gene::Parser do
   end
 
   {
+    ''         => Gene::Stream.new,
     '""'       => "",
     '"a"'      => "a",
     '1'        => 1,
@@ -22,8 +23,10 @@ describe Gene::Parser do
     'false'    => false,
     'null'     => nil,
     'a'        => Gene::Entity.new('a'),
+    'a b'      => Gene::Stream.new(Gene::Entity.new('a'), Gene::Entity.new('b')),
     '\\('      => Gene::Entity.new('('),
     '()'       => Gene::NOOP,
+    '1 ()'     => Gene::Stream.new(1, Gene::NOOP),
     '("a")'    => Gene::Group.new("a"),
     '(a)'      => Gene::Group.new(Gene::Entity.new('a')),
     '(a b)'    => Gene::Group.new(Gene::Entity.new('a'), Gene::Entity.new('b')),
@@ -49,13 +52,10 @@ describe Gene::Parser do
   end
 
   [
-    '',
     '(',
     ')',
     '[(]',
     '[)]',
-    'a b',
-    'a ()',
     '{:}',
     '{a}',
     '{a b}',

@@ -1,6 +1,7 @@
 require 'logem'
 
 require 'gene/entity'
+require 'gene/stream'
 require 'gene/group'
 require 'gene/pair'
 

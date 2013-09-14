@@ -59,32 +59,23 @@ module Gene
       until eos?
         case
         when (value = parse_string) != UNPARSED
-          obj != UNPARSED and raise ParseError, "source '#{peek(20)}' is not valid GENE!"
-          obj = value
+          obj = handle_top_level_results obj, value
         when (value = parse_float) != UNPARSED
-          obj != UNPARSED and raise ParseError, "source '#{peek(20)}' is not valid GENE!"
-          obj = value
+          obj = handle_top_level_results obj, value
         when (value = parse_int) != UNPARSED
-          obj != UNPARSED and raise ParseError, "source '#{peek(20)}' is not valid GENE!"
-          obj = value
+          obj = handle_top_level_results obj, value
         when (value = parse_true) != UNPARSED
-          obj != UNPARSED and raise ParseError, "source '#{peek(20)}' is not valid GENE!"
-          obj = value
+          obj = handle_top_level_results obj, value
         when (value = parse_false) != UNPARSED
-          obj != UNPARSED and raise ParseError, "source '#{peek(20)}' is not valid GENE!"
-          obj = value
+          obj = handle_top_level_results obj, value
         when (value = parse_null) != UNPARSED
-          obj != UNPARSED and raise ParseError, "source '#{peek(20)}' is not valid GENE!"
-          obj = value
+          obj = handle_top_level_results obj, value
         when (value = parse_group) != UNPARSED
-          obj != UNPARSED and raise ParseError, "source '#{peek(20)}' is not valid GENE!"
-          obj = value
+          obj = handle_top_level_results obj, value
         when (value = parse_hash) != UNPARSED
-          obj != UNPARSED and raise ParseError, "source '#{peek(20)}' is not valid GENE!"
-          obj = value
+          obj = handle_top_level_results obj, value
         when (value = parse_entity) != UNPARSED
-          obj != UNPARSED and raise ParseError, "source '#{peek(20)}' is not valid GENE!"
-          obj = value
+          obj = handle_top_level_results obj, value
         when skip(IGNORE)
           ;
         else
@@ -92,8 +83,11 @@ module Gene
         end
       end
 
-      raise ParseError, "source does not contain any GENE!" if obj == UNPARSED
-      obj
+      if obj == UNPARSED
+        Gene::Stream.new
+      else
+        obj
+      end
     end
 
     private
@@ -160,6 +154,16 @@ module Gene
     EMPTY_8BIT_STRING = ''
     if ::String.method_defined?(:encode)
       EMPTY_8BIT_STRING.force_encoding Encoding::ASCII_8BIT
+    end
+
+    def handle_top_level_results container, new_result
+      if container == UNPARSED
+        new_result
+      elsif container.is_a? Stream
+        container << new_result
+      else
+        Stream.new(container, new_result)
+      end
     end
 
     def parse_value
