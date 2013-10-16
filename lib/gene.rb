@@ -19,7 +19,9 @@ require 'gene/interpreter'
 
 module Gene
   NOOP       = Group.new()
+  NULL       = Object.new
   ARRAY      = Entity.new('[]')
   HASH       = Entity.new('{}')
   EXPLODE_OP = Entity.new('\\')  # (a (\\ b)) = (a b)
 end
+

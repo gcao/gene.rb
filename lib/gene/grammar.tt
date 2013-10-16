@@ -2,76 +2,158 @@
 
 module Gene
   grammar Grammar
-    rule gene
-      '(' items:(item*) ')' {
+    rule item
+      v:(gene / array / hash / literal / entity) {
         def resolve
-          Gene::Group.new()
+          $logger.debug 'item'
+          v.resolve
         end
       }
     end
 
-    rule item
-      gene / array / hash / entity
+    rule gene
+      '(' items:(item*) ')' {
+        def resolve
+          $logger.debug 'gene'
+          group = Gene::Group.new()
+          items.elements.each do |el|
+            group << el.resolve
+          end
+          group
+        end
+      }
     end
 
     rule array
-      '[' item* ']'
+      ('[' item* ']') {
+        def resolve
+          $logger.debug 'array'
+        end
+      }
     end
 
     rule hash
-      '{' pair* '}'
+      ('{' pair* '}') {
+        def resolve
+          $logger.debug 'entity'
+          Gene::Entity.new text_value
+        end
+      }
     end
 
     rule pair
-      item ':' item
+      (item ':' item) {
+        def resolve
+          $logger.debug 'pair'
+        end
+      }
     end
 
     rule entity
-      [a-zA-Z\-_+:]
+      [^(){}\[\]]+ {
+        def resolve
+          $logger.debug 'entity'
+          Gene::Entity.new text_value
+        end
+      }
+    end
+
+    rule literal
+      v:(boolean / null) {
+        def resolve
+          $logger.debug 'literal'
+          v.resolve
+        end
+      }
     end
 
     rule array_id
-      '$'
+      '$' {
+        def resolve
+          $logger.debug 'array_id'
+        end
+      }
     end
 
     rule shortcut
-      '::'
+      '::' {
+        def resolve
+          $logger.debug 'entity'
+        end
+      }
     end
 
     rule join
-      '$$'
+      '$$' {
+        def resolve
+          $logger.debug 'join'
+        end
+      }
     end
 
     rule string
-      '"' '"'
+      ('"' '"') {
+        def resolve
+          $logger.debug 'string'
+        end
+      }
     end
 
     rule single_quoted_string
-      "'" "'"
+      ("'" "'") {
+        def resolve
+          $logger.debug 'single_line_comment'
+        end
+      }
     end
 
     rule number
-      '-'? ([0-9]+ '.')? [0-9]
+      ('-'? ([0-9]+ '.')? [0-9]) {
+        def resolve
+          $logger.debug 'number'
+        end
+      }
     end
 
     rule boolean
-      "true" / "false"
+      ("true" / "false") {
+        def resolve
+          $logger.debug 'boolean'
+          text_value == 'true'
+        end
+      }
     end
 
     rule null
-      "null"
+      "null" {
+        def resolve
+          $logger.debug 'null'
+        end
+      }
     end
 
     rule single_line_comment
-      "#" [^\n]* "\n"
+      ("#" [^\n]* "\n") {
+        def resolve
+          $logger.debug 'single_line_comment'
+        end
+      }
     end
 
     rule group_comment
-      '(##' item* ')' / '[##' item* ']' / '{##' item* '}'
+      ('(##' item* ')' / '[##' item* ']' / '{##' item* '}') {
+        def resolve
+          $logger.debug 'group_comment'
+        end
+      }
     end
 
-    rule space
-      "\s" / "\t"
+    rule spaces
+      [ \t\r\n]* {
+        def resolve
+          $logger.debug 'spaces'
+        end
+      }
     end
   end
 end
