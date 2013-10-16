@@ -1,6 +1,8 @@
 source 'http://rubygems.org'
 
 group :development do
+  gem 'treetop'
+
   gem 'rspec', '~> 2.8.0'
   gem 'rdoc', '~> 3.12'
   gem 'bundler'

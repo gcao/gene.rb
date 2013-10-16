@@ -109,19 +109,20 @@ module Gene
     attr_reader :first :second
 
     def initialize [first second]
-      ## (@first = first): if first item is not a special function,
-      ## but second is (like =, and, .method, @.method etc), treat it like
-      ## (= @first first)
+      # (@first = first): if first item is not a special function,
+      # but second is (like =, and, .method, @.method etc), treat it like
+      # (= @first first)
       @first  = first
       @second = second
 
     def == other
-      ## if ((other == NOOP) and ((first == NOOP) or (second == NOOP))) (return true)
+      # if ((other == NOOP) and ((first == NOOP) or (second == NOOP))) (return true)
       if
-        (other == NOOP) and
-          (first == NOOP) or (second == NOOP)
+        and (other == NOOP)
+            (first == NOOP) or (second == NOOP)
         return true
-      ## .is_a? is treated as a method call on an object, @.class is a method call on self
+
+      # .is_a? is treated as a method call on an object, @.class is a method call on self
       unless (other .is_a? @.class) return
 
       and (first  == (other .first ))
@@ -172,9 +173,18 @@ a
     c
       d
       e
-# :: or $$ or => or
+# ::
 a :: b :: c d e
 a :: b :: c
   d
   e
+
+# $$
+a (b c d) = a b $$ c $$ d
+
+a b = a :: b = a $$ b
+a (b c) = a :: b c = a b :: c = a b $$ c != a $$ b c
+
+# The left side is more readable, so be careful with use of :: and $$
+a (b (c d)) e = a b :: c $$ d e
 
