@@ -26,6 +26,7 @@ module Gene
     HASH_CLOSE            = /\}/
     PAIR_DELIMITER        = /:/
     COMMA                 = /,/
+    ARRAY_DELIMITER       = /\$/
     ARRAY_OPEN            = /\[/
     ARRAY_CLOSE           = /\]/
     ESCAPE                = /\\/
