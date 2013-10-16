@@ -130,7 +130,7 @@ module Gene
 
     def to_s [] "{{first}} : {{second}}"
 
-[1 2 3] = (\[\] 1 2 3) = ($ 1 2 3) = ($ 1 $ 2 $ 3)
+[1 2 3] = ($ 1 2 3) = ($ 1 $ 2 $ 3)
 [] = ($)
 
 (a [1 2 3] [5 6])
@@ -149,7 +149,7 @@ a $ 1
   , $ 4
   $ 5
 
-{k1 : v1 k2 : v2} = (\{\} k1 v1 k2 v2) = (: k1 v1 k2 v2) = (k1 : v1 k2 : v2)
+{k1 : v1 k2 : v2} = (: k1 v1 k2 v2) = (k1 : v1 k2 : v2)
 {} = (:)
 
 (a {k1 : v1 k2 : v2})
@@ -173,17 +173,19 @@ a
     c
       d
       e
-# ::
 a :: b :: c d e
 a :: b :: c
   d
   e
+
+a b (c (d e)) = a b c :: d e
 
 # $$
 a (b c d) = a b $$ c $$ d
 
 a b = a :: b = a $$ b
 a (b c) = a :: b c = a b :: c = a b $$ c != a $$ b c
+(a b) c = a $$ b c = a $$ b :: c != a :: b c != a b :: c
 
 # The left side is more readable, so be careful with use of :: and $$
 a (b (c d)) e = a b :: c $$ d e

@@ -2,6 +2,7 @@ source 'http://rubygems.org'
 
 group :development do
   gem 'treetop'
+  gem 'polyglot'
 
   gem 'rspec', '~> 2.8.0'
   gem 'rdoc', '~> 3.12'

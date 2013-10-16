@@ -1,68 +1,78 @@
 # tt lib/gene.tt -o /tmp/gene.rb -f
 
-grammar GeneGrammar
-  rule gene
-    '(' item* ')'
-  end
+module Gene
+  grammar Grammar
+    rule gene
+      '(' items:(item*) ')' {
+        def resolve
+          Gene::Group.new()
+        end
+      }
+    end
 
-  rule item
-    gene / array / hash / entity
-  end
+    rule item
+      gene / array / hash / entity
+    end
 
-  rule array
-    '[' item* ']'
-  end
+    rule array
+      '[' item* ']'
+    end
 
-  rule hash
-    '{' pair* '}'
-  end
+    rule hash
+      '{' pair* '}'
+    end
 
-  rule pair
-    item ':' item
-  end
+    rule pair
+      item ':' item
+    end
 
-  rule entity
-    [a-zA-Z-_+:]
-  end
+    rule entity
+      [a-zA-Z\-_+:]
+    end
 
-  rule array_id
-    '$'
-  end
+    rule array_id
+      '$'
+    end
 
-  rule shortcut
-    '::'
-  end
+    rule shortcut
+      '::'
+    end
 
-  rule string
-    '"' '"'
-  end
+    rule join
+      '$$'
+    end
 
-  rule single_quoted_string
-    "'" "'"
-  end
+    rule string
+      '"' '"'
+    end
 
-  rule number
-    '-'? ([0-9]+ '.')? [0-9]
-  end
+    rule single_quoted_string
+      "'" "'"
+    end
 
-  rule boolean
-    "true" / "false"
-  end
+    rule number
+      '-'? ([0-9]+ '.')? [0-9]
+    end
 
-  rule null
-    "null"
-  end
+    rule boolean
+      "true" / "false"
+    end
 
-  rule single_line_comment
-    "#" [^\n]* "\n"
-  end
+    rule null
+      "null"
+    end
 
-  rule group_comment
-    '(##' item* ')' / '[##' item* ']' / '{##' item* '}'
-  end
+    rule single_line_comment
+      "#" [^\n]* "\n"
+    end
 
-  rule space
-    "\s" / "\t"
+    rule group_comment
+      '(##' item* ')' / '[##' item* ']' / '{##' item* '}'
+    end
+
+    rule space
+      "\s" / "\t"
+    end
   end
 end
 

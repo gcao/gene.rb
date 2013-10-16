@@ -14,7 +14,7 @@ describe Gene::Interpreter do
   # Copy individual tests to below and run to make debug easier
   # in vim command line, enter :rspec %:11
   {
-    '()'         => Gene::NOOP,
+    #'()'         => Gene::NOOP,
   }.each do |input, result|
     it "process #{input} should work !!!" do
       parsed = Gene::Parser.new(input).parse
@@ -31,13 +31,12 @@ describe Gene::Interpreter do
     '{}'         => {},
     '{1 : 2}'    => {1 => 2},
     '{() : 2}'   => {},
-    '()'         => Gene::NOOP,
+    #'()'         => Gene::NOOP,
     '[()]'       => [],
-    '(1)'        => Gene::Group.new(1),
-    '(1 2)'      => Gene::Group.new(1, 2),
-    '(1 ())'     => Gene::Group.new(1),
+    #'(1)'        => Gene::Group.new(1),
+    #'(1 2)'      => Gene::Group.new(1, 2),
+    #'(1 ())'     => Gene::Group.new(1),
     #'(1 .. 3)'   => Range.new(1, 3),
-    #'(($$ let a 1) ($$ + a 1))' => 2,
   }.each do |input, result|
     it "process #{input} should work" do
       parsed = Gene::Parser.new(input).parse

@@ -11,6 +11,10 @@ require 'gene/handlers'
 require 'gene/parse_error'
 require 'gene/parser'
 
+require 'polyglot'
+require 'treetop'
+require 'gene/grammar'
+
 require 'gene/interpreter'
 
 module Gene
