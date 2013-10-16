@@ -59,7 +59,7 @@ module Gene
     end
 
     rule literal
-      v:(boolean / null) {
+      v:(boolean / null / number / string) {
         def resolve
           $logger.debug 'literal'
           v.resolve
@@ -92,25 +92,32 @@ module Gene
     end
 
     rule string
-      ('"' '"') {
+      '"' s:[^"]* '"' {
         def resolve
           $logger.debug 'string'
+          s.text_value
         end
       }
     end
 
     rule single_quoted_string
-      ("'" "'") {
+      "'" s:[^']* "'" {
         def resolve
           $logger.debug 'single_line_comment'
+          s.text_value
         end
       }
     end
 
     rule number
-      ('-'? ([0-9]+ '.')? [0-9]) {
+      '-'? ([0-9]+ '.')? [0-9]+ {
         def resolve
           $logger.debug 'number'
+          if text_value.index '.'
+            text_value.to_f
+          else
+            text_value.to_i
+          end
         end
       }
     end
