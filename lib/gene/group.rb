@@ -1,7 +1,5 @@
 module Gene
   class Group < Array
-    attr_accessor :root, :parent
-
     def initialize *items
       concat items
     end

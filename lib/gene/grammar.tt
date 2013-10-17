@@ -12,12 +12,15 @@ module Gene
     end
 
     rule gene
-      '(' items:(item*) ')' {
+      '(' spaces? first:item? rest:(spaces item)* spaces? ')' {
         def resolve
           $logger.debug 'gene'
-          group = Gene::Group.new()
-          items.elements.each do |el|
-            group << el.resolve
+          group = Group.new
+          if first.elements && first.elements.size > 0
+            group << first.elements.first.resolve
+          end
+          rest.elements.each do |el|
+            group << el.elements.last.resolve
           end
           group
         end
@@ -25,35 +28,51 @@ module Gene
     end
 
     rule array
-      ('[' item* ']') {
+      '[' spaces? first:item? rest:(spaces item)* spaces? ']' {
         def resolve
           $logger.debug 'array'
+          array = []
+          if first.elements && first.elements.size > 0
+            array << first.elements.first.resolve
+          end
+          rest.elements.each do |el|
+            array << el.elements.last.resolve
+          end
+          array
         end
       }
     end
 
     rule hash
-      ('{' pair* '}') {
+      '{' spaces? first:pair? rest:(spaces pair)* spaces? '}' {
         def resolve
-          $logger.debug 'entity'
-          Gene::Entity.new text_value
+          $logger.debug 'hash'
+          pairs = Pairs.new
+          if first.elements && first.elements.size > 0
+            pairs << first.resolve
+          end
+          rest.elements.each do |el|
+            pairs << el.elements.last.resolve
+          end
+          pairs
         end
       }
     end
 
     rule pair
-      (item ':' item) {
+      key:item spaces ':' spaces value:item {
         def resolve
           $logger.debug 'pair'
+          Pair.new(key.resolve, value.resolve)
         end
       }
     end
 
     rule entity
-      [^(){}\[\]]+ {
+      [^\s(){}\[\]]+ {
         def resolve
           $logger.debug 'entity'
-          Gene::Entity.new text_value
+          Entity.new text_value
         end
       }
     end

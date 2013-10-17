@@ -4,6 +4,7 @@ require 'gene/entity'
 require 'gene/stream'
 require 'gene/group'
 require 'gene/pair'
+require 'gene/pairs'
 
 require 'gene/context'
 require 'gene/handlers'
