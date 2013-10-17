@@ -7,7 +7,7 @@ module Gene
     # Copy individual tests to below and run to make debug easier
     # in vim command line, enter :rspec %:11
     {
-      '{a : b}' => Pairs.new(Pair.new(Entity.new('a'), Entity.new('b'))),
+      '(a (b c))'   => Group.new(Entity.new('a'), Group.new(Entity.new('b'), Entity.new('c'))),
     }.each do |input, result|
       it "TEMP TEST should work" do
         parser = GrammarParser.new
@@ -30,6 +30,7 @@ module Gene
       '()'      => NOOP,
       '(a)'     => Group.new(Entity.new('a')),
       '(a b)'   => Group.new(Entity.new('a'), Entity.new('b')),
+      '(a (b c))'   => Group.new(Entity.new('a'), Group.new(Entity.new('b'), Entity.new('c'))),
       '[]'      => [],
       '[a b]'   => [Entity.new('a'), Entity.new('b')],
       '{}'      => Pairs.new,

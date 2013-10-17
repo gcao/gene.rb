@@ -174,14 +174,20 @@ a
       d
       e
 a :: b :: c d e
+a :: b :: c d e
 a :: b :: c
   d
   e
 
-a b (c (d e)) = a b c :: d e
+a b c (d e)   = a b c :: d e
+a b (c (d e)) = a b (c :: d e)
+a b (c d) e   = a b c $$ d e
 
-# $$
-a (b c d) = a b $$ c $$ d
+a (b c d) = a :: b c d = a b $$ c $$ d
+(a b c) d = a b c @ d
+a :: b c @ d  = a :: b $$ c d = a ((b c) d)
+a :: b c $$ d = a :: b :: c d = a (b (c d))
+a :: b @ c = a :: b c = a (b c)
 
 a b = a :: b = a $$ b
 a (b c) = a :: b c = a b :: c = a b $$ c != a $$ b c
@@ -189,4 +195,17 @@ a (b c) = a :: b c = a b :: c = a b $$ c != a $$ b c
 
 # The left side is more readable, so be careful with use of :: and $$
 a (b (c d)) e = a b :: c $$ d e
+
+##############
+
+(a b $ c d)  = (a b [c] d)
+(a b : c d)  = (a {b : c} d)
+
+(a b @ c d) = (a (b c) d)
+
+(a b :: c d) = (a b (c d))
+(a b @@ c d)  = ((a b) c d)
+(a b $$ c d)  = ((a b) (c d))
+
+@   >   : $
 
