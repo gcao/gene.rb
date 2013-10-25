@@ -18,7 +18,15 @@ module Gene
       s = "{"
       s << map do |pair|
         pair.to_s
-      end.join(' ')
+      end.join(', ')
+      s << "}"
+    end
+
+    def inspect
+      s = "{"
+      s << map do |pair|
+        pair.inspect
+      end.join(', ')
       s << "}"
     end
   end

@@ -29,5 +29,13 @@ module Gene
       end.join(' ')
       s << ")"
     end
+
+    def inspect
+      s = "("
+      s << map do |pair|
+        pair.inspect
+      end.join(' ')
+      s << ")"
+    end
   end
 end
