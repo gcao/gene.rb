@@ -10,9 +10,9 @@ module Gene
       '(a (b c))'   => Group.new(Entity.new('a'), Group.new(Entity.new('b'), Entity.new('c'))),
     }.each do |input, result|
       it "TEMP TEST should work" do
+        $logger.level = Logem::DEBUG
         parser = GrammarParser.new
         nodes = parser.parse(input)
-        $logger.level = Logem::DEBUG
         nodes.resolve.should == result
         $logger.level = Logem::INFO
       end

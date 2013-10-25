@@ -5,7 +5,7 @@ module Gene
     rule item
       v:(gene / array / hash / literal / entity) {
         def resolve
-          $logger.debug 'item'
+          $logger and $logger.debug 'item'
           v.resolve
         end
       }
@@ -14,7 +14,7 @@ module Gene
     rule gene
       '(' spaces? first:item? rest:(spaces item)* spaces? ')' {
         def resolve
-          $logger.debug 'gene'
+          $logger and $logger.debug 'gene'
           group = Group.new
           if first.elements && first.elements.size > 0
             group << first.elements.first.resolve
@@ -30,7 +30,7 @@ module Gene
     rule array
       '[' spaces? first:item? rest:(spaces item)* spaces? ']' {
         def resolve
-          $logger.debug 'array'
+          $logger and $logger.debug 'array'
           array = []
           if first.elements && first.elements.size > 0
             array << first.elements.first.resolve
@@ -46,7 +46,7 @@ module Gene
     rule hash
       '{' spaces? first:pair? rest:(spaces pair)* spaces? '}' {
         def resolve
-          $logger.debug 'hash'
+          $logger and $logger.debug 'hash'
           pairs = Pairs.new
           if first.elements && first.elements.size > 0
             pairs << first.resolve
@@ -62,7 +62,7 @@ module Gene
     rule pair
       key:item spaces ':' spaces value:item {
         def resolve
-          $logger.debug 'pair'
+          $logger and $logger.debug 'pair'
           Pair.new(key.resolve, value.resolve)
         end
       }
@@ -71,7 +71,7 @@ module Gene
     rule entity
       [^\s(){}\[\]]+ {
         def resolve
-          $logger.debug 'entity'
+          $logger and $logger.debug 'entity'
           Entity.new text_value
         end
       }
@@ -80,7 +80,7 @@ module Gene
     rule literal
       v:(boolean / null / number / string) {
         def resolve
-          $logger.debug 'literal'
+          $logger and $logger.debug 'literal'
           v.resolve
         end
       }
@@ -89,7 +89,7 @@ module Gene
     rule array_id
       '$' {
         def resolve
-          $logger.debug 'array_id'
+          $logger and $logger.debug 'array_id'
         end
       }
     end
@@ -97,7 +97,7 @@ module Gene
     rule shortcut
       '::' {
         def resolve
-          $logger.debug 'entity'
+          $logger and $logger.debug 'entity'
         end
       }
     end
@@ -105,7 +105,7 @@ module Gene
     rule join
       '$$' {
         def resolve
-          $logger.debug 'join'
+          $logger and $logger.debug 'join'
         end
       }
     end
@@ -113,7 +113,7 @@ module Gene
     rule string
       '"' s:[^"]* '"' {
         def resolve
-          $logger.debug 'string'
+          $logger and $logger.debug 'string'
           s.text_value
         end
       }
@@ -122,7 +122,7 @@ module Gene
     rule single_quoted_string
       "'" s:[^']* "'" {
         def resolve
-          $logger.debug 'single_line_comment'
+          $logger and $logger.debug 'single_line_comment'
           s.text_value
         end
       }
@@ -131,7 +131,7 @@ module Gene
     rule number
       '-'? ([0-9]+ '.')? [0-9]+ {
         def resolve
-          $logger.debug 'number'
+          $logger and $logger.debug 'number'
           if text_value.index '.'
             text_value.to_f
           else
@@ -144,7 +144,7 @@ module Gene
     rule boolean
       ("true" / "false") {
         def resolve
-          $logger.debug 'boolean'
+          $logger and $logger.debug 'boolean'
           text_value == 'true'
         end
       }
@@ -153,7 +153,7 @@ module Gene
     rule null
       "null" {
         def resolve
-          $logger.debug 'null'
+          $logger and $logger.debug 'null'
         end
       }
     end
@@ -161,7 +161,7 @@ module Gene
     rule single_line_comment
       ("#" [^\n]* "\n") {
         def resolve
-          $logger.debug 'single_line_comment'
+          $logger and $logger.debug 'single_line_comment'
         end
       }
     end
@@ -169,7 +169,7 @@ module Gene
     rule group_comment
       ('(##' item* ')' / '[##' item* ']' / '{##' item* '}') {
         def resolve
-          $logger.debug 'group_comment'
+          $logger and $logger.debug 'group_comment'
         end
       }
     end
@@ -177,7 +177,7 @@ module Gene
     rule spaces
       [ \t\r\n]* {
         def resolve
-          $logger.debug 'spaces'
+          $logger and $logger.debug 'spaces'
         end
       }
     end

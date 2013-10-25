@@ -4,10 +4,10 @@ describe Gene::Parser do
   # Copy individual tests to below and run to make debug easier
   # in vim command line, enter :rspec %:11
   {
-    #'($ a b)'    => Gene::Group.new(Gene::Entity.new('[]'), Gene::Pair.new(Gene::Entity.new('a'), Gene::Entity.new('b'))),
+    #'($ a b)'    => Gene::Group.new(Gene::Entity.new('[]'), Gene::Entity.new('a'), Gene::Entity.new('b')),
   }.each do |input, result|
     it "TEMP TEST should work" do
-      Gene::Parser.new(input).parse.should == result
+     Gene::Parser.new(input).parse.should == result
     end
   end
 

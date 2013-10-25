@@ -15,6 +15,7 @@ require 'gene/parser'
 require 'polyglot'
 require 'treetop'
 require 'gene/grammar'
+require 'gene/post_parsing_processing'
 
 require 'gene/interpreter'
 

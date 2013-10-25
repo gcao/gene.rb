@@ -109,6 +109,8 @@ module Gene
     attr_reader :first :second
 
     def initialize [first second]
+      # @first is instance variable
+      #
       # (@first = first): if first item is not a special function,
       # but second is (like =, and, .method, @.method etc), treat it like
       # (= @first first)
