@@ -173,46 +173,45 @@ a
     c
       d
       e
-a :: b :: c d e
-a :: b :: c d e
-a :: b :: c
+a @@ b @@ c d e
+a @@ b @@ c d e
+a @@ b @@ c
   d
   e
 
-a b c (d e)   = a b c :: d e
-a b (c (d e)) = a b (c :: d e)
-a b (c d) e   = a b c @ d e
+a b c (d e)   = a b c @@ d e
+a b (c (d e)) = a b (c @@ d e)
+a b (c d) e   = a b c ~ d e
 
-a (b c d) = a :: b c d = a b @ c @ d
-(a b c) d = a b c @@ d
-a ((b c) d) = a :: b @ c d  = a :: b c @@ d
-a (b (c d)) = a :: b :: c d = a :: b c @ d
-a (b c) = a :: b c = a :: b @ c
+a (b c d) = a @@ b c d = a b ~ c ~ d
+(a b c) d = a b c $$ d
+a ((b c) d) = a @@ b ~ c d  = a @@ b c @@ d
+a (b (c d)) = a @@ b @@ c d = a @@ b c ~ d
+a (b c) = a @@ b c = a @@ b ~ c
 
-a b = a @ b = a :: b = a @@ b = a $$ b
-a (b c) = a b @ c = a :: b c = a $$ b c
-(a b) c = a @ b c = a b @@ c = a b $$ c
-a (b (c d)) e = a (b c @ d) e
+a b = a ~ b = a @@ b = a $$ b = a :: b
+a (b c) = a b ~ c = a @@ b c
+(a b) c = a ~ b c = a b $$ c
+a (b (c d)) e = a (b c ~ d) e
 
 ##############
 
-# What should ?? be?
-((a)) = (?? a)
+((a)) = @ @ a
 
 (a b $ c d)  = (a b [c] d)
 (a b : c d)  = (a {b : c} d)
 
-(a b @ c d) = (a (b c) d)
+(a b ~ c d) = (a (b c) d)
 
-(a b :: c d) = (a b (c d))
-(a b @@ c d) = ((a b) c d)
-(a b $$ c d) = ((a b) (c d))
+(a b @@ c d) = (a b (c d))
+(a b $$ c d) = ((a b) c d)
+(a b :: c d) = ((a b) (c d))
 
-(a b :: c d :: e f) = (a b (c d (e f)))
-(a b @@ c d @@ e f) = (((a b) c d) e f)
-(a b $$ c d $$ e f) = ((a b) (c d) (e f))
+(a b @@ c d @@ e f) = (a b (c d (e f)))
+(a b $$ c d $$ e f) = (((a b) c d) e f)
+(a b :: c d :: e f) = ((a b) (c d) (e f))
 
-@     >     : $     >     :: @@ $$
+@     >     ~    >    : $     >     :: $$ @@
 
 Is it possible to define a set of tags to represent
 relationship between items and can represent all linear
@@ -220,9 +219,16 @@ data structure without grouping?
 E.g.
 (a b (c d (e f) g h (i j)) k l (m n) o)
 =>
-a b :: c d :: e f @@ g h :: i j @@ @@ k l :: m n @@ o
+a b @@ c d @@ e f $$ g h @@ i j $$ $$ k l @@ m n $$ o
 
 (a b (c d (e f (g h) i j (k l) m) o (p q (r s) t)) u v)
 =>
-a b > c d > e f > g h < i j > k l < m < o > p q > r s < t << u v
+a b -> c d -> e f -> g h <- i j -> k l <- m <- o -> p q -> r s <- t <- <- u v
+a b => c d => e f => g h <= i j => k l <= m <= o => p q => r s <= t <= <= u v
+
+@@ = ->
+$$ = <-
+:: = ><
+
+@@ $$ :: are not good, just use @~:$
 
