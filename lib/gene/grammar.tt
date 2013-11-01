@@ -44,7 +44,16 @@ module Gene
     end
 
     rule hash
-      '{' spaces? first:pair? rest:(spaces pair)* spaces? '}' {
+      '{' spaces? v:pairs spaces? '}' {
+        def resolve
+          $logger and $logger.debug 'hash'
+          v.resolve
+        end
+      }
+    end
+
+    rule pairs
+      first:pair? rest:(spaces pair)* {
         def resolve
           $logger and $logger.debug 'hash'
           pairs = Pairs.new
@@ -82,30 +91,6 @@ module Gene
         def resolve
           $logger and $logger.debug 'literal'
           v.resolve
-        end
-      }
-    end
-
-    rule array_id
-      '$' {
-        def resolve
-          $logger and $logger.debug 'array_id'
-        end
-      }
-    end
-
-    rule shortcut
-      '::' {
-        def resolve
-          $logger and $logger.debug 'entity'
-        end
-      }
-    end
-
-    rule join
-      '$$' {
-        def resolve
-          $logger and $logger.debug 'join'
         end
       }
     end

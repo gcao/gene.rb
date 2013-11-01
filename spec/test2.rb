@@ -24,7 +24,7 @@ end
 __END__
 (module Gene
  (class Pair
-  (attr_reader[:first :second])
+  (attr_reader :first :second)
   (def initialize[first second]
    (= @first first)
    (= @second second)
@@ -44,7 +44,7 @@ __END__
 
 module Gene
  class Pair
-  (attr_reader[:first :second])
+  (attr_reader :first :second)
   def initialize[first second]
    (= @first first)
    (= @second second)
@@ -67,7 +67,7 @@ module Gene
     attr_reader :first :second
 
     def initialize [first second]
-      ## @first is an instance variable
+      # @first is an instance variable
       = @first  first
       = @second second
 
@@ -76,7 +76,7 @@ module Gene
         and (== other NOOP)
             or (== first NOOP) (== second NOOP)
         return true
-      ## .is_a? is treated as a method call on an object, @.class is a method call on self
+      # .is_a? is treated as a method call on an object, @.class is a method call on self
       unless (.is_a? other @.class) return
 
       and (== first  (.first  other))
@@ -86,7 +86,7 @@ module Gene
 
 (module Gene
  (class Pair
-  (attr_reader[:first :second])
+  (attr_reader :first :second)
   (def initialize[first second]
    (@first  = first)
    (@second = second)
@@ -131,12 +131,53 @@ module Gene
           (second == (other .second))
 
     def to_s [] "{{first}} : {{second}}"
+    # _ as placeholder
+    # def to_s _ "{{first}} : {{second}}"
 
 [1 2 3] = ($ 1 2 3) = ($ 1 $ 2 $ 3)
 [] = ($)
 
+(a b c)
+a b c
+a b
+  c
+
+(a (b c))
+a (b c)
+a
+  b c
+
+(a b) != ((a b))
+
+(a b)
+a b
+
+((a b))
+@
+  a b
+
+(a b (c))
+a b @ c
+a b
+  (c)
+a b
+  @ c
+
 (a [1 2 3] [5 6])
 (a [1 2 3] $ 5 $ 6)
+a
+  $ 1 2 3
+  ,
+  $ 5 6
+a
+  $
+    1
+    2
+    3
+  $
+    5
+    6
+
 a
   $ 1
   $ 2
@@ -145,11 +186,14 @@ a
   $ 4
   $ 5
 
-a $ 1
-  $ 2
-  $ 3
-  , $ 4
-  $ 5
+[(a b) (c d)]
+$ (d b) (c d)
+$ (a b)
+$ (c d)
+
+$
+  a b
+  c d
 
 {k1 : v1 k2 : v2} = (: k1 v1 k2 v2) = (k1 : v1 k2 : v2)
 {} = (:)

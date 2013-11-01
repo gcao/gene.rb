@@ -7,7 +7,6 @@ module Gene
     # Copy individual tests to below and run to make debug easier
     # in vim command line, enter :rspec %:14
     {
-      #'(a : b)' => Pairs.new(Pair.new(Entity.new('a'), Entity.new('b'))),
     }.each do |input, result|
       it "TEMP TEST should work" do
         $logger.level = Logem::DEBUG
