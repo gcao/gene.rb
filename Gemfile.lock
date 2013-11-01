@@ -33,10 +33,10 @@ GEM
       nokogiri (= 1.5.10)
       rake
       rdoc
-    json (1.8.0)
+    json (1.8.1)
     jwt (0.1.8)
       multi_json (>= 1.5)
-    logem (0.3.0)
+    logem (0.4.0)
     multi_json (1.8.2)
     multi_xml (0.5.5)
     multipart-post (1.2.0)

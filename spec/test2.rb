@@ -134,7 +134,7 @@ module Gene
     # _ as placeholder
     # def to_s _ "{{first}} : {{second}}"
 
-[1 2 3] = ($ 1 2 3) = ($ 1 $ 2 $ 3)
+[1 2 3] = ($ 1 2 3)
 [] = ($)
 
 (a b c)
@@ -164,10 +164,8 @@ a b
   @ c
 
 (a [1 2 3] [5 6])
-(a [1 2 3] $ 5 $ 6)
 a
   $ 1 2 3
-  ,
   $ 5 6
 a
   $
@@ -177,20 +175,15 @@ a
   $
     5
     6
-
 a
   $ 1
-  $ 2
-  $ 3
-  ,
-  $ 4
+    2
+    3
   $ 5
+    6
 
 [(a b) (c d)]
-$ (d b) (c d)
-$ (a b)
-$ (c d)
-
+$ (a b) (c d)
 $
   a b
   c d
@@ -206,6 +199,20 @@ a
 
 a k1 : v1
   k2 : v2
+
+(a {k1 : v1} {k2 : v2})
+a
+  k1 : v1
+  ------- (three or more '-' separate two hashes)
+  k2 : v2
+
+a b c d
+is the same as
+a b \
+  c d
+
+a b
+\ c d
 
 (a (b (c d e)))
 a (b (c d e))

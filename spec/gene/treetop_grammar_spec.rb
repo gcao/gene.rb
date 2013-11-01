@@ -1,14 +1,14 @@
 require File.expand_path(File.dirname(__FILE__) + '/../spec_helper')
 
-$logger = Logem::Logger.new ''
+$logger = Logem::Logger.new nil
 
 module Gene
   describe 'gene/grammar.tt' do
     # Copy individual tests to below and run to make debug easier
-    # in vim command line, enter :rspec %:14
+    # in vim command line, enter :!rspec %:14
     {
     }.each do |input, result|
-      it "TEMP TEST should work" do
+      it "TEMP TEST should work: #{input}" do
         $logger.level = Logem::DEBUG
         parser = GrammarParser.new
         parser.parse(input).should == result
