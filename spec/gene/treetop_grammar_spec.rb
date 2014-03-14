@@ -6,6 +6,7 @@ module Gene
   describe 'gene/grammar.tt' do
     # Copy individual tests to below and run to make debug easier
     # in vim command line, enter :!rspec %:14
+    # vim !rr rspec %:14
     {
     }.each do |input, result|
       it "TEMP TEST should work: #{input}" do

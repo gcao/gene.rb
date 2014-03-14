@@ -259,6 +259,7 @@ a (b (c d)) e = a (b c ~ d) e
 (a b @@ c d) = (a b (c d))
 (a b $$ c d) = ((a b) c d)
 (a b :: c d) = ((a b) (c d))
+(a b || c d) = (a b c d)
 
 (a b @@ c d @@ e f) = (a b (c d (e f)))
 (a b $$ c d $$ e f) = (((a b) c d) e f)
@@ -284,4 +285,37 @@ $$ = <-
 :: = ><
 
 @@ $$ :: are not good, just use @~:$
+
+a
+0 a
+
+(a)
+1 a
+
+(a b)
+1 a 1 b
+1 a b
+
+((a b) c)
+2 a 2 b 1 c
+2 a b 1 c
+
+((a (b c)) d)
+2 a 3 b 3 c 1 d
+2 a 3 b c 1 d
+
+((a (b (c d))) e)
+2 a 3 b 4 c 4 d 1 e
+2 a 3 b 4 c d 1 e
+
+((a (b (c (d e)))) f)
+2 a 3 b 4 c 5 d 5 e 1 f 
+2 a 3 b 4 c 5 d e 1 f 
+
+((a (b (c (d (e f))))) g)
+2 a 3 b 4 c 5 d 6 e 6 f 1 g
+2 a 3 b 4 c 5 d 6 e f 1 g
+
+(a b (c (d (e f)) g h (i j)) k l (m n) o)
+1 a b 2 c 3 d 4 e f 1 g h 2 i j 1 k l 2 m n 1 o
 
