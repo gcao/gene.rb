@@ -85,21 +85,31 @@ module Gene
     def to_s [] "{{first}} : {{second}}"
 
 (module Gene
- (class Pair
-  (attr_reader :first :second)
-  (def initialize[first second]
-   (@first  = first)
-   (@second = second)
-  )
+ (block
+  (class Pair
+   (block
+    (attr_reader :first :second)
+    (def initialize[first second]
+     (block
+      (@first  = first)
+      (@second = second)
+     )
+    )
 
-  (def ==[other]
-   (if ((other == NOOP) and ((first == NOOP) or (second == NOOP))) (return true))
-   (unless (other is_a? @.class)) return)
-   ((first == (other .first)) and (second == (other .second)))
-  )
+    (def ==[other]
+     (block
+      (if ((other == noop) and ((first == noop) or (second == noop))) (return true))
+      (unless (other is_a? @.class)) return)
+      ((first == (other .first)) and (second == (other .second)))
+     )
+    )
 
-  (def to_s[]
-   "{{first}} : {{second}}"
+    (def to_s[]
+     (block
+      "{{first}} : {{second}}"
+     )
+    )
+   )
   )
  )
 )
