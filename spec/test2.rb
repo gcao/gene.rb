@@ -121,7 +121,7 @@ module Gene
       # if ((other == NOOP) and ((first == NOOP) or (second == NOOP))) (return true)
       if
         and (other == NOOP)
-            (first == NOOP) or (second == NOOP)
+            or (first == NOOP) (second == NOOP)
         return true
 
       # .is_a? is treated as a method call on an object, @.class is a method call on self
@@ -200,11 +200,18 @@ a
 a k1 : v1
   k2 : v2
 
-(a {k1 : v1} {k2 : v2})
 a
-  k1 : v1
-  ------- (three or more '-' separate two hashes)
-  k2 : v2
+  : k1 v1 k2 v2
+
+a
+  : k1 v1
+    k2 v2
+
+(a {k1 : v1} {k2 : v2})
+
+a
+  : k1 v1
+  : k2 v2
 
 a b c d
 is the same as
@@ -213,6 +220,9 @@ a b \
 
 a b
 \ c d
+
+a b
+  \ c d
 
 (a (b (c d e)))
 a (b (c d e))
@@ -265,7 +275,7 @@ a (b (c d)) e = a (b c ~ d) e
 (a b $$ c d $$ e f) = (((a b) c d) e f)
 (a b :: c d :: e f) = ((a b) (c d) (e f))
 
-@     >     ~    >    : $     >     :: $$ @@
+@     >     ~    >    : $     >     :: $$ @@ ||
 
 Is it possible to define a set of tags to represent
 relationship between items and can represent all linear
@@ -309,13 +319,13 @@ a
 2 a 3 b 4 c d 1 e
 
 ((a (b (c (d e)))) f)
-2 a 3 b 4 c 5 d 5 e 1 f 
-2 a 3 b 4 c 5 d e 1 f 
+2 a 3 b 4 c 5 d 5 e 1 f
+2 a 3 b 4 c 5 d e 1 f
 
 ((a (b (c (d (e f))))) g)
 2 a 3 b 4 c 5 d 6 e 6 f 1 g
 2 a 3 b 4 c 5 d 6 e f 1 g
 
 (a b (c (d (e f)) g h (i j)) k l (m n) o)
-1 a b 2 c 3 d 4 e f 1 g h 2 i j 1 k l 2 m n 1 o
+1 a b 2 c 3 d 4 e f 2 g h 3 i j 1 k l 2 m n 1 o
 
