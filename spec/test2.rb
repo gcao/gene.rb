@@ -163,3 +163,5 @@ a k1 : v1
 (a (b (c d)))
 a \n b \n c d
 
+# ~ is an operator to change order of first and second item
+(~a == b) => (== a b)
