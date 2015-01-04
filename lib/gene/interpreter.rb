@@ -1,6 +1,7 @@
 module Gene
   class Interpreter
     attr :context
+    attr :logger
 
     def initialize
       @logger = Logem::Logger.new(self)
@@ -40,6 +41,8 @@ module Gene
 
     def handle_group group
       @logger.debug('handle_group', group.inspect)
+
+      return NOOP if group == NOOP
 
       case group.first
       when ARRAY

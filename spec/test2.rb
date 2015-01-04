@@ -160,8 +160,23 @@ a
 a k1 : v1
   k2 : v2
 
-(a (b (c d)))
-a \n b \n c d
-
+##############
+# support more intuitive method call
 # ~ is an operator to change order of first and second item
 (~a == b) => (== a b)
+
+() = {}
+Hash: if (first or second element is ':')
+(:)
+(a : b)
+Array:
+($) = []
+[a b] = ($ a b) = ($ a $ b)
+
+metadata
+(a @key value)
+(a @key ('value' @key1 'value1'))   # @key1 is metadata of 'value'
+(a @ns (@ 'default' @child 'child value'))
+=
+(a @ns 'default' @ns@child 'child value')
+

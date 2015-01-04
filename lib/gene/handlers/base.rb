@@ -13,9 +13,8 @@ module Gene
         if group.is_a? Group
           "(#{group.map{|item| @interpreter.handle_partial(item)}.join(' ')});"
         else
-          group
+          raise "NOT SUPPORTED: #{group.inspect}"
         end
-        #NOT_HANDLED
       end
     end
   end
