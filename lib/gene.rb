@@ -17,5 +17,6 @@ module Gene
   NOOP       = Group.new()
   ARRAY      = Entity.new('[]')
   HASH       = Entity.new('{}')
+  RANGE      = Entity.new('..')
   EXPLODE_OP = Entity.new('\\')  # (a (\\ b)) = (a b)
 end

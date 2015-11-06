@@ -3,7 +3,8 @@ module Gene
     class TestHandler < Base
       LET = Entity.new('let')
 
-      def initialize
+      def initialize(interpreter)
+        super interpreter
         @logger = Logem::Logger.new(self)
       end
 

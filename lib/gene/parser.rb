@@ -2,6 +2,7 @@ require 'strscan'
 
 module Gene
   class Parser < StringScanner
+    SEPARATOR             = /[\s()\[\]{},;]/
     STRING                = /"((?:[^\x0-\x1f"\\] |
                               # escaped special characters:
                               \\["\\\/bfnrt] |
@@ -29,9 +30,10 @@ module Gene
     ARRAY_OPEN            = /\[/
     ARRAY_CLOSE           = /\]/
     ESCAPE                = /\\/
-    TRUE                  = /true/
-    FALSE                 = /false/
+    TRUE_PATTERN          = /true/
+    FALSE_PATTERN         = /false/
     NULL                  = /null/
+    PLACEHOLDER           = /_/
     IGNORE                = %r(
       (?:
        \#[^\n\r]*[\n\r]| # line comments
@@ -227,13 +229,13 @@ module Gene
     end
 
     def parse_true
-      return UNPARSED unless scan(TRUE)
+      return UNPARSED unless scan(TRUE_PATTERN)
 
       true
     end
 
     def parse_false
-      return UNPARSED unless scan(FALSE)
+      return UNPARSED unless scan(FALSE_PATTERN)
 
       false
     end
