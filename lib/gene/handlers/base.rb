@@ -9,12 +9,13 @@ module Gene
       end
 
       def call group
-        @logger.debug('call', group)
+        #@logger.debug('call', group)
         #if group.is_a? Group
-          "(#{group.map{|item| @interpreter.handle_partial(item)}.join(' ')});"
+        #  "(#{group.map{|item| @interpreter.handle_partial(item)}.join(' ')});"
         #else
         #  raise "NOT SUPPORTED: #{group.inspect}"
         #end
+        NOT_HANDLED
       end
     end
   end

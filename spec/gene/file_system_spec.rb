@@ -7,7 +7,6 @@ describe Gene::FileSystem do
     @interpreter.handlers = [
       Gene::FileSystem::DirHandler.new(@interpreter),
       Gene::FileSystem::FileHandler.new(@interpreter),
-      Gene::Handlers::Base.new(@interpreter)
     ]
   end
 

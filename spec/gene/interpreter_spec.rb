@@ -10,7 +10,6 @@ describe Gene::Interpreter do
       Gene::Handlers::RangeHandler.new(@interpreter),
       Gene::Handlers::ClassHandler.new(@interpreter),
       Gene::Handlers::MethodHandler.new(@interpreter),
-      Gene::Handlers::Base.new(@interpreter)
     ]
   end
 
