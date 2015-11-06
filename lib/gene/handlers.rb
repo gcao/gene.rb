@@ -11,3 +11,4 @@ require 'gene/handlers/hash_handler'
 require 'gene/handlers/class_handler'
 require 'gene/handlers/method_handler'
 require 'gene/handlers/range_handler'
+

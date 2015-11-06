@@ -13,6 +13,8 @@ require 'gene/parser'
 
 require 'gene/interpreter'
 
+require 'gene/file_system'
+
 module Gene
   NOOP       = Group.new()
   ARRAY      = Entity.new('[]')
