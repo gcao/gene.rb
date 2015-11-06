@@ -14,8 +14,19 @@ describe Gene::FileSystem do
   it "(file test.txt 'This is a test file')" do
     parsed = Gene::Parser.new(example.description).parse
     file = @interpreter.run(parsed)
-    file.path.should =~ /test.txt$/
-    # TODO check result
+    file.should =~ /test.txt$/
+  end
+
+  it "(dir test)" do
+    parsed = Gene::Parser.new(example.description).parse
+    dir = @interpreter.run(parsed)
+    dir.should =~ /test$/
+  end
+
+  it "(dir test (file test.txt 'This is a test file'))" do
+    parsed = Gene::Parser.new(example.description).parse
+    dir = @interpreter.run(parsed)
+    dir.should =~ /test$/
   end
 
 end

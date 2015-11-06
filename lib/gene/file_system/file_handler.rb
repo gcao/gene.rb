@@ -10,7 +10,19 @@ class Gene::FileSystem::FileHandler < Gene::Handlers::Base
     @logger.debug('call', group)
     return Gene::NOT_HANDLED unless group.first.is_a? Gene::Entity and group.first == FILE
 
-    "#{self.class}: TODO"
+    group.shift
+
+    dir  = interpreter.current_dir
+    name = group.shift
+
+    if name.is_a? Gene::Entity
+      name = name.name
+    end
+
+    path = "#{dir}/#{name}"
+    file = File.new(path, 'w')
+    file.write group
+    path
   end
 
 end
