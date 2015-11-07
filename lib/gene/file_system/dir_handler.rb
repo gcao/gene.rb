@@ -10,7 +10,7 @@ class Gene::FileSystem::DirHandler < Gene::Handlers::Base
     return Gene::NOT_HANDLED unless group.first == Gene::FileSystem::DIR
 
     name = group[1]
-    name = interpreter.handle_group name if name.is_a? Gene::Group
+    name = interpreter.handle_group name if name.is_a? Gene::Types::Group
 
     dir = "#{interpreter.root}/#{name}"
     Dir.mkdir dir

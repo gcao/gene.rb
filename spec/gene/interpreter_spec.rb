@@ -104,7 +104,7 @@ describe Gene::Interpreter do
 
   describe "self.normalize" do
     it "should work" do
-      Gene::Interpreter.normalize(Gene::Group.new(Gene::NOOP)).should == Gene::Group.new()
+      Gene::Interpreter.normalize(Gene::Types::Group.new(Gene::NOOP)).should == Gene::Types::Group.new()
     end
   end
 end

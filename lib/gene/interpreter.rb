@@ -30,7 +30,7 @@ module Gene
 
       self.class.normalize data
 
-      if data.is_a? Group
+      if data.is_a? Gene::Types::Group
         handle_group data
       else
         data
@@ -62,7 +62,7 @@ module Gene
 
     def self.normalize group_or_array
       case group_or_array
-      when Group
+      when Gene::Types::Group
         group_or_array.reject!{|child| child == NOOP }
       when Array
         group_or_array.reject!{|item| item == NOOP }

@@ -1,6 +1,6 @@
 module Gene
   NOT_HANDLED = Object.new
-  
+
   module Handlers
   end
 end

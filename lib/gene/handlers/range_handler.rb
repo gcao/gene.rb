@@ -8,7 +8,7 @@ module Gene
 
       def call group
         @logger.debug('call', group)
-        return NOT_HANDLED unless group.first.is_a? Entity and group.first == Gene::RANGE
+        return Gene::NOT_HANDLED unless group.first.is_a? Gene::Types::Ident and group.first == Gene::RANGE
 
         Range.new(*group.rest)
       end

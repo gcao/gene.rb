@@ -8,7 +8,7 @@ module Gene
 
       def call group
         @logger.debug('call', group)
-        return NOT_HANDLED unless group.first.is_a? Entity and group.first == Gene::HASH
+        return Gene::NOT_HANDLED unless group.first.is_a? Gene::Types::Ident and group.first == Gene::HASH
 
         Hash[*group.rest.reduce([]){|result, pair| result << pair.first << pair.second }]
       end

@@ -269,7 +269,7 @@ module Gene
         end
       end
 
-      Entity.new(value)
+      Gene::Types::Ident.new(value)
     end
 
     def parse_group
@@ -279,7 +279,7 @@ module Gene
 
       open_char = self[0]
       if open_char == '[' 
-        result << Entity.new('[]')
+        result << Gene::Types::Ident.new('[]')
       end
 
       raise ParseError, "Incomplete content after '#{open_char}'" if eos?
@@ -299,14 +299,14 @@ module Gene
         end
       end
 
-      Group.new(*result)
+      Gene::Types::Group.new(*result)
     end
 
     def parse_hash
       return UNPARSED unless scan(HASH_OPEN)
 
       result = Array.new
-      result << Entity.new('{}')
+      result << Gene::Types::Ident.new('{}')
 
       expects = %w(key delimiter value)
       expect_index = 0
@@ -338,7 +338,7 @@ module Gene
             raise ParseError, "unexpected token at '#{peek(20)}'!"
           else
             value = parsed
-            result << Pair.new(key, value)
+            result << Gene::Types::Pair.new(key, value)
           end
         else
 
@@ -346,7 +346,7 @@ module Gene
         expect_index += 1
       end
 
-      Group.new(*result)
+      Gene::Types::Group.new(*result)
     end
   end
 end

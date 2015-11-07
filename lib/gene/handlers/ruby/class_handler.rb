@@ -2,11 +2,11 @@ module Gene
   module Handlers
     module Ruby
       class ClassHandler < Base
-        CLASS = Entity.new 'class'
+        CLASS = Gene::Types::Ident.new 'class'
 
         def call group
           @logger.debug('call', group)
-          return NOT_HANDLED unless group.first == CLASS
+          return Gene::NOT_HANDLED unless group.first == CLASS
 
           group.shift
 

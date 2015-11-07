@@ -1,7 +1,7 @@
 module Gene
   module Handlers
     class TestHandler < Base
-      LET = Entity.new('let')
+      LET = Gene::Types::Ident.new('let')
 
       def initialize(interpreter)
         super interpreter
@@ -10,7 +10,7 @@ module Gene
 
       def call group
         @logger.debug('call', group)
-        return NOT_HANDLED unless group.first.is_a? Entity and group.first.name == '$$'
+        return Gene::NOT_HANDLED unless group.first.is_a? Gene::Types::Ident and group.first.name == '$$'
 
         group.shift
 

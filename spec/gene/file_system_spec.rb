@@ -39,7 +39,7 @@ describe Gene::FileSystem do
 
     data = Gene::FileSystem.read path
 
-    data.class.should == Gene::Group
+    data.class.should == Gene::Types::Group
     data.first.should == Gene::FileSystem::FILE
     data[1].should == file_name
     data[2].should == content
@@ -52,7 +52,7 @@ describe Gene::FileSystem do
 
     data = Gene::FileSystem.read path
 
-    data.class.should == Gene::Group
+    data.class.should == Gene::Types::Group
     data.first.should == Gene::FileSystem::DIR
     data[1].should == 'test'
   end
@@ -67,7 +67,7 @@ describe Gene::FileSystem do
 
     data = Gene::FileSystem.read dir
 
-    data.class.should == Gene::Group
+    data.class.should == Gene::Types::Group
     data.first.should == Gene::FileSystem::DIR
     data[1].should == 'test'
 

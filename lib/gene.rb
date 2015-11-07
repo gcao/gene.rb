@@ -1,10 +1,7 @@
 require 'logem'
 
-require 'gene/entity'
+require 'gene/types'
 require 'gene/stream'
-require 'gene/group'
-require 'gene/pair'
-
 require 'gene/context'
 require 'gene/handlers'
 
@@ -16,9 +13,9 @@ require 'gene/interpreter'
 require 'gene/file_system'
 
 module Gene
-  NOOP       = Group.new()
-  ARRAY      = Entity.new('[]')
-  HASH       = Entity.new('{}')
-  RANGE      = Entity.new('..')
-  EXPLODE_OP = Entity.new('\\')  # (a (\\ b)) = (a b)
+  NOOP       = Gene::Types::Group.new()
+  ARRAY      = Gene::Types::Ident.new('[]')
+  HASH       = Gene::Types::Ident.new('{}')
+  RANGE      = Gene::Types::Ident.new('..')
+  #EXPLODE_OP = Gene::Types::Ident.new('\\')  # (a (\\ b)) = (a b)
 end

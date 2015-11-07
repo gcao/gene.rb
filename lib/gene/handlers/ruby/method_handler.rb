@@ -2,11 +2,11 @@ module Gene
   module Handlers
     module Ruby
       class MethodHandler < Base
-        METHOD = Entity.new 'def'
+        METHOD = Gene::Types::Ident.new 'def'
 
         def call group
           @logger.debug('call', group)
-          return NOT_HANDLED unless group.first == METHOD
+          return Gene::NOT_HANDLED unless group.first == METHOD
 
           group.shift
 
@@ -15,7 +15,7 @@ module Gene
           args = []
           if group.size > 1
             item = group.shift
-            if item.is_a? Group
+            if item.is_a? Gene::Types::Group
               args.concat item.rest
             else
               args << item

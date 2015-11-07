@@ -14,7 +14,7 @@ class Gene::FileSystem::FileHandler < Gene::Handlers::Base
     dir  = interpreter.current_dir
     name = group.shift
 
-    if name.is_a? Gene::Entity
+    if name.is_a? Gene::Types::Ident
       name = name.name
     end
 
