@@ -45,6 +45,16 @@ describe Gene::FileSystem do
     data[2].should == content
   end
 
+  it "read binary file" do
+    data = Gene::FileSystem.read File.expand_path(File.dirname(__FILE__) + '/../data/test.gif')
+    data.class.should == Gene::Types::Group
+    data.first.should == Gene::FileSystem::FILE
+    data[1].should == 'test.gif'
+    content = data[2]
+    pending "Binary file detection is not done"
+    content.class.should == Gene::Types::Base64
+  end
+
   it "read dir" do
     root = Dir.mktmpdir('gene')
     path = "#{root}/test"

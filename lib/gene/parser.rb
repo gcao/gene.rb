@@ -26,8 +26,8 @@ module Gene
                                 (?i:e[+-]?\d+)
                               )
                             )/x
-    ENTITY                = /([^,\s\(\)\[\]\{\}]+)/
-    ENTITY_END            = /[,\s\(\)\[\]\{\}]/
+    IDENT                = /([^,\s\(\)\[\]\{\}]+)/
+    IDENT_END            = /[,\s\(\)\[\]\{\}]/
     GENE_OPEN             = /\(/
     GENE_CLOSE            = /\)/
     HASH_OPEN             = /\{/
@@ -83,7 +83,7 @@ module Gene
           obj = handle_top_level_results obj, value
         when (value = parse_hash) != UNPARSED
           obj = handle_top_level_results obj, value
-        when (value = parse_entity) != UNPARSED
+        when (value = parse_ident) != UNPARSED
           obj = handle_top_level_results obj, value
         when skip(IGNORE)
           ;
@@ -193,7 +193,7 @@ module Gene
         value
       when (value = parse_hash ) != UNPARSED
         value
-      when (value = parse_entity) != UNPARSED
+      when (value = parse_ident) != UNPARSED
         value
       else
         UNPARSED
@@ -253,14 +253,14 @@ module Gene
       nil
     end
 
-    def parse_entity
-      return UNPARSED unless check(ENTITY)
+    def parse_ident
+      return UNPARSED unless check(IDENT)
 
       value = ''
 
       until eos?
         case
-        when check(ENTITY_END)
+        when check(IDENT_END)
           break
         when scan(ESCAPE)
           value += getch

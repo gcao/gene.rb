@@ -1,7 +1,7 @@
 module Gene
   module Handlers
-    class RangeHandler < Base
-      RANGE = Gene::Types::Ident.new('..')
+    class Base64Handler < Base
+      BASE64 = Gene::Types::Ident.new('base64')
 
       def initialize(interpreter)
         super interpreter
@@ -10,9 +10,9 @@ module Gene
 
       def call group
         @logger.debug('call', group)
-        return Gene::NOT_HANDLED unless group.first == RANGE
+        return Gene::NOT_HANDLED unless group.first == BASE64
 
-        Range.new(*group.rest)
+        Gene::Types::Base64.new group[1]
       end
     end
   end

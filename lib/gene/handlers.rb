@@ -9,6 +9,7 @@ require 'gene/handlers/base'
 require 'gene/handlers/array_handler'
 require 'gene/handlers/hash_handler'
 require 'gene/handlers/range_handler'
+require 'gene/handlers/base64_handler'
 
 require 'gene/handlers/ruby/class_handler'
 require 'gene/handlers/ruby/method_handler'

@@ -8,6 +8,7 @@ describe Gene::Interpreter do
       Gene::Handlers::ArrayHandler.new(@interpreter),
       Gene::Handlers::HashHandler.new(@interpreter),
       Gene::Handlers::RangeHandler.new(@interpreter),
+      Gene::Handlers::Base64Handler.new(@interpreter),
       Gene::Handlers::Ruby::ClassHandler.new(@interpreter),
       Gene::Handlers::Ruby::MethodHandler.new(@interpreter),
       Gene::Handlers::Ruby::StatementHandler.new(@interpreter),
@@ -43,6 +44,12 @@ describe Gene::Interpreter do
       parsed = Gene::Parser.new(input).parse
       @interpreter.run(parsed).should == result
     end
+  end
+
+  it "(base64 \"VGhpcyBpcyBhIHRlc3Q=\")" do
+    parsed = Gene::Parser.new(example.description).parse
+    result = @interpreter.run(parsed)
+    result.data.should == "VGhpcyBpcyBhIHRlc3Q="
   end
 
   it "(class A)" do
