@@ -24,7 +24,11 @@ module Gene
 
     def self.read dir_or_file
       if File.directory? dir_or_file
-        # TODO
+        data = Gene::Group.new(DIR, File.basename(dir_or_file))
+        Dir["#{dir_or_file}/*"].each do |file|
+          data.push read(file)
+        end
+        data
       elsif File.file? dir_or_file
         Gene::Group.new(FILE, File.basename(dir_or_file), File.read(dir_or_file))
       else

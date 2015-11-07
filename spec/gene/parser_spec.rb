@@ -4,7 +4,6 @@ describe Gene::Parser do
   # Copy individual tests to below and run to make debug easier
   # in vim command line, enter :rspec %:11
   {
-    "'a single-quoted String'" => "a single-quoted String",
   }.each do |input, result|
     it "TEMP TEST should work" do
       Gene::Parser.new(input).parse.should == result
@@ -14,7 +13,7 @@ describe Gene::Parser do
   {
     ''         => Gene::Stream.new,
     '"a double-quoted String"' => "a double-quoted String",
-    #"'a single-quoted String'" => "a single-quoted String",
+    "'a single-quoted String'" => "a single-quoted String",
     '"a"'      => "a",
     '1'        => 1,
     '-1'       => -1,

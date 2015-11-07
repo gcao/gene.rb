@@ -46,17 +46,40 @@ describe Gene::FileSystem do
   end
 
   it "read dir" do
-    pending
+    root = Dir.mktmpdir('gene')
+    path = "#{root}/test"
+    Dir.mkdir path
+
+    data = Gene::FileSystem.read path
+
+    data.class.should == Gene::Group
+    data.first.should == Gene::FileSystem::DIR
+    data[1].should == 'test'
   end
 
   it "read dir and file" do
-    pending
+    root = Dir.mktmpdir('gene')
+    dir  = "#{root}/test"
+    Dir.mkdir dir
+    File.open "#{dir}/test.txt", 'w' do |file|
+      file.write "This is a test file"
+    end
+
+    data = Gene::FileSystem.read dir
+
+    data.class.should == Gene::Group
+    data.first.should == Gene::FileSystem::DIR
+    data[1].should == 'test'
+
+    file_data = data[2]
+    file_data[1].should == 'test.txt'
+    file_data[2].should == "This is a test file"
   end
 
   describe "write" do
     it "(dir test (file test.txt \"This is a test file\"))" do
-      data   = Gene::Parser.new(example.description).parse
       to_dir = Dir.mktmpdir('gene')
+      data   = Gene::Parser.new(example.description).parse
 
       Gene::FileSystem.write to_dir, data
 
