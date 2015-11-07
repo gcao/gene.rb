@@ -11,7 +11,13 @@ module Gene
           group.shift
 
           class_name = group.shift.name
-          "(class #{class_name}\n#{group.map{|item| interpreter.handle_partial(item)}.join("\n")}\nend; #{class_name})"
+<<-RUBY
+class #{class_name}
+
+#{group.map{|item| interpreter.handle_partial(item) }.join}
+
+end; #{class_name}
+RUBY
         end
       end
     end

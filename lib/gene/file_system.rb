@@ -1,5 +1,5 @@
 module Gene
-  class FileSystem < Interpreter
+  class FileSystem < AbstractInterpreter
     DIR  = Gene::Types::Ident.new('dir')
     FILE = Gene::Types::Ident.new('file')
 
@@ -8,8 +8,16 @@ module Gene
 
     attr :dirs
 
+    def self.parse_and_process input
+      new.process(TypesInterpreter.parse_and_process(input))
+    end
+
     def initialize
       super
+      @handlers = [
+        Gene::FileSystem::DirHandler.new(self),
+        Gene::FileSystem::FileHandler.new(self),
+      ]
       root = Dir.mktmpdir('gene')
       @dirs = [root]
     end

@@ -4,9 +4,12 @@ module Gene
       class StatementHandler < Base
         def call group
           @logger.debug('call', group)
-
-          statement = group.to_s
-          statement
+          
+          if group.is_a? Gene::Types::Group
+            group.to_s
+          else
+            group
+          end
         end
       end
     end

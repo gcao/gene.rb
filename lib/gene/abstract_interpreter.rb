@@ -1,18 +1,13 @@
 module Gene
-  class Interpreter
-    attr :context
+  class AbstractInterpreter
     attr :logger
+    attr :handlers
 
     def initialize
       @logger = Logem::Logger.new(self)
-      @context = Context.new(self)
     end
 
-    def handlers= value
-      @handlers = value
-    end
-
-    def run data
+    def process data
       result = nil
 
       if data.is_a? Stream
@@ -31,7 +26,7 @@ module Gene
     def handle_partial data
       @logger.debug('handle_partial', data.inspect)
 
-      self.class.normalize data
+      normalize data
 
       if data.is_a? Gene::Types::Group
         handle_group data
@@ -63,7 +58,7 @@ module Gene
       end
     end
 
-    def self.normalize group_or_array
+    def normalize group_or_array
       case group_or_array
       when Gene::Types::Group
         group_or_array.reject!{|child| child == NOOP }

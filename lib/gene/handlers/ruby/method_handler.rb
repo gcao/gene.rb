@@ -22,7 +22,11 @@ module Gene
             end
           end
 
-          "(def #{method_name}(#{args.join(',')})\n#{group.map{|item| interpreter.handle_partial(item)}.join("\n")}\nend;)"
+<<-RUBY
+def #{method_name}(#{args.join(',')})
+#{group.map{|item| interpreter.handle_partial(item) }.join}
+end
+RUBY
         end
       end
     end
