@@ -40,7 +40,7 @@ describe Gene::Interpreter do
     '(.. 1 3)'   => Range.new(1, 3),
     #'(($$ let a 1) ($$ + a 1))' => 2,
   }.each do |input, result|
-    it "process #{input} should work" do
+    it input do
       parsed = Gene::Parser.new(input).parse
       @interpreter.run(parsed).should == result
     end
@@ -49,6 +49,7 @@ describe Gene::Interpreter do
   it "(base64 \"VGhpcyBpcyBhIHRlc3Q=\")" do
     parsed = Gene::Parser.new(example.description).parse
     result = @interpreter.run(parsed)
+    result.class.should == Gene::Types::Base64
     result.data.should == "VGhpcyBpcyBhIHRlc3Q="
   end
 
@@ -66,10 +67,10 @@ describe Gene::Interpreter do
   end
 
   it "(@a = 'ab') (@a .length)" do
-    pending "What is the expected behavior for this?"
     parsed = Gene::Parser.new(example.description).parse
-    output = @interpreter.run(parsed)
-    result = eval output
+    result = @interpreter.run(parsed) do |stmt|
+      eval stmt
+    end
     result.should == 2
   end
 
