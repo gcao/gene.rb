@@ -13,7 +13,16 @@ module Gene
     end
 
     def run data
-      handle_partial data
+      if data.is_a? Stream
+        # TODO create an enumerator
+        result = nil
+        data.each do |item|
+          result = handle_partial item
+        end
+        result
+      else
+        handle_partial data
+      end
     end
 
     def handle_partial data

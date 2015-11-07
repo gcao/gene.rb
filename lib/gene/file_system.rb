@@ -1,5 +1,8 @@
 module Gene
   class FileSystem < Interpreter
+    DIR  = Gene::Entity.new('dir')
+    FILE = Gene::Entity.new('file')
+
     require 'gene/file_system/dir_handler'
     require 'gene/file_system/file_handler'
 
@@ -20,10 +23,31 @@ module Gene
     end
 
     def self.read dir_or_file
-      # Create a new instance and generate data structure
+      if File.directory? dir_or_file
+        # TODO
+      elsif File.file? dir_or_file
+        Gene::Group.new(FILE, File.basename(dir_or_file), File.read(dir_or_file))
+      else
+        raise "#{self.class}.read(#{dir_or_file.inspect}): NOT FOUND."
+      end
     end
 
-    def write root
+    def self.write dir, data
+      if data.is_a? Gene::Group
+        if data.first == Gene::FileSystem::DIR
+          path = "#{dir}/#{data[1]}"
+          Dir.mkdir path
+          data[2..-1].each do |item|
+            write path, item
+          end
+        elsif data.first == Gene::FileSystem::FILE
+          File.open "#{dir}/#{data[1]}", 'w' do |file|
+            file.write data[2]
+          end
+        else
+          raise "#{self.class}.write: NOT SUPPORTED ."
+        end
+      end
     end
   end
 end

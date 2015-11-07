@@ -10,6 +10,13 @@ module Gene
                               # match all but escaped special characters:
                               \\[\x20-\x21\x23-\x2e\x30-\x5b\x5d-\x61\x63-\x65\x67-\x6d\x6f-\x71\x73\x75-\xff])*)
                             "/nx
+    SINGLE_QUOTED_STRING  = /'((?:[^\x0-\x1f'\\] |
+                              # escaped special characters:
+                              \\['\\\/bfnrt] |
+                              \\u[0-9a-fA-F]{4} |
+                              # match all but escaped special characters:
+                              \\[\x20-\x21\x23-\x2e\x30-\x5b\x5d-\x61\x63-\x65\x67-\x6d\x6f-\x71\x73\x75-\xff])*)
+                            '/nx
     INTEGER               = /(-?0|-?[1-9]\d*)/
     FLOAT                 = /(-?
                               (?:0|[1-9]\d*)
@@ -194,10 +201,10 @@ module Gene
     end
 
     def parse_string
-      return UNPARSED unless scan(STRING)
+      return UNPARSED unless scan(STRING) || scan(SINGLE_QUOTED_STRING)
 
       return '' if self[1].empty?
-      string = self[1].gsub(%r((?:\\[\\bfnrt"/]|(?:\\u(?:[A-Fa-f\d]{4}))+|\\[\x20-\xff]))n) do |c|
+      string = self[1].gsub(%r((?:\\[\\bfnrt"'/]|(?:\\u(?:[A-Fa-f\d]{4}))+|\\[\x20-\xff]))n) do |c|
         if u = UNESCAPE_MAP[$&[1]]
           u
         else # \uXXXX

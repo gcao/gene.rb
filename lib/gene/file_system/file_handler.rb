@@ -1,5 +1,4 @@
 class Gene::FileSystem::FileHandler < Gene::Handlers::Base
-  FILE = Gene::Entity.new('file')
 
   def initialize(interpreter)
     super interpreter
@@ -8,7 +7,7 @@ class Gene::FileSystem::FileHandler < Gene::Handlers::Base
 
   def call group
     @logger.debug('call', group)
-    return Gene::NOT_HANDLED unless group.first.is_a? Gene::Entity and group.first == FILE
+    return Gene::NOT_HANDLED unless group.first == Gene::FileSystem::FILE
 
     group.shift
 

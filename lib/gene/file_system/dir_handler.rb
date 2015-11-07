@@ -1,5 +1,4 @@
 class Gene::FileSystem::DirHandler < Gene::Handlers::Base
-  DIR = Gene::Entity.new('dir')
 
   def initialize(interpreter)
     super interpreter
@@ -8,7 +7,7 @@ class Gene::FileSystem::DirHandler < Gene::Handlers::Base
 
   def call group
     @logger.debug('call', group)
-    return Gene::NOT_HANDLED unless group.first.is_a? Gene::Entity and group.first == DIR
+    return Gene::NOT_HANDLED unless group.first == Gene::FileSystem::DIR
 
     name = group[1]
     name = interpreter.handle_group name if name.is_a? Gene::Group

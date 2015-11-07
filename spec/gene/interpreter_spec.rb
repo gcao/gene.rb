@@ -8,8 +8,9 @@ describe Gene::Interpreter do
       Gene::Handlers::ArrayHandler.new(@interpreter),
       Gene::Handlers::HashHandler.new(@interpreter),
       Gene::Handlers::RangeHandler.new(@interpreter),
-      Gene::Handlers::ClassHandler.new(@interpreter),
-      Gene::Handlers::MethodHandler.new(@interpreter),
+      Gene::Handlers::Ruby::ClassHandler.new(@interpreter),
+      Gene::Handlers::Ruby::MethodHandler.new(@interpreter),
+      Gene::Handlers::Ruby::StatementHandler.new(@interpreter),
     ]
   end
 
@@ -57,7 +58,8 @@ describe Gene::Interpreter do
     @a.should == 1
   end
 
-  it "((a = 'ab') (a .length))" do
+  it "(@a = 'ab') (@a .length)" do
+    pending "What is the expected behavior for this?"
     parsed = Gene::Parser.new(example.description).parse
     output = @interpreter.run(parsed)
     result = eval output
