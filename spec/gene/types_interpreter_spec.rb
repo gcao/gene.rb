@@ -25,6 +25,7 @@ describe Gene::TypesInterpreter do
     '()'         => Gene::NOOP,
     '[()]'       => [],
     '(.. 1 3)'   => Range.new(1, 3),
+    '("" 1 3)'   => Gene::Types::ComplexString.new(1, 3),
     "(base64 \"VGhpcyBpcyBhIHRlc3Q=\")" => Gene::Types::Base64.new("VGhpcyBpcyBhIHRlc3Q=")
     #'(($$ let a 1) ($$ + a 1))' => 2,
   }.each do |input, result|

@@ -10,6 +10,7 @@ module Gene
       @handlers = [
         Gene::Handlers::ArrayHandler.new,
         Gene::Handlers::HashHandler.new,
+        Gene::Handlers::ComplexStringHandler.new,
         Gene::Handlers::RangeHandler.new,
         Gene::Handlers::Base64Handler.new,
         Gene::Handlers::GroupHandler.new,

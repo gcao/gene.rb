@@ -18,6 +18,11 @@ describe Gene::RubyInterpreter do
     @a.should == 1
   end
 
+  it "('' 1 2)" do
+    result = eval Gene::RubyInterpreter.parse_and_process(example.description)
+    result.should == "12"
+  end
+
   it "(@a = 1)" do
     eval Gene::RubyInterpreter.parse_and_process(example.description)
     @a.should == 1

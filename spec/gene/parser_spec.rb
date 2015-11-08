@@ -22,6 +22,7 @@ describe Gene::Parser do
     'true'     => true,
     'false'    => false,
     'null'     => nil,
+    '_'        => Gene::Types::Placeholder,
     'a'        => Gene::Types::Ident.new('a'),
     'a b'      => Gene::Stream.new(Gene::Types::Ident.new('a'), Gene::Types::Ident.new('b')),
     '\\('      => Gene::Types::Ident.new('('),
