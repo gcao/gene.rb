@@ -32,13 +32,12 @@ describe Gene::RubyInterpreter do
   end
 
   it "(class A (@a = 1))" do
-    output = Gene::RubyInterpreter.parse_and_process(example.description)
-    result = eval output
+    result = eval Gene::RubyInterpreter.parse_and_process(example.description)
     result.name.should == 'A'
     result.instance_variable_get(:@a).should == 1
   end
 
-  it "(def meth [] [1 2 3])" do
+  it "(def meth [1 2 3])" do
     eval Gene::RubyInterpreter.parse_and_process(example.description)
     meth.should == [1, 2, 3]
   end

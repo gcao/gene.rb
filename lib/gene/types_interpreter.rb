@@ -2,7 +2,7 @@ module Gene
   class TypesInterpreter < AbstractInterpreter
 
     def self.parse_and_process input
-      new.process(Parser.new(input).parse)
+      new.process(Parser.parse(input))
     end
 
     def initialize

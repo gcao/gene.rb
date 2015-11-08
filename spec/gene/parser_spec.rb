@@ -6,7 +6,7 @@ describe Gene::Parser do
   {
   }.each do |input, result|
     it "TEMP TEST should work" do
-      Gene::Parser.new(input).parse.should == result
+      Gene::Parser.parse(input).should == result
     end
   end
 
@@ -47,7 +47,7 @@ describe Gene::Parser do
                                       ),
   }.each do |input, result|
     it "parse #{input} should work" do
-      Gene::Parser.new(input).parse.should == result
+      Gene::Parser.parse(input).should == result
     end
   end
 
@@ -63,7 +63,7 @@ describe Gene::Parser do
   ].each do |input|
     it "process #{input} should fail" do
       lambda {
-        Gene::Parser.new(input).parse
+        Gene::Parser.parse(input)
       }.should raise_error(Gene::ParseError)
     end
   end

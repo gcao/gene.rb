@@ -4,6 +4,7 @@ module Gene
 end
 
 require 'gene/types/ident'
+require 'gene/types/placeholder'
 require 'gene/types/group'
 require 'gene/types/pair'
 require 'gene/types/base64'
