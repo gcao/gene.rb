@@ -10,6 +10,9 @@ group :development do
   gem 'guard-bundler', '~> 0.1.3'
   gem 'guard-rspec', '~> 0.5.2'
   gem 'rb-fsevent', '>= 0.4.3.1', :platforms => [:mri]
+
+  gem 'pry'
+  gem 'pry-full'
 end
 
 gem 'logem'

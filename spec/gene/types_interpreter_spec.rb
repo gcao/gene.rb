@@ -25,17 +25,12 @@ describe Gene::TypesInterpreter do
     '()'         => Gene::NOOP,
     '[()]'       => [],
     '(.. 1 3)'   => Range.new(1, 3),
+    "(base64 \"VGhpcyBpcyBhIHRlc3Q=\")" => Gene::Types::Base64.new("VGhpcyBpcyBhIHRlc3Q=")
     #'(($$ let a 1) ($$ + a 1))' => 2,
   }.each do |input, result|
     it input do
       Gene::TypesInterpreter.parse_and_process(input).should == result
     end
-  end
-
-  it "(base64 \"VGhpcyBpcyBhIHRlc3Q=\")" do
-    result = Gene::TypesInterpreter.parse_and_process(example.description)
-    result.class.should == Gene::Types::Base64
-    result.data.should == "VGhpcyBpcyBhIHRlc3Q="
   end
 
 end
