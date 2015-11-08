@@ -1,30 +1,35 @@
 module Gene
   module Handlers
     module Ruby
-      class MethodHandler < Base
+      class MethodHandler
         METHOD = Gene::Types::Ident.new 'def'
 
-        def call group
-          @logger.debug('call', group)
+        def initialize
+          @logger = Logem::Logger.new(self)
+        end
+
+        def call context, group
           return Gene::NOT_HANDLED unless group.first == METHOD
+
+          @logger.debug('call', group)
 
           group.shift
 
           method_name = group.shift.name
 
-          args = []
-          if group.size > 1
-            item = group.shift
-            if item.is_a? Gene::Types::Group
-              args.concat item.rest
-            else
-              args << item
-            end
-          end
+          args = group.size > 1 ? group.shift : []
 
 <<-RUBY
-def #{method_name}(#{args.join(',')})
-#{group.map{|item| interpreter.handle_partial(item) }.join}
+def #{method_name}(#{args.is_a?(Array) ? args.join(',') : args})
+#{
+group.map{|item|
+  if item.is_a? Gene::Types::Group
+    context.handle_partial(item)
+  else
+    item.inspect
+  end
+}.join
+}
 end
 RUBY
         end

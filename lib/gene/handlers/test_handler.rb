@@ -1,16 +1,16 @@
 module Gene
   module Handlers
-    class TestHandler < Base
+    class TestHandler
       LET = Gene::Types::Ident.new('let')
 
-      def initialize(interpreter)
-        super interpreter
+      def initialize
         @logger = Logem::Logger.new(self)
       end
 
-      def call group
-        @logger.debug('call', group)
+      def call context, group
         return Gene::NOT_HANDLED unless group.first.is_a? Gene::Types::Ident and group.first.name == '$$'
+
+        @logger.debug('call', group)
 
         group.shift
 

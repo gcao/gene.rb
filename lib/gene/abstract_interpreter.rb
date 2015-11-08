@@ -44,7 +44,7 @@ module Gene
 
       handled = false
       result = @handlers.each do |handler|
-        result = handler.call group
+        result = handler.call self, group
         next if result == NOT_HANDLED
 
         handled = true

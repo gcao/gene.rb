@@ -38,7 +38,7 @@ describe Gene::RubyInterpreter do
     result.instance_variable_get(:@a).should == 1
   end
 
-  it "(def meth [1 2 3])" do
+  it "(def meth [] [1 2 3])" do
     eval Gene::RubyInterpreter.parse_and_process(example.description)
     meth.should == [1, 2, 3]
   end

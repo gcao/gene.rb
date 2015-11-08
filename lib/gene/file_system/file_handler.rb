@@ -1,17 +1,17 @@
-class Gene::FileSystem::FileHandler < Gene::Handlers::Base
+class Gene::FileSystem::FileHandler
 
-  def initialize(interpreter)
-    super interpreter
+  def initialize
     @logger = Logem::Logger.new(self)
   end
 
-  def call group
-    @logger.debug('call', group)
+  def call context, group
     return Gene::NOT_HANDLED unless group.first == Gene::FileSystem::FILE
+
+    @logger.debug('call', group)
 
     group.shift
 
-    dir  = interpreter.current_dir
+    dir  = context.current_dir
     name = group.shift
 
     if name.is_a? Gene::Types::Ident

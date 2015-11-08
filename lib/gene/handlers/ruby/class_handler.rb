@@ -1,12 +1,17 @@
 module Gene
   module Handlers
     module Ruby
-      class ClassHandler < Base
+      class ClassHandler
         CLASS = Gene::Types::Ident.new 'class'
 
-        def call group
-          @logger.debug('call', group)
+        def initialize
+          @logger = Logem::Logger.new(self)
+        end
+
+        def call context, group
           return Gene::NOT_HANDLED unless group.first == CLASS
+
+          @logger.debug('call', group)
 
           group.shift
 
@@ -14,7 +19,7 @@ module Gene
 <<-RUBY
 class #{class_name}
 
-#{group.map{|item| interpreter.handle_partial(item) }.join}
+#{group.map{|item| context.handle_partial(item) }.join}
 
 end; #{class_name}
 RUBY

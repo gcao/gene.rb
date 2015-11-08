@@ -5,10 +5,6 @@ class Gene::Types::Group < Array
     concat items
   end
 
-  def context
-    @context ||= Gene::Context.new(self)
-  end
-
   def rest
     self[1..-1]
   end

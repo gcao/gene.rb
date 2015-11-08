@@ -2,7 +2,6 @@ require 'logem'
 
 require 'gene/types'
 require 'gene/stream'
-require 'gene/context'
 require 'gene/handlers'
 
 require 'gene/parse_error'

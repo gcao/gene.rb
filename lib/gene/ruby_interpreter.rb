@@ -13,10 +13,10 @@ module Gene
     def initialize
       super
       @handlers = [
-        Gene::Handlers::Ruby::ClassHandler.new(self),
-        Gene::Handlers::Ruby::MethodHandler.new(self),
-        Gene::Handlers::Ruby::IfHandler.new(self),
-        Gene::Handlers::Ruby::StatementHandler.new(self),
+        Gene::Handlers::Ruby::ClassHandler.new,
+        Gene::Handlers::Ruby::MethodHandler.new,
+        Gene::Handlers::Ruby::IfHandler.new,
+        Gene::Handlers::Ruby::StatementHandler.new,
       ]
     end
 

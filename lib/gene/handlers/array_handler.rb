@@ -1,22 +1,22 @@
 module Gene
   module Handlers
-    class ArrayHandler < Gene::Handlers::Base
+    class ArrayHandler
       ARRAY = Gene::Types::Ident.new('[]')
 
-      def initialize(interpreter)
-        super interpreter
+      def initialize
         @logger = Logem::Logger.new(self)
       end
 
-      def call group
-        @logger.debug('call', group)
+      def call context, group
         return Gene::NOT_HANDLED unless group.first == ARRAY
+
+        @logger.debug('call', group)
 
         result = []
         group.rest.each do |child|
           next if child == Gene::NOOP
 
-          value = interpreter.handle_partial(child)
+          value = context.handle_partial(child)
           result << value if value != Gene::NOOP
         end
         result

@@ -1,8 +1,13 @@
 module Gene
   module Handlers
     module Ruby
-      class StatementHandler < Base
-        def call group
+      class StatementHandler
+
+        def initialize
+          @logger = Logem::Logger.new(self)
+        end
+
+        def call context, group
           @logger.debug('call', group)
           
           if group.is_a? Gene::Types::Group

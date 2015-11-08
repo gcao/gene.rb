@@ -1,27 +1,27 @@
-class Gene::FileSystem::DirHandler < Gene::Handlers::Base
+class Gene::FileSystem::DirHandler
 
-  def initialize(interpreter)
-    super interpreter
+  def initialize
     @logger = Logem::Logger.new(self)
   end
 
-  def call group
-    @logger.debug('call', group)
+  def call context, group
     return Gene::NOT_HANDLED unless group.first == Gene::FileSystem::DIR
 
-    name = group[1]
-    name = interpreter.handle_group name if name.is_a? Gene::Types::Group
+    @logger.debug('call', group)
 
-    dir = "#{interpreter.root}/#{name}"
+    name = group[1]
+    name = context.handle_group name if name.is_a? Gene::Types::Group
+
+    dir = "#{context.root}/#{name}"
     Dir.mkdir dir
-    interpreter.dirs.push dir
+    context.dirs.push dir
 
     begin
       group[2..-1].each do |child|
-        interpreter.handle_partial child
+        context.handle_partial child
       end
     ensure
-      interpreter.dirs.pop
+      context.dirs.pop
     end
 
     dir
