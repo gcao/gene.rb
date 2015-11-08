@@ -63,5 +63,19 @@ describe Gene::RubyInterpreter do
     result.new.meth.should == 1
   end
 
+  it "
+    (class Pair
+     (.attr_reader :first :second)
+     (def initialize[first second]
+      (@first = first)
+      (@second = second)
+     )
+    )
+  " do
+    code = Gene::RubyInterpreter.parse_and_process(example.description)
+    puts code
+    result = eval code
+  end
+
 end
 

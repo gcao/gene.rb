@@ -28,7 +28,7 @@ group.map{|item|
   else
     item.inspect
   end
-}.join
+}.join("\n")
 }
 end
 RUBY

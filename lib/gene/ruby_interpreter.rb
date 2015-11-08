@@ -4,6 +4,7 @@ module Gene
     require 'gene/handlers/ruby/method_handler'
     require 'gene/handlers/ruby/if_handler'
     require 'gene/handlers/ruby/complex_string_handler'
+    require 'gene/handlers/ruby/invocation_handler'
     require 'gene/handlers/ruby/statement_handler'
 
     def self.parse_and_process input
@@ -20,6 +21,7 @@ module Gene
         Gene::Handlers::Ruby::ClassHandler.new,
         Gene::Handlers::Ruby::MethodHandler.new,
         Gene::Handlers::Ruby::IfHandler.new,
+        Gene::Handlers::Ruby::InvocationHandler.new,
         Gene::Handlers::Ruby::StatementHandler.new,
       ]
     end

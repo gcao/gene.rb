@@ -19,7 +19,7 @@ module Gene
 <<-RUBY
 class #{class_name}
 
-#{group.map{|item| context.handle_partial(item) }.join}
+#{group.map{|item| context.handle_partial(item) }.join("\n")}
 
 end; #{class_name}
 RUBY
