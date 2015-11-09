@@ -13,6 +13,7 @@ module Gene
         Gene::Handlers::ComplexStringHandler.new,
         Gene::Handlers::RangeHandler.new,
         Gene::Handlers::Base64Handler.new,
+        Gene::Handlers::MetadataHandler.new,
         Gene::Handlers::GroupHandler.new,
       ]
     end

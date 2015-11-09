@@ -72,9 +72,12 @@ describe Gene::RubyInterpreter do
      )
     )
   " do
+    pending 'private method invocation is not figured out yet'
     code = Gene::RubyInterpreter.parse_and_process(example.description)
-    puts code
-    result = eval code
+    klass = eval code
+    obj = klass.new(1, 2)
+    obj.first.should == 1
+    obj.second.should == 2
   end
 
 end
