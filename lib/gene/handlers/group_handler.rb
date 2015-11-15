@@ -11,10 +11,16 @@ module Gene
 
         # TODO detect whether first item has changed, if yes, re-handle this group
 
-        group.each_with_index do |child, i|
-          next if child == Gene::NOOP
+        begin
+          context.stack.push group
 
-          group[i] = context.handle_partial(child)
+          group.each_with_index do |child, i|
+            next if child == Gene::NOOP
+
+            group[i] = context.handle_partial(child)
+          end
+        ensure
+          context.stack.pop
         end
 
         NOT_HANDLED
