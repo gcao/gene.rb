@@ -1,12 +1,14 @@
 module Gene
   module Handlers
     class MetadataHandler
+      METADATA = Gene::Types::Ident.new('^')
+
       def initialize
         @logger = Logem::Logger.new(self)
       end
 
       def call context, group
-        return Gene::NOT_HANDLED unless group.first.to_s =~ /^\^/
+        return Gene::NOT_HANDLED unless group.first == METADATA
 
         @logger.debug('call', group)
 
@@ -15,8 +17,8 @@ module Gene
         # Built-in types (literals, arrays, hashes etc) don't support metadata?
 
         if context.parent and context.parent.respond_to?(:metadata)
-          key   = group.first.to_s[1..-1]
-          value = group.length == 1 ? true : group[1]
+          key   = group.rest[0].to_s
+          value = group.length == 2 ? true : group[2]
           context.parent.metadata[key] = value
         else
           raise context.parent
