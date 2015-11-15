@@ -34,16 +34,30 @@ describe Gene::TypesInterpreter do
     end
   end
 
-  it '(a (^b))' do
-    result = Gene::TypesInterpreter.parse_and_process(example.description)
-    result.class.should == Gene::Types::Group
-    result.metadata['b'].should == true
+  describe "metadata" do
+    it '(a (^b))' do
+      result = Gene::TypesInterpreter.parse_and_process(example.description)
+      result.class.should == Gene::Types::Group
+      result.metadata['b'].should == true
+    end
+
+    it '(a (^b 1))' do
+      result = Gene::TypesInterpreter.parse_and_process(example.description)
+      result.class.should == Gene::Types::Group
+      result.metadata['b'].should == 1
+    end
   end
 
-  it '[(@ a 1) (@ a)]' do
-    pending
-    result = Gene::TypesInterpreter.parse_and_process(example.description)
-    result.class.should == [1, 1]
+  describe "references" do
+    it '[(@ a 1) (@ a)]' do
+      result = Gene::TypesInterpreter.parse_and_process(example.description)
+      result.should == [1, 1]
+    end
+
+    it '[(@ a 1 ()) (@ a)]' do
+      result = Gene::TypesInterpreter.parse_and_process(example.description)
+      result.should == [1]
+    end
   end
 
 end

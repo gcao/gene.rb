@@ -14,6 +14,7 @@ module Gene
         Gene::Handlers::RangeHandler.new,
         Gene::Handlers::Base64Handler.new,
         Gene::Handlers::MetadataHandler.new,
+        Gene::Handlers::ReferenceHandler.new,
         Gene::Handlers::GroupHandler.new,
       ]
     end

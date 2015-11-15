@@ -12,7 +12,12 @@ module Gene
 
         @logger.debug('call', group)
 
-        Hash[*group.rest.reduce([]){|result, pair| result << pair.first << pair.second }]
+        # Ignore pairs whose key or value is ()
+        pairs = group.rest.reject do |pair|
+          pair.first == Gene::NOOP or pair.second == Gene::NOOP
+        end
+
+        Hash[*pairs.reduce([]){|result, pair| result << pair.first << pair.second }]
       end
     end
   end

@@ -3,10 +3,12 @@ module Gene
     attr :logger
     attr :handlers
     attr :stack
+    attr :references
 
     def initialize
       @logger = Logem::Logger.new(self)
       @stack = []
+      @references = {}
     end
 
     def parent
@@ -32,7 +34,7 @@ module Gene
     def handle_partial data
       @logger.debug('handle_partial', data.inspect)
 
-      normalize data
+      #normalize data
 
       if data.is_a? Gene::Types::Group
         handle_group data
@@ -64,16 +66,16 @@ module Gene
       end
     end
 
-    def normalize group_or_array
-      case group_or_array
-      when Gene::Types::Group
-        group_or_array.reject!{|child| child == NOOP }
-      when Array
-        group_or_array.reject!{|item| item == NOOP }
-      end
+    #def normalize group_or_array
+    #  case group_or_array
+    #  when Gene::Types::Group
+    #    group_or_array.reject!{|child| child == NOOP }
+    #  when Array
+    #    group_or_array.reject!{|item| item == NOOP }
+    #  end
 
-      group_or_array
-    end
+    #  group_or_array
+    #end
   end
 end
 
