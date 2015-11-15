@@ -1,26 +1,25 @@
 module Gene
   module Handlers
     class ReferenceHandler
-      REF = Gene::Types::Ident.new('@')
-
       def initialize
         @logger = Logem::Logger.new(self)
       end
 
       def call context, group
-        return Gene::NOT_HANDLED unless group.first == REF
+        return Gene::NOT_HANDLED unless group.first.to_s =~ /^#.+/
 
         @logger.debug('call', group)
 
-        if group.rest.length == 1
-          context.references[group.rest.first.to_s]
+        key = group.first.to_s[1..-1]
+
+        if group.rest.length == 0
+          context.references[key]
         else
-          key   = group.rest.first.to_s
-          value = group.rest[1]
+          value = group.rest[0]
           context.references[key] = value
 
-          if group.rest.length == 3
-            group.rest[2]
+          if group.rest.length == 2
+            group.rest[1]
           else
             value
           end
