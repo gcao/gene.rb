@@ -1,21 +1,18 @@
 module Gene
   module Handlers
     module Ruby
-      class StatementHandler
+      class AssignmentHandler
 
         def initialize
           @logger = Logem::Logger.new(self)
         end
 
         def call context, group
+          return Gene::NOT_HANDLED if group.rest.first.to_s !~ /=/
+
           @logger.debug('call', group)
           
-          if group.is_a? Gene::Types::Group
-            "#{group.first}(#{group.rest.join(', ')})"
-            #group.to_s
-          else
-            group
-          end
+          "#{group.first} #{group.rest.join(' ')}"
         end
       end
     end

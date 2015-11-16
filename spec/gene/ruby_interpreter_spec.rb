@@ -64,18 +64,19 @@ describe Gene::RubyInterpreter do
   end
 
   it "
-    (class Pair
-     (.attr_reader :first :second)
-     (def initialize[first second]
-      (@first = first)
-      (@second = second)
+    (module M
+     (class Pair
+      (attr_reader :first :second)
+      (def initialize[first second]
+       (@first = first)
+       (@second = second)
+      )
      )
     )
   " do
-    pending 'private method invocation is not figured out yet'
     code = Gene::RubyInterpreter.parse_and_process(example.description)
-    klass = eval code
-    obj = klass.new(1, 2)
+    eval code
+    obj = M::Pair.new(1, 2)
     obj.first.should == 1
     obj.second.should == 2
   end
