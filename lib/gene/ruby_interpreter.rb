@@ -1,13 +1,14 @@
+require 'gene/handlers/ruby/module_handler'
+require 'gene/handlers/ruby/class_handler'
+require 'gene/handlers/ruby/method_handler'
+require 'gene/handlers/ruby/if_handler'
+require 'gene/handlers/ruby/complex_string_handler'
+require 'gene/handlers/ruby/invocation_handler'
+require 'gene/handlers/ruby/statement_handler'
+require 'gene/handlers/ruby/assignment_handler'
+
 module Gene
   class RubyInterpreter < AbstractInterpreter
-    require 'gene/handlers/ruby/module_handler'
-    require 'gene/handlers/ruby/class_handler'
-    require 'gene/handlers/ruby/method_handler'
-    require 'gene/handlers/ruby/if_handler'
-    require 'gene/handlers/ruby/complex_string_handler'
-    require 'gene/handlers/ruby/invocation_handler'
-    require 'gene/handlers/ruby/statement_handler'
-    require 'gene/handlers/ruby/assignment_handler'
 
     def self.parse_and_process input, &block
       new.process(Parser.parse(input), &block)
@@ -25,7 +26,6 @@ module Gene
         Gene::Handlers::ComplexStringHandler.new,
         Gene::Handlers::MetadataHandler.new,
         Gene::Handlers::ReferenceHandler.new,
-        #Gene::Handlers::GroupHandler.new,
 
         Gene::Handlers::Ruby::ComplexStringHandler.new,
         Gene::Handlers::Ruby::ModuleHandler.new,
