@@ -9,9 +9,10 @@ module Gene
     require 'gene/handlers/ruby/statement_handler'
     require 'gene/handlers/ruby/assignment_handler'
 
-    def self.parse_and_process input
-      output1 = TypesInterpreter.parse_and_process(input)
-      new.process(output1)
+    def self.parse_and_process input, &block
+      new.process(Parser.parse(input), &block)
+      #output1 = TypesInterpreter.parse_and_process(input)
+      #new.process(output1)
     end
 
     def initialize
@@ -20,6 +21,16 @@ module Gene
       @complex_string_handler = Gene::Handlers::Ruby::ComplexStringHandler.new
 
       @handlers = [
+        Gene::Handlers::ArrayHandler.new,
+        Gene::Handlers::HashHandler.new,
+        Gene::Handlers::ComplexStringHandler.new,
+        Gene::Handlers::RangeHandler.new,
+        Gene::Handlers::Base64Handler.new,
+        Gene::Handlers::MetadataHandler.new,
+        Gene::Handlers::ReferenceHandler.new,
+        #Gene::Handlers::GroupHandler.new,
+
+        #Gene::Handlers::Ruby::ComplexStringHandler.new,
         Gene::Handlers::Ruby::ModuleHandler.new,
         Gene::Handlers::Ruby::ClassHandler.new,
         Gene::Handlers::Ruby::MethodHandler.new,

@@ -28,8 +28,7 @@ describe Gene::RubyInterpreter do
     @a.should == 1
   end
 
-  it "(@a = 'ab') (@a .length)" do
-    pending 'Gene::Stream processing logic is not finalized'
+  it "(@a = 'ab') (@a.length)" do
     result = Gene::RubyInterpreter.parse_and_process(example.description) do |stmt|
       eval stmt
     end
@@ -74,8 +73,7 @@ describe Gene::RubyInterpreter do
      )
     )
   " do
-    code = Gene::RubyInterpreter.parse_and_process(example.description)
-    eval code
+    eval Gene::RubyInterpreter.parse_and_process(example.description)
     obj = M::Pair.new(1, 2)
     obj.first.should == 1
     obj.second.should == 2

@@ -18,15 +18,15 @@ module Gene
     def process data
       result = nil
 
-      #if data.is_a? Stream
-      #  data.each do |item|
-      #    result = handle_partial item
-      #    result = yield result if block_given?
-      #  end
-      #else
+      if data.is_a? Stream
+        data.each do |item|
+          result = handle_partial item
+          result = yield result if block_given?
+        end
+      else
         result = handle_partial data
         result = yield result if block_given?
-      #end
+      end
 
       result
     end
