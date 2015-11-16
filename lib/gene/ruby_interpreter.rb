@@ -11,14 +11,10 @@ module Gene
 
     def self.parse_and_process input, &block
       new.process(Parser.parse(input), &block)
-      #output1 = TypesInterpreter.parse_and_process(input)
-      #new.process(output1)
     end
 
     def initialize
       super
-
-      @complex_string_handler = Gene::Handlers::Ruby::ComplexStringHandler.new
 
       @handlers = [
         Gene::Handlers::ArrayHandler.new,
@@ -26,11 +22,12 @@ module Gene
         Gene::Handlers::ComplexStringHandler.new,
         Gene::Handlers::RangeHandler.new,
         Gene::Handlers::Base64Handler.new,
+        Gene::Handlers::ComplexStringHandler.new,
         Gene::Handlers::MetadataHandler.new,
         Gene::Handlers::ReferenceHandler.new,
         #Gene::Handlers::GroupHandler.new,
 
-        #Gene::Handlers::Ruby::ComplexStringHandler.new,
+        Gene::Handlers::Ruby::ComplexStringHandler.new,
         Gene::Handlers::Ruby::ModuleHandler.new,
         Gene::Handlers::Ruby::ClassHandler.new,
         Gene::Handlers::Ruby::MethodHandler.new,
@@ -39,18 +36,6 @@ module Gene
         Gene::Handlers::Ruby::AssignmentHandler.new,
         Gene::Handlers::Ruby::StatementHandler.new,
       ]
-    end
-
-    # Override with additional logic
-    def handle_partial data
-      result = super
-
-      # TODO there must be a better way to invoke handler for custom types
-      if result.is_a? Gene::Types::ComplexString
-        result = @complex_string_handler.call self, data
-      end
-
-      result
     end
 
   end

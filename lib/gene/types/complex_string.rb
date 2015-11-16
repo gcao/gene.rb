@@ -1,4 +1,4 @@
-class Gene::Types::ComplexString < Array
+class Gene::Types::ComplexString < Gene::Types::Group
   def initialize *items
     concat items
   end
