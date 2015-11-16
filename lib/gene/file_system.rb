@@ -9,7 +9,7 @@ module Gene
     attr :dirs
 
     def self.parse_and_process input
-      new.process(TypesInterpreter.parse_and_process(input))
+      new.process(CoreInterpreter.parse_and_process(input))
     end
 
     def initialize

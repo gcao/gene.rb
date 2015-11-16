@@ -79,5 +79,42 @@ describe Gene::RubyInterpreter do
     obj.second.should == 2
   end
 
+  describe "Process output of core interpreter" do
+    it "(class A (def meth 1))" do
+      r = Gene::CoreInterpreter.parse_and_process(example.description)
+      result = eval Gene::RubyInterpreter.new.process(r)
+      result.name.should == 'A'
+      result.new.meth.should == 1
+    end
+
+    it "
+      (module M2
+       (class Pair
+        (attr_reader :first :second)
+        (def initialize[first second]
+         (@first = first)
+         (@second = second)
+        )
+       )
+      )
+    " do
+      r = Gene::CoreInterpreter.parse_and_process(example.description)
+      eval Gene::RubyInterpreter.new.process(r)
+      obj = M2::Pair.new(1, 2)
+      obj.first.should == 1
+      obj.second.should == 2
+    end
+
+    it "
+      (def do_this[first second [third 'default']]
+        ('' first second third)
+      )
+    " do
+      r = Gene::CoreInterpreter.parse_and_process(example.description)
+      eval Gene::RubyInterpreter.new.process(r)
+      do_this(1, 2).should == "12default"
+      do_this(1, 2, 3).should == "123"
+    end
+  end
 end
 

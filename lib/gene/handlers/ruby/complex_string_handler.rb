@@ -11,7 +11,9 @@ module Gene
 
           @logger.debug('call', data)
 
-          data.map(&:inspect).join.inspect
+          data.map do |item|
+            item.inspect + ".to_s"
+          end.join(' + ')
         end
       end
     end

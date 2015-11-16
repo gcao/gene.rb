@@ -1,6 +1,12 @@
 # gene
 
-Description goes here.
+Gene = Generic Data Format
+
+## Tasks
+
+- [ ] Define a core set of functionalities(e.g. data types, control structures) to be handled by a core interpreter
+
+- [ ] Output of the core interpreter can be consumed by specialized interpreters (e.g. Ruby interpreter)
 
 ## Contributing to gene
  
@@ -14,6 +20,5 @@ Description goes here.
 
 ## Copyright
 
-Copyright (c) 2013 Guoliang Cao. See LICENSE.txt for
-further details.
+Copyright (c) 2013 Guoliang Cao. See LICENSE.txt for further details.
 

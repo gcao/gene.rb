@@ -1,5 +1,5 @@
 module Gene
-  class TypesInterpreter < AbstractInterpreter
+  class CoreInterpreter < AbstractInterpreter
 
     def self.parse_and_process input
       new.process(Parser.parse(input))

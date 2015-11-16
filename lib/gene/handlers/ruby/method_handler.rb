@@ -18,9 +18,18 @@ module Gene
           method_name = group.shift.name
 
           args = group.size > 1 ? context.handle_partial(group.shift) : []
+          if args.is_a? Array
+            args = args.map do |arg|
+              if arg.is_a? Array
+                "#{arg[0]} = #{arg[1].inspect}"
+              else
+                arg
+              end
+            end.join(', ')
+          end
 
 <<-RUBY
-def #{method_name}(#{args.is_a?(Array) ? args.join(',') : args})
+def #{method_name}(#{args})
 #{
 group.map{|item|
   if item.is_a? Gene::Types::Group
