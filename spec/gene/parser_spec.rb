@@ -31,8 +31,10 @@ describe Gene::Parser do
     '("a")'    => Gene::Types::Group.new("a"),
     '(a)'      => Gene::Types::Group.new(Gene::Types::Ident.new('a')),
     '(a b)'    => Gene::Types::Group.new(Gene::Types::Ident.new('a'), Gene::Types::Ident.new('b')),
+    # Below two should be handled by the parser
     # # line comment
     # #< comment out up to #>
+    # Below two should be handled by the core interpreter
     # ## comment out next item (structural)
     # ##< comment out up to ##> or end of group/array/hash (structural)
     # TODO need to add more tests espectially for structural comments

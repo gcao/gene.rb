@@ -2,7 +2,8 @@ require File.expand_path(File.dirname(__FILE__) + '/../spec_helper')
 
 describe Gene::CoreInterpreter do
 
-  # Reserved: #[a-z]+, #//[a-z]* (regular expression + flags), #["'.,/].*
+  # Reserved: #[A-Z]+, #//[a-z]* (regular expression + flags), #["'.,/].*, #[any special characters]
+  # E.g. #IF #FOR #ENV
 
   # Copy individual tests to below and process to make debug easier
   # in vim command line, enter :!rspec %:20
