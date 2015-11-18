@@ -26,12 +26,8 @@ describe Gene::CoreInterpreter do
     '{() : 2}'   => {},
     '()'         => Gene::NOOP,
     '[()]'       => [],
-    #'(.. 1 3)'   => Range.new(1, 3),
     '(#.. 1 3)'   => Range.new(1, 3),
-    #'("" 1 3)'   => Gene::Types::ComplexString.new(1, 3),
     '(#"" 1 3)'   => Gene::Types::ComplexString.new(1, 3),
-    #'(#word a b)'   => ['a', 'b'],
-    #'(#w a b)'   => ['a', 'b'],
     '(#// a|b)'  => Regexp.new('a|b'),
     '(#//i a|b)' => Regexp.new('a|b', Regexp::IGNORECASE),
     "(#base64 \"VGhpcyBpcyBhIHRlc3Q=\")" => Gene::Types::Base64.new("VGhpcyBpcyBhIHRlc3Q=")
@@ -59,6 +55,11 @@ describe Gene::CoreInterpreter do
     it '[(#a 1) (#a)]' do
       result = Gene::CoreInterpreter.parse_and_process(example.description)
       result.should == [1, 1]
+    end
+
+    it '[(#a 1 ()) #a]' do
+      result = Gene::CoreInterpreter.parse_and_process(example.description)
+      result.should == [1]
     end
 
     it '[(#a 1 ()) (#a)]' do

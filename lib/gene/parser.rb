@@ -26,10 +26,12 @@ module Gene
                                 (?i:e[+-]?\d+)
                               )
                             )/x
-    IDENT                = /([^,\s\(\)\[\]\{\}]+)/
-    IDENT_END            = /[,\s\(\)\[\]\{\}]/
-    GENE_OPEN             = /\(/
-    GENE_CLOSE            = /\)/
+    IDENT                 = /([^,\s\(\)\[\]\{\}]+)/
+    IDENT_END             = /[,\s\(\)\[\]\{\}]/
+    COMMENT               = /##([,\s\(\)\[\]\{\}]|$)/
+    COMMENT_END           = /##>([,\s\(\)\[\]\{\}]|$)/
+    GROUP_OPEN            = /\(/
+    GROUP_CLOSE           = /\)/
     HASH_OPEN             = /\{/
     HASH_CLOSE            = /\}/
     PAIR_DELIMITER        = /:/
@@ -43,7 +45,7 @@ module Gene
     PLACEHOLDER           = /_/
     IGNORE                = %r(
       (?:
-       \#[^\n\r]*[\n\r]| # line comments
+       \#([,\s\(\)\{\}\[\]]+[^\n\r]*([\n\r]|$))| # line comments
        [\s]+             # whitespaces: space, horicontal tab, lf, cr
       )+
     )mx
@@ -69,6 +71,8 @@ module Gene
 
       until eos?
         case
+        when skip(IGNORE)
+          ;
         when (value = parse_string) != UNPARSED
           obj = handle_top_level_results obj, value
         when (value = parse_float) != UNPARSED
@@ -87,8 +91,6 @@ module Gene
           obj = handle_top_level_results obj, value
         when (value = parse_ident) != UNPARSED
           obj = handle_top_level_results obj, value
-        when skip(IGNORE)
-          ;
         else
           raise ParseError, "source '#{peek(20)}' is not valid GENE!"
         end
@@ -275,7 +277,7 @@ module Gene
     end
 
     def parse_group
-      return UNPARSED unless scan(GENE_OPEN) || scan(ARRAY_OPEN)
+      return UNPARSED unless scan(GROUP_OPEN) || scan(ARRAY_OPEN)
 
       result = Array.new
 
@@ -286,20 +288,33 @@ module Gene
 
       raise ParseError, "Incomplete content after '#{open_char}'" if eos?
 
+      in_comment = false
+      closed = false
+
       until eos?
         case
-        when open_char == '(' && scan(GENE_CLOSE)
+        when skip(COMMENT_END)
+          in_comment = false
+          ;
+        when open_char == '(' && scan(GROUP_CLOSE)
+          closed = true
           break
         when open_char == '[' && scan(ARRAY_CLOSE)
+          closed = true
           break
-        when (value = parse_value) != UNPARSED
-          result << value
+        when skip(COMMENT)
+          in_comment = true
+          ;
         when skip(IGNORE)
           ;
+        when (value = parse_value) != UNPARSED
+          result << value unless in_comment
         else
           raise ParseError, "unexpected token at '#{peek(20)}'!"
         end
       end
+
+      raise ParseError, "unexpected end of input" unless closed
 
       Gene::Types::Group.new(*result)
     end

@@ -1,4 +1,4 @@
 module Gene::Types
-  Placeholder = Ident.new('_')
+  Placeholder = Ident.new('#_')
 end
 

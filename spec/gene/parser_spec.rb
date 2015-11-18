@@ -22,7 +22,7 @@ describe Gene::Parser do
     'true'     => true,
     'false'    => false,
     'null'     => nil,
-    '_'        => Gene::Types::Placeholder,
+    '#_'       => Gene::Types::Placeholder,
     'a'        => Gene::Types::Ident.new('a'),
     'a b'      => Gene::Stream.new(Gene::Types::Ident.new('a'), Gene::Types::Ident.new('b')),
     '\\('      => Gene::Types::Ident.new('('),
@@ -31,6 +31,13 @@ describe Gene::Parser do
     '("a")'    => Gene::Types::Group.new("a"),
     '(a)'      => Gene::Types::Group.new(Gene::Types::Ident.new('a')),
     '(a b)'    => Gene::Types::Group.new(Gene::Types::Ident.new('a'), Gene::Types::Ident.new('b')),
+    # '#' denotes single line comment
+    "(a # b\n)"     => Gene::Types::Group.new(Gene::Types::Ident.new('a')),
+    # '##' denotes comment to end of group or next ##> in same group
+    # TODO need to add more tests espectially for nested ()[]{} etc
+    # TODO still need a way to comment out stuff without worrying about structure
+    "(a ## b)"      => Gene::Types::Group.new(Gene::Types::Ident.new('a')),
+    "(a ## b ##> c)"=> Gene::Types::Group.new(Gene::Types::Ident.new('a'), Gene::Types::Ident.new('c')),
     '(a (b))'  => Gene::Types::Group.new(Gene::Types::Ident.new('a'), Gene::Types::Group.new(Gene::Types::Ident.new('b'))),
     '[a]'      => Gene::Types::Group.new(Gene::Types::Ident.new('[]'), Gene::Types::Ident.new('a')),
     '(\[\] a)' => Gene::Types::Group.new(Gene::Types::Ident.new('[]'), Gene::Types::Ident.new('a')),
@@ -55,12 +62,14 @@ describe Gene::Parser do
   [
     '(',
     ')',
+    '(a',
     '[(]',
     '[)]',
     '{:}',
     '{a}',
     '{a b}',
     '{a :}',
+    "(a # b)",
   ].each do |input|
     it "process #{input} should fail" do
       lambda {
