@@ -58,6 +58,7 @@ describe Gene::CoreInterpreter do
     end
 
     it '[(#a 1 ()) #a]' do
+      pending "When #a should be treated as (#a) is not finalized yet"
       result = Gene::CoreInterpreter.parse_and_process(example.description)
       result.should == [1]
     end

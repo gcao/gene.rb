@@ -31,13 +31,17 @@ describe Gene::Parser do
     '("a")'    => Gene::Types::Group.new("a"),
     '(a)'      => Gene::Types::Group.new(Gene::Types::Ident.new('a')),
     '(a b)'    => Gene::Types::Group.new(Gene::Types::Ident.new('a'), Gene::Types::Ident.new('b')),
-    # '#' denotes single line comment
-    "(a # b\n)"     => Gene::Types::Group.new(Gene::Types::Ident.new('a')),
-    # '##' denotes comment to end of group or next ##> in same group
-    # TODO need to add more tests espectially for nested ()[]{} etc
-    # TODO still need a way to comment out stuff without worrying about structure
-    "(a ## b)"      => Gene::Types::Group.new(Gene::Types::Ident.new('a')),
-    "(a ## b ##> c)"=> Gene::Types::Group.new(Gene::Types::Ident.new('a'), Gene::Types::Ident.new('c')),
+    # # line comment
+    # #< comment out up to #>
+    # ## comment out next item (structural)
+    # ##< comment out up to ##> or end of group/array/hash (structural)
+    # TODO need to add more tests espectially for structural comments
+    #"(a # b\n)"                   => Gene::Types::Group.new(Gene::Types::Ident.new('a')),
+    #"(a #< this is a test #> b)"  => Gene::Types::Group.new(Gene::Types::Ident.new('a'), Gene::Types::Ident.new('b')),
+    #"(a ## b c)"                  => Gene::Types::Group.new(Gene::Types::Ident.new('a'), Gene::Types::Ident.new('c')),
+    #"(a ##< b c)"                 => Gene::Types::Group.new(Gene::Types::Ident.new('a')),
+    #"(a ##< b ##> c)"             => Gene::Types::Group.new(Gene::Types::Ident.new('a'), Gene::Types::Ident.new('c')),
+
     '(a (b))'  => Gene::Types::Group.new(Gene::Types::Ident.new('a'), Gene::Types::Group.new(Gene::Types::Ident.new('b'))),
     '[a]'      => Gene::Types::Group.new(Gene::Types::Ident.new('[]'), Gene::Types::Ident.new('a')),
     '(\[\] a)' => Gene::Types::Group.new(Gene::Types::Ident.new('[]'), Gene::Types::Ident.new('a')),

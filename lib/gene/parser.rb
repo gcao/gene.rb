@@ -28,8 +28,8 @@ module Gene
                             )/x
     IDENT                 = /([^,\s\(\)\[\]\{\}]+)/
     IDENT_END             = /[,\s\(\)\[\]\{\}]/
-    COMMENT               = /##([,\s\(\)\[\]\{\}]|$)/
-    COMMENT_END           = /##>([,\s\(\)\[\]\{\}]|$)/
+    #COMMENT               = /##([,\s\(\)\[\]\{\}]|$)/
+    #COMMENT_END           = /##>([,\s\(\)\[\]\{\}]|$)/
     GROUP_OPEN            = /\(/
     GROUP_CLOSE           = /\)/
     HASH_OPEN             = /\{/
@@ -288,27 +288,26 @@ module Gene
 
       raise ParseError, "Incomplete content after '#{open_char}'" if eos?
 
-      in_comment = false
-      closed = false
+      #in_comment = false
+      closed     = false
 
       until eos?
         case
-        when skip(COMMENT_END)
-          in_comment = false
-          ;
+        #when skip(COMMENT_END)
+        #  in_comment = false
         when open_char == '(' && scan(GROUP_CLOSE)
           closed = true
           break
         when open_char == '[' && scan(ARRAY_CLOSE)
           closed = true
           break
-        when skip(COMMENT)
-          in_comment = true
-          ;
+        #when skip(COMMENT)
+        #  in_comment = true
         when skip(IGNORE)
           ;
         when (value = parse_value) != UNPARSED
-          result << value unless in_comment
+          #result << value unless in_comment
+          result << value
         else
           raise ParseError, "unexpected token at '#{peek(20)}'!"
         end
