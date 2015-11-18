@@ -18,7 +18,7 @@ describe Gene::RubyInterpreter do
     @a.should == 1
   end
 
-  it "('' 1 2)" do
+  it "(#'' 1 2)" do
     result = eval Gene::RubyInterpreter.parse_and_process(example.description)
     result.should == "12"
   end
@@ -107,7 +107,7 @@ describe Gene::RubyInterpreter do
 
     it "
       (def do_this[first second [third 'default']]
-        ('' first second third)
+        (#'' first second third)
       )
     " do
       r = Gene::CoreInterpreter.parse_and_process(example.description)

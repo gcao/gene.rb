@@ -1,7 +1,7 @@
 module Gene
   module Handlers
     class RangeHandler
-      RANGE = Gene::Types::Ident.new('..')
+      RANGE = Gene::Types::Ident.new('#..')
 
       def initialize
         @logger = Logem::Logger.new(self)
