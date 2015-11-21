@@ -25,7 +25,7 @@ module Gene
         Gene::Handlers::Base64Handler.new,
         Gene::Handlers::ComplexStringHandler.new,
         Gene::Handlers::MetadataHandler.new,
-        Gene::Handlers::ReferenceHandler.new,
+        Gene::Handlers::RefHandler.new,
 
         Gene::Handlers::Ruby::ComplexStringHandler.new,
         Gene::Handlers::Ruby::ModuleHandler.new,

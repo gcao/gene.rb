@@ -4,6 +4,7 @@ describe Gene::Parser do
   # Copy individual tests to below and run to make debug easier
   # in vim command line, enter :rspec %:11
   {
+    '#a'       => Gene::Types::Ref.new('a'),
   }.each do |input, result|
     it "TEMP TEST should work" do
       Gene::Parser.parse(input).should == result
@@ -23,6 +24,7 @@ describe Gene::Parser do
     'false'    => false,
     'null'     => nil,
     '#_'       => Gene::Types::Placeholder,
+    '#a'       => Gene::Types::Ref.new('a'),
     'a'        => Gene::Types::Ident.new('a'),
     'a b'      => Gene::Stream.new(Gene::Types::Ident.new('a'), Gene::Types::Ident.new('b')),
     '\\('      => Gene::Types::Ident.new('('),

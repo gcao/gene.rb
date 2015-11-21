@@ -28,6 +28,8 @@ module Gene
                             )/x
     IDENT                 = /([^,\s\(\)\[\]\{\}]+)/
     IDENT_END             = /[,\s\(\)\[\]\{\}]/
+    REF                   = /#(?=[a-z])/
+    REF_END               = /[,\s\(\)\[\]\{\}]/
     #COMMENT               = /##([,\s\(\)\[\]\{\}]|$)/
     #COMMENT_END           = /##>([,\s\(\)\[\]\{\}]|$)/
     GROUP_OPEN            = /\(/
@@ -88,6 +90,8 @@ module Gene
         when (value = parse_group) != UNPARSED
           obj = handle_top_level_results obj, value
         when (value = parse_hash) != UNPARSED
+          obj = handle_top_level_results obj, value
+        when (value = parse_ref) != UNPARSED
           obj = handle_top_level_results obj, value
         when (value = parse_ident) != UNPARSED
           obj = handle_top_level_results obj, value
@@ -197,6 +201,8 @@ module Gene
         value
       when (value = parse_hash ) != UNPARSED
         value
+      when (value = parse_ref) != UNPARSED
+        value
       when (value = parse_ident) != UNPARSED
         value
       else
@@ -274,6 +280,25 @@ module Gene
       end
 
       Gene::Types::Ident.new(value)
+    end
+
+    def parse_ref
+      return UNPARSED unless scan(REF)
+
+      value = ''
+
+      until eos?
+        case
+        when check(REF_END)
+          break
+        when scan(ESCAPE)
+          value += getch
+        else
+          value += getch
+        end
+      end
+
+      Gene::Types::Ref.new(value)
     end
 
     def parse_group

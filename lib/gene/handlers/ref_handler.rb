@@ -1,16 +1,16 @@
 module Gene
   module Handlers
-    class ReferenceHandler
+    class RefHandler
       def initialize
         @logger = Logem::Logger.new(self)
       end
 
       def call context, group
-        return Gene::NOT_HANDLED unless group.first.to_s =~ /^#.+/
+        return Gene::NOT_HANDLED unless group.first.is_a? Gene::Types::Ref
 
         @logger.debug('call', group)
 
-        key = group.first.to_s[1..-1]
+        key = group.first.name
 
         if group.rest.length == 0
           context.references[key]
