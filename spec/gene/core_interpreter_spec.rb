@@ -58,8 +58,19 @@ describe Gene::CoreInterpreter do
       result.should == [1, 1]
     end
 
+    it '[(#SET a 1) (#a)]' do
+      pending
+      result = Gene::CoreInterpreter.parse_and_process(example.description)
+      result.should == [1]
+    end
+
+    it '[(#UNSET a)]' do
+      pending
+      result = Gene::CoreInterpreter.parse_and_process(example.description)
+      result.should == []
+    end
+
     it '[(#a 1 ()) #a]' do
-      pending "When #a should be treated as (#a) is not finalized yet"
       result = Gene::CoreInterpreter.parse_and_process(example.description)
       result.should == [1]
     end

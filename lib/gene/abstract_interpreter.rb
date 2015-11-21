@@ -36,6 +36,8 @@ module Gene
 
       if data.is_a? Gene::Types::Group
         handle_group data
+      elsif data.is_a? Gene::Types::Ref
+        @references[data.name]
       else
         data
       end
