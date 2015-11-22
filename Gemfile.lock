@@ -37,6 +37,7 @@ GEM
     jist (1.5.1)
       json
     json (1.7.7)
+    libv8 (3.16.14.13)
     logem (0.3.0)
     method_source (0.8.2)
     mime-types (1.25.1)
@@ -103,6 +104,7 @@ GEM
     rb-fsevent (0.9.3)
     rdoc (3.12.2)
       json (~> 1.4)
+    ref (2.0.0)
     rspec (2.8.0)
       rspec-core (~> 2.8.0)
       rspec-expectations (~> 2.8.0)
@@ -112,6 +114,9 @@ GEM
       diff-lcs (~> 1.1.2)
     rspec-mocks (2.8.0)
     slop (3.6.0)
+    therubyracer (0.12.2)
+      libv8 (~> 3.16.14.0)
+      ref
     thor (0.14.6)
     yard (0.8.7.6)
 
@@ -130,6 +135,7 @@ DEPENDENCIES
   rb-fsevent (>= 0.4.3.1)
   rdoc (~> 3.12)
   rspec (~> 2.8.0)
+  therubyracer
 
 BUNDLED WITH
    1.10.6

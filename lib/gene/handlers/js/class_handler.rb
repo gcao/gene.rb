@@ -16,9 +16,10 @@ module Gene
           group.shift
 
           class_name = group.shift.name
+
 <<-JS
-function #{class_name}(){
-}
+class #{class_name}(){
+}; #{class_name};
 JS
         end
       end

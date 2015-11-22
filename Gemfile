@@ -16,3 +16,5 @@ group :development do
 end
 
 gem 'logem'
+gem 'therubyracer'
+

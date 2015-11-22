@@ -1,5 +1,5 @@
 require 'gene/handlers/js/class_handler'
-#require 'gene/handlers/js/function_handler'
+require 'gene/handlers/js/function_handler'
 #require 'gene/handlers/js/if_handler'
 #require 'gene/handlers/js/complex_string_handler'
 #require 'gene/handlers/js/invocation_handler'
@@ -28,7 +28,7 @@ module Gene
 
         #Gene::Handlers::Js::ComplexStringHandler.new,
         Gene::Handlers::Js::ClassHandler.new,
-        #Gene::Handlers::Js::MethodHandler.new,
+        Gene::Handlers::Js::FunctionHandler.new,
         #Gene::Handlers::Js::IfHandler.new,
         #Gene::Handlers::Js::InvocationHandler.new,
         #Gene::Handlers::Js::AssignmentHandler.new,
