@@ -6,10 +6,20 @@ Gene = Generic Data Format
 
 - [ ] Define a core set of functionalities(e.g. data types, control structures) to be handled by a core interpreter
 
+  - [ ] set / use variables
+  - [ ] if / else
+  - [ ] for / each / repeat / while
+  - [ ] define / call blocks
+  - [ ] scoped variables (global + local)
+  - [ ] environment variables (not applicable if running inside browser ?!)
+  - [ ] feature detection
+
 - [ ] Output of the core interpreter can be consumed by specialized interpreters (e.g. Ruby interpreter)
 
+  - [ ] Specialized interpreters will inherit and override handlers from core interpreter
+
 ## Contributing to gene
- 
+
 * Check out the latest master to make sure the feature hasn't been implemented or the bug hasn't been fixed yet.
 * Check out the issue tracker to make sure someone already hasn't requested it and/or contributed it.
 * Fork the project.
