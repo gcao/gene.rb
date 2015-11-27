@@ -3,8 +3,8 @@ require 'gene/handlers/js/function_handler'
 #require 'gene/handlers/js/if_handler'
 #require 'gene/handlers/js/complex_string_handler'
 #require 'gene/handlers/js/invocation_handler'
-#require 'gene/handlers/js/statement_handler'
 #require 'gene/handlers/js/assignment_handler'
+require 'gene/handlers/js/statement_handler'
 
 module Gene
   class JavascriptInterpreter < AbstractInterpreter
@@ -23,7 +23,7 @@ module Gene
         #Gene::Handlers::Js::IfHandler.new,
         #Gene::Handlers::Js::InvocationHandler.new,
         #Gene::Handlers::Js::AssignmentHandler.new,
-        #Gene::Handlers::Js::StatementHandler.new,
+        Gene::Handlers::Js::StatementHandler.new,
       )
     end
 

@@ -23,5 +23,10 @@ describe Gene::JavascriptInterpreter do
     result.should == 3
   end
 
+  it "(var a = 1)" do
+    @ctx.eval Gene::JavascriptInterpreter.parse_and_process(example.description)
+    @ctx['a'].should == 1
+  end
+
 end
 
