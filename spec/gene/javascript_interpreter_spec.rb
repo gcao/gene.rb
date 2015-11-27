@@ -81,9 +81,10 @@ describe Gene::JavascriptInterpreter do
     #}
     it "
       (var DynamicDate = {
+        calculateDays : (function [month year] [
+        ])
       })
     " do
-      raise 'TODO'
       puts Gene::JavascriptInterpreter.parse_and_process(example.description)
       @ctx.eval Gene::JavascriptInterpreter.parse_and_process(example.description)
       @ctx['DynamicDate'].is_a?(V8::Object).should == true

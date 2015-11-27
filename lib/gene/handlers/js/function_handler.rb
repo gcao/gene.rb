@@ -15,7 +15,7 @@ module Gene
 
           group.shift
 
-          fn_name = group.shift.name
+          fn_name = group[0].is_a?(Gene::Types::Group) ? "" : group.shift.name
           args = group.shift
           if args
             args = context.handle_partial(args)
