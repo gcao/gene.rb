@@ -38,20 +38,6 @@ describe Gene::CoreInterpreter do
     end
   end
 
-  describe "metadata" do
-    it '(a (^b))' do
-      result = Gene::CoreInterpreter.parse_and_process(example.description)
-      result.class.should == Gene::Types::Group
-      result.metadata['b'].should == true
-    end
-
-    it '(a (^b 1))' do
-      result = Gene::CoreInterpreter.parse_and_process(example.description)
-      result.class.should == Gene::Types::Group
-      result.metadata['b'].should == 1
-    end
-  end
-
   describe "references" do
     it '[(#a 1) (#a)]' do
       result = Gene::CoreInterpreter.parse_and_process(example.description)

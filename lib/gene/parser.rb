@@ -36,6 +36,8 @@ module Gene
     GROUP_CLOSE           = /\)/
     HASH_OPEN             = /\{/
     HASH_CLOSE            = /\}/
+    METADATA              = /\^(?=[+\-]?)/
+    METADATA_END          = /[,\s\(\)\[\]\{\}]/
     PAIR_DELIMITER        = /:/
     COMMA                 = /,/
     ARRAY_OPEN            = /\[/
@@ -92,6 +94,8 @@ module Gene
         when (value = parse_hash) != UNPARSED
           obj = handle_top_level_results obj, value
         when (value = parse_ref) != UNPARSED
+          obj = handle_top_level_results obj, value
+        when (value = parse_metadata) != UNPARSED
           obj = handle_top_level_results obj, value
         when (value = parse_ident) != UNPARSED
           obj = handle_top_level_results obj, value
@@ -184,6 +188,8 @@ module Gene
     end
 
     def parse_value
+      skip(IGNORE)
+
       case
       when (value = parse_string) != UNPARSED
         value
@@ -202,6 +208,8 @@ module Gene
       when (value = parse_hash ) != UNPARSED
         value
       when (value = parse_ref) != UNPARSED
+        value
+      when (value = parse_metadata) != UNPARSED
         value
       when (value = parse_ident) != UNPARSED
         value
@@ -301,13 +309,50 @@ module Gene
       Gene::Types::Ref.new(value)
     end
 
+    def parse_metadata
+      return UNPARSED unless scan(METADATA)
+
+      value = ''
+
+      until eos?
+        case
+        when check(METADATA_END)
+          break
+        when scan(ESCAPE)
+          value += getch
+        else
+          value += getch
+        end
+      end
+
+      if value =~ /^[+\-]?(.*)$/
+        key = $1
+        if value[0] == '+'
+          @metadata_for_group[key] = true
+        elsif value[0] == '-'
+          @metadata_for_group[key] = false
+        else
+          next_value = parse_value
+          if next_value == UNPARSED
+            raise ParseError, "Metadata for \"#{key}\" is not found"
+          end
+
+          @metadata_for_group[key] = next_value
+        end
+      else
+        raise "Should never reach here"
+      end
+    end
+
     def parse_group
       return UNPARSED unless scan(GROUP_OPEN) || scan(ARRAY_OPEN)
+
+      @metadata_for_group = {}
 
       result = Array.new
 
       open_char = self[0]
-      if open_char == '[' 
+      if open_char == '['
         result << Gene::Types::Ident.new('[]')
       end
 
@@ -340,7 +385,11 @@ module Gene
 
       raise ParseError, "unexpected end of input" unless closed
 
-      Gene::Types::Group.new(*result)
+      group = Gene::Types::Group.new(*result)
+      @metadata_for_group.each do |k, v|
+        group.metadata[k] = v
+      end
+      group
     end
 
     def parse_hash

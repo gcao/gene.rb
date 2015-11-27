@@ -67,6 +67,26 @@ describe Gene::Parser do
     end
   end
 
+  describe "metadata" do
+    it '(a ^key true)' do
+      result = Gene::Parser.parse(example.description)
+      result.class.should == Gene::Types::Group
+      result.metadata['key'].should == true
+    end
+
+    it '(a ^+key)' do
+      result = Gene::Parser.parse(example.description)
+      result.class.should == Gene::Types::Group
+      result.metadata['key'].should == true
+    end
+    
+    it '(a ^-key)' do
+      result = Gene::Parser.parse(example.description)
+      result.class.should == Gene::Types::Group
+      result.metadata['key'].should == false
+    end
+  end
+
   [
     '(',
     ')',
@@ -78,6 +98,7 @@ describe Gene::Parser do
     '{a b}',
     '{a :}',
     "(a # b)",
+    "(a ^b)",
   ].each do |input|
     it "process #{input} should fail" do
       lambda {

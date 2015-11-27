@@ -23,7 +23,6 @@ module Gene
         Gene::Handlers::RangeHandler.new,
         Gene::Handlers::Base64Handler.new,
         Gene::Handlers::ComplexStringHandler.new,
-        Gene::Handlers::MetadataHandler.new,
         Gene::Handlers::RefHandler.new,
 
         #Gene::Handlers::Js::ComplexStringHandler.new,
