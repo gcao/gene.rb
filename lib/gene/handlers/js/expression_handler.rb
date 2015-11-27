@@ -11,7 +11,7 @@ module Gene
           @logger.debug('call', group)
 
           if group.rest.find{ |item| item.is_a? Gene::Types::Ident and item.to_s =~ /^[+\-*\/=]+$/ }
-            "#{group.join(' ')}"
+            "(#{group.join(' ')})"
           else
             NOT_HANDLED
           end

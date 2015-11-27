@@ -1,8 +1,8 @@
 module Gene
   module Handlers
     module Js
-      class VarHandler
-        VAR = Gene::Types::Ident.new('var')
+      class ReturnHandler
+        RETURN = Gene::Types::Ident.new('return')
 
         def initialize
           @logger = Logem::Logger.new(self)
@@ -11,9 +11,9 @@ module Gene
         def call context, group
           @logger.debug('call', group)
 
-          return Gene::NOT_HANDLED unless group.first == VAR
+          return Gene::NOT_HANDLED unless group.first == RETURN
 
-          group.map{|item| context.handle_partial(item) }.join(' ') + ";\n"
+          group.join(' ') + ";\n"
         end
       end
     end

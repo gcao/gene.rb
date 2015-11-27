@@ -18,11 +18,6 @@ describe Gene::JavascriptInterpreter do
     result.name.should == 'A'
   end
 
-  it "(function test)" do
-    @ctx.eval Gene::JavascriptInterpreter.parse_and_process(example.description)
-    @ctx['test'].is_a?(V8::Function).should == true
-  end
-
   it "(1 + 2)" do
     result = @ctx.eval Gene::JavascriptInterpreter.parse_and_process(example.description)
     result.should == 3
@@ -33,15 +28,66 @@ describe Gene::JavascriptInterpreter do
     @ctx['a'].should == 1
   end
 
-  it "
-    (function inc [arg] [(return arg + 1)])
-    (inc 1)
-  " do
-    result = Gene::JavascriptInterpreter.parse_and_process(example.description) do |code|
-      @ctx.eval code
+  describe "conditions" do
+    it "(if true 1)" do
+      result = @ctx.eval Gene::JavascriptInterpreter.parse_and_process(example.description)
+      result.should == 1
     end
-    result.should == 2
+
+    it "(if false 1 2)" do
+      result = @ctx.eval Gene::JavascriptInterpreter.parse_and_process(example.description)
+      result.should == 2
+    end
   end
 
+  describe "functions" do
+    it "(function test [] [])" do
+      @ctx.eval Gene::JavascriptInterpreter.parse_and_process(example.description)
+      @ctx['test'].is_a?(V8::Function).should == true
+    end
+
+    it "
+      (function inc [arg] [(return arg + 1)])
+      (inc 1)
+    " do
+      result = Gene::JavascriptInterpreter.parse_and_process(example.description) do |code|
+        @ctx.eval code
+      end
+      result.should == 2
+    end
+  end
+
+  describe "advanced" do
+
+    # Implement below
+    #var DynamicDate = {
+    #  calculateDays: function(month, year) {
+    #    if ([4, 6, 9, 11].include(month)) { return 30; }  /* April, June, September, November */
+    #
+    #    if (month == 2) { /* February */
+    #      if (this.leapYear(year))
+    #        return 29;
+    #      else
+    #        return 28;
+    #    }
+    #
+    #    return 31;
+    #  },
+    #
+    #  leapYear: function(year) {
+    #    /* Any year divisible by 4 except those divisible by 100 except 400 */
+    #    return ( ((year % 4 == 0) && (year % 100 != 0)) || ( year % 400 == 0) )
+    #  }
+    #}
+    it "
+      (var DynamicDate = {
+      })
+    " do
+      raise 'TODO'
+      puts Gene::JavascriptInterpreter.parse_and_process(example.description)
+      @ctx.eval Gene::JavascriptInterpreter.parse_and_process(example.description)
+      @ctx['DynamicDate'].is_a?(V8::Object).should == true
+    end
+  end
 end
 

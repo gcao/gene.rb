@@ -17,7 +17,7 @@ module Gene
           pair.first == Gene::NOOP or pair.second == Gene::NOOP
         end
 
-        Hash[*pairs.reduce([]){|result, pair| result << pair.first << pair.second }]
+        Hash[*pairs.reduce([]){|result, pair| result << context.handle_partial(pair.first) << context.handle_partial(pair.second) }]
       end
     end
   end
