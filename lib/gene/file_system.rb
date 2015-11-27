@@ -14,10 +14,12 @@ module Gene
 
     def initialize
       super
-      @handlers = [
+
+      @handlers.push(
         Gene::FileSystem::DirHandler.new,
         Gene::FileSystem::FileHandler.new,
-      ]
+      )
+
       root = Dir.mktmpdir('gene')
       @dirs = [root]
     end

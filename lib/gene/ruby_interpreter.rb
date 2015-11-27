@@ -17,15 +17,7 @@ module Gene
     def initialize
       super
 
-      @handlers = [
-        Gene::Handlers::ArrayHandler.new,
-        Gene::Handlers::HashHandler.new,
-        Gene::Handlers::ComplexStringHandler.new,
-        Gene::Handlers::RangeHandler.new,
-        Gene::Handlers::Base64Handler.new,
-        Gene::Handlers::ComplexStringHandler.new,
-        Gene::Handlers::RefHandler.new,
-
+      @handlers.push(
         Gene::Handlers::Ruby::ComplexStringHandler.new,
         Gene::Handlers::Ruby::ModuleHandler.new,
         Gene::Handlers::Ruby::ClassHandler.new,
@@ -34,7 +26,7 @@ module Gene
         Gene::Handlers::Ruby::InvocationHandler.new,
         Gene::Handlers::Ruby::AssignmentHandler.new,
         Gene::Handlers::Ruby::StatementHandler.new,
-      ]
+      )
     end
 
   end
