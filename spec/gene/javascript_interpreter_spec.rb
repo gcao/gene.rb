@@ -7,6 +7,11 @@ describe Gene::JavascriptInterpreter do
     @ctx = V8::Context.new
   end
 
+  it "[1 2]" do
+    result = @ctx.eval Gene::JavascriptInterpreter.parse_and_process(example.description)
+    result.to_a.should == [1, 2]
+  end
+
   it "(class A)" do
     pending "ES6 not supported"
     result = @ctx.eval Gene::JavascriptInterpreter.parse_and_process(example.description)
@@ -29,11 +34,10 @@ describe Gene::JavascriptInterpreter do
   end
 
   it "
-    (function inc [arg] [(arg + 1)])
+    (function inc [arg] [(return arg + 1)])
     (inc 1)
   " do
     result = Gene::JavascriptInterpreter.parse_and_process(example.description) do |code|
-      puts code
       @ctx.eval code
     end
     result.should == 2

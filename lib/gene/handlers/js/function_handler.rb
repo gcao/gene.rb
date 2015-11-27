@@ -16,11 +16,23 @@ module Gene
           group.shift
 
           fn_name = group.shift.name
-          args = group.shift || []
+          args = group.shift
+          if args
+            args = context.handle_partial(args)
+          else
+            args = []
+          end
+
+          body = group.shift
+          if body
+            body = context.handle_partial(body)
+          else
+            body = []
+          end
 
 <<-JS
 function #{fn_name}(#{args.join(', ')}){
-#{group.join("\n")}
+#{body.map{|stmt| stmt + ";" }.join("\n")}
 }
 JS
         end
