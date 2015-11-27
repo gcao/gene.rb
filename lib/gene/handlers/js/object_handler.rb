@@ -21,9 +21,7 @@ module Gene
           obj = Hash[*pairs.reduce([]){|result, pair| result << context.handle_partial(pair.first) << context.handle_partial(pair.second) }]
 
           res = "{\n"
-          obj.each do |key, value|
-            res << "\"#{key}\": #{value}, "
-          end
+          res << obj.map{|key, value| "\"#{key}\": #{value}" }.join(',')
           res << "}\n"
         end
       end

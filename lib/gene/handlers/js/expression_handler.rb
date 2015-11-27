@@ -10,8 +10,8 @@ module Gene
         def call context, group
           @logger.debug('call', group)
 
-          if group.rest.find{ |item| item.is_a? Gene::Types::Ident and item.to_s =~ /^[+\-*\/=]+$/ }
-            "(#{group.join(' ')})"
+          if group.rest.find{ |item| item.is_a? Gene::Types::Ident and item.to_s =~ /^[!<>+\-*\/=]+$/ }
+            "(#{group.map{|item| context.handle_partial(item) }.join(' ')})"
           else
             NOT_HANDLED
           end

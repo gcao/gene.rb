@@ -32,7 +32,7 @@ module Gene
 
 <<-JS
 function #{fn_name}(#{args.join(', ')}){
-#{body.map{|stmt| stmt + ";" }.join("\n")}
+#{body.join(";\n")}
 }
 JS
         end

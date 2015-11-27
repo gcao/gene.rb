@@ -62,7 +62,7 @@ describe Gene::JavascriptInterpreter do
     # Implement below
     #var DynamicDate = {
     #  calculateDays: function(month, year) {
-    #    if ([4, 6, 9, 11].include(month)) { return 30; }  /* April, June, September, November */
+    #    if ([4, 6, 9, 11].indexOf(month) >= 0) { return 30; }  /* April, June, September, November */
     #
     #    if (month == 2) { /* February */
     #      if (this.leapYear(year))
@@ -82,12 +82,21 @@ describe Gene::JavascriptInterpreter do
     it "
       (var DynamicDate = {
         calculateDays : (function [month year] [
-        ])
+          (if (([4 6 9 11] .indexOf month) >= 0) (return 30))
+          (if (month == 2) 
+            (if (DynamicDate .leapYear year) (return 29) (return 28))
+          )
+        ]),
+        leapYear : (function [year] [(return ((year % 4 == 0) && (year % 100 != 0) || (year % 400 == 0)))])
       })
     " do
-      puts Gene::JavascriptInterpreter.parse_and_process(example.description)
+      #puts Gene::JavascriptInterpreter.parse_and_process(example.description)
       @ctx.eval Gene::JavascriptInterpreter.parse_and_process(example.description)
       @ctx['DynamicDate'].is_a?(V8::Object).should == true
+      @ctx['DynamicDate']['calculateDays'].call(4, 1990).should == 30
+      @ctx['DynamicDate']['calculateDays'].call(2, 1980).should == 29
+      @ctx['DynamicDate']['calculateDays'].call(2, 1900).should == 28
+      @ctx['DynamicDate']['calculateDays'].call(2, 1981).should == 28
     end
   end
 end
