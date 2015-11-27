@@ -1,7 +1,7 @@
 module Gene
   module Handlers
     module Js
-      class StatementHandler
+      class ExpressionHandler
 
         def initialize
           @logger = Logem::Logger.new(self)
@@ -10,12 +10,15 @@ module Gene
         def call context, group
           @logger.debug('call', group)
 
-          return Gene::NOT_HANDLED unless group.is_a? Gene::Types::Group
-
-          "#{group.first}(#{group.rest.join(', ')});\n"
+          if group.rest.find{ |item| item.is_a? Gene::Types::Ident and item.to_s =~ /^[+\-*\/=]+$/ }
+            "#{group.join(' ')}"
+          else
+            NOT_HANDLED
+          end
         end
       end
     end
   end
 end
+
 

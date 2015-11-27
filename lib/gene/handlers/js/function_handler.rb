@@ -15,11 +15,13 @@ module Gene
 
           group.shift
 
-          class_name = group.shift.name
+          fn_name = group.shift.name
+          args = group.shift || []
 
 <<-JS
-function #{class_name}(){
-}; #{class_name};
+function #{fn_name}(#{args.join(', ')}){
+#{group.join("\n")}
+}
 JS
         end
       end

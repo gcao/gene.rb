@@ -1,7 +1,8 @@
 module Gene
   module Handlers
     module Js
-      class StatementHandler
+      class VarHandler
+        VAR = Gene::Types::Ident.new('var')
 
         def initialize
           @logger = Logem::Logger.new(self)
@@ -10,9 +11,9 @@ module Gene
         def call context, group
           @logger.debug('call', group)
 
-          return Gene::NOT_HANDLED unless group.is_a? Gene::Types::Group
+          return Gene::NOT_HANDLED unless group.first == VAR
 
-          "#{group.first}(#{group.rest.join(', ')});\n"
+          group.join(' ') + ";\n"
         end
       end
     end
