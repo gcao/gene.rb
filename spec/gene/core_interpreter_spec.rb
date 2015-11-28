@@ -67,4 +67,13 @@ describe Gene::CoreInterpreter do
     end
   end
 
+  describe "Interpreter capabiliby check" do
+    it '(#SUPPORT? (#SET) (#THROW "not supported"))' do
+      pending "Not sure whether this is a good idea"
+      lambda {
+        Gene::CoreInterpreter.parse_and_process(example.description)
+      }.should_not raise_error
+    end
+  end
+
 end
