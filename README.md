@@ -13,6 +13,10 @@ Gene = Generic Data Format
   - [ ] scoped variables (global + local)
   - [ ] environment variables (not applicable if running inside browser ?!)
   - [ ] feature detection
+  - [ ] Multiple run of interpretation (potential performance issue?):
+    * First run: core types interpreter (handle array, hash, ...)
+    * Second run: macros interpreter (handle #SET, #IF, ...)
+    * Third run: target language interpreter (ruby/js/...)
 
 - [ ] Output of the core interpreter can be consumed by specialized interpreters (e.g. Ruby interpreter)
 

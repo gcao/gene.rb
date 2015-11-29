@@ -17,16 +17,14 @@ module Gene
     def initialize
       super
 
-      @handlers.push(
-        Gene::Handlers::Ruby::ComplexStringHandler.new,
-        Gene::Handlers::Ruby::ModuleHandler.new,
-        Gene::Handlers::Ruby::ClassHandler.new,
-        Gene::Handlers::Ruby::MethodHandler.new,
-        Gene::Handlers::Ruby::IfHandler.new,
-        Gene::Handlers::Ruby::InvocationHandler.new,
-        Gene::Handlers::Ruby::AssignmentHandler.new,
-        Gene::Handlers::Ruby::StatementHandler.new,
-      )
+      @handlers.add Gene::Handlers::Ruby::ComplexStringHandler.new, 100
+      @handlers.add Gene::Handlers::Ruby::ModuleHandler.new, 100
+      @handlers.add Gene::Handlers::Ruby::ClassHandler.new, 100
+      @handlers.add Gene::Handlers::Ruby::MethodHandler.new, 100
+      @handlers.add Gene::Handlers::Ruby::IfHandler.new, 100
+      @handlers.add Gene::Handlers::Ruby::InvocationHandler.new, 100
+      @handlers.add Gene::Handlers::Ruby::AssignmentHandler.new, 100
+      @handlers.add Gene::Handlers::Ruby::StatementHandler.new, 100
     end
 
   end

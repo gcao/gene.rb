@@ -5,6 +5,7 @@ module Gene
   end
 end
 
+require 'gene/handlers/combo_handler'
 require 'gene/handlers/array_handler'
 require 'gene/handlers/hash_handler'
 require 'gene/handlers/range_handler'

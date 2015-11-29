@@ -7,9 +7,7 @@ module Gene
 
     def initialize
       super
-      @handlers.push(
-        Gene::Handlers::GroupHandler.new,
-      )
+      @handlers.add Gene::Handlers::GroupHandler.new, 100
     end
 
   end

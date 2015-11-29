@@ -15,10 +15,8 @@ module Gene
     def initialize
       super
 
-      @handlers.push(
-        Gene::FileSystem::DirHandler.new,
-        Gene::FileSystem::FileHandler.new,
-      )
+      @handlers.add Gene::FileSystem::DirHandler.new, 100
+      @handlers.add Gene::FileSystem::FileHandler.new, 100
 
       root = Dir.mktmpdir('gene')
       @dirs = [root]

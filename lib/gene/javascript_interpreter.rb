@@ -21,28 +21,27 @@ module Gene
     def initialize
       super
 
-      @handlers = [
-        Gene::Handlers::ArrayHandler.new,
-        #Gene::Handlers::HashHandler.new,
-        Gene::Handlers::ComplexStringHandler.new,
-        Gene::Handlers::RangeHandler.new,
-        Gene::Handlers::Base64Handler.new,
-        Gene::Handlers::RegexpHandler.new,
-        Gene::Handlers::RefHandler.new,
+      @handlers = Gene::Handlers::ComboHandler.new
+      @handlers.add Gene::Handlers::ArrayHandler.new, 100
+      #Gene::Handlers::HashHandler.new,
+      @handlers.add Gene::Handlers::ComplexStringHandler.new, 100
+      @handlers.add Gene::Handlers::RangeHandler.new, 100
+      @handlers.add Gene::Handlers::Base64Handler.new, 100
+      @handlers.add Gene::Handlers::RegexpHandler.new, 100
+      @handlers.add Gene::Handlers::RefHandler.new, 100
 
-        Gene::Handlers::Js::LiteralHandler.new,
-        #Gene::Handlers::Js::ComplexStringHandler.new,
-        Gene::Handlers::Js::ClassHandler.new,
-        Gene::Handlers::Js::ObjectHandler.new,
-        Gene::Handlers::Js::FunctionHandler.new,
-        Gene::Handlers::Js::VarHandler.new,
-        Gene::Handlers::Js::IfHandler.new,
-        Gene::Handlers::Js::ReturnHandler.new,
-        Gene::Handlers::Js::ExpressionHandler.new,
-        Gene::Handlers::Js::InvocationHandler.new,
-        #Gene::Handlers::Js::AssignmentHandler.new,
-        Gene::Handlers::Js::StatementHandler.new,
-      ]
+      @handlers.add Gene::Handlers::Js::LiteralHandler.new, 100
+      #Gene::Handlers::Js::ComplexStringHandler.new, 100
+      @handlers.add Gene::Handlers::Js::ClassHandler.new, 100
+      @handlers.add Gene::Handlers::Js::ObjectHandler.new, 100
+      @handlers.add Gene::Handlers::Js::FunctionHandler.new, 100
+      @handlers.add Gene::Handlers::Js::VarHandler.new, 100
+      @handlers.add Gene::Handlers::Js::IfHandler.new, 100
+      @handlers.add Gene::Handlers::Js::ReturnHandler.new, 100
+      @handlers.add Gene::Handlers::Js::ExpressionHandler.new, 100
+      @handlers.add Gene::Handlers::Js::InvocationHandler.new, 100
+      #Gene::Handlers::Js::AssignmentHandler.new, 100
+      @handlers.add Gene::Handlers::Js::StatementHandler.new, 100
     end
 
   end
