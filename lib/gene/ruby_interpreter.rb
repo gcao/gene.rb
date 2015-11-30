@@ -11,12 +11,23 @@ module Gene
   class RubyInterpreter < AbstractInterpreter
 
     def self.parse_and_process input, &block
-      new.process(Parser.parse(input), &block)
+      interpreter = new
+
+      CoreInterpreter.parse_and_process input do |output|
+        interpreter.process output, &block
+      end
     end
 
     def initialize
       super
 
+      @handlers.add Gene::Handlers::ArrayHandler.new, 100
+      @handlers.add Gene::Handlers::HashHandler.new, 100
+      @handlers.add Gene::Handlers::ComplexStringHandler.new, 100
+      @handlers.add Gene::Handlers::RangeHandler.new, 100
+      @handlers.add Gene::Handlers::Base64Handler.new, 100
+      @handlers.add Gene::Handlers::RegexpHandler.new, 100
+      @handlers.add Gene::Handlers::RefHandler.new, 100
       @handlers.add Gene::Handlers::Ruby::ComplexStringHandler.new, 100
       @handlers.add Gene::Handlers::Ruby::ModuleHandler.new, 100
       @handlers.add Gene::Handlers::Ruby::ClassHandler.new, 100

@@ -10,13 +10,6 @@ module Gene
       @stack = []
       @references = {}
       @handlers = Gene::Handlers::ComboHandler.new
-      @handlers.add Gene::Handlers::ArrayHandler.new, 100
-      @handlers.add Gene::Handlers::HashHandler.new, 100
-      @handlers.add Gene::Handlers::ComplexStringHandler.new, 100
-      @handlers.add Gene::Handlers::RangeHandler.new, 100
-      @handlers.add Gene::Handlers::Base64Handler.new, 100
-      @handlers.add Gene::Handlers::RegexpHandler.new, 100
-      @handlers.add Gene::Handlers::RefHandler.new, 100
     end
 
     def parent
@@ -64,20 +57,6 @@ module Gene
       else
         handle_partial result
       end
-      #handled = false
-      #result = @handlers.each do |handler|
-      #  result = handler.call self, group
-      #  next if result == NOT_HANDLED
-
-      #  handled = true
-      #  break handle_partial(result)
-      #end
-
-      #if handled
-      #  result
-      #else
-      #  group
-      #end
     end
   end
 end

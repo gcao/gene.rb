@@ -15,6 +15,13 @@ module Gene
     def initialize
       super
 
+      @handlers.add Gene::Handlers::ArrayHandler.new, 100
+      @handlers.add Gene::Handlers::HashHandler.new, 100
+      @handlers.add Gene::Handlers::ComplexStringHandler.new, 100
+      @handlers.add Gene::Handlers::RangeHandler.new, 100
+      @handlers.add Gene::Handlers::Base64Handler.new, 100
+      @handlers.add Gene::Handlers::RegexpHandler.new, 100
+      @handlers.add Gene::Handlers::RefHandler.new, 100
       @handlers.add Gene::FileSystem::DirHandler.new, 100
       @handlers.add Gene::FileSystem::FileHandler.new, 100
 
