@@ -14,23 +14,23 @@ module Gene
         # (function [args] [body])
         # (function [body])
         # If body is composed of only one statement, [] is optional
-        def call context, group
-          return Gene::NOT_HANDLED unless group.first == FUNCTION
+        def call context, data
+          return Gene::NOT_HANDLED unless data.is_a? Gene::Types::Group and data.first == FUNCTION
 
-          @logger.debug('call', group)
+          @logger.debug('call', data)
 
-          group.shift
+          data.shift
 
-          fn_name = group.first.is_a?(Gene::Types::Ident) ? group.shift.name : ""
+          fn_name = data.first.is_a?(Gene::Types::Ident) ? data.shift.name : ""
 
-          args = group.shift
+          args = data.shift
           #if args
           #  args = context.handle_partial(args)
           #else
           #  args = []
           #end
 
-          body = group.shift
+          body = data.shift
           if body
             if body.is_a? Array
               body = body.map {|stmt| context.handle_partial(stmt) }

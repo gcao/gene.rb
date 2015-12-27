@@ -7,13 +7,13 @@ module Gene
           @logger = Logem::Logger.new(self)
         end
 
-        def call context, group
-          return Gene::NOT_HANDLED if group.rest.first.to_s != '='
+        def call context, data
+          return Gene::NOT_HANDLED unless data.is_a? Gene::Types::Group and data.rest.first.to_s == '='
 
-          @logger.debug('call', group)
+          @logger.debug('call', data)
 
-          left  = group.first
-          right = group.rest[1..-1].map do |item|
+          left  = data.first
+          right = data.rest[1..-1].map do |item|
             if item.is_a? Gene::Types::Group
               # TODO
             else

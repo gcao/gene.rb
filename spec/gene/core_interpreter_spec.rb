@@ -8,10 +8,11 @@ describe Gene::CoreInterpreter do
   # Copy individual tests to below and process to make debug easier
   # in vim command line, enter :!rspec %:20
   {
+    '(#.. 1 3)'   => Range.new(1, 3),
   }.each do |input, result|
     it "process #{input} should work !!!" do
       parsed = Gene::Parser.new(input).parse
-      @interpreter.process(parsed).should == result
+      Gene::CoreInterpreter.new.process(parsed).should == result
     end
   end
 

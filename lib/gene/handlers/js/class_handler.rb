@@ -8,14 +8,14 @@ module Gene
           @logger = Logem::Logger.new(self)
         end
 
-        def call context, group
-          return Gene::NOT_HANDLED unless group.first == CLASS
+        def call context, data
+          return Gene::NOT_HANDLED unless data.is_a? Gene::Types::Group and data.first == CLASS
 
-          @logger.debug('call', group)
+          @logger.debug('call', data)
 
-          group.shift
+          data.shift
 
-          class_name = group.shift.name
+          class_name = data.shift.name
 
 <<-JS
 class #{class_name}(){

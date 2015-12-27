@@ -7,11 +7,13 @@ module Gene
           @logger = Logem::Logger.new(self)
         end
 
-        def call context, group
-          @logger.debug('call', group)
+        def call context, data
+          return NOT_HANDLED unless data.is_a? Gene::Types::Group
 
-          if group.rest.find{ |item| item.is_a? Gene::Types::Ident and item.to_s =~ /^[!<>+\-*\/=]+$/ }
-            "(#{group.map{|item| context.handle_partial(item) }.join(' ')})"
+          @logger.debug('call', data)
+
+          if data.rest.find{ |item| item.is_a? Gene::Types::Ident and item.to_s =~ /^[!<>+\-*\/=]+$/ }
+            "(#{data.map{|item| context.handle_partial(item) }.join(' ')})"
           else
             NOT_HANDLED
           end

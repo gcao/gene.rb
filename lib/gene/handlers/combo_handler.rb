@@ -21,11 +21,11 @@ module Gene
         @handlers = @handlers_with_priority.map &:handler
       end
 
-      def call context, group
+      def call context, data
         result = NOT_HANDLED
 
         @handlers.each do |handler|
-          result = handler.call context, group
+          result = handler.call context, data
           break result if result != NOT_HANDLED
         end
 

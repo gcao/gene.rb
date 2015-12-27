@@ -8,15 +8,15 @@ module Gene
           @logger = Logem::Logger.new(self)
         end
 
-        def call context, group
-          return Gene::NOT_HANDLED unless group.first == IF
+        def call context, data
+          return Gene::NOT_HANDLED unless data.is_a? Gene::Types::Group and data.first == IF
 
-          @logger.debug('call', group)
+          @logger.debug('call', data)
 
-          group.shift
-          cond = context.handle_partial group.shift
-          trueExpr = context.handle_partial group.shift
-          falseExpr = context.handle_partial group.shift
+          data.shift
+          cond = context.handle_partial data.shift
+          trueExpr = context.handle_partial data.shift
+          falseExpr = context.handle_partial data.shift
 
 <<-RUBY
 if (#{cond}) {

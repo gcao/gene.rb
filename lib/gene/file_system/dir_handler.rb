@@ -4,20 +4,20 @@ class Gene::FileSystem::DirHandler
     @logger = Logem::Logger.new(self)
   end
 
-  def call context, group
-    return Gene::NOT_HANDLED unless group.first == Gene::FileSystem::DIR
+  def call context, data
+    return Gene::NOT_HANDLED unless data.is_a? Gene::Types::Group and data.first == Gene::FileSystem::DIR
 
-    @logger.debug('call', group)
+    @logger.debug('call', data)
 
-    name = group[1]
-    name = context.handle_group name if name.is_a? Gene::Types::Group
+    name = data[1]
+    name = context.handle_data name if name.is_a? Gene::Types::Group
 
     dir = "#{context.root}/#{name}"
     Dir.mkdir dir
     context.dirs.push dir
 
     begin
-      group[2..-1].each do |child|
+      data[2..-1].each do |child|
         context.handle_partial child
       end
     ensure

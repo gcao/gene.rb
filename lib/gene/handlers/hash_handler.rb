@@ -1,23 +1,21 @@
 module Gene
   module Handlers
     class HashHandler
-      HASH = Gene::Types::Ident.new('{}')
-
       def initialize
         @logger = Logem::Logger.new(self)
       end
 
-      def call context, group
-        return Gene::NOT_HANDLED unless group.first == HASH
+      def call context, data
+        return Gene::NOT_HANDLED unless data.is_a? Hash
 
-        @logger.debug('call', group)
+        @logger.debug('call', data)
 
-        # Ignore pairs whose key or value is ()
-        pairs = group.rest.reject do |pair|
-          pair.first == Gene::NOOP or pair.second == Gene::NOOP
+        result = {}
+        data.each do |k, v|
+          key = context.handle_partial(k)
+          result[key] = context.handle_partial(v) if key != Gene::NOOP
         end
-
-        Hash[*pairs.reduce([]){|result, pair| result << context.handle_partial(pair.first) << context.handle_partial(pair.second) }]
+        result
       end
     end
   end

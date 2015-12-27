@@ -5,19 +5,23 @@ module Gene
         @logger = Logem::Logger.new(self)
       end
 
-      def call context, group
-        @logger.debug binding.send(:caller).join("\n")
-        @logger.debug('call', group)
+      def call context, data
+        return Gene::NOT_HANDLED unless data.is_a? Gene::Types::Group
 
-        # TODO detect whether first item has changed, if yes, re-handle this group
+        return Gene::NOOP if data.length == 0
+
+        @logger.debug binding.send(:caller).join("\n")
+        @logger.debug('call', data)
+
+        # TODO detect whether first item has changed, if yes, re-handle this data
 
         begin
-          context.stack.push group
+          context.stack.push data
 
-          group.each_with_index do |child, i|
+          data.each_with_index do |child, i|
             next if child == Gene::NOOP
 
-            group[i] = context.handle_partial(child)
+            data[i] = context.handle_partial(child)
           end
         ensure
           context.stack.pop

@@ -5,11 +5,12 @@ module Gene
         @logger = Logem::Logger.new(self)
       end
 
-      def call context, group
-        return Gene::NOT_HANDLED unless group.first.is_a? Gene::Types::Ident and
-                                        group.first.to_s =~ %r(^#//([a-z]*))
+      def call context, data
+        return Gene::NOT_HANDLED unless data.is_a? Gene::Types::Group and
+                                        data.first.is_a? Gene::Types::Ident and
+                                        data.first.to_s =~ %r(^#//([a-z]*))
 
-        @logger.debug('call', group)
+        @logger.debug('call', data)
 
         matched = $1 || ""
 
@@ -18,7 +19,7 @@ module Gene
         flags |= Regexp::MULTILINE  if matched.index('m')
         flags |= Regexp::EXTENDED   if matched.index('x')
 
-        Regexp.new group.rest.map(&:to_s).join, flags
+        Regexp.new data.rest.map(&:to_s).join, flags
       end
     end
   end

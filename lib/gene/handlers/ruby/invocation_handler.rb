@@ -6,12 +6,12 @@ module Gene
           @logger = Logem::Logger.new(self)
         end
 
-        def call context, group
-          return Gene::NOT_HANDLED unless group.first.name =~ /^\./
+        def call context, data
+          return Gene::NOT_HANDLED unless data.is_a? Gene::Types::Group and data.first.name =~ /^\./
 
-          @logger.debug('call', group)
+          @logger.debug('call', data)
 
-          "self#{group.first}(#{group.rest.map(&:inspect).join(', ')})"
+          "self#{data.first}(#{data.rest.map(&:inspect).join(', ')})"
         end
       end
     end

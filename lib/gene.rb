@@ -15,6 +15,6 @@ require 'gene/javascript_interpreter'
 require 'gene/file_system'
 
 module Gene
-  NOOP       = Gene::Types::Group.new()
+  NOOP       = Gene::Types::Noop.new()
   #EXPLODE_OP = Gene::Types::Ident.new('\\')  # (a (\\ b)) = (a b)
 end

@@ -382,7 +382,9 @@ module Gene
 
       raise ParseError, "unexpected end of input" unless closed
 
-      return result if open_char == '['
+      return result if open_char == '[' # Array
+
+      return Gene::NOOP if result.length == 0 # NOOP
 
       group = Gene::Types::Group.new(*result)
       @metadata_for_group.each do |k, v|

@@ -7,19 +7,13 @@ module Gene
         end
 
         def call context, item
-          @logger.debug('call', item)
-
           case item
           when String, Integer, Fixnum, true, false
+            @logger.debug('call', item)
             item.inspect
           when nil
+            @logger.debug('call', item)
             "null"
-          #when Array
-          #  item.map {|i| context.handle_partial(i) }
-          when Hash
-            p item
-            pairs = item.keys.map {|key,| "\"#{key}\": #{context.handle_partial(item[key])}" }
-            "{#{pairs.join", "}}"
           else
             NOT_HANDLED
           end

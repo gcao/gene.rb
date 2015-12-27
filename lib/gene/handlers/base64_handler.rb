@@ -7,12 +7,12 @@ module Gene
         @logger = Logem::Logger.new(self)
       end
 
-      def call context, group
-        return Gene::NOT_HANDLED unless group.first == BASE64
+      def call context, data
+        return Gene::NOT_HANDLED unless data.is_a? Gene::Types::Group and data.first == BASE64
 
-        @logger.debug('call', group)
+        @logger.debug('call', data)
 
-        Gene::Types::Base64.new group[1]
+        Gene::Types::Base64.new data[1]
       end
     end
   end

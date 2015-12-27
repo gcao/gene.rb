@@ -28,4 +28,8 @@ class Gene::Types::Group < Array
     end.join(' ')
     s << ")"
   end
+
+  def inspect
+    to_s
+  end
 end

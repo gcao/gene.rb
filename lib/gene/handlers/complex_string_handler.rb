@@ -9,10 +9,9 @@ module Gene
       end
 
       def call context, data
-        unless data.is_a? Gene::Types::Group and 
-               (data.first == COMPLEX_STRING1 or data.first == COMPLEX_STRING2)
-          return Gene::NOT_HANDLED
-        end
+        return Gene::NOT_HANDLED unless
+          data.is_a? Gene::Types::Group and
+          (data.first == COMPLEX_STRING1 or data.first == COMPLEX_STRING2)
 
         @logger.debug('call', data)
 

@@ -8,16 +8,16 @@ module Gene
           @logger = Logem::Logger.new(self)
         end
 
-        def call context, group
-          return Gene::NOT_HANDLED unless group.first == METHOD
+        def call context, data
+          return Gene::NOT_HANDLED unless data.is_a? Gene::Types::Group and data.first == METHOD
 
-          @logger.debug('call', group)
+          @logger.debug('call', data)
 
-          group.shift
+          data.shift
 
-          method_name = group.shift.name
+          method_name = data.shift.name
 
-          args = group.size > 1 ? context.handle_partial(group.shift) : []
+          args = data.size > 1 ? context.handle_partial(data.shift) : []
           if args.is_a? Array
             args = args.map do |arg|
               if arg.is_a? Array
@@ -31,7 +31,7 @@ module Gene
 <<-RUBY
 def #{method_name}(#{args})
 #{
-group.map{|item|
+data.map{|item|
   if item.is_a? Gene::Types::Group
     result = context.handle_partial(item)
     result.is_a?(String) ? result : result.inspect

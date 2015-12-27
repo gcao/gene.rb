@@ -1,19 +1,17 @@
 module Gene
   module Handlers
     class ArrayHandler
-      ARRAY = Gene::Types::Ident.new('[]')
-
       def initialize
         @logger = Logem::Logger.new(self)
       end
 
-      def call context, group
-        return Gene::NOT_HANDLED unless group.first == ARRAY
+      def call context, data
+        return Gene::NOT_HANDLED unless data.is_a? Array and not data.is_a? Gene::Types::Group
 
-        @logger.debug('call', group)
+        @logger.debug('call', data)
 
         result = []
-        group.rest.each do |child|
+        data.each do |child|
           next if child == Gene::NOOP
 
           value = context.handle_partial(child)

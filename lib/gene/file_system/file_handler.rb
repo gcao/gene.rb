@@ -4,15 +4,15 @@ class Gene::FileSystem::FileHandler
     @logger = Logem::Logger.new(self)
   end
 
-  def call context, group
-    return Gene::NOT_HANDLED unless group.first == Gene::FileSystem::FILE
+  def call context, data
+    return Gene::NOT_HANDLED unless data.is_a? Gene::Types::Group and data.first == Gene::FileSystem::FILE
 
-    @logger.debug('call', group)
+    @logger.debug('call', data)
 
-    group.shift
+    data.shift
 
     dir  = context.current_dir
-    name = group.shift
+    name = data.shift
 
     if name.is_a? Gene::Types::Ident
       name = name.name
@@ -20,7 +20,7 @@ class Gene::FileSystem::FileHandler
 
     path = "#{dir}/#{name}"
     file = File.new(path, 'w')
-    file.write group
+    file.write data
     path
   end
 

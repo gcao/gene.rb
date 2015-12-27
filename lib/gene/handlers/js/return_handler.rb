@@ -8,12 +8,12 @@ module Gene
           @logger = Logem::Logger.new(self)
         end
 
-        def call context, group
-          @logger.debug('call', group)
+        def call context, data
+          return Gene::NOT_HANDLED unless data.is_a? Gene::Types::Group and data.first == RETURN
 
-          return Gene::NOT_HANDLED unless group.first == RETURN
+          @logger.debug('call', data)
 
-          group.join(' ') + ";\n"
+          data.join(' ') + ";\n"
         end
       end
     end

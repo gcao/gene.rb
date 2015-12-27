@@ -7,14 +7,14 @@ module Gene
           @logger = Logem::Logger.new(self)
         end
 
-        def call context, group
-          @logger.debug('call', group)
+        def call context, data
+          @logger.debug('call', data)
           
-          if group.is_a? Gene::Types::Group
-            "#{group.first}(#{group.rest.join(', ')})"
-            #group.to_s
+          if data.is_a? Gene::Types::Group
+            "#{data.first}(#{data.rest.join(', ')})"
+            #data.to_s
           else
-            group
+            data
           end
         end
       end

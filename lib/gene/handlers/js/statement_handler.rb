@@ -7,12 +7,12 @@ module Gene
           @logger = Logem::Logger.new(self)
         end
 
-        def call context, group
-          @logger.debug('call', group)
+        def call context, data
+          return Gene::NOT_HANDLED unless data.is_a? Gene::Types::Group
 
-          return Gene::NOT_HANDLED unless group.is_a? Gene::Types::Group
+          @logger.debug('call', data)
 
-          "#{group.first}(#{group.rest.join(', ')});\n"
+          "#{data.first}(#{data.rest.join(', ')});\n"
         end
       end
     end
