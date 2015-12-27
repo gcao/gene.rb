@@ -8,13 +8,15 @@ module Gene
         @logger = Logem::Logger.new(self)
       end
 
-      def call context, group
-        return Gene::NOT_HANDLED unless group.first == COMPLEX_STRING1 or
-                                        group.first == COMPLEX_STRING2
+      def call context, data
+        unless data.is_a? Gene::Types::Group and 
+               (data.first == COMPLEX_STRING1 or data.first == COMPLEX_STRING2)
+          return Gene::NOT_HANDLED
+        end
 
-        @logger.debug('call', group)
+        @logger.debug('call', data)
 
-        Gene::Types::ComplexString.new *group.rest
+        Gene::Types::ComplexString.new *data.rest
       end
     end
   end

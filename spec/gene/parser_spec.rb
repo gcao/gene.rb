@@ -4,9 +4,8 @@ describe Gene::Parser do
   # Copy individual tests to below and run to make debug easier
   # in vim command line, enter :rspec %:11
   {
-    '#a'       => Gene::Types::Ref.new('a'),
   }.each do |input, result|
-    it "TEMP TEST should work" do
+    it "debugging #{input}" do
       Gene::Parser.parse(input).should == result
     end
   end
@@ -48,27 +47,39 @@ describe Gene::Parser do
     #"(a ##< b ##> c)"             => Gene::Types::Group.new(Gene::Types::Ident.new('a'), Gene::Types::Ident.new('c')),
 
     '(a (b))'  => Gene::Types::Group.new(Gene::Types::Ident.new('a'), Gene::Types::Group.new(Gene::Types::Ident.new('b'))),
-    '[a]'      => Gene::Types::Group.new(Gene::Types::Ident.new('[]'), Gene::Types::Ident.new('a')),
-    '(\[\] a)' => Gene::Types::Group.new(Gene::Types::Ident.new('[]'), Gene::Types::Ident.new('a')),
-    '[[a]]'    => Gene::Types::Group.new(Gene::Types::Ident.new('[]'), Gene::Types::Group.new(Gene::Types::Ident.new('[]'), Gene::Types::Ident.new('a'))),
-    '{}'       => Gene::Types::Group.new(Gene::Types::Ident.new('{}')),
-    '(\{\})'   => Gene::Types::Group.new(Gene::Types::Ident.new('{}')),
-    '{a : b}'  => Gene::Types::Group.new(Gene::Types::Ident.new('{}'), Gene::Types::Pair.new(Gene::Types::Ident.new('a'), Gene::Types::Ident.new('b'))),
-    '{a : b c : d}' => Gene::Types::Group.new(Gene::Types::Ident.new('{}'), 
-                         Gene::Types::Pair.new(Gene::Types::Ident.new('a'), Gene::Types::Ident.new('b')),
-                         Gene::Types::Pair.new(Gene::Types::Ident.new('c'), Gene::Types::Ident.new('d'))
-                       ),
-    '{a : b, c : d}' => Gene::Types::Group.new(Gene::Types::Ident.new('{}'), 
-                          Gene::Types::Pair.new(Gene::Types::Ident.new('a'), Gene::Types::Ident.new('b')),
-                          Gene::Types::Pair.new(Gene::Types::Ident.new('c'), Gene::Types::Ident.new('d'))
-                        ),
+    '[a]'      => [Gene::Types::Ident.new('a')],
+    #'(\[\] a)' => Gene::Types::Group.new(Gene::Types::Ident.new('[]'), Gene::Types::Ident.new('a')),
+    '[[a]]'    => [[Gene::Types::Ident.new('a')]],
   }.each do |input, result|
     it "parse #{input} should work" do
       Gene::Parser.parse(input).should == result
     end
   end
 
-  describe "metadata" do
+  describe "Hash" do
+    it '{}' do
+      result = Gene::Parser.parse(example.description)
+      result.should == {}
+    end
+
+    it '{a : b}' do
+      result = Gene::Parser.parse(example.description)
+      result.keys.first.should == Gene::Types::Ident.new('a')
+      result.values.first.should == Gene::Types::Ident.new('b')
+    end
+
+    ['{a : b c : d}', '{a : b, c : d}', '{,a : b, c : d,}'].each do |input|
+      it input do
+        result = Gene::Parser.parse(example.description)
+        result.keys.should include(Gene::Types::Ident.new('a'))
+        result.keys.should include(Gene::Types::Ident.new('c'))
+        result.values.should include(Gene::Types::Ident.new('b'))
+        result.values.should include(Gene::Types::Ident.new('d'))
+      end
+    end
+  end
+                        
+  describe "Metadata" do
     it '(a ^key true)' do
       result = Gene::Parser.parse(example.description)
       result.class.should == Gene::Types::Group
