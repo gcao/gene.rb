@@ -6,6 +6,8 @@ module Gene
       end
 
       def call context, data
+        return context.references[data.name] if data.is_a? Gene::Types::Ref
+
         return Gene::NOT_HANDLED unless data.is_a? Gene::Types::Group and data.first.is_a? Gene::Types::Ref
 
         @logger.debug('call', data)

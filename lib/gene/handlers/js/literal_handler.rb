@@ -6,13 +6,13 @@ module Gene
           @logger = Logem::Logger.new(self)
         end
 
-        def call context, item
-          case item
+        def call context, data
+          case data
           when String, Integer, Fixnum, true, false
-            @logger.debug('call', item)
-            item.inspect
+            @logger.debug('call', data)
+            data.inspect
           when nil
-            @logger.debug('call', item)
+            @logger.debug('call', data)
             "null"
           else
             NOT_HANDLED

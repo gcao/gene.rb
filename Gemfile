@@ -1,5 +1,7 @@
 source 'http://rubygems.org'
 
+ruby '1.9.3'
+
 group :development do
   gem 'rspec', '~> 2.8.0'
   gem 'rdoc', '~> 3.12'

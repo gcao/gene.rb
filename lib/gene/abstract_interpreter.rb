@@ -33,20 +33,13 @@ module Gene
     end
 
     def handle_partial data
-      @logger.debug('handle_partial', data.inspect)
+      #@logger.debug('handle_partial', data.inspect)
 
-      if data == Gene::NOOP
-        Gene::NOOP
-      elsif data.is_a? Gene::Types::Ref
-        @references[data.name]
+      result = @handlers.call self, data
+      if result == NOT_HANDLED
+        data
       else
-        result = @handlers.call self, data
-        if result == NOT_HANDLED
-          data
-        else
-          result
-          #handle_partial result
-        end
+        result
       end
     end
   end
