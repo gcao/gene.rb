@@ -89,7 +89,7 @@ describe Gene::JavascriptInterpreter do
           (return 31)
         ]),
         leapYear : (function [year] [
-        # Any year divisible by 4 except those divisible by 100 except 400
+          # Any year divisible by 4 except those divisible by 100 except 400
           (return ((year % 4 == 0) && (year % 100 != 0) || (year % 400 == 0)))
         ])
       })

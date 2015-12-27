@@ -8,6 +8,12 @@ module Gene
           @logger = Logem::Logger.new(self)
         end
 
+        # Supports
+        # (function name [args] [body])
+        # (function name [body])
+        # (function [args] [body])
+        # (function [body])
+        # If body is composed of only one statement, [] is optional
         def call context, group
           return Gene::NOT_HANDLED unless group.first == FUNCTION
 
@@ -15,17 +21,22 @@ module Gene
 
           group.shift
 
-          fn_name = group[0].is_a?(Gene::Types::Group) ? "" : group.shift.name
+          fn_name = group.first.is_a?(Gene::Types::Ident) ? group.shift.name : ""
+
           args = group.shift
-          if args
-            args = context.handle_partial(args)
-          else
-            args = []
-          end
+          #if args
+          #  args = context.handle_partial(args)
+          #else
+          #  args = []
+          #end
 
           body = group.shift
           if body
-            body = context.handle_partial(body)
+            if body.is_a? Array
+              body = body.map {|stmt| context.handle_partial(stmt) }
+            else
+              body = [context.handle_partial(body)]
+            end
           else
             body = []
           end

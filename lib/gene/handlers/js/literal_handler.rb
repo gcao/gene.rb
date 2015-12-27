@@ -14,6 +14,12 @@ module Gene
             item.inspect
           when nil
             "null"
+          #when Array
+          #  item.map {|i| context.handle_partial(i) }
+          when Hash
+            p item
+            pairs = item.keys.map {|key,| "\"#{key}\": #{context.handle_partial(item[key])}" }
+            "{#{pairs.join", "}}"
           else
             NOT_HANDLED
           end

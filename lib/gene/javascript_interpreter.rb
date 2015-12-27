@@ -15,7 +15,11 @@ module Gene
   class JavascriptInterpreter < AbstractInterpreter
 
     def self.parse_and_process input, &block
-      new.process(Parser.parse(input), &block)
+      interpreter = new
+
+      CoreInterpreter.parse_and_process input do |output|
+        interpreter.process output, &block
+      end
     end
 
     def initialize
@@ -28,9 +32,9 @@ module Gene
       @handlers.add Gene::Handlers::RangeHandler.new, 100
       @handlers.add Gene::Handlers::Base64Handler.new, 100
       @handlers.add Gene::Handlers::RegexpHandler.new, 100
-      @handlers.add Gene::Handlers::RefHandler.new, 100
+      #@handlers.add Gene::Handlers::RefHandler.new, 100
 
-      @handlers.add Gene::Handlers::Js::LiteralHandler.new, 100
+      #@handlers.add Gene::Handlers::Js::LiteralHandler.new, 100
       #Gene::Handlers::Js::ComplexStringHandler.new, 100
       @handlers.add Gene::Handlers::Js::ClassHandler.new, 100
       @handlers.add Gene::Handlers::Js::ObjectHandler.new, 100

@@ -33,6 +33,7 @@ describe Gene::Parser do
     '("a")'    => Gene::Types::Group.new("a"),
     '(a)'      => Gene::Types::Group.new(Gene::Types::Ident.new('a')),
     '(a b)'    => Gene::Types::Group.new(Gene::Types::Ident.new('a'), Gene::Types::Ident.new('b')),
+
     # Below two should be handled by the parser
     # # line comment
     # #< comment out up to #>
@@ -54,13 +55,13 @@ describe Gene::Parser do
     '(\{\})'   => Gene::Types::Group.new(Gene::Types::Ident.new('{}')),
     '{a : b}'  => Gene::Types::Group.new(Gene::Types::Ident.new('{}'), Gene::Types::Pair.new(Gene::Types::Ident.new('a'), Gene::Types::Ident.new('b'))),
     '{a : b c : d}' => Gene::Types::Group.new(Gene::Types::Ident.new('{}'), 
-                                       Gene::Types::Pair.new(Gene::Types::Ident.new('a'), Gene::Types::Ident.new('b')),
-                                       Gene::Types::Pair.new(Gene::Types::Ident.new('c'), Gene::Types::Ident.new('d'))
-                                      ),
+                         Gene::Types::Pair.new(Gene::Types::Ident.new('a'), Gene::Types::Ident.new('b')),
+                         Gene::Types::Pair.new(Gene::Types::Ident.new('c'), Gene::Types::Ident.new('d'))
+                       ),
     '{a : b, c : d}' => Gene::Types::Group.new(Gene::Types::Ident.new('{}'), 
-                                       Gene::Types::Pair.new(Gene::Types::Ident.new('a'), Gene::Types::Ident.new('b')),
-                                       Gene::Types::Pair.new(Gene::Types::Ident.new('c'), Gene::Types::Ident.new('d'))
-                                      ),
+                          Gene::Types::Pair.new(Gene::Types::Ident.new('a'), Gene::Types::Ident.new('b')),
+                          Gene::Types::Pair.new(Gene::Types::Ident.new('c'), Gene::Types::Ident.new('d'))
+                        ),
   }.each do |input, result|
     it "parse #{input} should work" do
       Gene::Parser.parse(input).should == result
