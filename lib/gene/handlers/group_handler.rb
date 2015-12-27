@@ -10,7 +10,7 @@ module Gene
 
         return Gene::NOOP if data.length == 0
 
-        @logger.debug binding.send(:caller).join("\n")
+        #@logger.debug binding.send(:caller).join("\n")
         @logger.debug('call', data)
 
         # TODO detect whether first item has changed, if yes, re-handle this data

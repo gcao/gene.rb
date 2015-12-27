@@ -1,4 +1,4 @@
-#require 'gene/handlers/js/literal_handler'
+require 'gene/handlers/js/literal_handler'
 require 'gene/handlers/js/class_handler'
 require 'gene/handlers/js/object_handler'
 require 'gene/handlers/js/function_handler'
@@ -25,7 +25,7 @@ module Gene
     def initialize
       super
 
-      #@handlers.add Gene::Handlers::Js::LiteralHandler.new, 100
+      @handlers.add Gene::Handlers::Js::LiteralHandler.new, 100
       #@handlers.add Gene::Handlers::Js::ComplexStringHandler.new, 100
       @handlers.add Gene::Handlers::Js::ClassHandler.new, 100
       @handlers.add Gene::Handlers::Js::ObjectHandler.new, 100

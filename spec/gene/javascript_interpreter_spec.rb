@@ -7,6 +7,11 @@ describe Gene::JavascriptInterpreter do
     @ctx = V8::Context.new
   end
 
+  it "(var a = null)" do
+    @ctx.eval Gene::JavascriptInterpreter.parse_and_process(example.description)
+    @ctx['a'].should == nil
+  end
+
   it "[1 2]" do
     result = @ctx.eval Gene::JavascriptInterpreter.parse_and_process(example.description)
     result.to_a.should == [1, 2]
@@ -21,6 +26,11 @@ describe Gene::JavascriptInterpreter do
   it "(1 + 2)" do
     result = @ctx.eval Gene::JavascriptInterpreter.parse_and_process(example.description)
     result.should == 3
+  end
+
+  it "('a' + 'b')" do
+    result = @ctx.eval Gene::JavascriptInterpreter.parse_and_process(example.description)
+    result.should == 'ab'
   end
 
   it "(var a = 1)" do
