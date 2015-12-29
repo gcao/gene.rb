@@ -17,7 +17,7 @@ module Gene
 
           method_name = data.shift.name
 
-          args = data.size > 1 ? context.handle_partial(data.shift) : []
+          args = data.size > 1 ? data.shift : []
           if args.is_a? Array
             args = args.map do |arg|
               if arg.is_a? Array

@@ -3,6 +3,7 @@ require 'strscan'
 module Gene
   class Parser < StringScanner
     SEPARATOR             = /[\s()\[\]{},;]/
+    SEP_OR_END            = /(?=#{SEPARATOR}|$)/
     STRING                = /"((?:[^\x0-\x1f"\\] |
                               # escaped special characters:
                               \\["\\\/bfnrt] |
@@ -17,7 +18,7 @@ module Gene
                               # match all but escaped special characters:
                               \\[\x20-\x21\x23-\x2e\x30-\x5b\x5d-\x61\x63-\x65\x67-\x6d\x6f-\x71\x73\x75-\xff])*)
                             '/nx
-    INTEGER               = /(-?0|-?[1-9]\d*)/
+    INTEGER               = /(-?0|-?[1-9]\d*)#{SEP_OR_END}/
     FLOAT                 = /(-?
                               (?:0|[1-9]\d*)
                               (?:
@@ -27,9 +28,7 @@ module Gene
                               )
                             )/x
     IDENT                 = /([^,\s\(\)\[\]\{\}]+)/
-    IDENT_END             = /[,\s\(\)\[\]\{\}]/
     REF                   = /#(?=[a-z])/
-    REF_END               = /[,\s\(\)\[\]\{\}]/
     #COMMENT               = /##([,\s\(\)\[\]\{\}]|$)/
     #COMMENT_END           = /##>([,\s\(\)\[\]\{\}]|$)/
     GROUP_OPEN            = /\(/
@@ -37,16 +36,15 @@ module Gene
     HASH_OPEN             = /\{/
     HASH_CLOSE            = /\}/
     METADATA              = /\^(?=[+\-]?)/
-    METADATA_END          = /[,\s\(\)\[\]\{\}]/
     PAIR_DELIMITER        = /:/
     COMMA                 = /,/
     ARRAY_OPEN            = /\[/
     ARRAY_CLOSE           = /\]/
     ESCAPE                = /\\/
-    TRUE_PATTERN          = /true/
-    FALSE_PATTERN         = /false/
-    NULL                  = /null/
-    PLACEHOLDER           = /_/
+    TRUE_PATTERN          = /true#{SEP_OR_END}/
+    FALSE_PATTERN         = /false#{SEP_OR_END}/
+    NULL                  = /null#{SEP_OR_END}/
+    PLACEHOLDER           = /#_#{SEP_OR_END}/
     IGNORE                = %r(
       (?:
        \#([,\s\(\)\{\}\[\]]+[^\n\r]*([\n\r]|$))| # line comments
@@ -88,6 +86,8 @@ module Gene
         when (value = parse_false) != UNPARSED
           obj = handle_top_level_results obj, value
         when (value = parse_null) != UNPARSED
+          obj = handle_top_level_results obj, value
+        when (value = parse_placeholder) != UNPARSED
           obj = handle_top_level_results obj, value
         when (value = parse_group) != UNPARSED
           obj = handle_top_level_results obj, value
@@ -203,6 +203,8 @@ module Gene
         value
       when (value = parse_null  ) != UNPARSED
         value
+      when (value = parse_placeholder ) != UNPARSED
+        value
       when (value = parse_group ) != UNPARSED
         value
       when (value = parse_hash ) != UNPARSED
@@ -271,6 +273,12 @@ module Gene
       nil
     end
 
+    def parse_placeholder
+      return UNPARSED unless scan(PLACEHOLDER)
+
+      Gene::PLACEHOLDER
+    end
+
     def parse_ident
       return UNPARSED unless check(IDENT)
 
@@ -278,7 +286,7 @@ module Gene
 
       until eos?
         case
-        when check(IDENT_END)
+        when check(SEPARATOR)
           break
         when scan(ESCAPE)
           value += getch
@@ -297,7 +305,7 @@ module Gene
 
       until eos?
         case
-        when check(REF_END)
+        when check(SEPARATOR)
           break
         when scan(ESCAPE)
           value += getch
@@ -316,7 +324,7 @@ module Gene
 
       until eos?
         case
-        when check(METADATA_END)
+        when check(SEPARATOR)
           break
         when scan(ESCAPE)
           value += getch

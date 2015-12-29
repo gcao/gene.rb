@@ -20,9 +20,10 @@ describe Gene::Parser do
     '1.0'      => 1.0,
     '-1.0'     => -1.0,
     'true'     => true,
+    'truea'    => Gene::Types::Ident.new('truea'),
     'false'    => false,
     'null'     => nil,
-    '#_'       => Gene::Types::Placeholder,
+    '#_'       => Gene::PLACEHOLDER,
     '#a'       => Gene::Types::Ref.new('a'),
     'a'        => Gene::Types::Ident.new('a'),
     'a b'      => Gene::Stream.new(Gene::Types::Ident.new('a'), Gene::Types::Ident.new('b')),
@@ -78,7 +79,7 @@ describe Gene::Parser do
       end
     end
   end
-                        
+
   describe "Metadata" do
     it '(a ^key true)' do
       result = Gene::Parser.parse(example.description)
@@ -91,7 +92,7 @@ describe Gene::Parser do
       result.class.should == Gene::Types::Group
       result.metadata['key'].should == true
     end
-    
+
     it '(a ^-key)' do
       result = Gene::Parser.parse(example.description)
       result.class.should == Gene::Types::Group

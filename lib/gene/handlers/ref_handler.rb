@@ -1,30 +1,32 @@
 module Gene
   module Handlers
     class RefHandler
+      SET = Gene::Types::Ident.new('#SET')
+
       def initialize
         @logger = Logem::Logger.new(self)
       end
 
       def call context, data
-        return context.references[data.name] if data.is_a? Gene::Types::Ref
+        # TODO
+        return Gene::NOT_HANDLED
 
-        return Gene::NOT_HANDLED unless data.is_a? Gene::Types::Group and data.first.is_a? Gene::Types::Ref
+        return context.references[data.name] if data.is_a? Gene::Types::Ref
+        return context.references[data.first.name] unless data.is_a? Gene::Types::Group and data.first.is_a? Gene::Types::Ref
+
+        return Gene::NOT_HANDLED unless data.is_a? Gene::Types::Group and data.first == SET
 
         @logger.debug('call', data)
 
-        key = data.first.name
+        data.shift
+        key = data.shift.name
+        value = data.shift
+        context.references[key] = value
 
-        if data.rest.length == 0
-          context.references[key]
+        if data.rest.length > 0
+          data.first
         else
-          value = data.rest[0]
-          context.references[key] = value
-
-          if data.rest.length == 2
-            data.rest[1]
-          else
-            value
-          end
+          value
         end
       end
     end

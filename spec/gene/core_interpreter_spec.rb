@@ -40,36 +40,39 @@ describe Gene::CoreInterpreter do
   end
 
   describe "references" do
-    it '[(#a 1) (#a)]' do
+    it '[(#a)]' do # Reference that is not initialized defaults to nil/null
+      pending
       result = Gene::CoreInterpreter.parse_and_process(example.description)
-      result.should == [1, 1]
+      result.should == [nil]
     end
 
     it '[(#SET a 1) (#a)]' do
       pending
       result = Gene::CoreInterpreter.parse_and_process(example.description)
-      result.should == [1]
+      result.should == [1, 1]
     end
 
-    it '[(#UNSET a)]' do
+    it '[(#SET a 1) #a]' do
       pending
       result = Gene::CoreInterpreter.parse_and_process(example.description)
-      result.should == []
+      result.should == [1, 1]
     end
 
-    it '[(#a 1 ()) #a]' do
+    it '[(#SET a 1 ()) #a]' do
+      pending
       result = Gene::CoreInterpreter.parse_and_process(example.description)
       result.should == [1]
     end
 
-    it '[(#a 1 ()) (#a)]' do
+    it '[(#SET a 1 ()) #a (#UNSET a) #a]' do
+      pending
       result = Gene::CoreInterpreter.parse_and_process(example.description)
-      result.should == [1]
+      result.should == [1, nil]
     end
   end
 
   describe "Interpreter capabiliby check" do
-    #it '(#SUPPORT? #SET #THROW "not supported")' do
+    #it '(#SUPPORT? #SET #THROW "#SET is not supported")' do
     it '(#SUPPORT? (#SET) (#THROW "not supported"))' do
       pending "Not sure whether this is a good idea"
       lambda {
