@@ -1,19 +1,22 @@
 require File.expand_path(File.dirname(__FILE__) + '/../spec_helper')
 
 describe Gene::FileSystem do
+  before do
+    @interpreter = Gene::FileSystem.new
+  end
 
   it "(file test.txt 'This is a test file')" do
-    file = Gene::FileSystem.parse_and_process(example.description)
+    file = @interpreter.parse_and_process(example.description)
     file.should =~ /test.txt$/
   end
 
   it "(dir test)" do
-    dir = Gene::FileSystem.parse_and_process(example.description)
+    dir = @interpreter.parse_and_process(example.description)
     dir.should =~ /test$/
   end
 
   it "(dir test (file test.txt 'This is a test file'))" do
-    dir = Gene::FileSystem.parse_and_process(example.description)
+    dir = @interpreter.parse_and_process(example.description)
     dir.should =~ /test$/
   end
 

@@ -4,55 +4,56 @@ require 'v8'
 
 describe Gene::JavascriptInterpreter do
   before do
+    @interpreter = Gene::JavascriptInterpreter.new
     @ctx = V8::Context.new
   end
 
   it "(var a = null)" do
-    @ctx.eval Gene::JavascriptInterpreter.parse_and_process(example.description)
+    @ctx.eval @interpreter.parse_and_process(example.description)
     @ctx['a'].should == nil
   end
 
   it "[1 2]" do
-    result = @ctx.eval Gene::JavascriptInterpreter.parse_and_process(example.description)
+    result = @ctx.eval @interpreter.parse_and_process(example.description)
     result.to_a.should == [1, 2]
   end
 
   it "(class A)" do
     pending "ES6 not supported"
-    result = @ctx.eval Gene::JavascriptInterpreter.parse_and_process(example.description)
+    result = @ctx.eval @interpreter.parse_and_process(example.description)
     result.name.should == 'A'
   end
 
   it "(1 + 2)" do
-    result = @ctx.eval Gene::JavascriptInterpreter.parse_and_process(example.description)
+    result = @ctx.eval @interpreter.parse_and_process(example.description)
     result.should == 3
   end
 
   it "('a' + 'b')" do
-    result = @ctx.eval Gene::JavascriptInterpreter.parse_and_process(example.description)
+    result = @ctx.eval @interpreter.parse_and_process(example.description)
     result.should == 'ab'
   end
 
   it "(var a = 1)" do
-    @ctx.eval Gene::JavascriptInterpreter.parse_and_process(example.description)
+    @ctx.eval @interpreter.parse_and_process(example.description)
     @ctx['a'].should == 1
   end
 
   describe "conditions" do
     it "(if true 1)" do
-      result = @ctx.eval Gene::JavascriptInterpreter.parse_and_process(example.description)
+      result = @ctx.eval @interpreter.parse_and_process(example.description)
       result.should == 1
     end
 
     it "(if false 1 2)" do
-      result = @ctx.eval Gene::JavascriptInterpreter.parse_and_process(example.description)
+      result = @ctx.eval @interpreter.parse_and_process(example.description)
       result.should == 2
     end
   end
 
   describe "functions" do
     it "(function test [] [])" do
-      @ctx.eval Gene::JavascriptInterpreter.parse_and_process(example.description)
+      @ctx.eval @interpreter.parse_and_process(example.description)
       @ctx['test'].is_a?(V8::Function).should == true
     end
 
@@ -60,7 +61,7 @@ describe Gene::JavascriptInterpreter do
       (function inc [arg] [(return arg + 1)])
       (inc 1)
     " do
-      result = Gene::JavascriptInterpreter.parse_and_process(example.description) do |code|
+      result = @interpreter.parse_and_process(example.description) do |code|
         @ctx.eval code
       end
       result.should == 2
@@ -104,8 +105,8 @@ describe Gene::JavascriptInterpreter do
         ])
       })
     " do
-      #puts Gene::JavascriptInterpreter.parse_and_process(example.description)
-      @ctx.eval Gene::JavascriptInterpreter.parse_and_process(example.description)
+      #puts @interpreter.parse_and_process(example.description)
+      @ctx.eval @interpreter.parse_and_process(example.description)
       @ctx.eval('DynamicDate.calculateDays(4, 1990)').should == 30
       @ctx.eval('DynamicDate.calculateDays(1, 1990)').should == 31
       @ctx.eval('DynamicDate.calculateDays(2, 1980)').should == 29

@@ -10,25 +10,17 @@ require 'gene/handlers/ruby/assignment_handler'
 module Gene
   class RubyInterpreter < AbstractInterpreter
 
-    def self.parse_and_process input, &block
-      interpreter = new
-
-      CoreInterpreter.parse_and_process input do |output|
-        interpreter.process output, &block
-      end
-    end
-
     def initialize
       super
 
-      @handlers.add Gene::Handlers::Ruby::ComplexStringHandler.new, 100
-      @handlers.add Gene::Handlers::Ruby::ModuleHandler.new, 100
-      @handlers.add Gene::Handlers::Ruby::ClassHandler.new, 100
-      @handlers.add Gene::Handlers::Ruby::MethodHandler.new, 100
-      @handlers.add Gene::Handlers::Ruby::IfHandler.new, 100
-      @handlers.add Gene::Handlers::Ruby::InvocationHandler.new, 100
-      @handlers.add Gene::Handlers::Ruby::AssignmentHandler.new, 100
-      @handlers.add Gene::Handlers::Ruby::StatementHandler.new, 100
+      @handlers.add 100, Gene::Handlers::Ruby::ComplexStringHandler.new
+      @handlers.add 100, Gene::Handlers::Ruby::ModuleHandler.new
+      @handlers.add 100, Gene::Handlers::Ruby::ClassHandler.new
+      @handlers.add 100, Gene::Handlers::Ruby::MethodHandler.new
+      @handlers.add 100, Gene::Handlers::Ruby::IfHandler.new
+      @handlers.add 100, Gene::Handlers::Ruby::InvocationHandler.new
+      @handlers.add 100, Gene::Handlers::Ruby::AssignmentHandler.new
+      @handlers.add 100, Gene::Handlers::Ruby::StatementHandler.new
     end
 
   end

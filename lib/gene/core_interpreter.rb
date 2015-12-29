@@ -7,14 +7,14 @@ module Gene
 
     def initialize
       super
-      @handlers.add Gene::Handlers::ArrayHandler.new, 100
-      @handlers.add Gene::Handlers::HashHandler.new, 100
-      @handlers.add Gene::Handlers::ComplexStringHandler.new, 100
-      @handlers.add Gene::Handlers::RangeHandler.new, 100
-      @handlers.add Gene::Handlers::Base64Handler.new, 100
-      @handlers.add Gene::Handlers::RegexpHandler.new, 100
-      @handlers.add Gene::Handlers::RefHandler.new, 100
-      @handlers.add Gene::Handlers::GroupHandler.new, 100
+      @handlers.add 100, Gene::Handlers::ArrayHandler.new
+      @handlers.add 100, Gene::Handlers::HashHandler.new
+      @handlers.add 100, Gene::Handlers::ComplexStringHandler.new
+      @handlers.add 100, Gene::Handlers::RangeHandler.new
+      @handlers.add 100, Gene::Handlers::Base64Handler.new
+      @handlers.add 100, Gene::Handlers::RegexpHandler.new
+      @handlers.add 100, Gene::Handlers::RefHandler.new
+      @handlers.add 100, Gene::Handlers::GroupHandler.new
     end
 
   end

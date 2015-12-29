@@ -28,8 +28,9 @@ describe Gene::CoreInterpreter do
     '{() : 2}'   => {},
     '()'         => Gene::NOOP,
     '[()]'       => [],
-    '(#.. 1 3)'   => Range.new(1, 3),
-    '(#"" 1 3)'   => Gene::Types::ComplexString.new(1, 3),
+    '(#.. 1 3)'  => Range.new(1, 3),
+    #'(#|| 1 2)'  => Gene::Types::Tuple.new(1, 2),
+    '(#"" 1 3)'  => Gene::Types::ComplexString.new(1, 3),
     '(#// a|b)'  => Regexp.new('a|b'),
     '(#//i a|b)' => Regexp.new('a|b', Regexp::IGNORECASE),
     "(#BASE64 \"VGhpcyBpcyBhIHRlc3Q=\")" => Gene::Types::Base64.new("VGhpcyBpcyBhIHRlc3Q=")

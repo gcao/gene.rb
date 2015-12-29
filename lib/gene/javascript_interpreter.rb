@@ -14,29 +14,21 @@ require 'gene/handlers/js/statement_handler'
 module Gene
   class JavascriptInterpreter < AbstractInterpreter
 
-    def self.parse_and_process input, &block
-      interpreter = new
-
-      CoreInterpreter.parse_and_process input do |output|
-        interpreter.process output, &block
-      end
-    end
-
     def initialize
       super
 
-      @handlers.add Gene::Handlers::Js::LiteralHandler.new, 100
-      #@handlers.add Gene::Handlers::Js::ComplexStringHandler.new, 100
-      @handlers.add Gene::Handlers::Js::ClassHandler.new, 100
-      @handlers.add Gene::Handlers::Js::ObjectHandler.new, 100
-      @handlers.add Gene::Handlers::Js::FunctionHandler.new, 100
-      @handlers.add Gene::Handlers::Js::VarHandler.new, 100
-      @handlers.add Gene::Handlers::Js::IfHandler.new, 100
-      @handlers.add Gene::Handlers::Js::ReturnHandler.new, 100
-      @handlers.add Gene::Handlers::Js::ExpressionHandler.new, 100
-      @handlers.add Gene::Handlers::Js::InvocationHandler.new, 100
-      #@handlers.add Gene::Handlers::Js::AssignmentHandler.new, 100
-      @handlers.add Gene::Handlers::Js::StatementHandler.new, 100
+      @handlers.add 100, Gene::Handlers::Js::LiteralHandler.new
+      #@handlers.add 100, Gene::Handlers::Js::ComplexStringHandler.new
+      @handlers.add 100, Gene::Handlers::Js::ClassHandler.new
+      @handlers.add 100, Gene::Handlers::Js::ObjectHandler.new
+      @handlers.add 100, Gene::Handlers::Js::FunctionHandler.new
+      @handlers.add 100, Gene::Handlers::Js::VarHandler.new
+      @handlers.add 100, Gene::Handlers::Js::IfHandler.new
+      @handlers.add 100, Gene::Handlers::Js::ReturnHandler.new
+      @handlers.add 100, Gene::Handlers::Js::ExpressionHandler.new
+      @handlers.add 100, Gene::Handlers::Js::InvocationHandler.new
+      #@handlers.add 100, Gene::Handlers::Js::AssignmentHandler.new
+      @handlers.add 100, Gene::Handlers::Js::StatementHandler.new
     end
 
   end

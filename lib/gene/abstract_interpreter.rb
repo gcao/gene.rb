@@ -32,6 +32,12 @@ module Gene
       result
     end
 
+    def parse_and_process input, &block
+      CoreInterpreter.parse_and_process input do |output|
+        process output, &block
+      end
+    end
+
     def handle_partial data
       #@logger.debug('handle_partial', data.inspect)
 

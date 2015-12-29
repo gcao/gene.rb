@@ -8,19 +8,11 @@ module Gene
 
     attr :dirs
 
-    def self.parse_and_process input, &block
-      interpreter = new
-
-      CoreInterpreter.parse_and_process input do |output|
-        interpreter.process output, &block
-      end
-    end
-
     def initialize
       super
 
-      @handlers.add Gene::FileSystem::DirHandler.new, 100
-      @handlers.add Gene::FileSystem::FileHandler.new, 100
+      @handlers.add 100, Gene::FileSystem::DirHandler.new
+      @handlers.add 100, Gene::FileSystem::FileHandler.new
 
       root = Dir.mktmpdir('gene')
       @dirs = [root]

@@ -9,7 +9,7 @@ module Gene
         @handlers = []
       end
 
-      def add handler, priority
+      def add priority, handler
         insert_position = @handlers_with_priority.length
         @handlers_with_priority.each_with_index do |item, i|
           if item.priority > priority
