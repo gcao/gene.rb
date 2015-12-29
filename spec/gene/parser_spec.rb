@@ -11,7 +11,7 @@ describe Gene::Parser do
   end
 
   {
-    ''         => Gene::Stream.new,
+    ''         => Gene::Types::Stream.new,
     '"a double-quoted String"' => "a double-quoted String",
     "'a single-quoted String'" => "a single-quoted String",
     '"a"'      => "a",
@@ -26,10 +26,10 @@ describe Gene::Parser do
     '#_'       => Gene::PLACEHOLDER,
     '#a'       => Gene::Types::Ref.new('a'),
     'a'        => Gene::Types::Ident.new('a'),
-    'a b'      => Gene::Stream.new(Gene::Types::Ident.new('a'), Gene::Types::Ident.new('b')),
+    'a b'      => Gene::Types::Stream.new(Gene::Types::Ident.new('a'), Gene::Types::Ident.new('b')),
     '\\('      => Gene::Types::Ident.new('('),
     '()'       => Gene::NOOP,
-    '1 ()'     => Gene::Stream.new(1, Gene::NOOP),
+    '1 ()'     => Gene::Types::Stream.new(1, Gene::NOOP),
     '("a")'    => Gene::Types::Group.new("a"),
     '(a)'      => Gene::Types::Group.new(Gene::Types::Ident.new('a')),
     '(a b)'    => Gene::Types::Group.new(Gene::Types::Ident.new('a'), Gene::Types::Ident.new('b')),

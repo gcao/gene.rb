@@ -14,7 +14,7 @@ module Gene
       @handlers.add 100, Gene::Handlers::Base64Handler.new
       @handlers.add 100, Gene::Handlers::RegexpHandler.new
       @handlers.add 100, Gene::Handlers::RefHandler.new
-      @handlers.add 100, Gene::Handlers::GroupHandler.new
+      @handlers.add 200, Gene::Handlers::GroupHandler.new
     end
 
   end

@@ -28,7 +28,7 @@ module Gene
       @handlers.add 100, Gene::Handlers::Js::ExpressionHandler.new
       @handlers.add 100, Gene::Handlers::Js::InvocationHandler.new
       #@handlers.add 100, Gene::Handlers::Js::AssignmentHandler.new
-      @handlers.add 100, Gene::Handlers::Js::StatementHandler.new
+      @handlers.add 200, Gene::Handlers::Js::StatementHandler.new
     end
 
   end

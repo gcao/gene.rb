@@ -105,7 +105,7 @@ module Gene
       end
 
       if obj == UNPARSED
-        Gene::Stream.new
+        Gene::Types::Stream.new
       else
         obj
       end
@@ -180,10 +180,10 @@ module Gene
     def handle_top_level_results container, new_result
       if container == UNPARSED
         new_result
-      elsif container.is_a? Stream
+      elsif container.is_a? Gene::Types::Stream
         container << new_result
       else
-        Stream.new(container, new_result)
+        Gene::Types::Stream.new(container, new_result)
       end
     end
 

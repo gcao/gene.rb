@@ -19,7 +19,7 @@ module Gene
     def process data
       result = nil
 
-      if data.is_a? Stream
+      if data.is_a? Gene::Types::Stream
         data.each do |item|
           result = handle_partial item
           result = yield result if block_given?

@@ -3,6 +3,7 @@ module Gene
   end
 end
 
+require 'gene/types/stream'
 require 'gene/types/noop'
 require 'gene/types/ident'
 require 'gene/types/ref'

@@ -20,7 +20,7 @@ module Gene
       @handlers.add 100, Gene::Handlers::Ruby::IfHandler.new
       @handlers.add 100, Gene::Handlers::Ruby::InvocationHandler.new
       @handlers.add 100, Gene::Handlers::Ruby::AssignmentHandler.new
-      @handlers.add 100, Gene::Handlers::Ruby::StatementHandler.new
+      @handlers.add 200, Gene::Handlers::Ruby::StatementHandler.new
     end
 
   end
