@@ -29,8 +29,21 @@ module Gene
           .map  {|option| method(option[:method]) }
     end
 
+    def parse_and_process input, &block
+      @logger.debug('parse_and_process', input)
+      result = super("(#{input})", &block)
+
+      if result.is_a? Fixnum or result.is_a? Float
+        result
+      #else
+      #  raise 'TODO'
+      end
+    end
+
     # Override method in base class to not pass context (the interpreter itself can act as the context)
     def handle_partial data
+      @logger.debug('handle_partial', data)
+
       @handlers.each do |handler|
         result = handler.call data
         if result != NOT_HANDLED
@@ -44,16 +57,25 @@ module Gene
     # Handlers
     handler
     def handle_literal data
-      return NOT_HANDLED unless data.is_a? Fixnum
-
-      data
+      if data.is_a? Gene::Types::Group and data.length == 1
+        @logger.debug('handle_literal', data)
+        handle_partial(data.first)
+      elsif data.is_a? Fixnum
+        @logger.debug('handle_literal', data)
+        data
+      else
+        NOT_HANDLED
+      end
     end
 
     handler
     def handle_plus data
-      return Gene::NOT_HANDLED unless data[1].is_a? Gene::Types::Ident and data[1].name == '+'
+      return Gene::NOT_HANDLED unless data.is_a? Gene::Types::Group and data[1].is_a? Gene::Types::Ident and data[1].name == '+'
 
-      handle_partial(data[0]) + handle_partial(data[2])
+      @logger.debug('handle_plus', data)
+      result = handle_partial(data[0]) + handle_partial(data[2])
+      data[0..2] = result
+      handle_partial(data)
     end
 
     handler priority: HIGH
@@ -64,12 +86,15 @@ module Gene
 
       if index.nil?
         return NOT_HANDLED
-      elsif index == 0
-        raise 'Invalid expression: left hand part of multiplication is not found'
-      elsif index == data.length - 1
-        raise 'Invalid expression: right hand part of multiplication is not found'
+      #elsif index == 0
+      #  raise 'Invalid expression: left hand part of multiplication is not found'
+      #elsif index == data.length - 1
+      #  raise 'Invalid expression: right hand part of multiplication is not found'
       else
-        # TODO
+        @logger.debug('handle_multiply', data)
+        result = handle_partial(data[index - 1]) * handle_partial(data[index + 1])
+        data[index-1 .. index+1] = result
+        handle_partial data
       end
     end
 
