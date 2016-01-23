@@ -1,5 +1,5 @@
 module Gene
-  class ExperimentalInterpreter < AbstractInterpreter
+  class ExperimentalInterpreter
     LOW    = 0
     NORMAL = 100
     HIGH   = 200
@@ -21,17 +21,35 @@ module Gene
     end
 
     def initialize
-      super
-
+      @logger   = Logem::Logger.new(self)
       @handlers =
         self.class.handlers
           .sort {|h1, h2| h2[:priority] <=> h1[:priority] }
           .map  {|option| method(option[:method]) }
     end
 
+    def process data
+      result = nil
+
+      if data.is_a? Gene::Types::Stream
+        data.each do |item|
+          result = handle_partial item
+          result = yield result if block_given?
+        end
+      else
+        result = handle_partial data
+        result = yield result if block_given?
+      end
+
+      result
+    end
+
     def parse_and_process input, &block
       @logger.debug('parse_and_process', input)
-      result = super("(#{input})", &block)
+
+      result = CoreInterpreter.parse_and_process "(#{input})" do |output|
+        process output, &block
+      end
 
       if result.is_a? Fixnum or result.is_a? Float
         result
