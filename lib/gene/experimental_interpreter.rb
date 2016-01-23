@@ -28,6 +28,14 @@ module Gene
           .map  {|option| method(option[:method]) }
     end
 
+    def parse_and_process input, &block
+      @logger.debug('parse_and_process', input)
+
+      CoreInterpreter.parse_and_process "(#{input})" do |output|
+        process output, &block
+      end
+    end
+
     def process data
       result = nil
 
@@ -44,21 +52,6 @@ module Gene
       result
     end
 
-    def parse_and_process input, &block
-      @logger.debug('parse_and_process', input)
-
-      result = CoreInterpreter.parse_and_process "(#{input})" do |output|
-        process output, &block
-      end
-
-      if result.is_a? Fixnum or result.is_a? Float
-        result
-      #else
-      #  raise 'TODO'
-      end
-    end
-
-    # Override method in base class to not pass context (the interpreter itself can act as the context)
     def handle_partial data
       @logger.debug('handle_partial', data)
 
@@ -104,10 +97,6 @@ module Gene
 
       if index.nil?
         return NOT_HANDLED
-      #elsif index == 0
-      #  raise 'Invalid expression: left hand part of multiplication is not found'
-      #elsif index == data.length - 1
-      #  raise 'Invalid expression: right hand part of multiplication is not found'
       else
         @logger.debug('handle_multiply', data)
         result = handle_partial(data[index - 1]) * handle_partial(data[index + 1])
