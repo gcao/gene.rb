@@ -10,14 +10,15 @@ module Gene
       end
 
       def add priority, handler
-        insert_position = @handlers_with_priority.length
-        @handlers_with_priority.each_with_index do |item, i|
-          if item.priority > priority
-            insert_position = i
-          end
-        end
+        #insert_position = @handlers_with_priority.length
+        #@handlers_with_priority.each_with_index do |item, i|
+        #  if item.priority > priority
+        #    insert_position = i
+        #  end
+        #end
 
-        @handlers_with_priority.insert insert_position, HandlerWithPriority.new(handler, priority)
+        #@handlers_with_priority.insert insert_position, HandlerWithPriority.new(handler, priority)
+        @handlers_with_priority << HandlerWithPriority.new(handler, priority)
         @handlers = @handlers_with_priority.map &:handler
       end
 

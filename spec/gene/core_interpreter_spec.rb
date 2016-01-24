@@ -42,19 +42,16 @@ describe Gene::CoreInterpreter do
 
   describe "references" do
     it '[(#SET a 1) #a]' do
-      pending
       result = Gene::CoreInterpreter.parse_and_process(example.description)
       result.should == [1, 1]
     end
 
     it '[(#SET a 1 ()) #a]' do
-      pending
       result = Gene::CoreInterpreter.parse_and_process(example.description)
       result.should == [1]
     end
 
     it '[(#SET a 1 ()) #a (#UNSET a) #a]' do
-      pending
       result = Gene::CoreInterpreter.parse_and_process(example.description)
       result.should == [1, nil]
     end
