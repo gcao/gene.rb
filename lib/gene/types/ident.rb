@@ -13,5 +13,9 @@ class Gene::Types::Ident
   def to_s
     name.gsub(/([\(\)\[\]\{\}])/, '[' => '\\[', ']' => '\\]', '(' => '\\(', ')' => '\\)', '{' => '\\{', '}' => '\\}')
   end
+
+  def inspect
+    to_s
+  end
 end
 

@@ -1,6 +1,6 @@
 source 'http://rubygems.org'
 
-ruby '1.9.3'
+ruby '2.3.0'
 
 group :development do
   gem 'rspec', '~> 2.8.0'
@@ -13,8 +13,8 @@ group :development do
   gem 'guard-rspec', '~> 0.5.2'
   gem 'rb-fsevent', '>= 0.4.3.1', :platforms => [:mri]
 
-  gem 'pry'
-  gem 'pry-full'
+  #gem 'pry'
+  #gem 'pry-full'
 end
 
 gem 'logem'

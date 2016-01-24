@@ -41,18 +41,6 @@ describe Gene::CoreInterpreter do
   end
 
   describe "references" do
-    it '[(#a)]' do # Reference that is not initialized defaults to nil/null
-      pending
-      result = Gene::CoreInterpreter.parse_and_process(example.description)
-      result.should == [nil]
-    end
-
-    it '[(#SET a 1) (#a)]' do
-      pending
-      result = Gene::CoreInterpreter.parse_and_process(example.description)
-      result.should == [1, 1]
-    end
-
     it '[(#SET a 1) #a]' do
       pending
       result = Gene::CoreInterpreter.parse_and_process(example.description)
