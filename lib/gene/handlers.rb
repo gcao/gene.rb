@@ -14,4 +14,5 @@ require 'gene/handlers/base64_handler'
 require 'gene/handlers/group_handler'
 require 'gene/handlers/ref_handler'
 require 'gene/handlers/regexp_handler'
+require 'gene/handlers/set_handler'
 

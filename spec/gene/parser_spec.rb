@@ -87,6 +87,7 @@ describe Gene::Parser do
       result.metadata['key'].should == true
     end
 
+    # Alternative syntax: ^^key = ^+key, ^!key = ^-key
     it '(a ^+key)' do
       result = Gene::Parser.parse(example.description)
       result.class.should == Gene::Types::Group
