@@ -282,6 +282,7 @@ module Gene
     def parse_ident
       return UNPARSED unless check(IDENT)
 
+      escaped = !!check(ESCAPE)
       value = ''
 
       until eos?
@@ -295,7 +296,7 @@ module Gene
         end
       end
 
-      Gene::Types::Ident.new(value)
+      Gene::Types::Ident.new(value, escaped)
     end
 
     def parse_ref

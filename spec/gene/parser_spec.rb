@@ -25,9 +25,11 @@ describe Gene::Parser do
     'null'     => nil,
     '#_'       => Gene::PLACEHOLDER,
     '#a'       => Gene::Types::Ref.new('a'),
+    '\#'       => Gene::Types::Ident.new('#', true),
+    '\#a'      => Gene::Types::Ident.new('#a', true),
     'a'        => Gene::Types::Ident.new('a'),
     'a b'      => Gene::Types::Stream.new(Gene::Types::Ident.new('a'), Gene::Types::Ident.new('b')),
-    '\\('      => Gene::Types::Ident.new('('),
+    '\\('      => Gene::Types::Ident.new('(', true),
     '()'       => Gene::NOOP,
     '1 ()'     => Gene::Types::Stream.new(1, Gene::NOOP),
     '("a")'    => Gene::Types::Group.new("a"),
@@ -98,6 +100,12 @@ describe Gene::Parser do
       result = Gene::Parser.parse(example.description)
       result.class.should == Gene::Types::Group
       result.metadata['key'].should == false
+    end
+
+    it '(a \^key)' do
+      result = Gene::Parser.parse(example.description)
+      result.class.should == Gene::Types::Group
+      result[1].should == Gene::Types::Ident.new('^key', true)
     end
   end
 
