@@ -9,6 +9,7 @@ require 'gene/handlers/ruby/assignment_handler'
 
 module Gene
   class RubyInterpreter < AbstractInterpreter
+    attr :context
 
     def initialize
       super
@@ -21,6 +22,16 @@ module Gene
       @handlers.add 100, Gene::Handlers::Ruby::InvocationHandler.new
       @handlers.add 100, Gene::Handlers::Ruby::AssignmentHandler.new
       @handlers.add 200, Gene::Handlers::Ruby::StatementHandler.new
+
+      @context = Object.new
+    end
+
+    def parse_and_process input
+      CoreInterpreter.parse_and_process input do |output|
+        process output do |result|
+          @context.send :eval, result
+        end
+      end
     end
 
   end
