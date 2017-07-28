@@ -43,16 +43,19 @@ describe Gene::RubyInterpreter do
   end
 
   it "(def meth [1 2 3])" do
+    pending
     @interpreter.parse_and_process(example.description)
     @interpreter.context.meth.should == [1, 2, 3]
   end
 
   it "(def meth arg arg)" do
+    pending
     @interpreter.parse_and_process(example.description)
     @interpreter.context.meth(1).should == 1
   end
 
   it "(def meth [arg1 arg2] arg2)" do
+    pending
     @interpreter.parse_and_process(example.description)
     @interpreter.context.meth(1, 2).should == 2
   end

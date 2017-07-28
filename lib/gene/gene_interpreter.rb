@@ -7,6 +7,7 @@ module Gene
     def initialize
       @handlers = Gene::Handlers::ComboHandler.new
       @handlers.add 100, Gene::Handlers::Lang::ClassHandler.new
+      @handlers.add 100, Gene::Handlers::Lang::FunctionHandler.new
     end
 
     def parse_and_process input
@@ -16,7 +17,7 @@ module Gene
     end
 
     def process data
-      @handlers.call nil, data
+      @handlers.call self, data
     end
   end
 end
