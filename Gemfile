@@ -1,6 +1,6 @@
 source 'http://rubygems.org'
 
-ruby '2.3.0'
+ruby '2.2.3'
 
 group :development do
   gem 'rspec', '~> 2.8.0'

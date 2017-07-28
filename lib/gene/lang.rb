@@ -1,0 +1,1 @@
+require "gene/lang/class"
