@@ -9,6 +9,7 @@ module Gene
       @handlers.add 100, Gene::Handlers::Lang::ClassHandler.new
       @handlers.add 100, Gene::Handlers::Lang::FunctionHandler.new
       @handlers.add 100, Gene::Handlers::Lang::LetHandler.new
+      @handlers.add 100, Gene::Handlers::Lang::BinaryExprHandler.new
     end
 
     def parse_and_process input

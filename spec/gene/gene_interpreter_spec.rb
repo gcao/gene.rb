@@ -17,6 +17,14 @@ describe Gene::GeneInterpreter do
     result.name.should  == 'doSomething'
   end
 
+  it "(fn doSomething a)" do
+    result = @interpreter.parse_and_process(example.description)
+    result.class.should == Gene::Lang::Function
+    result.name.should  == 'doSomething'
+    result.args.size.should == 1
+    result.args[0].should == Gene::Lang::Argument.new('a')
+  end
+
   it "(let a 'value')" do
     result = @interpreter.parse_and_process(example.description)
     result.class.should == Gene::Lang::Variable
@@ -32,5 +40,10 @@ describe Gene::GeneInterpreter do
     stmt1 = result.block[0]
     stmt1.class.should == Gene::Lang::Function
     stmt1.name.should == 'doSomething'
+  end
+
+  it "(1 + 2)" do
+    result = @interpreter.parse_and_process(example.description)
+    result.should == 3
   end
 end

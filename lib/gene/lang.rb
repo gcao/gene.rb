@@ -13,9 +13,9 @@ module Gene::Lang
   end
 
   class Function
-    attr_reader :name, :block
-    def initialize name, block = Block.new
-      @name, @block = name, block
+    attr_reader :name, :args, :block
+    def initialize name, args, block = Block.new
+      @name, @args, @block = name, args, block
     end
 
     def call context = nil
@@ -32,6 +32,20 @@ module Gene::Lang
       each do |stmt|
         stmt.call context
       end
+    end
+  end
+
+  class Argument
+    attr_reader :name
+    def initialize name
+      @name = name
+    end
+
+    def call context = nil
+    end
+
+    def == other
+      other.is_a? self.class and @name == other.name
     end
   end
 
