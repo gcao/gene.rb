@@ -3,6 +3,7 @@ module Gene::Lang
     attr_reader :name, :block
     def initialize name, block = Block.new
       @name, @block = name, block
+      call self
     end
 
     def call context = nil
@@ -46,8 +47,9 @@ module Gene::Lang
 
   class Variable
     attr_reader :name
-    def initialize name
-      @name = name
+    attr_accessor :value
+    def initialize name, value = nil
+      @name, @value = name, value
     end
 
     def call context = nil

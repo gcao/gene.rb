@@ -13,6 +13,8 @@ group :development do
   gem 'guard-rspec', '~> 0.5.2'
   gem 'rb-fsevent', '>= 0.4.3.1', :platforms => [:mri]
 
+  gem 'ruby-debug-ide'
+  gem 'debase'
   #gem 'pry'
   #gem 'pry-full'
 end

@@ -17,6 +17,13 @@ describe Gene::GeneInterpreter do
     result.name.should  == 'doSomething'
   end
 
+  it "(let a 'value')" do
+    result = @interpreter.parse_and_process(example.description)
+    result.class.should == Gene::Lang::Variable
+    result.name.should  == 'a'
+    result.value.should  == 'value'
+  end
+
   it "(class A (fn doSomething))" do
     result = @interpreter.parse_and_process(example.description)
     result.class.should == Gene::Lang::Class

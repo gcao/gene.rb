@@ -8,6 +8,7 @@ module Gene
       @handlers = Gene::Handlers::ComboHandler.new
       @handlers.add 100, Gene::Handlers::Lang::ClassHandler.new
       @handlers.add 100, Gene::Handlers::Lang::FunctionHandler.new
+      @handlers.add 100, Gene::Handlers::Lang::LetHandler.new
     end
 
     def parse_and_process input
