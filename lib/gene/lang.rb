@@ -13,9 +13,14 @@ module Gene::Lang
   end
 
   class Function
-    attr_reader :name, :args, :block
-    def initialize name, args, block = Block.new
-      @name, @args, @block = name, args, block
+    attr_reader :scope, :name, :args, :block
+    def initialize name, args
+      @name, @args = name, args
+      @scope = Scope.new nil
+    end
+
+    def block= block
+      @block = block
     end
 
     def call context = nil
@@ -23,7 +28,26 @@ module Gene::Lang
     end
   end
 
+  class Scope
+    attr_reader :parent, :variables
+    def initialize parent
+      @parent    = parent
+      @variables = {}
+    end
+
+    def get name
+      variables[name]
+    end
+    alias_method :[], :get
+
+    def set name, value
+      variables[name] = value
+    end
+    alias_method :[]=, :set
+  end
+
   class Block < Array
+    attr_accessor :scope
     def initialize statements = []
       super statements
     end

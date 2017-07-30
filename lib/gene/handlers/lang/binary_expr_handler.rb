@@ -11,15 +11,16 @@ class Gene::Handlers::Lang::BinaryExprHandler
   end
 
   def call context, data
-    if data.is_a? Gene::Types::Group and BINARY_OPERATORS.include?(data[1])
-      case data[1].name
-      when '+' then data[0] + data[2]
-      when '-' then data[0] - data[2]
-      when '*' then data[0] * data[2]
-      when '/' then data[0] / data[2]
-      end
-    else
-      Gene::NOT_HANDLED
+    return Gene::NOT_FOUND unless data.is_a? Gene::Types::Group and BINARY_OPERATORS.include?(data.second)
+
+    op    = data.second.name
+    left  = context.process(data.first)
+    right = context.process(data.third)
+    case op
+    when '+' then left + right
+    when '-' then left - right
+    when '*' then left * right
+    when '/' then left / right
     end
   end
 end

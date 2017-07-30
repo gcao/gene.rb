@@ -7,12 +7,11 @@ module Gene::Handlers::Lang
     end
 
     def call context, data
-      if data.is_a? Gene::Types::Group and data.first == LET
-        value = data[2]
-        Gene::Lang::Variable.new data[1].to_s, value
-      else
-        Gene::NOT_HANDLED
-      end
+      return Gene::NOT_HANDLED unless LET.first_of_group? data
+      name = data[1].to_s
+      value = context.process data[2]
+      context.scope.set name, value
+      Gene::Lang::Variable.new name, value
     end
   end
 end

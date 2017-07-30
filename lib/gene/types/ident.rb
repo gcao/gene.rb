@@ -20,5 +20,8 @@ class Gene::Types::Ident
   def inspect
     to_s
   end
-end
 
+  def first_of_group? arg
+    arg.is_a? Gene::Types::Group and arg.first == self
+  end
+end

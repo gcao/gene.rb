@@ -7,6 +7,14 @@ class Gene::Types::Group < Array
     concat items
   end
 
+  def second
+    self[1]
+  end
+
+  def third
+    self[2]
+  end
+
   def rest
     self[1..-1]
   end

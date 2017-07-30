@@ -6,14 +6,11 @@ class Gene::Handlers::Lang::ClassHandler
   end
 
   def call context, data
-    if data.is_a? Gene::Types::Group and data.first == CLASS
-      stmts = data[2..-1].map do |stmt|
-        context.process stmt
-      end
-      block = Gene::Lang::Block.new stmts
-      klass = Gene::Lang::Class.new data[1].to_s, block
-    else
-      Gene::NOT_HANDLED
+    return Gene::NOT_HANDLED unless CLASS.first_of_group? data
+    stmts = data[2..-1].map do |stmt|
+      context.process stmt
     end
+    block = Gene::Lang::Block.new stmts
+    klass = Gene::Lang::Class.new data[1].to_s, block
   end
 end
