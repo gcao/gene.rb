@@ -3,12 +3,10 @@ module Gene::Lang
     attr_reader :name, :block
     def initialize name, block
       @name, @block = name, block
-      call self
     end
 
-    def call options
+    def call options = {}
       @block.call options
-      self
     end
   end
 
@@ -22,16 +20,19 @@ module Gene::Lang
       @block = block
     end
 
-    def call options
+    def call options = {}
+      scope = Scope.new nil
+      options[:context].current_scope = scope
       @block.call options
     end
   end
 
   class Scope
-    attr_reader :parent, :variables
+    attr_reader :parent, :variables, :arguments
     def initialize parent
       @parent    = parent
       @variables = {}
+      @arguments = []
     end
 
     def get name
@@ -46,7 +47,7 @@ module Gene::Lang
   end
 
   class Block
-    attr_accessor :scope, :arguments, :statements
+    attr_accessor :arguments, :statements
     def initialize arguments, statements
       @arguments  = arguments  || []
       @statements = statements || []
@@ -56,21 +57,21 @@ module Gene::Lang
       @statements[name]
     end
 
-    def call options
+    def call options = {}
       statements.each do |stmt|
-        stmt.call options
+        options[:context].process stmt
       end
     end
   end
 
   class Argument
-    attr_reader :name
-    def initialize name
-      @name = name
+    attr_reader :index, :name
+    def initialize index, name
+      @index, @name = index, name
     end
 
     def == other
-      other.is_a? self.class and @name == other.name
+      other.is_a? self.class and @index == other.index and @name == other.name
     end
   end
 

@@ -12,6 +12,7 @@ module Gene
       @handlers.add 100, Gene::Handlers::Lang::FunctionHandler.new
       @handlers.add 100, Gene::Handlers::Lang::LetHandler.new
       @handlers.add 100, Gene::Handlers::Lang::BinaryExprHandler.new
+      @handlers.add 100, Gene::Handlers::Lang::InvocationHandler.new
 
       @global_scope  = Gene::Lang::Scope.new nil
       @current_scope = @global_scope

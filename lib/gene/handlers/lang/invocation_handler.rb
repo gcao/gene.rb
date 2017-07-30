@@ -11,18 +11,18 @@ class Gene::Handlers::Lang::InvocationHandler
     # If the second element is !,
     #   treat as invocation with no argument
     return Gene::NOT_HANDLED unless
-      data.is_a? Gene::Group
-      and data.first.is_a? Gene::Types::Ident
-      and data.first.name =~ /^[a-zA-Z]/
+      data.is_a? Gene::Types::Group and
+      data.first.is_a? Gene::Types::Ident and
+      data.first.name =~ /^[a-zA-Z]/
 
     name  = data.first.name
     value = context.scope[name]
-    if data.size is 1
+    if data.size == 1
       value
     elsif data.second == Gene::Types::Ident.new('!')
-      value.call
+      value.call context: context
     else
-      value.call
+      value.call context: context, arguments: data.rest
     end
   end
 end

@@ -11,7 +11,7 @@ class Gene::Handlers::Lang::FunctionHandler
     fn = Gene::Lang::Function.new name
     arguments = [data.third].flatten
       .select {|item| not item.nil? }
-      .map {|item| Gene::Lang::Argument.new(item.name) }
+      .map.with_index {|item, i| Gene::Lang::Argument.new(i, item.name) }
     fn.block = Gene::Lang::Block.new arguments, data[3..-1]
     context.scope[name] = fn
     fn

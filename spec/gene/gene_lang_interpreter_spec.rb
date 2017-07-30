@@ -22,7 +22,7 @@ describe Gene::GeneLangInterpreter do
     result.class.should == Gene::Lang::Function
     result.name.should  == 'doSomething'
     result.block.arguments.size.should == 1
-    result.block.arguments[0].should   == Gene::Lang::Argument.new('a')
+    result.block.arguments[0].should   == Gene::Lang::Argument.new(0, 'a')
   end
 
   it "(fn doSomething a '1')" do
@@ -30,7 +30,7 @@ describe Gene::GeneLangInterpreter do
     result.class.should == Gene::Lang::Function
     result.name.should  == 'doSomething'
     result.block.arguments.size.should == 1
-    result.block.arguments[0].should   == Gene::Lang::Argument.new('a')
+    result.block.arguments[0].should   == Gene::Lang::Argument.new(0, 'a')
     result.block.statements.first.should == '1'
   end
 

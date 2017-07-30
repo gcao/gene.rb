@@ -12,5 +12,7 @@ class Gene::Handlers::Lang::ClassHandler
     end
     block = Gene::Lang::Block.new nil, stmts
     klass = Gene::Lang::Class.new data[1].to_s, block
+    block.call context: context
+    klass
   end
 end
