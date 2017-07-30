@@ -10,7 +10,7 @@ class Gene::Handlers::Lang::ClassHandler
     stmts = data[2..-1].map do |stmt|
       context.process stmt
     end
-    block = Gene::Lang::Block.new stmts
+    block = Gene::Lang::Block.new nil, stmts
     klass = Gene::Lang::Class.new data[1].to_s, block
   end
 end

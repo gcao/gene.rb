@@ -2,7 +2,7 @@ module Gene
   #
   # Gene will be our own interpreted language
   #
-  class GeneInterpreter
+  class GeneLangInterpreter
     attr_reader   :global_scope
     attr_accessor :current_scope
 

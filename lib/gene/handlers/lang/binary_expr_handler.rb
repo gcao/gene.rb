@@ -11,7 +11,7 @@ class Gene::Handlers::Lang::BinaryExprHandler
   end
 
   def call context, data
-    return Gene::NOT_FOUND unless data.is_a? Gene::Types::Group and BINARY_OPERATORS.include?(data.second)
+    return Gene::NOT_HANDLED unless data.is_a? Gene::Types::Group and BINARY_OPERATORS.include?(data.second)
 
     op    = data.second.name
     left  = context.process(data.first)

@@ -1,30 +1,29 @@
 module Gene::Lang
   class Class
     attr_reader :name, :block
-    def initialize name, block = Block.new
+    def initialize name, block
       @name, @block = name, block
       call self
     end
 
-    def call context = nil
-      @block.call context
+    def call options
+      @block.call options
       self
     end
   end
 
   class Function
-    attr_reader :scope, :name, :args, :block
-    def initialize name, args
-      @name, @args = name, args
-      @scope = Scope.new nil
+    attr_reader :name, :block
+    def initialize name
+      @name = name
     end
 
     def block= block
       @block = block
     end
 
-    def call context = nil
-      self
+    def call options
+      @block.call options
     end
   end
 
@@ -46,15 +45,20 @@ module Gene::Lang
     alias_method :[]=, :set
   end
 
-  class Block < Array
-    attr_accessor :scope
-    def initialize statements = []
-      super statements
+  class Block
+    attr_accessor :scope, :arguments, :statements
+    def initialize arguments, statements
+      @arguments  = arguments  || []
+      @statements = statements || []
     end
 
-    def call context = nil
-      each do |stmt|
-        stmt.call context
+    def [] name
+      @statements[name]
+    end
+
+    def call options
+      statements.each do |stmt|
+        stmt.call options
       end
     end
   end
@@ -63,9 +67,6 @@ module Gene::Lang
     attr_reader :name
     def initialize name
       @name = name
-    end
-
-    def call context = nil
     end
 
     def == other
@@ -79,7 +80,7 @@ module Gene::Lang
       @variable, @expression = variable, expression
     end
 
-    def call context = nil
+    def call options
     end
   end
 
@@ -90,7 +91,7 @@ module Gene::Lang
       @name, @value = name, value
     end
 
-    def call context = nil
+    def call options
     end
   end
 end

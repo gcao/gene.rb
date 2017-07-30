@@ -1,8 +1,8 @@
 require File.expand_path(File.dirname(__FILE__) + '/../spec_helper')
 
-describe Gene::GeneInterpreter do
+describe Gene::GeneLangInterpreter do
   before do
-    @interpreter = Gene::GeneInterpreter.new
+    @interpreter = Gene::GeneLangInterpreter.new
   end
 
   it "(class A)" do
@@ -21,8 +21,22 @@ describe Gene::GeneInterpreter do
     result = @interpreter.parse_and_process(example.description)
     result.class.should == Gene::Lang::Function
     result.name.should  == 'doSomething'
-    result.args.size.should == 1
-    result.args[0].should   == Gene::Lang::Argument.new('a')
+    result.block.arguments.size.should == 1
+    result.block.arguments[0].should   == Gene::Lang::Argument.new('a')
+  end
+
+  it "(fn doSomething a '1')" do
+    result = @interpreter.parse_and_process(example.description)
+    result.class.should == Gene::Lang::Function
+    result.name.should  == 'doSomething'
+    result.block.arguments.size.should == 1
+    result.block.arguments[0].should   == Gene::Lang::Argument.new('a')
+    result.block.statements.first.should == '1'
+  end
+
+  it "(fn doSomething a a)(doSomething '1')" do
+    result = @interpreter.parse_and_process(example.description)
+    result.should == '1'
   end
 
   it "(let a 'value')" do
@@ -43,7 +57,7 @@ describe Gene::GeneInterpreter do
     result = @interpreter.parse_and_process(example.description)
     result.class.should      == Gene::Lang::Class
     result.name.should       == 'A'
-    result.block.size.should == 1
+    result.block.statements.size.should == 1
     stmt1 = result.block[0]
     stmt1.class.should == Gene::Lang::Function
     stmt1.name.should  == 'doSomething'
