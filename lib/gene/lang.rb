@@ -22,13 +22,16 @@ module Gene::Lang
 
     def call options = {}
       scope = Scope.new nil
+      scope.arguments = @block.arguments
+      scope.update_arguments options[:arguments]
       options[:context].current_scope = scope
       @block.call options
     end
   end
 
   class Scope
-    attr_reader :parent, :variables, :arguments
+    attr_reader :parent, :variables
+    attr_accessor :arguments
     def initialize parent
       @parent    = parent
       @variables = {}
@@ -44,6 +47,15 @@ module Gene::Lang
       variables[name] = value
     end
     alias_method :[]=, :set
+
+    def update_arguments values
+      if values and values.size > 0
+        values.each.with_index do |value, index|
+          argument = @arguments.find {|arg| arg.index == index }
+          self[argument.name] = value if argument
+        end
+      end
+    end
   end
 
   class Block
@@ -58,9 +70,11 @@ module Gene::Lang
     end
 
     def call options = {}
+      result = nil
       statements.each do |stmt|
-        options[:context].process stmt
+        result = options[:context].process stmt
       end
+      result
     end
   end
 
