@@ -51,6 +51,18 @@
       ]
     },
     {
+      "name": "RSpec - gene_lang_interpreter_spec.rb",
+      "type": "Ruby",
+      "request": "launch",
+      "cwd": "${workspaceRoot}",
+      "program": "${workspaceRoot}/bin/rspec",
+      "args": [
+        "-I",
+        "${workspaceRoot}:18",
+        "spec/gene/gene_lang_interpreter_spec.rb:18"
+      ]
+    },
+    {
       "name": "Cucumber",
       "type": "Ruby",
       "request": "launch",

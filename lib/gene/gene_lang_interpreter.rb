@@ -4,22 +4,35 @@ module Gene
   #
   class GeneLangInterpreter
     attr_reader   :global_scope
-    attr_accessor :current_scope
 
     def initialize
       @handlers = Gene::Handlers::ComboHandler.new
       @handlers.add 100, Gene::Handlers::Lang::ClassHandler.new
       @handlers.add 100, Gene::Handlers::Lang::FunctionHandler.new
       @handlers.add 100, Gene::Handlers::Lang::LetHandler.new
+      @handlers.add 100, Gene::Handlers::Lang::InitHandler.new
       @handlers.add 100, Gene::Handlers::Lang::BinaryExprHandler.new
       @handlers.add 100, Gene::Handlers::Lang::InvocationHandler.new
 
+      # global_scope is a special scope, accessed using different mechanism
+      # root_scope is the root of regular scope hierarchy: @scopes
+      # regular scopes can inherit or not inherit from a higher level scope
       @global_scope  = Gene::Lang::Scope.new nil
-      @current_scope = @global_scope
+      @root_scope    = Gene::Lang::Scope.new nil
+      @scopes        = [@root_scope]
     end
 
     def scope
-      current_scope
+      @scopes.last
+    end
+
+    def start_scope scope = Gene::Lang::Scope.new(nil)
+      @scopes.push scope
+    end
+
+    def end_scope
+      throw "Scope error: can not close the root scope." if @scopes.size == 0
+      @scopes.pop
     end
 
     def parse_and_process input

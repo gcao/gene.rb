@@ -24,8 +24,13 @@ module Gene::Lang
       scope = Scope.new nil
       scope.arguments = @block.arguments
       scope.update_arguments options[:arguments]
-      options[:context].current_scope = scope
-      @block.call options
+      context = options[:context]
+      context.start_scope scope
+      begin
+        result = @block.call options
+      ensure
+        context.end_scope
+      end
     end
   end
 
