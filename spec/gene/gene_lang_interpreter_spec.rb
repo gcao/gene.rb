@@ -39,6 +39,11 @@ describe Gene::GeneLangInterpreter do
     result.should == '1'
   end
 
+  it "(fn doSomething [a b] (a + b))(doSomething 1 2)" do
+    result = @interpreter.parse_and_process(example.description)
+    result.should == 3
+  end
+
   it "(let a 'value')" do
     result = @interpreter.parse_and_process(example.description)
     result.class.should == Gene::Lang::Variable
