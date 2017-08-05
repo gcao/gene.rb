@@ -12,11 +12,10 @@ describe Gene::GeneLangInterpreter do
       result.name.should  == 'A'
     end
 
-    it "(class A (init [] (let a 1)))(A .new)" do
+    it "(class A)(new A)" do
       result = @interpreter.parse_and_process(example.description)
-      result['_class'].class.should == Gene::Lang::Class
-      result['_class'].name.should  == 'A'
-      result['a'].should == 1
+      result.class.class.should == Gene::Lang::Class
+      result.class.name.should  == 'A'
     end
 
     it "(class A (fn doSomething))" do

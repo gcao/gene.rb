@@ -1,4 +1,22 @@
 module Gene::Handlers::Lang
+  class NewHandler
+    NEW = Gene::Types::Ident.new('new')
+
+    def initialize
+      @logger = Logem::Logger.new(self)
+    end
+
+    def call context, data
+      return Gene::NOT_HANDLED unless NEW.first_of_group? data
+      klass = context.process(data.second)
+      instance = Gene::Lang::Object.new klass
+      if init = klass.methods['init']
+        init.call context: context, self: self, arguments: data[2..-1]
+      end
+      instance
+    end
+  end
+
   class InitHandler
     INIT = Gene::Types::Ident.new('init')
 

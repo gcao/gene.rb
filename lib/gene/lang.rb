@@ -1,11 +1,23 @@
 module Gene::Lang
+  class Object
+    def initialize klass
+      @_class = klass
+    end
+
+    def class
+      @_class
+    end
+  end
+
   class Class
-    attr_reader :name, :block
+    attr_reader :name, :block, :methods
     def initialize name, block
       @name, @block = name, block
+      @methods = {}
     end
 
     def call options = {}
+      options[:self] = self
       @block.call options
     end
   end

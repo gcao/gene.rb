@@ -58,7 +58,7 @@
       "program": "${workspaceRoot}/bin/rspec",
       "args": [
         "-I",
-        "${workspaceRoot}:18",
+        "${workspaceRoot}",
         "spec/gene/gene_lang_interpreter_spec.rb:18"
       ]
     },
