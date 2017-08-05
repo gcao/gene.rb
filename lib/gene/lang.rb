@@ -10,15 +10,23 @@ module Gene::Lang
   end
 
   class Class
-    attr_reader :name, :block, :methods
+    attr_reader :name, :instance_methods
     def initialize name, block
       @name, @block = name, block
-      @methods = {}
+      @instance_methods = {}
     end
 
     def call options = {}
-      options[:self] = self
-      @block.call options
+      scope = Scope.new nil
+      context = options[:context]
+      context.start_self self
+      context.start_scope scope
+      begin
+        @block.call options
+      ensure
+        context.end_scope
+        context.end_self
+      end
     end
   end
 
@@ -39,7 +47,7 @@ module Gene::Lang
       context = options[:context]
       context.start_scope scope
       begin
-        result = @block.call options
+        @block.call options
       ensure
         context.end_scope
       end

@@ -18,14 +18,11 @@ describe Gene::GeneLangInterpreter do
       result.class.name.should  == 'A'
     end
 
-    it "(class A (fn doSomething))" do
+    it "(class A (method doSomething))" do
       result = @interpreter.parse_and_process(example.description)
-      result.class.should      == Gene::Lang::Class
-      result.name.should       == 'A'
-      result.block.statements.size.should == 1
-      stmt1 = result.block[0]
-      stmt1.class.should == Gene::Lang::Function
-      stmt1.name.should  == 'doSomething'
+      result.class.should        == Gene::Lang::Class
+      result.name.should         == 'A'
+      result.instance_methods.size.should == 1
     end
   end
 
