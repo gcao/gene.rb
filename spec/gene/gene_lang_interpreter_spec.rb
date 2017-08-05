@@ -24,6 +24,11 @@ describe Gene::GeneLangInterpreter do
       result.name.should         == 'A'
       result.instance_methods.size.should == 1
     end
+
+    it "(class A (init [a] (let @a a))) (new A 1)" do
+      result = @interpreter.parse_and_process(example.description)
+      result['a'].should == 1
+    end
   end
 
   describe "fn" do
@@ -39,6 +44,11 @@ describe Gene::GeneLangInterpreter do
       result.name.should  == 'doSomething'
       result.block.arguments.size.should == 1
       result.block.arguments[0].should   == Gene::Lang::Argument.new(0, 'a')
+    end
+
+    it "(fn doSomething [] '1')(doSomething !)" do
+      result = @interpreter.parse_and_process(example.description)
+      result.should == '1'
     end
 
     it "(fn doSomething a '1')" do

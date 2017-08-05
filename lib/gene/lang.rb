@@ -1,12 +1,24 @@
 module Gene::Lang
   class Object
+    attr_reader :attributes
     def initialize klass
       @_class = klass
+      @attributes = {}
     end
 
     def class
       @_class
     end
+
+    def get name
+      @attributes[name]
+    end
+    alias_method :[], :get
+
+    def set name, value
+      @attributes[name] = value
+    end
+    alias_method :[]=, :set
   end
 
   class Class
@@ -45,11 +57,13 @@ module Gene::Lang
       scope.arguments = @block.arguments
       scope.update_arguments options[:arguments]
       context = options[:context]
+      context.start_self options[:self]
       context.start_scope scope
       begin
         @block.call options
       ensure
         context.end_scope
+        context.end_self
       end
     end
   end

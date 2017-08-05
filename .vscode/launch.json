@@ -59,7 +59,7 @@
       "args": [
         "-I",
         "${workspaceRoot}",
-        "spec/gene/gene_lang_interpreter_spec.rb:24"
+        "spec/gene/gene_lang_interpreter_spec.rb:30"
       ]
     },
     {

@@ -70,7 +70,7 @@ module Gene::Handlers::Lang
       klass = context.process(data.second)
       instance = Gene::Lang::Object.new klass
       if init = klass.instance_methods['init']
-        init.call context: context, self: self, arguments: data[2..-1]
+        init.call context: context, self: instance, arguments: data[2..-1]
       end
       instance
     end
@@ -91,7 +91,7 @@ module Gene::Handlers::Lang
         .select {|item| not item.nil? }
         .map.with_index {|item, i| Gene::Lang::Argument.new(i, item.name) }
       fn.block = Gene::Lang::Block.new arguments, data[2..-1]
-      context.scope[name] = fn
+      context.self.instance_methods[INIT.name] = fn
       fn
     end
   end
@@ -105,9 +105,13 @@ module Gene::Handlers::Lang
 
     def call context, data
       return Gene::NOT_HANDLED unless LET.first_of_group? data
-      name = data[1].to_s
+      name  = data[1].to_s
       value = context.process data[2]
-      context.scope.set name, value
+      if name[0] == '@'
+        context.self.set name[1..-1], value
+      else
+        context.scope.set name, value
+      end
       Gene::Lang::Variable.new name, value
     end
   end
