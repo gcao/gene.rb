@@ -1,5 +1,28 @@
 module Gene::Handlers::Lang
-  class Gene::Handlers::Lang::ClassHandler
+  # Handle scope variables, instance variables like @var and literals
+  class DefaultHandler
+    def initialize
+      @logger = Logem::Logger.new(self)
+    end
+
+    def call context, data
+      return Gene::NOT_HANDLED if data.is_a? Gene::Types::Group
+      if data.is_a? Gene::Types::Ident
+        if data.to_s[0] == '@'
+          # instance variable
+          context.self[data.to_s[1..-1]]
+        else
+          # scope variable
+          context.scope[data.name]
+        end
+      else
+        # literals
+        data
+      end
+    end
+  end
+
+  class ClassHandler
     CLASS = Gene::Types::Ident.new('class')
 
     def initialize
@@ -139,6 +162,10 @@ module Gene::Handlers::Lang
         value
       elsif data.second == Gene::Types::Ident.new('!')
         value.call context: context
+      elsif data.second.is_a? Gene::Types::Ident and data.second.to_s[0] == '.'
+        klass = value.class
+        method = klass.instance_methods[data.second.to_s[1..-1]]
+        method.call context: context, self: value, arguments: data[2..-1]
       else
         value.call context: context, arguments: data.rest
       end

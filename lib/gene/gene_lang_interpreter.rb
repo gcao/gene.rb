@@ -7,6 +7,7 @@ module Gene
 
     def initialize
       @handlers = Gene::Handlers::ComboHandler.new
+      @handlers.add 100, Gene::Handlers::Lang::DefaultHandler.new
       @handlers.add 100, Gene::Handlers::Lang::ClassHandler.new
       @handlers.add 100, Gene::Handlers::Lang::MethodHandler.new
       @handlers.add 100, Gene::Handlers::Lang::FunctionHandler.new
@@ -57,13 +58,7 @@ module Gene
     end
 
     def process data
-      if data.is_a? Gene::Types::Group
-        @handlers.call self, data
-      elsif data.is_a? Gene::Types::Ident
-        scope[data.name]
-      else
-        data
-      end
+      @handlers.call self, data
     end
   end
 end

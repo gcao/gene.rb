@@ -25,9 +25,21 @@ describe Gene::GeneLangInterpreter do
       result.instance_methods.size.should == 1
     end
 
-    it "(class A (init [a] (let @a a))) (new A 1)" do
+    it "(class A (init a (let @a a))) (new A 1)" do
       result = @interpreter.parse_and_process(example.description)
       result['a'].should == 1
+    end
+
+    it "
+      (class A
+        (init [a] (let @a a))
+        (method add num (@a + num))
+      )
+      (let a (new A 1))
+      (a .add 2)
+    " do
+      result = @interpreter.parse_and_process(example.description)
+      result.should == 3
     end
   end
 
