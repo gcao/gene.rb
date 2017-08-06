@@ -38,16 +38,18 @@ describe Gene::Parser do
 
     # Below two should be handled by the parser
     # # line comment
-    # #< comment out up to #>
+    # #< comment out up to >#
     # Below two should be handled by the core interpreter
     # ## comment out next item (structural)
-    # ##< comment out up to ##> or end of group/array/hash (structural)
+    # ##< comment out up to >## or end of group/array/hash (structural)
     # TODO need to add more tests espectially for structural comments
-    #"(a # b\n)"                   => Gene::Types::Group.new(Gene::Types::Ident.new('a')),
-    #"(a #< this is a test #> b)"  => Gene::Types::Group.new(Gene::Types::Ident.new('a'), Gene::Types::Ident.new('b')),
+    "(a # b\n)"                   => Gene::Types::Group.new(Gene::Types::Ident.new('a')),
+    "(a #< this is a test ># b)"  => Gene::Types::Group.new(Gene::Types::Ident.new('a'), Gene::Types::Ident.new('b')),
+    "(a #< this is a test)"       => Gene::Types::Group.new(Gene::Types::Ident.new('a')),
     #"(a ## b c)"                  => Gene::Types::Group.new(Gene::Types::Ident.new('a'), Gene::Types::Ident.new('c')),
+    #"(a ##(b) c)"                 => Gene::Types::Group.new(Gene::Types::Ident.new('a'), Gene::Types::Ident.new('c')),
     #"(a ##< b c)"                 => Gene::Types::Group.new(Gene::Types::Ident.new('a')),
-    #"(a ##< b ##> c)"             => Gene::Types::Group.new(Gene::Types::Ident.new('a'), Gene::Types::Ident.new('c')),
+    #"(a ##< b >## c)"             => Gene::Types::Group.new(Gene::Types::Ident.new('a'), Gene::Types::Ident.new('c')),
 
     '(a (b))'  => Gene::Types::Group.new(Gene::Types::Ident.new('a'), Gene::Types::Group.new(Gene::Types::Ident.new('b'))),
     '[a]'      => [Gene::Types::Ident.new('a')],
