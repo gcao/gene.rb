@@ -27,6 +27,8 @@ describe Gene::CoreInterpreter do
     '{1 : 2}'    => {1 => 2},
     '{() : 2}'   => {},
     '()'         => Gene::NOOP,
+    '(a ## b c)' => Gene::Types::Group.new(Gene::Types::Ident.new("a"), Gene::Types::Ident.new("c")),
+    '[a ## b c]' => [Gene::Types::Ident.new("a"), Gene::Types::Ident.new("c")],
     '[()]'       => [],
     '(#<> 1 2)'  => Set.new([1, 2]),
     '(#.. 1 3)'  => Range.new(1, 3),

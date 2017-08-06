@@ -18,10 +18,14 @@ module Gene
         begin
           context.stack.push data
 
-          data.each_with_index do |child, i|
-            next if child == Gene::NOOP
-
-            data[i] = context.handle_partial(child)
+          (data.size - 1).downto 0 do |i|
+            if i > 0 and data[i-1] == Gene::COMMENT_NEXT
+              data.delete_at i
+            elsif [Gene::COMMENT_NEXT, Gene::NOOP].include? data[i]
+              data.delete_at i
+            else
+              data[i] = context.handle_partial(data[i])
+            end
           end
         ensure
           context.stack.pop

@@ -29,9 +29,9 @@ module Gene
                             )/x
     IDENT                 = /([^,\s\(\)\[\]\{\}]+)/
     REF                   = /#(?=[a-z])/
-    COMMENT               = /#<([,\s\(\)\[\]\{\}]|$)/
-    COMMENT_END           = />#([,\s\(\)\[\]\{\}]|$)/
-    # COMMENT_NEXT          = /##([,\s\(\)\[\]\{\}]|$)/
+    COMMENT               = /#<(?=[,\s\(\)\[\]\{\}]|$)/
+    COMMENT_END           = />#(?=[,\s\(\)\[\]\{\}]|$)/
+    COMMENT_NEXT          = /##(?=[,\s\(\)\[\]\{\}]|$)/
     GROUP_OPEN            = /\(/
     GROUP_CLOSE           = /\)/
     HASH_OPEN             = /\{/
@@ -195,21 +195,23 @@ module Gene
       case
       when (value = parse_string) != UNPARSED
         value
-      when (value = parse_float ) != UNPARSED
+      when (value = parse_float) != UNPARSED
         value
-      when (value = parse_int   ) != UNPARSED
+      when (value = parse_int) != UNPARSED
         value
-      when (value = parse_true  ) != UNPARSED
+      when (value = parse_true) != UNPARSED
         value
-      when (value = parse_false ) != UNPARSED
+      when (value = parse_false) != UNPARSED
         value
-      when (value = parse_null  ) != UNPARSED
+      when (value = parse_null) != UNPARSED
         value
-      when (value = parse_placeholder ) != UNPARSED
+      when (value = parse_comment_next) != UNPARSED
         value
-      when (value = parse_group ) != UNPARSED
+      when (value = parse_placeholder) != UNPARSED
         value
-      when (value = parse_hash ) != UNPARSED
+      when (value = parse_group) != UNPARSED
+        value
+      when (value = parse_hash) != UNPARSED
         value
       when (value = parse_ref) != UNPARSED
         value
@@ -273,6 +275,12 @@ module Gene
       return UNPARSED unless scan(NULL)
 
       nil
+    end
+
+    def parse_comment_next
+      return UNPARSED unless scan(COMMENT_NEXT)
+
+      Gene::COMMENT_NEXT
     end
 
     def parse_placeholder
@@ -423,6 +431,8 @@ module Gene
             break
           elsif scan(COMMA)
             next
+          elsif scan(COMMENT_NEXT)
+            raise ParseError, "unexpected token at '#{peek(20)}'!"
           elsif (parsed = parse_value) == UNPARSED
             raise ParseError, "unexpected token at '#{peek(20)}'!"
           else
@@ -434,6 +444,8 @@ module Gene
           end
         when 'value'
           if scan(HASH_CLOSE)
+            raise ParseError, "unexpected token at '#{peek(20)}'!"
+          elsif scan(COMMENT_NEXT)
             raise ParseError, "unexpected token at '#{peek(20)}'!"
           elsif (parsed = parse_value) == UNPARSED
             raise ParseError, "unexpected token at '#{peek(20)}'!"

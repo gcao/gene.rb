@@ -11,7 +11,18 @@ module Gene
         @logger.debug('call', data)
 
         result = []
+        comment_next = false
         data.each do |child|
+          if child == Gene::COMMENT_NEXT
+            comment_next = true
+            next
+          end
+
+          if comment_next
+            comment_next = false
+            next
+          end
+
           next if child == Gene::NOOP
 
           value = context.handle_partial(child)

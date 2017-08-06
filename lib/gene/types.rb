@@ -5,6 +5,7 @@ end
 
 require 'gene/types/stream'
 require 'gene/types/noop'
+require 'gene/types/comment_next'
 require 'gene/types/ident'
 require 'gene/types/ref'
 require 'gene/types/placeholder'
