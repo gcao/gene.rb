@@ -52,7 +52,8 @@ module Gene
       )+
     )mx
 
-    UNPARSED = Object.new
+    UNPARSED  = Object.new
+    IGNORABLE = Object.new
 
     def self.parse input, options = {}
       new(input, options).parse
@@ -334,9 +335,9 @@ module Gene
         end
       end
 
-      if value =~ /^[+\-]?(.*)$/
+      if value =~ /^[\^\+\-]?(.*)^?$/
         key = $1
-        if value[0] == '+'
+        if value[0] == '+' or value[0] == '^' or value[-1] == '^'
           @metadata_for_group[key] = true
         elsif value[0] == '-'
           @metadata_for_group[key] = false
@@ -348,6 +349,7 @@ module Gene
 
           @metadata_for_group[key] = next_value
         end
+        IGNORABLE
       else
         raise "Should never reach here"
       end
@@ -383,7 +385,7 @@ module Gene
           ;
         when (value = parse_value) != UNPARSED
           #result << value unless in_comment
-          result << value
+          result << value unless value == IGNORABLE
         else
           raise ParseError, "unexpected token at '#{peek(20)}'!"
         end

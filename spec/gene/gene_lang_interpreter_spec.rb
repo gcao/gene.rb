@@ -50,6 +50,13 @@ describe Gene::GeneLangInterpreter do
       result.name.should  == 'doSomething'
     end
 
+    it "(^^inherit_scope fn doSomething)" do
+      result = @interpreter.parse_and_process(example.description)
+      result.class.should == Gene::Lang::Function
+      result.name.should  == 'doSomething'
+      result.inherit_scope.should == true
+    end
+
     it "(fn doSomething a)" do
       result = @interpreter.parse_and_process(example.description)
       result.class.should == Gene::Lang::Function

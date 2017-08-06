@@ -56,6 +56,7 @@ module Gene::Handlers::Lang
         .select {|item| not item.nil? }
         .map.with_index {|item, i| Gene::Lang::Argument.new(i, item.name) }
       fn.block = Gene::Lang::Block.new arguments, data[3..-1]
+      fn.inherit_scope = data.metadata['inherit_scope']
       context.scope[name] = fn
       fn
     end

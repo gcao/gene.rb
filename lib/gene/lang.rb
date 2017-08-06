@@ -1,4 +1,7 @@
 module Gene::Lang
+  class Undefined
+  end
+
   class Object
     attr_reader :attributes
     def initialize klass
@@ -44,6 +47,7 @@ module Gene::Lang
 
   class Function
     attr_reader :name, :block
+    attr_accessor :inherit_scope
     def initialize name
       @name = name
     end
@@ -78,7 +82,12 @@ module Gene::Lang
     end
 
     def get name
-      variables[name]
+      value = variables[name]
+      if value == nil and not variables.keys.include? name
+        UNDEFINED
+      else
+        value
+      end
     end
     alias_method :[], :get
 
@@ -104,8 +113,8 @@ module Gene::Lang
       @statements = statements || []
     end
 
-    def [] name
-      @statements[name]
+    def [] index
+      @statements[index]
     end
 
     def call options = {}
@@ -148,4 +157,9 @@ module Gene::Lang
     def call options
     end
   end
+
+  UNDEFINED = Undefined.new
+  NIL       = nil
+  TRUE      = true
+  FALSE     = false
 end

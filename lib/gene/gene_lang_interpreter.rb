@@ -17,13 +17,17 @@ module Gene
       @handlers.add 100, Gene::Handlers::Lang::BinaryExprHandler.new
       @handlers.add 100, Gene::Handlers::Lang::InvocationHandler.new
 
-      # global_scope is a special scope, accessed using different mechanism
+      reset
+    end
+
+    def reset
+      # global_scope is a special scope
       # root_scope is the root of regular scope hierarchy: @scopes
       # regular scopes can inherit or not inherit from a higher level scope
-      @global_scope  = Gene::Lang::Scope.new nil
-      @root_scope    = Gene::Lang::Scope.new nil
-      @scopes        = [@root_scope]
-      @self_objects  = []
+      @global_scope = Gene::Lang::Scope.new nil
+      @root_scope   = Gene::Lang::Scope.new nil
+      @scopes       = [@root_scope]
+      @self_objects = []
     end
 
     def scope
