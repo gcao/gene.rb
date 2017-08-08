@@ -117,6 +117,12 @@ describe Gene::Parser do
       result.metadata['key'].should == true
     end
 
+    it '(a ^!key)' do
+      result = Gene::Parser.parse(example.description)
+      result.class.should == Gene::Types::Group
+      result.metadata['key'].should == false
+    end
+
     it '(a ^-key)' do
       result = Gene::Parser.parse(example.description)
       result.class.should == Gene::Types::Group

@@ -344,11 +344,11 @@ module Gene
         end
       end
 
-      if value =~ /^[\^\+\-]?(.*)^?$/
+      if value =~ /^[\^\!\+\-]?(.*)^?$/
         key = $1
-        if value[0] == '+' or value[0] == '^' or value[-1] == '^'
+        if value[0] == '+' or value[0] == '^'
           @metadata_for_group[key] = true
-        elsif value[0] == '-'
+        elsif value[0] == '-' or value[0] == '!'
           @metadata_for_group[key] = false
         else
           next_value = parse_value
