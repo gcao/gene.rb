@@ -2,6 +2,12 @@ module Gene::Lang
   class Undefined
   end
 
+  # All objects other than literals have this structure
+  # metadata: Hash
+  #   _class: SomeClass
+  # attributes: Hash
+  #   ...
+  # data: literal or array or anything else
   class Object
     attr_reader :attributes
     def initialize klass

@@ -12,6 +12,7 @@ module Gene
       @handlers.add 100, Gene::Handlers::Lang::MethodHandler.new
       @handlers.add 100, Gene::Handlers::Lang::FunctionHandler.new
       @handlers.add 100, Gene::Handlers::Lang::LetHandler.new
+      @handlers.add 100, Gene::Handlers::Lang::IfHandler.new
       @handlers.add 100, Gene::Handlers::Lang::NewHandler.new
       @handlers.add 100, Gene::Handlers::Lang::InitHandler.new
       @handlers.add 100, Gene::Handlers::Lang::BinaryExprHandler.new

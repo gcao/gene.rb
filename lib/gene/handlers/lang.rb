@@ -200,4 +200,44 @@ module Gene::Handlers::Lang
     end
   end
 
+  # If statement can look like any of below
+  # (if cond true_logic) - 3 elements
+  # (if cond true_logic false_logic) - 4 elements
+  # (if cond true_logic cond2 true_logic) - 5 elements
+  # (if cond true_logic cond2 true_logic else_logic) - 6 elements
+  # Same as (if cond true_logic (if cond2 true_logic else_logic))
+  class IfHandler
+    IF = Gene::Types::Ident.new('if')
+
+    def initialize
+      @logger = Logem::Logger.new(self)
+    end
+
+    def call context, data
+      return Gene::NOT_HANDLED unless IF.first_of_group? data
+
+      # data[1] is the condition
+      # data[2] is an array of code to be run when the condition evaluates to true
+      # data[3] is an array of code to be run when the condition evaluates to false
+      condition   = data[1]
+      true_logic  = data[2]
+      false_logic = data[3]
+      if context.process condition
+        if true_logic.is_a? Array
+          code = Gene::Lang::Block.new([], true_logic)
+          code.call context: context
+        else
+          context.process(true_logic)
+        end
+      else
+        if false_logic.is_a? Array
+          code = Gene::Lang::Block.new([], false_logic)
+          code.call context: context
+        else
+          context.process(false_logic)
+        end
+      end
+    end
+  end
+
 end
