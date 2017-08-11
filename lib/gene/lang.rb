@@ -3,8 +3,7 @@ module Gene::Lang
   end
 
   # All objects other than literals have this structure
-  # metadata: Hash
-  #   _class: SomeClass
+  # type: a short Ident to help identify type of the object
   # attributes: Hash
   #   ...
   # data: literal or array or anything else

@@ -29,6 +29,9 @@ describe Gene::Parser do
     '\#'       => Gene::Types::Ident.new('#', true),
     '\#a'      => Gene::Types::Ident.new('#a', true),
     'a'        => Gene::Types::Ident.new('a'),
+    # Quoted identity, support escaping with "\"
+    # '#""'      => Gene::Types::Ident.new(''),
+    # "#''"      => Gene::Types::Ident.new(''),
     'a b'      => Gene::Types::Stream.new(Gene::Types::Ident.new('a'), Gene::Types::Ident.new('b')),
     '\\('      => Gene::Types::Ident.new('(', true),
     '()'       => Gene::NOOP,

@@ -9,7 +9,7 @@ module Gene
       super
       @handlers.add 100, Gene::Handlers::ArrayHandler.new
       @handlers.add 100, Gene::Handlers::HashHandler.new
-      @handlers.add 100, Gene::Handlers::ComplexStringHandler.new
+      # @handlers.add 100, Gene::Handlers::ComplexStringHandler.new
       @handlers.add 100, Gene::Handlers::RangeHandler.new
       @handlers.add 100, Gene::Handlers::Base64Handler.new
       @handlers.add 100, Gene::Handlers::RegexpHandler.new

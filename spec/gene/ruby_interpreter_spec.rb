@@ -21,10 +21,10 @@ describe Gene::RubyInterpreter do
     result.should == 2
   end
 
-  it "(#'' 1 2)" do
-    result = @interpreter.parse_and_process(example.description)
-    result.should == "12"
-  end
+  # it "(#'' 1 2)" do
+  #   result = @interpreter.parse_and_process(example.description)
+  #   result.should == "12"
+  # end
 
   it "(@a = 1)" do
     @interpreter.parse_and_process(example.description)
@@ -83,16 +83,15 @@ describe Gene::RubyInterpreter do
     obj.second.should == 2
   end
 
-  it "
-    (def do_this[first second [third 'default']]
-      (#'' first second third)
-    )
-  " do
-    pending
-    @interpreter.parse_and_process(example.description)
-    @interpreter.context.do_this(1, 2).should == "12default"
-    @interpreter.context.do_this(1, 2, 3).should == "123"
-  end
+  # it "
+  #   (def do_this[first second [third 'default']]
+  #     (#'' first second third)
+  #   )
+  # " do
+  #   @interpreter.parse_and_process(example.description)
+  #   @interpreter.context.do_this(1, 2).should == "12default"
+  #   @interpreter.context.do_this(1, 2, 3).should == "123"
+  # end
 
 end
 
