@@ -88,49 +88,49 @@ describe Gene::Parser do
     end
   end
 
-  describe "Metadata" do
+  describe "Attributes" do
     it '(a ^key true)' do
       result = Gene::Parser.parse(example.description)
       result.class.should == Gene::Types::Group
-      result.metadata['key'].should == true
+      result.attributes['key'].should == true
     end
 
     it '(^key true a)' do
       result = Gene::Parser.parse(example.description)
       result.class.should == Gene::Types::Group
       result.first.should == Gene::Types::Ident.new('a')
-      result.metadata['key'].should == true
+      result.attributes['key'].should == true
     end
 
     # Alternative syntax: ^^key = ^+key, ^!key = ^-key
     it '(a ^^key)' do
       result = Gene::Parser.parse(example.description)
       result.class.should == Gene::Types::Group
-      result.metadata['key'].should == true
+      result.attributes['key'].should == true
     end
 
     it '(^^key a)' do
       result = Gene::Parser.parse(example.description)
       result.class.should == Gene::Types::Group
-      result.metadata['key'].should == true
+      result.attributes['key'].should == true
     end
 
     it '(a ^+key)' do
       result = Gene::Parser.parse(example.description)
       result.class.should == Gene::Types::Group
-      result.metadata['key'].should == true
+      result.attributes['key'].should == true
     end
 
     it '(a ^!key)' do
       result = Gene::Parser.parse(example.description)
       result.class.should == Gene::Types::Group
-      result.metadata['key'].should == false
+      result.attributes['key'].should == false
     end
 
     it '(a ^-key)' do
       result = Gene::Parser.parse(example.description)
       result.class.should == Gene::Types::Group
-      result.metadata['key'].should == false
+      result.attributes['key'].should == false
     end
 
     it '(a \^key)' do

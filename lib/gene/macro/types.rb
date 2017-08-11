@@ -3,5 +3,7 @@ module Gene::Macro
   end
 
   class Scope
+    def initialize parent
+    end
   end
 end

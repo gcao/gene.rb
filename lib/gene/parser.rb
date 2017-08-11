@@ -36,7 +36,7 @@ module Gene
     GROUP_CLOSE           = /\)/
     HASH_OPEN             = /\{/
     HASH_CLOSE            = /\}/
-    METADATA              = /\^(?=[+\-]?)/
+    ATTRIBUTE             = /\^(?=[+\-]?)/
     PAIR_DELIMITER        = /:/
     COMMA                 = /,/
     ARRAY_OPEN            = /\[/
@@ -94,7 +94,7 @@ module Gene
           obj = handle_top_level_results obj, value
         when (value = parse_ref) != UNPARSED
           obj = handle_top_level_results obj, value
-        when (value = parse_metadata) != UNPARSED
+        when (value = parse_attribute) != UNPARSED
           obj = handle_top_level_results obj, value
         when (value = parse_ident) != UNPARSED
           obj = handle_top_level_results obj, value
@@ -208,7 +208,7 @@ module Gene
         value
       when (value = parse_ref) != UNPARSED
         value
-      when (value = parse_metadata) != UNPARSED
+      when (value = parse_attribute) != UNPARSED
         value
       when (value = parse_ident) != UNPARSED
         value
@@ -317,8 +317,8 @@ module Gene
       Gene::Types::Ref.new(value)
     end
 
-    def parse_metadata
-      return UNPARSED unless scan(METADATA)
+    def parse_attribute
+      return UNPARSED unless scan(ATTRIBUTE)
 
       value = ''
 
@@ -336,16 +336,16 @@ module Gene
       if value =~ /^[\^\!\+\-]?(.*)^?$/
         key = $1
         if value[0] == '+' or value[0] == '^'
-          @metadata_for_group[key] = true
+          @attribute_for_group[key] = true
         elsif value[0] == '-' or value[0] == '!'
-          @metadata_for_group[key] = false
+          @attribute_for_group[key] = false
         else
           next_value = parse_value
           if next_value == UNPARSED
-            raise ParseError, "Metadata for \"#{key}\" is not found"
+            raise ParseError, "Attribute for \"#{key}\" is not found"
           end
 
-          @metadata_for_group[key] = next_value
+          @attribute_for_group[key] = next_value
         end
         IGNORABLE
       else
@@ -356,7 +356,7 @@ module Gene
     def parse_group
       return UNPARSED unless scan(GROUP_OPEN) || scan(ARRAY_OPEN)
 
-      @metadata_for_group = {}
+      @attribute_for_group = {}
 
       result = Array.new
 
@@ -395,8 +395,8 @@ module Gene
       return Gene::NOOP if result.length == 0 # NOOP
 
       group = Gene::Types::Group.new(*result)
-      @metadata_for_group.each do |k, v|
-        group.metadata[k] = v
+      @attribute_for_group.each do |k, v|
+        group.attributes[k] = v
       end
       group
     end

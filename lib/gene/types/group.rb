@@ -1,9 +1,8 @@
 class Gene::Types::Group < Array
-  attr_accessor :root, :parent
-  attr :metadata
+  attr :attributes
 
   def initialize *items
-    @metadata = {}
+    @attributes = {}
     concat items
   end
 
