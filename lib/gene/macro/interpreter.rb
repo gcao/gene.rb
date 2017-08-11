@@ -1,8 +1,11 @@
-module Gene
+require 'gene/macro/types'
+require 'gene/macro/handlers'
+
+module Gene::Macro
   #
   # Gene will be our own interpreted language
   #
-  class GeneMacroInterpreter
+  class Interpreter
     def initialize
       @handlers = Gene::Handlers::ComboHandler.new
       reset
@@ -28,7 +31,7 @@ module Gene
     end
 
     def parse_and_process input
-      CoreInterpreter.parse_and_process input do |output|
+      Gene::CoreInterpreter.parse_and_process input do |output|
         process output
       end
     end

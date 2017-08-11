@@ -1,8 +1,10 @@
 require File.expand_path(File.dirname(__FILE__) + '/../spec_helper')
 
-describe Gene::GeneLangInterpreter do
+require 'gene/lang/interpreter'
+
+describe Gene::Lang::Interpreter do
   before do
-    @interpreter = Gene::GeneLangInterpreter.new
+    @interpreter = Gene::Lang::Interpreter.new
   end
 
   describe "class" do

@@ -16,5 +16,3 @@ require 'gene/handlers/ref_handler'
 require 'gene/handlers/regexp_handler'
 require 'gene/handlers/set_handler'
 require 'gene/handlers/tuple_handler'
-
-require 'gene/handlers/lang'

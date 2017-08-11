@@ -1,4 +1,4 @@
-module Gene::Handlers::Lang
+module Gene::Lang::Handlers
   # Handle scope variables, instance variables like @var and literals
   class DefaultHandler
     def initialize
@@ -41,7 +41,7 @@ module Gene::Handlers::Lang
     end
   end
 
-  class Gene::Handlers::Lang::FunctionHandler
+  class FunctionHandler
     FUNCTION = Gene::Types::Ident.new('fn')
 
     def initialize
@@ -62,7 +62,7 @@ module Gene::Handlers::Lang
     end
   end
 
-  class Gene::Handlers::Lang::MethodHandler
+  class MethodHandler
     METHOD = Gene::Types::Ident.new('method')
 
     def initialize
@@ -140,7 +140,7 @@ module Gene::Handlers::Lang
     end
   end
 
-  class Gene::Handlers::Lang::InvocationHandler
+  class InvocationHandler
     def initialize
       @logger = Logem::Logger.new(self)
     end
@@ -173,7 +173,7 @@ module Gene::Handlers::Lang
     end
   end
 
-  class Gene::Handlers::Lang::BinaryExprHandler
+  class BinaryExprHandler
     BINARY_OPERATORS = [
       Gene::Types::Ident.new('+'),
       Gene::Types::Ident.new('-'),

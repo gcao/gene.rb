@@ -1,5 +1,7 @@
 require File.expand_path(File.dirname(__FILE__) + '/../spec_helper')
 
+require 'gene/file_system'
+
 describe Gene::FileSystem do
   before do
     @interpreter = Gene::FileSystem.new

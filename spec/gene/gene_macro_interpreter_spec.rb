@@ -1,8 +1,9 @@
 require File.expand_path(File.dirname(__FILE__) + '/../spec_helper')
+require 'gene/macro/interpreter'
 
-describe Gene::GeneMacroInterpreter do
+describe Gene::Macro::Interpreter do
   before do
-    @interpreter = Gene::GeneMacroInterpreter.new
+    @interpreter = Gene::Macro::Interpreter.new
   end
 
   it "(#def a 'a')" do
