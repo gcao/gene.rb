@@ -42,9 +42,10 @@ module Gene
     ARRAY_OPEN            = /\[/
     ARRAY_CLOSE           = /\]/
     ESCAPE                = /\\/
-    TRUE_PATTERN          = /true#{SEP_OR_END}/
-    FALSE_PATTERN         = /false#{SEP_OR_END}/
+    TRUE                  = /true#{SEP_OR_END}/
+    FALSE                 = /false#{SEP_OR_END}/
     NULL                  = /null#{SEP_OR_END}/
+    UNDEFINED             = /undefined#{SEP_OR_END}/
     PLACEHOLDER           = /#_#{SEP_OR_END}/
     IGNORE                = %r(
       (?:
@@ -83,11 +84,7 @@ module Gene
           obj = handle_top_level_results obj, value
         when (value = parse_int) != UNPARSED
           obj = handle_top_level_results obj, value
-        when (value = parse_true) != UNPARSED
-          obj = handle_top_level_results obj, value
-        when (value = parse_false) != UNPARSED
-          obj = handle_top_level_results obj, value
-        when (value = parse_null) != UNPARSED
+        when (value = parse_keywords) != UNPARSED
           obj = handle_top_level_results obj, value
         when (value = parse_placeholder) != UNPARSED
           obj = handle_top_level_results obj, value
@@ -199,11 +196,7 @@ module Gene
         value
       when (value = parse_int) != UNPARSED
         value
-      when (value = parse_true) != UNPARSED
-        value
-      when (value = parse_false) != UNPARSED
-        value
-      when (value = parse_null) != UNPARSED
+      when (value = parse_keywords) != UNPARSED
         value
       when (value = parse_comment_next) != UNPARSED
         value
@@ -259,22 +252,18 @@ module Gene
       Float(self[1])
     end
 
-    def parse_true
-      return UNPARSED unless scan(TRUE_PATTERN)
-
-      true
-    end
-
-    def parse_false
-      return UNPARSED unless scan(FALSE_PATTERN)
-
-      false
-    end
-
-    def parse_null
-      return UNPARSED unless scan(NULL)
-
-      nil
+    def parse_keywords
+      if scan(NULL)
+        return nil
+      elsif scan(TRUE)
+        return true
+      elsif scan(FALSE)
+        return false
+      elsif scan(UNDEFINED)
+        return Gene::UNDEFINED
+      else
+        return UNPARSED
+      end
     end
 
     def parse_comment_next

@@ -21,6 +21,7 @@ describe Gene::CoreInterpreter do
     '"a"'        => "a",
     "'a'"        => "a",
     'null'       => nil,
+    'undefined'  => Gene::UNDEFINED,
     '[]'         => [],
     '[1]'        => [1],
     '{}'         => {},
@@ -32,7 +33,7 @@ describe Gene::CoreInterpreter do
     '[()]'       => [],
     '(#<> 1 2)'  => Set.new([1, 2]),
     '(#.. 1 3)'  => Range.new(1, 3),
-    #'(#|| 1 2)'  => Gene::Types::Tuple.new(1, 2),
+    '(#|| 1 2)'  => Gene::Types::Tuple.new(1, 2),
     '(#"" 1 3)'  => Gene::Types::ComplexString.new(1, 3),
     '(#// a|b)'  => Regexp.new('a|b'),
     '(#//i a|b)' => Regexp.new('a|b', Regexp::IGNORECASE),
@@ -43,22 +44,22 @@ describe Gene::CoreInterpreter do
     end
   end
 
-  describe "references" do
-    it '[(#SET a 1) #a]' do
-      result = Gene::CoreInterpreter.parse_and_process(example.description)
-      result.should == [1, 1]
-    end
+  # describe "references" do
+  #   it '[(#SET a 1) #a]' do
+  #     result = Gene::CoreInterpreter.parse_and_process(example.description)
+  #     result.should == [1, 1]
+  #   end
 
-    it '[(#SET a 1 ()) #a]' do
-      result = Gene::CoreInterpreter.parse_and_process(example.description)
-      result.should == [1]
-    end
+  #   it '[(#SET a 1 ()) #a]' do
+  #     result = Gene::CoreInterpreter.parse_and_process(example.description)
+  #     result.should == [1]
+  #   end
 
-    it '[(#SET a 1 ()) #a (#UNSET a) #a]' do
-      result = Gene::CoreInterpreter.parse_and_process(example.description)
-      result.should == [1, nil]
-    end
-  end
+  #   it '[(#SET a 1 ()) #a (#UNSET a) #a]' do
+  #     result = Gene::CoreInterpreter.parse_and_process(example.description)
+  #     result.should == [1, nil]
+  #   end
+  # end
 
   describe "Interpreter capabiliby check" do
     #it '(#SUPPORT? #SET #THROW "#SET is not supported")' do

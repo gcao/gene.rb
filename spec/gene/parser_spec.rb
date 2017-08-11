@@ -23,6 +23,7 @@ describe Gene::Parser do
     'truea'    => Gene::Types::Ident.new('truea'),
     'false'    => false,
     'null'     => nil,
+    'undefined'=> Gene::UNDEFINED,
     '#_'       => Gene::PLACEHOLDER,
     '#a'       => Gene::Types::Ref.new('a'),
     '\#'       => Gene::Types::Ident.new('#', true),
