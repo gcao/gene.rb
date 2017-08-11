@@ -12,6 +12,7 @@ require 'gene/core_interpreter'
 require 'gene/ruby_interpreter'
 require 'gene/javascript_interpreter'
 require 'gene/experimental_interpreter'
+require 'gene/gene_macro_interpreter'
 require 'gene/gene_lang_interpreter'
 
 require 'gene/file_system'
