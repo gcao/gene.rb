@@ -4,6 +4,7 @@ require 'gene/macro/handlers'
 class Gene::Macro::Interpreter
   def initialize
     @handlers = Gene::Handlers::ComboHandler.new
+    @handlers.add 100, Gene::Macro::Handlers::DefaultHandler.new
     reset
   end
 

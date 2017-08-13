@@ -28,7 +28,7 @@ module Gene
                               )
                             )/x
     IDENT                 = /([^,\s\(\)\[\]\{\}]+)/
-    REF                   = /#(?=[a-z])/
+    # REF                   = /#(?=[a-z])/
     COMMENT               = /#<(?=[,\s\(\)\[\]\{\}]|$)/
     COMMENT_END           = />#(?=[,\s\(\)\[\]\{\}]|$)/
     COMMENT_NEXT          = /##(?=[,\s\(\)\[\]\{\}]|$)/
@@ -92,8 +92,8 @@ module Gene
           obj = handle_top_level_results obj, value
         when (value = parse_hash) != UNPARSED
           obj = handle_top_level_results obj, value
-        when (value = parse_ref) != UNPARSED
-          obj = handle_top_level_results obj, value
+        # when (value = parse_ref) != UNPARSED
+        #   obj = handle_top_level_results obj, value
         when (value = parse_attribute) != UNPARSED
           obj = handle_top_level_results obj, value
         when (value = parse_ident) != UNPARSED
@@ -206,8 +206,8 @@ module Gene
         value
       when (value = parse_hash) != UNPARSED
         value
-      when (value = parse_ref) != UNPARSED
-        value
+      # when (value = parse_ref) != UNPARSED
+      #   value
       when (value = parse_attribute) != UNPARSED
         value
       when (value = parse_ident) != UNPARSED
@@ -298,24 +298,24 @@ module Gene
       Gene::Types::Ident.new(value, escaped)
     end
 
-    def parse_ref
-      return UNPARSED unless scan(REF)
+    # def parse_ref
+    #   return UNPARSED unless scan(REF)
 
-      value = ''
+    #   value = ''
 
-      until eos?
-        case
-        when check(SEPARATOR)
-          break
-        when scan(ESCAPE)
-          value += getch
-        else
-          value += getch
-        end
-      end
+    #   until eos?
+    #     case
+    #     when check(SEPARATOR)
+    #       break
+    #     when scan(ESCAPE)
+    #       value += getch
+    #     else
+    #       value += getch
+    #     end
+    #   end
 
-      Gene::Types::Ref.new(value)
-    end
+    #   Gene::Types::Ref.new(value)
+    # end
 
     def parse_attribute
       return UNPARSED unless scan(ATTRIBUTE)

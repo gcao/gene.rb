@@ -6,8 +6,10 @@ describe Gene::Macro::Interpreter do
     @interpreter = Gene::Macro::Interpreter.new
   end
 
-  it "(#def a 'value') #@a" do
-    result = @interpreter.parse_and_process(example.description)
-    result.should == 'value'
+  describe "Variable" do
+    it "(#def a 'value') \#@a" do
+      result = @interpreter.parse_and_process(example.description)
+      result.should == 'value'
+    end
   end
 end

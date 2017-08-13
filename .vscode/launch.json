@@ -51,7 +51,7 @@
       ]
     },
     {
-      "name": "RSpec - gene_lang_interpreter_spec.rb",
+      "name": "RSpec - gene_macro_interpreter_spec.rb",
       "type": "Ruby",
       "request": "launch",
       "cwd": "${workspaceRoot}",
@@ -59,7 +59,7 @@
       "args": [
         "-I",
         "${workspaceRoot}",
-        "spec/gene/gene_lang_interpreter_spec.rb:55"
+        "spec/gene/gene_macro_interpreter_spec.rb:11"
       ]
     },
     {
