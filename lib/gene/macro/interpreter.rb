@@ -27,8 +27,14 @@ class Gene::Macro::Interpreter
   end
 
   def parse_and_process input
-    Gene::CoreInterpreter.parse_and_process input do |output|
+    result = Gene::CoreInterpreter.parse_and_process input do |output|
       process output
+    end
+
+    if result == Gene::Macro::IGNORE
+      Gene::UNDEFINED
+    else
+      result
     end
   end
 
