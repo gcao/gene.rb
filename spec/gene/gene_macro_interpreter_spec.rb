@@ -12,7 +12,7 @@ describe Gene::Macro::Interpreter do
       result.should == Gene::UNDEFINED
     end
 
-    it "(#def a 'value' #retain)" do
+    it "(#def-retain a 'value')" do
       result = @interpreter.parse_and_process(example.description)
       result.should == 'value'
     end
@@ -22,13 +22,18 @@ describe Gene::Macro::Interpreter do
       result.should == 'value'
     end
 
-    it "(#defmulti [a 1] [b 2] [c])" do
+    it "(#def-multi [a 1] [b 2] [c])" do
       pending "Verify a=1, b=2 c=undefined"
     end
   end
 
   describe "fn" do
-    it "(#fn f [a] a)(\#@f 1)" do
+    it "(#fn f [a] \#@a)(\#@f 1)" do
+      result = @interpreter.parse_and_process(example.description)
+      result.should == 1
+    end
+
+    it "(#fn f a \#@a)(\#@f 1)" do
       result = @interpreter.parse_and_process(example.description)
       result.should == 1
     end

@@ -17,13 +17,17 @@ class Gene::Macro::Interpreter
     @scopes.last
   end
 
-  def start_scope scope = Gene::Lang::Scope.new(nil)
-    @scopes.push scope
+  def start_scope
+    new_scope = Gene::Macro::Scope.new(scope)
+    @scopes.push new_scope
+    new_scope
   end
 
-  def end_scope
+  def end_scope scope
     throw "Scope error: can not close the root scope." if @scopes.size == 0
-    @scopes.pop
+    if !scope or self.scope == scope
+      @scopes.pop
+    end
   end
 
   def parse_and_process input
