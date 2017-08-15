@@ -45,4 +45,26 @@ describe Gene::Macro::Interpreter do
       result.should == [[0, 1], [1, 2]]
     end
   end
+
+  describe "if" do
+    it "(#if true 1 2)" do
+      result = @interpreter.parse_and_process(example.description)
+      result.should == 1
+    end
+
+    it "(#if false 1 2)" do
+      result = @interpreter.parse_and_process(example.description)
+      result.should == 2
+    end
+
+    it "(#if true #then (#def a 1) ##a)" do
+      result = @interpreter.parse_and_process(example.description)
+      result.should == 1
+    end
+
+    it "(#if false #then (#def a 1) ##a #else (#def a 2) ##a)" do
+      result = @interpreter.parse_and_process(example.description)
+      result.should == 2
+    end
+  end
 end

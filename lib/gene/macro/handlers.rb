@@ -3,6 +3,9 @@ module Gene::Macro::Handlers
   DEF_RETAIN = Gene::Types::Ident.new '#def-retain'
   FN = Gene::Types::Ident.new '#fn'
   EACH = Gene::Types::Ident.new '#each'
+  IF = Gene::Types::Ident.new '#if'
+  THEN = Gene::Types::Ident.new '#then'
+  ELSE = Gene::Types::Ident.new '#else'
 
   class DefaultHandler
     def call context, data
@@ -32,6 +35,35 @@ module Gene::Macro::Handlers
         fn = Gene::Macro::AnonymousFunction.new arguments, statements
         collection.each_with_index.map do |item, i|
           fn.call context, [i, item]
+        end
+
+      elsif IF.first_of_group? data
+        condition = context.process data[1]
+        then_mode = data[2] == THEN
+        if then_mode
+          result = Gene::UNDEFINED
+          if condition
+            data[3..-1].each do |item|
+              break if item == ELSE
+              result = context.process item
+            end
+          else
+            found_else = false
+            data[3..-1].each do |item|
+              if found_else
+                result = context.process item
+              elsif item == ELSE
+                found_else = true
+              end
+            end
+          end
+          result
+        else
+          if condition
+            context.process data[2]
+          else
+            context.process data[3]
+          end
         end
 
       elsif data.is_a? Gene::Types::Group
