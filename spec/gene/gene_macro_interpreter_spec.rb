@@ -39,8 +39,8 @@ describe Gene::Macro::Interpreter do
     end
   end
 
-  describe "each" do
-    it "(#each [1 2] [##_index ##_value])" do
+  describe "map" do
+    it "(#map [1 2] [##_index ##_value])" do
       result = @interpreter.parse_and_process(example.description)
       result.should == [[0, 1], [1, 2]]
     end
@@ -65,6 +65,28 @@ describe Gene::Macro::Interpreter do
     it "(#if false #then (#def a 1) ##a #else (#def a 2) ##a)" do
       result = @interpreter.parse_and_process(example.description)
       result.should == 2
+    end
+  end
+
+  describe "Environment/file system/etc" do
+    it "(#env HOME)" do
+      result = @interpreter.parse_and_process(example.description)
+      result.should == ENV['HOME']
+    end
+
+    it "#cwd" do
+      result = @interpreter.parse_and_process(example.description)
+      result.should == Dir.pwd
+    end
+
+    it "(#ls)" do
+      result = @interpreter.parse_and_process(example.description)
+      result.should == Dir.entries(Dir.pwd)
+    end
+
+    it "(#read 'spec/data/test.txt')" do
+      result = @interpreter.parse_and_process(example.description)
+      result.should == "Test\nTest 2"
     end
   end
 end

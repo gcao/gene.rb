@@ -1,16 +1,26 @@
 module Gene::Macro::Handlers
-  DEF = Gene::Types::Ident.new '#def'
-  DEF_RETAIN = Gene::Types::Ident.new '#def-retain'
-  FN = Gene::Types::Ident.new '#fn'
-  EACH = Gene::Types::Ident.new '#each'
-  IF = Gene::Types::Ident.new '#if'
-  THEN = Gene::Types::Ident.new '#then'
-  ELSE = Gene::Types::Ident.new '#else'
+  DEF         = Gene::Types::Ident.new '#def'
+  DEF_RETAIN  = Gene::Types::Ident.new '#def-retain'
+  FN          = Gene::Types::Ident.new '#fn'
+
+  MAP         = Gene::Types::Ident.new '#map'
+
+  IF          = Gene::Types::Ident.new '#if'
+  THEN        = Gene::Types::Ident.new '#then'
+  ELSE        = Gene::Types::Ident.new '#else'
+
+  ENV_        = Gene::Types::Ident.new '#env'
+  CWD         = Gene::Types::Ident.new '#cwd'
+  LS          = Gene::Types::Ident.new '#ls'
+  READ        = Gene::Types::Ident.new '#read'
 
   class DefaultHandler
     def call context, data
       if data.is_a? Gene::Types::Ident and data.name =~ /^##(.*)$/
         context.scope[$1]
+
+      elsif data == CWD
+        Dir.pwd
 
       elsif DEF.first_of_group? data
         value = context.process data.third
@@ -28,7 +38,7 @@ module Gene::Macro::Handlers
         statements = data[3..-1]
         context.scope[name] = Gene::Macro::Function.new name, arguments, statements
 
-      elsif EACH.first_of_group? data
+      elsif MAP.first_of_group? data
         collection = data[1]
         arguments = ['_index', '_value']
         statements = data[2..-1]
@@ -65,6 +75,18 @@ module Gene::Macro::Handlers
             context.process data[3]
           end
         end
+
+      elsif ENV_.first_of_group? data
+        name = data[1].to_s
+        ENV[name]
+
+      elsif LS.first_of_group? data
+        name = data[1] || Dir.pwd
+        Dir.entries name.to_s
+
+      elsif READ.first_of_group? data
+        name = data[1]
+        File.read name
 
       elsif data.is_a? Gene::Types::Group
         name = data.first.name.to_s
