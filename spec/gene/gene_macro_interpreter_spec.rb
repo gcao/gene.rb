@@ -38,4 +38,11 @@ describe Gene::Macro::Interpreter do
       result.should == 1
     end
   end
+
+  describe "each" do
+    it "(#each [1 2] [\#@_index \#@_value])" do
+      result = @interpreter.parse_and_process(example.description)
+      result.should == [[0, 1], [1, 2]]
+    end
+  end
 end

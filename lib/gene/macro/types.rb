@@ -51,7 +51,7 @@ module Gene::Macro
   # An anonymous function is created with implicit arguments: $_index, $_value
   class AnonymousFunction < Function
     def initialize arguments, statements
-      super '', arguments, statement
+      super '', arguments, statements
     end
   end
 

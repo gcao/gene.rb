@@ -2,6 +2,7 @@ module Gene::Macro::Handlers
   DEF = Gene::Types::Ident.new '#def'
   DEF_RETAIN = Gene::Types::Ident.new '#def-retain'
   FN = Gene::Types::Ident.new '#fn'
+  EACH = Gene::Types::Ident.new '#each'
 
   class DefaultHandler
     def call context, data
@@ -24,6 +25,15 @@ module Gene::Macro::Handlers
         statements = data[3..-1]
         context.scope[name] = Gene::Macro::Function.new name, arguments, statements
 
+      elsif EACH.first_of_group? data
+        collection = data[1]
+        arguments = ['_index', '_value']
+        statements = data[2..-1]
+        fn = Gene::Macro::AnonymousFunction.new arguments, statements
+        collection.each_with_index.map do |item, i|
+          fn.call context, [i, item]
+        end
+
       elsif data.is_a? Gene::Types::Group
         name = data.first.name.to_s
         if name =~ /^\#\@(.*)$/
@@ -34,17 +44,14 @@ module Gene::Macro::Handlers
             data[0] = value
             return data
           end
+        else
+          data
         end
 
-      # elsif data.is_a? Array
-      #   (data.size - 1).downto(0) do |i|
-      #     result = context.process(data[i])
-      #     if result == Gene::Macro::IGNORE
-      #       data.delete_at i
-      #     else
-      #       data[i] = result
-      #     end
-      #   end
+      elsif data.is_a? Array
+        data
+          .map    {|item| context.process item }
+          .select {|item| item != Gene::Macro::IGNORE }
 
       # elsif data.is_a? Hash
 
