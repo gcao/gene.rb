@@ -17,7 +17,7 @@ describe Gene::Macro::Interpreter do
       result.should == 'value'
     end
 
-    it "(#def a 'value') \#@a" do
+    it "(#def a 'value') ##a" do
       result = @interpreter.parse_and_process(example.description)
       result.should == 'value'
     end
@@ -28,19 +28,19 @@ describe Gene::Macro::Interpreter do
   end
 
   describe "fn" do
-    it "(#fn f [a] \#@a)(\#@f 1)" do
+    it "(#fn f [a] ##a)(##f 1)" do
       result = @interpreter.parse_and_process(example.description)
       result.should == 1
     end
 
-    it "(#fn f a \#@a)(\#@f 1)" do
+    it "(#fn f a ##a)(##f 1)" do
       result = @interpreter.parse_and_process(example.description)
       result.should == 1
     end
   end
 
   describe "each" do
-    it "(#each [1 2] [\#@_index \#@_value])" do
+    it "(#each [1 2] [##_index ##_value])" do
       result = @interpreter.parse_and_process(example.description)
       result.should == [[0, 1], [1, 2]]
     end

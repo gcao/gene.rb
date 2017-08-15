@@ -6,7 +6,7 @@ module Gene::Macro::Handlers
 
   class DefaultHandler
     def call context, data
-      if data.is_a? Gene::Types::Ident and data.name =~ /^#@(.*)$/
+      if data.is_a? Gene::Types::Ident and data.name =~ /^##(.*)$/
         context.scope[$1]
 
       elsif DEF.first_of_group? data
@@ -36,7 +36,7 @@ module Gene::Macro::Handlers
 
       elsif data.is_a? Gene::Types::Group
         name = data.first.name.to_s
-        if name =~ /^\#\@(.*)$/
+        if name =~ /^##(.*)$/
           value = context.scope[$1]
           if value.is_a? Gene::Macro::Function
             value.call context, data[1..-1]
