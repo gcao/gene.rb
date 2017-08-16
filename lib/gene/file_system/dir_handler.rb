@@ -5,12 +5,12 @@ class Gene::FileSystem::DirHandler
   end
 
   def call context, data
-    return Gene::NOT_HANDLED unless data.is_a? Gene::Types::Group and data.first == Gene::FileSystem::DIR
+    return Gene::NOT_HANDLED unless data.is_a? Gene::Types::Base and data.first == Gene::FileSystem::DIR
 
     @logger.debug('call', data)
 
     name = data[1]
-    name = context.handle_data name if name.is_a? Gene::Types::Group
+    name = context.handle_data name if name.is_a? Gene::Types::Base
 
     dir = "#{context.root}/#{name}"
     Dir.mkdir dir

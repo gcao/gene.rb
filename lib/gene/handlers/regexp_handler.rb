@@ -6,7 +6,7 @@ module Gene
       end
 
       def call context, data
-        return Gene::NOT_HANDLED unless data.is_a? Gene::Types::Group and
+        return Gene::NOT_HANDLED unless data.is_a? Gene::Types::Base and
                                         data.first.is_a? Gene::Types::Ident and
                                         data.first.to_s =~ %r(^#//([a-z]*))
 

@@ -1,4 +1,4 @@
-class Gene::Types::Group < Array
+class Gene::Types::Base < Array
   attr :attributes
 
   def initialize *items
@@ -19,7 +19,7 @@ class Gene::Types::Group < Array
   end
 
   def == other
-    return unless other.is_a? Gene::Types::Group
+    return unless other.is_a? self.class
 
     super
   end

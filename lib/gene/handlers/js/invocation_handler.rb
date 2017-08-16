@@ -7,7 +7,7 @@ module Gene
         end
 
         def call context, data
-          return NOT_HANDLED unless data.is_a? Gene::Types::Group
+          return NOT_HANDLED unless data.is_a? Gene::Types::Base
 
           if data.first.is_a?(Gene::Types::Ident) and data.first.name =~ /^\./
             @logger.debug('call', data)

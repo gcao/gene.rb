@@ -15,7 +15,7 @@ module Gene
         # (function [body])
         # If body is composed of only one statement, [] is optional
         def call context, data
-          return Gene::NOT_HANDLED unless data.is_a? Gene::Types::Group and data.first == FUNCTION
+          return Gene::NOT_HANDLED unless data.is_a? Gene::Types::Base and data.first == FUNCTION
 
           @logger.debug('call', data)
 

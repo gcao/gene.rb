@@ -68,7 +68,7 @@ module Gene
     # Handlers
     handler
     def handle_literal data
-      if data.is_a? Gene::Types::Group and data.length == 1
+      if data.is_a? Gene::Types::Base and data.length == 1
         @logger.debug('handle_literal', data)
         handle_partial(data.first)
       elsif data.is_a? Fixnum
@@ -81,7 +81,7 @@ module Gene
 
     handler
     def handle_plus data
-      return Gene::NOT_HANDLED unless data.is_a? Gene::Types::Group and data[1].is_a? Gene::Types::Ident and data[1].name == '+'
+      return Gene::NOT_HANDLED unless data.is_a? Gene::Types::Base and data[1].is_a? Gene::Types::Ident and data[1].name == '+'
 
       @logger.debug('handle_plus', data)
       result = handle_partial(data[0]) + handle_partial(data[2])
@@ -91,7 +91,7 @@ module Gene
 
     handler priority: HIGH
     def handle_multiply data
-      return NOT_HANDLED unless data.is_a? Gene::Types::Group
+      return NOT_HANDLED unless data.is_a? Gene::Types::Base
 
       index =  data.index {|item| item.is_a? Gene::Types::Ident and item.name == '*' }
 

@@ -109,7 +109,7 @@ module Gene::Macro::Handlers
         end
         target
 
-      elsif data.is_a? Gene::Types::Group
+      elsif data.is_a? Gene::Types::Base
         name = data.first.name.to_s
         if name =~ /^##(.*)$/
           value = context.scope[$1]

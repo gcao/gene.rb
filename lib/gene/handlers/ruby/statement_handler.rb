@@ -9,8 +9,8 @@ module Gene
 
         def call context, data
           @logger.debug('call', data)
-          
-          if data.is_a? Gene::Types::Group
+
+          if data.is_a? Gene::Types::Base
             "#{data.first}(#{data.rest.join(', ')})"
             #data.to_s
           else

@@ -33,7 +33,7 @@ describe Gene::FileSystem do
 
     data = Gene::FileSystem.read path
 
-    data.class.should == Gene::Types::Group
+    data.class.should == Gene::Types::Base
     data.first.should == Gene::FileSystem::FILE
     data[1].should == file_name
     data[2].should == content
@@ -41,7 +41,7 @@ describe Gene::FileSystem do
 
   it "read binary file" do
     data = Gene::FileSystem.read File.expand_path(File.dirname(__FILE__) + '/../data/test.gif')
-    data.class.should == Gene::Types::Group
+    data.class.should == Gene::Types::Base
     data.first.should == Gene::FileSystem::FILE
     data[1].should == 'test.gif'
     content = data[2]
@@ -56,7 +56,7 @@ describe Gene::FileSystem do
 
     data = Gene::FileSystem.read path
 
-    data.class.should == Gene::Types::Group
+    data.class.should == Gene::Types::Base
     data.first.should == Gene::FileSystem::DIR
     data[1].should == 'test'
   end
@@ -71,7 +71,7 @@ describe Gene::FileSystem do
 
     data = Gene::FileSystem.read dir
 
-    data.class.should == Gene::Types::Group
+    data.class.should == Gene::Types::Base
     data.first.should == Gene::FileSystem::DIR
     data[1].should == 'test'
 

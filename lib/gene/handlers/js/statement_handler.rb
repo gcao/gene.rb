@@ -8,7 +8,7 @@ module Gene
         end
 
         def call context, data
-          return Gene::NOT_HANDLED unless data.is_a? Gene::Types::Group
+          return Gene::NOT_HANDLED unless data.is_a? Gene::Types::Base
 
           @logger.debug('call', data)
 

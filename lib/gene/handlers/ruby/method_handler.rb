@@ -9,7 +9,7 @@ module Gene
         end
 
         def call context, data
-          return Gene::NOT_HANDLED unless data.is_a? Gene::Types::Group and data.first == METHOD
+          return Gene::NOT_HANDLED unless data.is_a? Gene::Types::Base and data.first == METHOD
 
           @logger.debug('call', data)
 
@@ -32,7 +32,7 @@ module Gene
 def #{method_name}(#{args})
 #{
 data.map{|item|
-  if item.is_a? Gene::Types::Group
+  if item.is_a? Gene::Types::Base
     result = context.handle_partial(item)
     result.is_a?(String) ? result : result.inspect
   else

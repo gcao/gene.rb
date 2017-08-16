@@ -36,9 +36,9 @@ describe Gene::Parser do
     '\\('      => Gene::Types::Ident.new('(', true),
     '()'       => Gene::NOOP,
     '1 ()'     => Gene::Types::Stream.new(1, Gene::NOOP),
-    '("a")'    => Gene::Types::Group.new("a"),
-    '(a)'      => Gene::Types::Group.new(Gene::Types::Ident.new('a')),
-    '(a b)'    => Gene::Types::Group.new(Gene::Types::Ident.new('a'), Gene::Types::Ident.new('b')),
+    '("a")'    => Gene::Types::Base.new("a"),
+    '(a)'      => Gene::Types::Base.new(Gene::Types::Ident.new('a')),
+    '(a b)'    => Gene::Types::Base.new(Gene::Types::Ident.new('a'), Gene::Types::Ident.new('b')),
 
     # Below two should be handled by the parser
     # # line comment
@@ -47,17 +47,17 @@ describe Gene::Parser do
     # ## comment out next item (structural)
     # ##< comment out up to >## or end of group/array/hash (structural)
     # TODO need to add more tests espectially for structural comments
-    "(a # b\n)"                   => Gene::Types::Group.new(Gene::Types::Ident.new('a')),
-    "(a #< this is a test ># b)"  => Gene::Types::Group.new(Gene::Types::Ident.new('a'), Gene::Types::Ident.new('b')),
-    "(a #< this is a test)"       => Gene::Types::Group.new(Gene::Types::Ident.new('a')),
-    "(a ## b c)"                  => Gene::Types::Group.new(Gene::Types::Ident.new('a'), Gene::COMMENT_NEXT, Gene::Types::Ident.new('b'), Gene::Types::Ident.new('c')),
-    "(a ##(b))"                   => Gene::Types::Group.new(Gene::Types::Ident.new('a'), Gene::COMMENT_NEXT, Gene::Types::Group.new(Gene::Types::Ident.new('b'))),
-    #"(a ##< b c)"                 => Gene::Types::Group.new(Gene::Types::Ident.new('a')),
-    #"(a ##< b >## c)"             => Gene::Types::Group.new(Gene::Types::Ident.new('a'), Gene::Types::Ident.new('c')),
+    "(a # b\n)"                   => Gene::Types::Base.new(Gene::Types::Ident.new('a')),
+    "(a #< this is a test ># b)"  => Gene::Types::Base.new(Gene::Types::Ident.new('a'), Gene::Types::Ident.new('b')),
+    "(a #< this is a test)"       => Gene::Types::Base.new(Gene::Types::Ident.new('a')),
+    "(a ## b c)"                  => Gene::Types::Base.new(Gene::Types::Ident.new('a'), Gene::COMMENT_NEXT, Gene::Types::Ident.new('b'), Gene::Types::Ident.new('c')),
+    "(a ##(b))"                   => Gene::Types::Base.new(Gene::Types::Ident.new('a'), Gene::COMMENT_NEXT, Gene::Types::Base.new(Gene::Types::Ident.new('b'))),
+    #"(a ##< b c)"                 => Gene::Types::Base.new(Gene::Types::Ident.new('a')),
+    #"(a ##< b >## c)"             => Gene::Types::Base.new(Gene::Types::Ident.new('a'), Gene::Types::Ident.new('c')),
 
-    '(a (b))'  => Gene::Types::Group.new(Gene::Types::Ident.new('a'), Gene::Types::Group.new(Gene::Types::Ident.new('b'))),
+    '(a (b))'  => Gene::Types::Base.new(Gene::Types::Ident.new('a'), Gene::Types::Base.new(Gene::Types::Ident.new('b'))),
     '[a]'      => [Gene::Types::Ident.new('a')],
-    #'(\[\] a)' => Gene::Types::Group.new(Gene::Types::Ident.new('[]'), Gene::Types::Ident.new('a')),
+    #'(\[\] a)' => Gene::Types::Base.new(Gene::Types::Ident.new('[]'), Gene::Types::Ident.new('a')),
     '[[a]]'    => [[Gene::Types::Ident.new('a')]],
   }.each do |input, result|
     it "parse #{input} should work" do
@@ -91,13 +91,13 @@ describe Gene::Parser do
   describe "Attributes" do
     it '(a ^key true)' do
       result = Gene::Parser.parse(example.description)
-      result.class.should == Gene::Types::Group
+      result.class.should == Gene::Types::Base
       result.attributes['key'].should == true
     end
 
     it '(^key true a)' do
       result = Gene::Parser.parse(example.description)
-      result.class.should == Gene::Types::Group
+      result.class.should == Gene::Types::Base
       result.first.should == Gene::Types::Ident.new('a')
       result.attributes['key'].should == true
     end
@@ -105,37 +105,37 @@ describe Gene::Parser do
     # Alternative syntax: ^^key = ^+key, ^!key = ^-key
     it '(a ^^key)' do
       result = Gene::Parser.parse(example.description)
-      result.class.should == Gene::Types::Group
+      result.class.should == Gene::Types::Base
       result.attributes['key'].should == true
     end
 
     it '(^^key a)' do
       result = Gene::Parser.parse(example.description)
-      result.class.should == Gene::Types::Group
+      result.class.should == Gene::Types::Base
       result.attributes['key'].should == true
     end
 
     it '(a ^+key)' do
       result = Gene::Parser.parse(example.description)
-      result.class.should == Gene::Types::Group
+      result.class.should == Gene::Types::Base
       result.attributes['key'].should == true
     end
 
     it '(a ^!key)' do
       result = Gene::Parser.parse(example.description)
-      result.class.should == Gene::Types::Group
+      result.class.should == Gene::Types::Base
       result.attributes['key'].should == false
     end
 
     it '(a ^-key)' do
       result = Gene::Parser.parse(example.description)
-      result.class.should == Gene::Types::Group
+      result.class.should == Gene::Types::Base
       result.attributes['key'].should == false
     end
 
     it '(a \^key)' do
       result = Gene::Parser.parse(example.description)
-      result.class.should == Gene::Types::Group
+      result.class.should == Gene::Types::Base
       result[1].should == Gene::Types::Ident.new('^key', true)
     end
   end

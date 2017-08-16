@@ -6,7 +6,7 @@ module Gene::Lang::Handlers
     end
 
     def call context, data
-      return Gene::NOT_HANDLED if data.is_a? Gene::Types::Group
+      return Gene::NOT_HANDLED if data.is_a? Gene::Types::Base
       if data.is_a? Gene::Types::Ident
         if data.to_s[0] == '@'
           # instance variable
@@ -153,7 +153,7 @@ module Gene::Lang::Handlers
       # If the second element is !,
       #   treat as invocation with no argument
       return Gene::NOT_HANDLED unless
-        data.is_a? Gene::Types::Group and
+        data.is_a? Gene::Types::Base and
         data.first.is_a? Gene::Types::Ident and
         data.first.name =~ /^[a-zA-Z]/
 
@@ -186,7 +186,7 @@ module Gene::Lang::Handlers
     end
 
     def call context, data
-      return Gene::NOT_HANDLED unless data.is_a? Gene::Types::Group and BINARY_OPERATORS.include?(data.second)
+      return Gene::NOT_HANDLED unless data.is_a? Gene::Types::Base and BINARY_OPERATORS.include?(data.second)
 
       op    = data.second.name
       left  = context.process(data.first)
