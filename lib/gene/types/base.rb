@@ -11,7 +11,7 @@ class Gene::Types::Base
   def == other
     return unless other.is_a? self.class
 
-    super
+    type == other.type and data == other.data and attributes == other.attributes
   end
 
   def to_s

@@ -11,8 +11,7 @@ module Gene
           @logger.debug('call', data)
 
           if data.is_a? Gene::Types::Base
-            "#{data.first}(#{data.rest.join(', ')})"
-            #data.to_s
+            "#{data.type}(#{data.data.join(', ')})"
           else
             data
           end

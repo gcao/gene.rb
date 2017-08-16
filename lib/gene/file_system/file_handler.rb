@@ -9,10 +9,8 @@ class Gene::FileSystem::FileHandler
 
     @logger.debug('call', data)
 
-    data.shift
-
     dir  = context.current_dir
-    name = data.shift
+    name = data.data.shift
 
     if name.is_a? Gene::Types::Ident
       name = name.name

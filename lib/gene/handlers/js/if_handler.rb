@@ -13,10 +13,9 @@ module Gene
 
           @logger.debug('call', data)
 
-          data.shift
-          cond = context.handle_partial data.shift
-          trueExpr = context.handle_partial data.shift
-          falseExpr = context.handle_partial data.shift
+          cond = context.handle_partial data.data.shift
+          trueExpr = context.handle_partial data.data.shift
+          falseExpr = context.handle_partial data.data.shift
 
 <<-RUBY
 if (#{cond}) {

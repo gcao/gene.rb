@@ -20,9 +20,9 @@ module Gene
 
           (data.data.size - 1).downto 0 do |i|
             if i > 0 and data.data[i-1] == Gene::COMMENT_NEXT
-              data.delete_at i
+              data.data.delete_at i
             elsif [Gene::COMMENT_NEXT, Gene::NOOP].include? data.data[i]
-              data.delete_at i
+              data.data.delete_at i
             else
               data.data[i] = context.handle_partial(data.data[i])
             end

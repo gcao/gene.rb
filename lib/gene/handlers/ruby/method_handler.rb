@@ -13,11 +13,9 @@ module Gene
 
           @logger.debug('call', data)
 
-          data.shift
+          method_name = data.data.shift.name
 
-          method_name = data.shift.name
-
-          args = data.size > 1 ? data.shift : []
+          args = data.data.size > 1 ? data.data.shift : []
           if args.is_a? Array
             args = args.map do |arg|
               if arg.is_a? Array
@@ -31,7 +29,7 @@ module Gene
 <<-RUBY
 def #{method_name}(#{args})
 #{
-data.map{|item|
+data.data.map{|item|
   if item.is_a? Gene::Types::Base
     result = context.handle_partial(item)
     result.is_a?(String) ? result : result.inspect

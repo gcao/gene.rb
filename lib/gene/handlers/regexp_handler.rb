@@ -19,7 +19,7 @@ module Gene
         flags |= Regexp::MULTILINE  if matched.index('m')
         flags |= Regexp::EXTENDED   if matched.index('x')
 
-        Regexp.new data.rest.map(&:to_s).join, flags
+        Regexp.new data.data.map(&:to_s).join, flags
       end
     end
   end

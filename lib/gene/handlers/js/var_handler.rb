@@ -13,7 +13,7 @@ module Gene
 
           @logger.debug('call', data)
 
-          data.map{|item| context.handle_partial(item) }.join(' ') + ";\n"
+          'var ' + data.data.map{|item| context.handle_partial(item) }.join(' ') + ";\n"
         end
       end
     end

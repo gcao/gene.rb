@@ -12,7 +12,7 @@ module Gene
 
         @logger.debug('call', data)
 
-        Gene::Types::Tuple.new(*data.rest)
+        Gene::Types::Tuple.new(*data.data)
       end
     end
   end

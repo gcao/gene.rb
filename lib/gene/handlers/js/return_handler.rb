@@ -13,7 +13,7 @@ module Gene
 
           @logger.debug('call', data)
 
-          data.join(' ') + ";\n"
+          data.type.to_s + ' ' + data.data.join(' ') + ";\n"
         end
       end
     end

@@ -159,7 +159,7 @@ module Gene::Lang::Handlers
 
       name  = data.type.name
       value = context.scope[name]
-      if data.size == 1
+      if data.data.size == 1
         value
       elsif data.data[0] == Gene::Types::Ident.new('!')
         value.call context: context

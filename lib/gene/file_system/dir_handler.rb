@@ -9,7 +9,7 @@ class Gene::FileSystem::DirHandler
 
     @logger.debug('call', data)
 
-    name = data[1]
+    name = data.data[0]
     name = context.handle_data name if name.is_a? Gene::Types::Base
 
     dir = "#{context.root}/#{name}"
@@ -17,7 +17,7 @@ class Gene::FileSystem::DirHandler
     context.dirs.push dir
 
     begin
-      data[2..-1].each do |child|
+      data.data[1..-1].each do |child|
         context.handle_partial child
       end
     ensure

@@ -30,7 +30,7 @@ module Gene
       if File.directory? dir_or_file
         data = Gene::Types::Base.new(DIR, File.basename(dir_or_file))
         Dir["#{dir_or_file}/*"].each do |file|
-          data.push read(file)
+          data.data.push read(file)
         end
         data
       elsif File.file? dir_or_file
@@ -43,14 +43,14 @@ module Gene
     def self.write dir, data
       if data.is_a? Gene::Types::Base
         if data.type == Gene::FileSystem::DIR
-          path = "#{dir}/#{data[1]}"
+          path = "#{dir}/#{data.data[0]}"
           Dir.mkdir path
-          data[2..-1].each do |item|
+          data.data[1..-1].each do |item|
             write path, item
           end
         elsif data.type == Gene::FileSystem::FILE
-          File.open "#{dir}/#{data[1]}", 'w' do |file|
-            file.write data[2]
+          File.open "#{dir}/#{data.data[0]}", 'w' do |file|
+            file.write data.data[1]
           end
         else
           raise "#{self.class}.write: NOT SUPPORTED ."

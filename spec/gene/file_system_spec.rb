@@ -34,17 +34,17 @@ describe Gene::FileSystem do
     data = Gene::FileSystem.read path
 
     data.class.should == Gene::Types::Base
-    data.first.should == Gene::FileSystem::FILE
-    data[1].should == file_name
-    data[2].should == content
+    data.type.should == Gene::FileSystem::FILE
+    data.data[0].should == file_name
+    data.data[1].should == content
   end
 
   it "read binary file" do
     data = Gene::FileSystem.read File.expand_path(File.dirname(__FILE__) + '/../data/test.gif')
     data.class.should == Gene::Types::Base
-    data.first.should == Gene::FileSystem::FILE
-    data[1].should == 'test.gif'
-    content = data[2]
+    data.type.should == Gene::FileSystem::FILE
+    data.data[0].should == 'test.gif'
+    content = data.data[1]
     pending "Binary file detection is not done"
     content.class.should == Gene::Types::Base64
   end
@@ -57,8 +57,8 @@ describe Gene::FileSystem do
     data = Gene::FileSystem.read path
 
     data.class.should == Gene::Types::Base
-    data.first.should == Gene::FileSystem::DIR
-    data[1].should == 'test'
+    data.type.should == Gene::FileSystem::DIR
+    data.data[0].should == 'test'
   end
 
   it "read dir and file" do
@@ -72,12 +72,13 @@ describe Gene::FileSystem do
     data = Gene::FileSystem.read dir
 
     data.class.should == Gene::Types::Base
-    data.first.should == Gene::FileSystem::DIR
-    data[1].should == 'test'
+    data.type.should == Gene::FileSystem::DIR
+    data.data[0].should == 'test'
 
-    file_data = data[2]
-    file_data[1].should == 'test.txt'
-    file_data[2].should == "This is a test file"
+    file_data = data.data[1]
+    file_data.type.should == Gene::FileSystem::FILE
+    file_data.data[0].should == 'test.txt'
+    file_data.data[1].should == "This is a test file"
   end
 
   describe "write" do

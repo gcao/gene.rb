@@ -12,7 +12,7 @@ module Gene
 
         @logger.debug('call', data)
 
-        Set.new data.rest
+        Set.new data.data
       end
     end
   end

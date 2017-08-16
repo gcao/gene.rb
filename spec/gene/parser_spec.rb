@@ -98,7 +98,7 @@ describe Gene::Parser do
     it '(^key true a)' do
       result = Gene::Parser.parse(example.description)
       result.class.should == Gene::Types::Base
-      result.first.should == Gene::Types::Ident.new('a')
+      result.type.should == Gene::Types::Ident.new('a')
       result.attributes['key'].should == true
     end
 
@@ -136,7 +136,7 @@ describe Gene::Parser do
     it '(a \^key)' do
       result = Gene::Parser.parse(example.description)
       result.class.should == Gene::Types::Base
-      result[1].should == Gene::Types::Ident.new('^key', true)
+      result.data[0].should == Gene::Types::Ident.new('^key', true)
     end
   end
 

@@ -15,7 +15,7 @@ module Gene
 
         @logger.debug('call', data)
 
-        Gene::Types::ComplexString.new *data.rest
+        Gene::Types::ComplexString.new *data.data
       end
     end
   end
