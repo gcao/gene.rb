@@ -396,11 +396,11 @@ module Gene
 
       type = result.shift
       data = result
-      group = Gene::Types::Base.new type, *data
+      gene = Gene::Types::Base.new type, *data
       @attribute_for_group.each do |k, v|
-        group.attributes[k] = v
+        gene.attributes[k] = v
       end
-      group
+      gene
     end
 
     def parse_hash
