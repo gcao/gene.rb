@@ -51,7 +51,7 @@
       ]
     },
     {
-      "name": "RSpec - gene_macro_interpreter_spec.rb",
+      "name": "RSpec - focus on spec",
       "type": "Ruby",
       "request": "launch",
       "cwd": "${workspaceRoot}",
@@ -59,7 +59,7 @@
       "args": [
         "-I",
         "${workspaceRoot}",
-        "spec/gene/gene_macro_interpreter_spec.rb:96"
+        "spec/gene/javascript_interpreter_spec.rb:118"
       ]
     },
     {

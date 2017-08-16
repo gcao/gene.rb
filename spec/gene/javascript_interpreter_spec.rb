@@ -105,7 +105,6 @@ describe Gene::JavascriptInterpreter do
         ])
       })
     " do
-      #puts @interpreter.parse_and_process(example.description)
       @ctx.eval @interpreter.parse_and_process(example.description)
       @ctx.eval('DynamicDate.calculateDays(4, 1990)').should == 30
       @ctx.eval('DynamicDate.calculateDays(1, 1990)').should == 31

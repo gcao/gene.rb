@@ -12,7 +12,8 @@ module Gene
 
           if data.data.find{ |item| item.is_a? Gene::Types::Ident and item.to_s =~ /^[!<>+\-*\/=]+$/ }
             @logger.debug('call', data)
-            "(#{data.type.inspect} #{data.data.map{|item| context.handle_partial(item) }.join(' ')})"
+
+            "(#{context.handle_partial(data.type)} #{data.data.map{|item| context.handle_partial(item) }.join(' ')})"
           else
             NOT_HANDLED
           end
