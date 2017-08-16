@@ -11,6 +11,7 @@ class Gene::Types::Ident
     return false unless other.is_a? self.class
     @name == other.name and @escaped == other.escaped
   end
+  alias_method :eql?, :==
 
   def to_s
     s = name.gsub(/([\(\)\[\]\{\}])/, '[' => '\\[', ']' => '\\]', '(' => '\\(', ')' => '\\)', '{' => '\\{', '}' => '\\}')

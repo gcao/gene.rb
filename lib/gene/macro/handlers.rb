@@ -14,6 +14,8 @@ module Gene::Macro::Handlers
   LS          = Gene::Types::Ident.new '#ls'
   READ        = Gene::Types::Ident.new '#read'
 
+  GET         = Gene::Types::Ident.new '#get'
+
   class DefaultHandler
     def call context, data
       if data.is_a? Gene::Types::Ident and data.name =~ /^##(.*)$/
@@ -87,6 +89,25 @@ module Gene::Macro::Handlers
       elsif READ.first_of_group? data
         name = data[1]
         File.read name
+
+      elsif GET.first_of_group? data
+        target = data[1]
+        path   = data[2..-1]
+        path.each do |item|
+          break unless target
+          if target.is_a? Hash
+            # target[item] does not work
+            key = target.keys.find {|k| k.eql? item }
+            if key
+              target = target[key]
+            else
+              nil
+            end
+          else
+            target = target[item]
+          end
+        end
+        target
 
       elsif data.is_a? Gene::Types::Group
         name = data.first.name.to_s
