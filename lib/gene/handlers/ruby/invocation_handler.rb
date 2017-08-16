@@ -7,11 +7,11 @@ module Gene
         end
 
         def call context, data
-          return Gene::NOT_HANDLED unless data.is_a? Gene::Types::Base and data.first.name =~ /^\./
+          return Gene::NOT_HANDLED unless data.is_a? Gene::Types::Base and data.type.name =~ /^\./
 
           @logger.debug('call', data)
 
-          "self#{data.first}(#{data.rest.map(&:inspect).join(', ')})"
+          "self#{data.type}(#{data.data.map(&:inspect).join(', ')})"
         end
       end
     end

@@ -7,8 +7,8 @@ module Gene
 
       def call context, data
         return Gene::NOT_HANDLED unless data.is_a? Gene::Types::Base and
-                                        data.first.is_a? Gene::Types::Ident and
-                                        data.first.to_s =~ %r(^#//([a-z]*))
+                                        data.type.is_a? Gene::Types::Ident and
+                                        data.type.to_s =~ %r(^#//([a-z]*))
 
         @logger.debug('call', data)
 

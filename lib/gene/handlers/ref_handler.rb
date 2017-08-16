@@ -12,7 +12,7 @@ module Gene
         if data.is_a? Gene::Types::Ref
           context.references[data.name]
 
-        elsif data.is_a? Gene::Types::Base and data.first == SET
+        elsif data.is_a? Gene::Types::Base and data.type == SET
           @logger.debug('call', data)
 
           data.shift
@@ -26,7 +26,7 @@ module Gene
             value
           end
 
-        elsif data.is_a? Gene::Types::Base and data.first == UNSET
+        elsif data.is_a? Gene::Types::Base and data.type == UNSET
           @logger.debug('call', data)
 
           data.shift

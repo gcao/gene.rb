@@ -9,7 +9,7 @@ module Gene
         end
 
         def call context, data
-          return Gene::NOT_HANDLED unless data.is_a? Gene::Types::Base and data.first == RETURN
+          return Gene::NOT_HANDLED unless data.is_a? Gene::Types::Base and data.type == RETURN
 
           @logger.debug('call', data)
 

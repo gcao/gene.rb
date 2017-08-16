@@ -25,43 +25,43 @@ module Gene::Macro::Handlers
         Dir.pwd
 
       elsif DEF.first_of_group? data
-        value = context.process data.third
-        context.scope[data.second.to_s] = value
+        value = context.process data.data[1]
+        context.scope[data.data[0].to_s] = value
         Gene::Macro::IGNORE
 
       elsif DEF_RETAIN.first_of_group? data
-        value = context.process data.third
-        context.scope[data.second.to_s] = value
+        value = context.process data.data[1]
+        context.scope[data.data[0].to_s] = value
         value
 
       elsif FN.first_of_group? data
-        name = data[1].to_s
-        arguments = [data[2]].flatten.map &:to_s
-        statements = data[3..-1]
+        name = data.data[0].to_s
+        arguments = [data.data[1]].flatten.map &:to_s
+        statements = data.data[2..-1]
         context.scope[name] = Gene::Macro::Function.new name, arguments, statements
 
       elsif MAP.first_of_group? data
-        collection = data[1]
+        collection = data.data[0]
         arguments = ['_index', '_value']
-        statements = data[2..-1]
+        statements = data.data[1..-1]
         fn = Gene::Macro::AnonymousFunction.new arguments, statements
         collection.each_with_index.map do |item, i|
           fn.call context, [i, item]
         end
 
       elsif IF.first_of_group? data
-        condition = context.process data[1]
-        then_mode = data[2] == THEN
+        condition = context.process data.data[0]
+        then_mode = data.data[1] == THEN
         if then_mode
           result = Gene::UNDEFINED
           if condition
-            data[3..-1].each do |item|
+            data.data[2..-1].each do |item|
               break if item == ELSE
               result = context.process item
             end
           else
             found_else = false
-            data[3..-1].each do |item|
+            data.data[2..-1].each do |item|
               if found_else
                 result = context.process item
               elsif item == ELSE
@@ -72,27 +72,27 @@ module Gene::Macro::Handlers
           result
         else
           if condition
-            context.process data[2]
+            context.process data.data[1]
           else
-            context.process data[3]
+            context.process data.data[2]
           end
         end
 
       elsif ENV_.first_of_group? data
-        name = data[1].to_s
+        name = data.data[0].to_s
         ENV[name]
 
       elsif LS.first_of_group? data
-        name = data[1] || Dir.pwd
+        name = data.data[0] || Dir.pwd
         Dir.entries name.to_s
 
       elsif READ.first_of_group? data
-        name = data[1]
+        name = data.data[0]
         File.read name
 
       elsif GET.first_of_group? data
-        target = data[1]
-        path   = data[2..-1]
+        target = data.data[0]
+        path   = data.data[1..-1]
         path.each do |item|
           break unless target
           if target.is_a? Hash
@@ -110,13 +110,13 @@ module Gene::Macro::Handlers
         target
 
       elsif data.is_a? Gene::Types::Base
-        name = data.first.name.to_s
+        name = data.type.name.to_s
         if name =~ /^##(.*)$/
           value = context.scope[$1]
           if value.is_a? Gene::Macro::Function
-            value.call context, data[1..-1]
+            value.call context, data.data
           else
-            data[0] = value
+            data.type = value
             return data
           end
         else

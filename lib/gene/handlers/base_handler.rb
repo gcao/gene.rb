@@ -1,6 +1,6 @@
 module Gene
   module Handlers
-    class GroupHandler
+    class BaseHandler
       def initialize
         @logger = Logem::Logger.new(self)
       end
@@ -8,7 +8,7 @@ module Gene
       def call context, data
         return Gene::NOT_HANDLED unless data.is_a? Gene::Types::Base
 
-        return Gene::NOOP if data.length == 0
+        return Gene::NOOP if data.type == nil
 
         #@logger.debug binding.send(:caller).join("\n")
         @logger.debug('call', data)
@@ -18,13 +18,13 @@ module Gene
         begin
           context.stack.push data
 
-          (data.size - 1).downto 0 do |i|
-            if i > 0 and data[i-1] == Gene::COMMENT_NEXT
+          (data.data.size - 1).downto 0 do |i|
+            if i > 0 and data.data[i-1] == Gene::COMMENT_NEXT
               data.delete_at i
-            elsif [Gene::COMMENT_NEXT, Gene::NOOP].include? data[i]
+            elsif [Gene::COMMENT_NEXT, Gene::NOOP].include? data.data[i]
               data.delete_at i
             else
-              data[i] = context.handle_partial(data[i])
+              data.data[i] = context.handle_partial(data.data[i])
             end
           end
         ensure

@@ -11,7 +11,7 @@ module Gene
       def call context, data
         return Gene::NOT_HANDLED unless
           data.is_a? Gene::Types::Base and
-          (data.first == COMPLEX_STRING1 or data.first == COMPLEX_STRING2)
+          (data.type == COMPLEX_STRING1 or data.type == COMPLEX_STRING2)
 
         @logger.debug('call', data)
 

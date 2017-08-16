@@ -9,17 +9,15 @@ module Gene
         end
 
         def call context, data
-          return Gene::NOT_HANDLED unless data.is_a? Gene::Types::Base and data.first == MODULE
+          return Gene::NOT_HANDLED unless data.is_a? Gene::Types::Base and data.type == MODULE
 
           @logger.debug('call', data)
 
-          data.shift
-
-          name = data.shift.name
+          name = data.data.shift.name
 <<-RUBY
 module #{name}
 
-#{data.map{|item| context.handle_partial(item) }.join("\n")}
+#{data.data.map{|item| context.handle_partial(item) }.join("\n")}
 
 end; #{name}
 RUBY

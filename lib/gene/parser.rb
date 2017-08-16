@@ -394,7 +394,9 @@ module Gene
 
       return Gene::NOOP if result.length == 0 # NOOP
 
-      group = Gene::Types::Base.new(*result)
+      type = result.shift
+      data = result
+      group = Gene::Types::Base.new type, data
       @attribute_for_group.each do |k, v|
         group.attributes[k] = v
       end

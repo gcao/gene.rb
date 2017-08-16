@@ -23,6 +23,6 @@ class Gene::Types::Ident
   end
 
   def first_of_group? arg
-    arg.is_a? Gene::Types::Base and arg.first == self
+    arg.is_a? Gene::Types::Base and arg.type == self
   end
 end

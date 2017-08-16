@@ -42,13 +42,13 @@ module Gene
 
     def self.write dir, data
       if data.is_a? Gene::Types::Base
-        if data.first == Gene::FileSystem::DIR
+        if data.type == Gene::FileSystem::DIR
           path = "#{dir}/#{data[1]}"
           Dir.mkdir path
           data[2..-1].each do |item|
             write path, item
           end
-        elsif data.first == Gene::FileSystem::FILE
+        elsif data.type == Gene::FileSystem::FILE
           File.open "#{dir}/#{data[1]}", 'w' do |file|
             file.write data[2]
           end

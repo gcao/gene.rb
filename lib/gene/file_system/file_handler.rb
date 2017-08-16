@@ -5,7 +5,7 @@ class Gene::FileSystem::FileHandler
   end
 
   def call context, data
-    return Gene::NOT_HANDLED unless data.is_a? Gene::Types::Base and data.first == Gene::FileSystem::FILE
+    return Gene::NOT_HANDLED unless data.is_a? Gene::Types::Base and data.type == Gene::FileSystem::FILE
 
     @logger.debug('call', data)
 

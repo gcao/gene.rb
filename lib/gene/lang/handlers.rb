@@ -31,8 +31,8 @@ module Gene::Lang::Handlers
 
     def call context, data
       return Gene::NOT_HANDLED unless CLASS.first_of_group? data
-      name  = data.second.to_s
-      stmts = data[2..-1]
+      name  = data.data[0].to_s
+      stmts = data.data[1..-1]
       block = Gene::Lang::Block.new nil, stmts
       klass = Gene::Lang::Class.new name, block
       klass.call context: context
@@ -50,12 +50,12 @@ module Gene::Lang::Handlers
 
     def call context, data
       return Gene::NOT_HANDLED unless FUNCTION.first_of_group? data
-      name = data.second.to_s
+      name = data.data[0].to_s
       fn = Gene::Lang::Function.new name
-      arguments = [data.third].flatten
+      arguments = [data.data[1]].flatten
         .select {|item| not item.nil? }
         .map.with_index {|item, i| Gene::Lang::Argument.new(i, item.name) }
-      fn.block = Gene::Lang::Block.new arguments, data[3..-1]
+      fn.block = Gene::Lang::Block.new arguments, data.data[2..-1]
       fn.inherit_scope = data.attributes['inherit_scope']
       context.scope[name] = fn
       fn
@@ -71,12 +71,12 @@ module Gene::Lang::Handlers
 
     def call context, data
       return Gene::NOT_HANDLED unless METHOD.first_of_group? data
-      name = data.second.to_s
+      name = data.data[0].to_s
       fn = Gene::Lang::Function.new name
-      arguments = [data.third].flatten
+      arguments = [data.data[1]].flatten
         .select {|item| not item.nil? }
         .map.with_index {|item, i| Gene::Lang::Argument.new(i, item.name) }
-      fn.block = Gene::Lang::Block.new arguments, data[3..-1]
+      fn.block = Gene::Lang::Block.new arguments, data.data[2..-1]
       context.self.instance_methods[name] = fn
       fn
     end
@@ -91,10 +91,10 @@ module Gene::Lang::Handlers
 
     def call context, data
       return Gene::NOT_HANDLED unless NEW.first_of_group? data
-      klass = context.process(data.second)
+      klass = context.process(data.data[0])
       instance = Gene::Lang::Object.new klass
       if init = klass.instance_methods['init']
-        init.call context: context, self: instance, arguments: data[2..-1]
+        init.call context: context, self: instance, arguments: data.data[1..-1]
       end
       instance
     end
@@ -111,10 +111,10 @@ module Gene::Lang::Handlers
       return Gene::NOT_HANDLED unless INIT.first_of_group? data
       name = INIT.name
       fn = Gene::Lang::Function.new name
-      arguments = [data.second].flatten
+      arguments = [data.data[0]].flatten
         .select {|item| not item.nil? }
         .map.with_index {|item, i| Gene::Lang::Argument.new(i, item.name) }
-      fn.block = Gene::Lang::Block.new arguments, data[2..-1]
+      fn.block = Gene::Lang::Block.new arguments, data.data[1..-1]
       context.self.instance_methods[INIT.name] = fn
       fn
     end
@@ -129,8 +129,8 @@ module Gene::Lang::Handlers
 
     def call context, data
       return Gene::NOT_HANDLED unless LET.first_of_group? data
-      name  = data[1].to_s
-      value = context.process data[2]
+      name  = data.data[0].to_s
+      value = context.process data.data[1]
       if name[0] == '@'
         context.self.set name[1..-1], value
       else
@@ -154,21 +154,21 @@ module Gene::Lang::Handlers
       #   treat as invocation with no argument
       return Gene::NOT_HANDLED unless
         data.is_a? Gene::Types::Base and
-        data.first.is_a? Gene::Types::Ident and
-        data.first.name =~ /^[a-zA-Z]/
+        data.type.is_a? Gene::Types::Ident and
+        data.type.name =~ /^[a-zA-Z]/
 
-      name  = data.first.name
+      name  = data.type.name
       value = context.scope[name]
       if data.size == 1
         value
-      elsif data.second == Gene::Types::Ident.new('!')
+      elsif data.data[0] == Gene::Types::Ident.new('!')
         value.call context: context
-      elsif data.second.is_a? Gene::Types::Ident and data.second.to_s[0] == '.'
+      elsif data.data[0].is_a? Gene::Types::Ident and data.data[0].to_s[0] == '.'
         klass = value.class
-        method = klass.instance_methods[data.second.to_s[1..-1]]
-        method.call context: context, self: value, arguments: data[2..-1]
+        method = klass.instance_methods[data.data[0].to_s[1..-1]]
+        method.call context: context, self: value, arguments: data.data[1..-1]
       else
-        value.call context: context, arguments: data.rest
+        value.call context: context, arguments: data.data
       end
     end
   end
@@ -186,11 +186,11 @@ module Gene::Lang::Handlers
     end
 
     def call context, data
-      return Gene::NOT_HANDLED unless data.is_a? Gene::Types::Base and BINARY_OPERATORS.include?(data.second)
+      return Gene::NOT_HANDLED unless data.is_a? Gene::Types::Base and BINARY_OPERATORS.include?(data.data[0])
 
-      op    = data.second.name
-      left  = context.process(data.first)
-      right = context.process(data.third)
+      op    = data.data[0].name
+      left  = context.process(data.type)
+      right = context.process(data.data[1])
       case op
       when '+' then left + right
       when '-' then left - right
@@ -219,9 +219,9 @@ module Gene::Lang::Handlers
       # data[1] is the condition
       # data[2] is an array of code to be run when the condition evaluates to true
       # data[3] is an array of code to be run when the condition evaluates to false
-      condition   = data[1]
-      true_logic  = data[2]
-      false_logic = data[3]
+      condition   = data.data[0]
+      true_logic  = data.data[1]
+      false_logic = data.data[2]
       if context.process condition
         if true_logic.is_a? Array
           code = Gene::Lang::Block.new([], true_logic)

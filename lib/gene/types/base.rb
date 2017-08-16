@@ -1,21 +1,11 @@
-class Gene::Types::Base < Array
-  attr :attributes
+class Gene::Types::Base
+  attr_accessor :type
+  attr_reader :attributes, :data
 
-  def initialize *items
+  def initialize type, *data
+    @type = type
+    @data = [].concat data
     @attributes = {}
-    concat items
-  end
-
-  def second
-    self[1]
-  end
-
-  def third
-    self[2]
-  end
-
-  def rest
-    self[1..-1]
   end
 
   def == other
@@ -26,7 +16,8 @@ class Gene::Types::Base < Array
 
   def to_s
     s = "("
-    s << map do |child|
+    s << type.to_s << ' '
+    s << data.map do |child|
       if child.is_a? String
         child.inspect
       else
