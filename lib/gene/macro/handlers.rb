@@ -2,6 +2,7 @@ module Gene::Macro::Handlers
   DEF         = Gene::Types::Ident.new '#def'
   DEF_RETAIN  = Gene::Types::Ident.new '#def-retain'
   FN          = Gene::Types::Ident.new '#fn'
+  DO          = Gene::Types::Ident.new '#do'
 
   MAP         = Gene::Types::Ident.new '#map'
 
@@ -41,12 +42,30 @@ module Gene::Macro::Handlers
         context.scope[name] = Gene::Macro::Function.new name, arguments, statements
 
       elsif MAP.first_of_group? data
-        collection = data.data[0]
-        arguments = ['_index', '_value']
-        statements = data.data[1..-1]
-        fn = Gene::Macro::AnonymousFunction.new arguments, statements
+        collection = data.data.shift
+        value_var_name = data.data.shift
+
+        next_item = data.data.shift
+        if next_item == DO
+          index_var_name = nil
+        else
+          index_var_name = next_item
+          next_item = data.data.shift
+          if next_item != DO
+            throw "Syntax error: #do is expected"
+          end
+        end
+
+        statements = data.data
         collection.each_with_index.map do |item, i|
-          fn.call context, [i, item]
+          context.scope[value_var_name.name] = item
+          context.scope[index_var_name.name] = i if index_var_name
+
+          result = nil
+          statements.each do |stmt|
+            result = context.process stmt
+          end
+          result
         end
 
       elsif IF.first_of_group? data

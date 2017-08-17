@@ -60,6 +60,7 @@ module Gene::Macro
 
     def initialize parent
       @parent = parent
+      @auto_variables = {}
     end
 
     def [] name
@@ -70,5 +71,4 @@ module Gene::Macro
       end
     end
   end
-
 end

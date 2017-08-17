@@ -40,7 +40,12 @@ describe Gene::Macro::Interpreter do
   end
 
   describe "map" do
-    it "(#map [1 2] [##_index ##_value])" do
+    it "(#map [1 2] value #do [##value])" do
+      result = @interpreter.parse_and_process(example.description)
+      result.should == [[1], [2]]
+    end
+
+    it "(#map [1 2] value index #do [##index ##value])" do
       result = @interpreter.parse_and_process(example.description)
       result.should == [[0, 1], [1, 2]]
     end
