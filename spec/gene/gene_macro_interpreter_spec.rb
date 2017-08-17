@@ -116,4 +116,12 @@ describe Gene::Macro::Interpreter do
       result.should == 2
     end
   end
+
+  describe "inputs" do
+    it "(#get #input a)" do
+      input = Gene::Parser.parse "{a : 'va'}"
+      result = @interpreter.parse_and_process(example.description, input)
+      result.should == 'va'
+    end
+  end
 end

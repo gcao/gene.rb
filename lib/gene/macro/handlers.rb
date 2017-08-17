@@ -3,6 +3,7 @@ module Gene::Macro::Handlers
   DEF_RETAIN  = Gene::Types::Ident.new '#def-retain'
   FN          = Gene::Types::Ident.new '#fn'
   DO          = Gene::Types::Ident.new '#do'
+  INPUT       = Gene::Types::Ident.new '#input'
 
   MAP         = Gene::Types::Ident.new '#map'
 
@@ -24,6 +25,9 @@ module Gene::Macro::Handlers
 
       elsif data == CWD
         Dir.pwd
+
+      elsif data == INPUT
+        context.inputs[0] if context.inputs
 
       elsif DEF.first_of_group? data
         value = context.process data.data[1]
@@ -110,7 +114,7 @@ module Gene::Macro::Handlers
         File.read name
 
       elsif GET.first_of_group? data
-        target = data.data[0]
+        target = context.process data.data[0]
         path   = data.data[1..-1]
         path.each do |item|
           break unless target

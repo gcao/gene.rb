@@ -30,8 +30,16 @@ class Gene::Macro::Interpreter
     end
   end
 
-  def parse_and_process input
+  attr :inputs
+  # def inputs= *args
+  #   @inputs = args
+  # end
+
+  def parse_and_process input, *args
+    @inputs = args
     process Gene::Parser.parse(input)
+  ensure
+    @inputs = nil
   end
 
   def process data
