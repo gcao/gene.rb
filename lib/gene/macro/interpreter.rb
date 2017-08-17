@@ -31,8 +31,18 @@ class Gene::Macro::Interpreter
   end
 
   def parse_and_process input
-    result = Gene::CoreInterpreter.parse_and_process input do |output|
-      process output
+    process Gene::Parser.parse(input)
+  end
+
+  def process data
+    result = nil
+
+    if data.is_a? Gene::Types::Stream
+      data.each do |item|
+        result = @handlers.call self, item
+      end
+    else
+      result = @handlers.call self, data
     end
 
     if result == Gene::Macro::IGNORE
@@ -40,9 +50,5 @@ class Gene::Macro::Interpreter
     else
       result
     end
-  end
-
-  def process data
-    @handlers.call self, data
   end
 end
