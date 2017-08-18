@@ -17,10 +17,7 @@ class Gene::Types::Ident
     s = name.gsub(/([\(\)\[\]\{\}])/, '[' => '\\[', ']' => '\\]', '(' => '\\(', ')' => '\\)', '{' => '\\{', '}' => '\\}')
     @escaped ? "\\#{s}" : s
   end
-
-  def inspect
-    to_s
-  end
+  alias inspect to_s
 
   def first_of_group? arg
     arg.is_a? Gene::Types::Base and arg.type == self

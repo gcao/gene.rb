@@ -8,6 +8,7 @@ module Gene
       def to_s
         'undefined'
       end
+      alias inspect to_s
     end
   end
 

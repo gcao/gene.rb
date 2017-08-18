@@ -17,8 +17,8 @@ class Gene::Macro::Interpreter
     @scopes.last
   end
 
-  def start_scope
-    new_scope = Gene::Macro::Scope.new(scope)
+  def start_scope new_scope = nil
+    new_scope ||= Gene::Macro::Scope.new(scope)
     @scopes.push new_scope
     new_scope
   end

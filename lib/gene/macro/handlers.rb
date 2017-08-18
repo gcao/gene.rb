@@ -2,6 +2,7 @@ module Gene::Macro::Handlers
   DEF         = Gene::Types::Ident.new '#def'
   DEF_RETAIN  = Gene::Types::Ident.new '#def-retain'
   FN          = Gene::Types::Ident.new '#fn'
+  FNX         = Gene::Types::Ident.new '#fnx'
   DO          = Gene::Types::Ident.new '#do'
   INPUT       = Gene::Types::Ident.new '#input'
 
@@ -41,9 +42,14 @@ module Gene::Macro::Handlers
 
       elsif FN.first_of_group? data
         name = data.data[0].to_s
-        arguments = [data.data[1]].flatten.map &:to_s
+        arguments = [data.data[1]].flatten.map(&:to_s).reject{|arg| arg == '_' }
         statements = data.data[2..-1]
-        context.scope[name] = Gene::Macro::Function.new name, arguments, statements
+        context.scope[name] = Gene::Macro::Function.new name, context.scope, arguments, statements
+
+      elsif FNX.first_of_group? data
+        arguments = [data.data[0]].flatten.map(&:to_s).reject{|arg| arg == '_' }
+        statements = data.data[1..-1]
+        context.scope[name] = Gene::Macro::Function.new '', context.scope, arguments, statements
 
       elsif MAP.first_of_group? data
         collection = data.data.shift

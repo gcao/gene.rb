@@ -37,6 +37,30 @@ describe Gene::Macro::Interpreter do
       result = @interpreter.parse_and_process(example.description)
       result.should == 1
     end
+
+    # _ is a placeholder for arguments, will be ignored
+    it "(#fn f _ ##_)(##f 1)" do
+      result = @interpreter.parse_and_process(example.description)
+      result.should == nil
+    end
+  end
+
+  describe "fnx" do
+    it "(#def fa (#fnx a ##a))(##fa 1)" do
+      result = @interpreter.parse_and_process(example.description)
+      result.should == 1
+    end
+
+    it "(#def fa (#fnx [a] ##a))(##fa 1)" do
+      result = @interpreter.parse_and_process(example.description)
+      result.should == 1
+    end
+
+    # _ is a placeholder for arguments, will be ignored
+    it "(#def fa (#fnx _ ##_))(##fa 1)" do
+      result = @interpreter.parse_and_process(example.description)
+      result.should == nil
+    end
   end
 
   describe "map" do

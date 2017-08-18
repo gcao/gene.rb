@@ -9,14 +9,15 @@ module Gene::Macro
   class Function
     attr_reader :name, :arguments, :statements
 
-    def initialize name, arguments, statements
-      @name, @arguments, @statements = name, arguments, statements
+    def initialize name, parent_scope, arguments, statements
+      @name, @parent_scope, @arguments, @statements = name, parent_scope, arguments, statements
     end
 
     def call context, arg_values
       begin
         # Open new scope
-        scope = context.start_scope
+        scope = Scope.new @parent_scope
+        context.start_scope scope
 
         translate_arguments_as_local_variables scope, arg_values
 
