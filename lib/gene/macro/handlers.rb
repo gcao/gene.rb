@@ -51,6 +51,13 @@ module Gene::Macro::Handlers
         statements = data.data[1..-1]
         context.scope[name] = Gene::Macro::Function.new '', context.scope, arguments, statements
 
+      elsif DO.first_of_group? data
+        result = Gene::UNDEFINED
+        data.data.each do |stmt|
+          result = context.process stmt
+        end
+        result
+
       elsif MAP.first_of_group? data
         collection = data.data.shift
         value_var_name = data.data.shift

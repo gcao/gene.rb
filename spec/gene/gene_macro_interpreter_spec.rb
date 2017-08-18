@@ -45,6 +45,7 @@ describe Gene::Macro::Interpreter do
     end
   end
 
+  # anonymous function
   describe "fnx" do
     it "(#def fa (#fnx a ##a))(##fa 1)" do
       result = @interpreter.parse_and_process(example.description)
@@ -60,6 +61,13 @@ describe Gene::Macro::Interpreter do
     it "(#def fa (#fnx _ ##_))(##fa 1)" do
       result = @interpreter.parse_and_process(example.description)
       result.should == nil
+    end
+  end
+
+  describe "do" do
+    it "(#do (#def a 1) ##a)" do
+      result = @interpreter.parse_and_process(example.description)
+      result.should == 1
     end
   end
 
