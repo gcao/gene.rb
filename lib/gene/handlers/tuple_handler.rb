@@ -8,7 +8,7 @@ module Gene
       end
 
       def call context, data
-        return Gene::NOT_HANDLED unless TUPLE.first_of_group? data
+        return Gene::NOT_HANDLED unless TUPLE === data
 
         @logger.debug('call', data)
 

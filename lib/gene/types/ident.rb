@@ -11,15 +11,15 @@ class Gene::Types::Ident
     return false unless other.is_a? self.class
     @name == other.name and @escaped == other.escaped
   end
-  alias_method :eql?, :==
+  alias eql? ==
+
+  def === other
+    other.is_a? Gene::Types::Base and other.type == self
+  end
 
   def to_s
     s = name.gsub(/([\(\)\[\]\{\}])/, '[' => '\\[', ']' => '\\]', '(' => '\\(', ')' => '\\)', '{' => '\\{', '}' => '\\}')
     @escaped ? "\\#{s}" : s
   end
   alias inspect to_s
-
-  def first_of_group? arg
-    arg.is_a? Gene::Types::Base and arg.type == self
-  end
 end

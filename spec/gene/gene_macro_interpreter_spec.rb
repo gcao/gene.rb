@@ -12,6 +12,17 @@ describe Gene::Macro::Interpreter do
       result.should == Gene::UNDEFINED
     end
 
+    it "(#def a 'value'){'a' : [1 ##a]}" do
+      result = @interpreter.parse_and_process(example.description)
+      result['a'][1].should == 'value'
+    end
+
+    it "(#def a 'value')(test ^attr ##a ##a)" do
+      result = @interpreter.parse_and_process(example.description)
+      result['attr'].should == 'value'
+      result.data[0].should == 'value'
+    end
+
     it "(#def-retain a 'value')" do
       result = @interpreter.parse_and_process(example.description)
       result.should == 'value'
@@ -28,6 +39,11 @@ describe Gene::Macro::Interpreter do
   end
 
   describe "fn" do
+    it "(#fn f a)" do
+      result = @interpreter.parse_and_process(example.description)
+      result.should == Gene::UNDEFINED
+    end
+
     it "(#fn f [a] ##a)(##f 1)" do
       result = @interpreter.parse_and_process(example.description)
       result.should == 1
@@ -121,7 +137,7 @@ describe Gene::Macro::Interpreter do
       result.should == Dir.entries(Dir.pwd)
     end
 
-    it "(#read 'spec/data/test.txt')" do
+    it "(#read spec/data/test.txt)" do
       result = @interpreter.parse_and_process(example.description)
       result.should == "Test\nTest 2"
     end

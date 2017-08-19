@@ -30,7 +30,7 @@ module Gene::Lang::Handlers
     end
 
     def call context, data
-      return Gene::NOT_HANDLED unless CLASS.first_of_group? data
+      return Gene::NOT_HANDLED unless CLASS === data
       name  = data.data[0].to_s
       stmts = data.data[1..-1]
       block = Gene::Lang::Block.new nil, stmts
@@ -49,7 +49,7 @@ module Gene::Lang::Handlers
     end
 
     def call context, data
-      return Gene::NOT_HANDLED unless FUNCTION.first_of_group? data
+      return Gene::NOT_HANDLED unless FUNCTION === data
       name = data.data[0].to_s
       fn = Gene::Lang::Function.new name
       arguments = [data.data[1]].flatten
@@ -70,7 +70,7 @@ module Gene::Lang::Handlers
     end
 
     def call context, data
-      return Gene::NOT_HANDLED unless METHOD.first_of_group? data
+      return Gene::NOT_HANDLED unless METHOD === data
       name = data.data[0].to_s
       fn = Gene::Lang::Function.new name
       arguments = [data.data[1]].flatten
@@ -90,7 +90,7 @@ module Gene::Lang::Handlers
     end
 
     def call context, data
-      return Gene::NOT_HANDLED unless NEW.first_of_group? data
+      return Gene::NOT_HANDLED unless NEW === data
       klass = context.process(data.data[0])
       instance = Gene::Lang::Object.new klass
       if init = klass.instance_methods['init']
@@ -108,7 +108,7 @@ module Gene::Lang::Handlers
     end
 
     def call context, data
-      return Gene::NOT_HANDLED unless INIT.first_of_group? data
+      return Gene::NOT_HANDLED unless INIT === data
       name = INIT.name
       fn = Gene::Lang::Function.new name
       arguments = [data.data[0]].flatten
@@ -128,7 +128,7 @@ module Gene::Lang::Handlers
     end
 
     def call context, data
-      return Gene::NOT_HANDLED unless LET.first_of_group? data
+      return Gene::NOT_HANDLED unless LET === data
       name  = data.data[0].to_s
       value = context.process data.data[1]
       if name[0] == '@'
@@ -214,7 +214,7 @@ module Gene::Lang::Handlers
     end
 
     def call context, data
-      return Gene::NOT_HANDLED unless IF.first_of_group? data
+      return Gene::NOT_HANDLED unless IF === data
 
       # data[1] is the condition
       # data[2] is an array of code to be run when the condition evaluates to true

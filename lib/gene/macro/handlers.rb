@@ -30,35 +30,36 @@ module Gene::Macro::Handlers
       elsif data == INPUT
         context.inputs[0] if context.inputs
 
-      elsif DEF.first_of_group? data
+      elsif DEF === data
         value = context.process data.data[1]
         context.scope[data.data[0].to_s] = value
         Gene::Macro::IGNORE
 
-      elsif DEF_RETAIN.first_of_group? data
+      elsif DEF_RETAIN === data
         value = context.process data.data[1]
         context.scope[data.data[0].to_s] = value
         value
 
-      elsif FN.first_of_group? data
+      elsif FN === data
         name = data.data[0].to_s
         arguments = [data.data[1]].flatten.map(&:to_s).reject{|arg| arg == '_' }
         statements = data.data[2..-1]
         context.scope[name] = Gene::Macro::Function.new name, context.scope, arguments, statements
+        Gene::Macro::IGNORE
 
-      elsif FNX.first_of_group? data
+      elsif FNX === data
         arguments = [data.data[0]].flatten.map(&:to_s).reject{|arg| arg == '_' }
         statements = data.data[1..-1]
         context.scope[name] = Gene::Macro::Function.new '', context.scope, arguments, statements
 
-      elsif DO.first_of_group? data
+      elsif DO === data
         result = Gene::UNDEFINED
         data.data.each do |stmt|
           result = context.process stmt
         end
         result
 
-      elsif MAP.first_of_group? data
+      elsif MAP === data
         collection = data.data.shift
         value_var_name = data.data.shift
 
@@ -85,7 +86,7 @@ module Gene::Macro::Handlers
           result
         end
 
-      elsif IF.first_of_group? data
+      elsif IF === data
         condition = context.process data.data[0]
         then_mode = data.data[1] == THEN
         if then_mode
@@ -114,19 +115,19 @@ module Gene::Macro::Handlers
           end
         end
 
-      elsif ENV_.first_of_group? data
+      elsif ENV_ === data
         name = data.data[0].to_s
         ENV[name]
 
-      elsif LS.first_of_group? data
+      elsif LS === data
         name = data.data[0] || Dir.pwd
         Dir.entries name.to_s
 
-      elsif READ.first_of_group? data
+      elsif READ === data
         name = data.data[0]
-        File.read name
+        File.read name.to_s
 
-      elsif GET.first_of_group? data
+      elsif GET === data
         target = context.process data.data[0]
         path   = data.data[1..-1]
         path.each do |item|
@@ -146,25 +147,45 @@ module Gene::Macro::Handlers
         target
 
       elsif data.is_a? Gene::Types::Base
-        name = data.type.name.to_s
+        data.attributes.each do |key, value|
+          value = context.process value
+          if value == Gene::UNDEFINED
+            data.attributes.delete key
+          else
+            data[key] = value
+          end
+        end
+
+        data.data = data.data
+          .map    {|item| context.process item }
+          .select {|item| item != Gene::Macro::IGNORE }
+
+        name = data.type.to_s
         if name =~ /^##(.*)$/
           value = context.scope[$1]
           if value.is_a? Gene::Macro::Function
-            value.call context, data.data
+            return value.call context, data.data
           else
             data.type = value
-            return data
           end
-        else
-          data
         end
+
+        data
 
       elsif data.is_a? Array
         data
           .map    {|item| context.process item }
           .select {|item| item != Gene::Macro::IGNORE }
 
-      # elsif data.is_a? Hash
+      elsif data.is_a? Hash
+        result = {}
+        data.each do |key, value|
+          value = context.process value
+          if value != Gene::UNDEFINED
+            result[key] = value
+          end
+        end
+        result
 
       else
         data
