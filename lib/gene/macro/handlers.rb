@@ -22,8 +22,17 @@ module Gene::Macro::Handlers
 
   GET         = Gene::Types::Ident.new '#get'
 
+  EQ          = Gene::Types::Ident.new '#eq'
+  NE          = Gene::Types::Ident.new '#ne'
   LT          = Gene::Types::Ident.new '#lt'
   LE          = Gene::Types::Ident.new '#le'
+  GT          = Gene::Types::Ident.new '#gt'
+  GE          = Gene::Types::Ident.new '#ge'
+
+  ADD         = Gene::Types::Ident.new '#add'
+  SUB         = Gene::Types::Ident.new '#sub'
+  MUL         = Gene::Types::Ident.new '#mul'
+  DIV         = Gene::Types::Ident.new '#div'
 
   INCR        = Gene::Types::Ident.new '#incr'
   DECR        = Gene::Types::Ident.new '#decr'
@@ -136,15 +145,21 @@ module Gene::Macro::Handlers
         name = data.data[0]
         File.read name.to_s
 
-      elsif LT === data
+      elsif data.is_a? Gene::Types::Base and [EQ, NE, LT, LE, GT, GE, ADD, SUB, MUL, DIV].include? data.type
         first  = context.process_internal data.data[0]
         second = context.process_internal data.data[1]
-        first < second
-
-      elsif LE === data
-        first  = context.process_internal data.data[0]
-        second = context.process_internal data.data[1]
-        first <= second
+        case data
+        when EQ then first == second
+        when NE then first != second
+        when LT then first <  second
+        when LE then first <= second
+        when GT then first > second
+        when GE then first >= second
+        when ADD then first.to_f + second.to_f
+        when SUB then first.to_f - second.to_f
+        when MUL then first.to_f * second.to_f
+        when DIV then first.to_f / second.to_f
+        end
 
       elsif INCR === data
         name = data.data[0].to_s

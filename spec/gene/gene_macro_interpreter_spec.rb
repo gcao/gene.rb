@@ -237,6 +237,76 @@ describe Gene::Macro::Interpreter do
     end
   end
 
+  describe "comparison" do
+    it "#eq" do
+      @interpreter.parse_and_process("(#eq 1 1)").should == true
+      @interpreter.parse_and_process("(#eq 1 2)").should == false
+      @interpreter.parse_and_process("(#eq 'a' 'a')").should == true
+      @interpreter.parse_and_process("(#eq 'a' 'b')").should == false
+    end
+
+    it "#ne" do
+      @interpreter.parse_and_process("(#ne 1 1)").should == false
+      @interpreter.parse_and_process("(#ne 1 2)").should == true
+      @interpreter.parse_and_process("(#ne 'a' 'a')").should == false
+      @interpreter.parse_and_process("(#ne 'a' 'b')").should == true
+    end
+
+    it "#lt" do
+      @interpreter.parse_and_process("(#lt 1 1)").should == false
+      @interpreter.parse_and_process("(#lt 1 2)").should == true
+      @interpreter.parse_and_process("(#lt 'a' 'a')").should == false
+      @interpreter.parse_and_process("(#lt 'a' 'b')").should == true
+    end
+
+    it "#le" do
+      @interpreter.parse_and_process("(#le 2 1)").should == false
+      @interpreter.parse_and_process("(#le 1 1)").should == true
+      @interpreter.parse_and_process("(#le 1 2)").should == true
+      @interpreter.parse_and_process("(#le 'b' 'a')").should == false
+      @interpreter.parse_and_process("(#le 'a' 'a')").should == true
+      @interpreter.parse_and_process("(#le 'a' 'b')").should == true
+    end
+
+    it "#gt" do
+      @interpreter.parse_and_process("(#gt 1 1)").should == false
+      @interpreter.parse_and_process("(#gt 2 1)").should == true
+      @interpreter.parse_and_process("(#gt 'a' 'a')").should == false
+      @interpreter.parse_and_process("(#gt 'b' 'a')").should == true
+    end
+
+    it "#ge" do
+      @interpreter.parse_and_process("(#ge 2 1)").should == true
+      @interpreter.parse_and_process("(#ge 1 1)").should == true
+      @interpreter.parse_and_process("(#ge 1 2)").should == false
+      @interpreter.parse_and_process("(#ge 'b' 'a')").should == true
+      @interpreter.parse_and_process("(#ge 'a' 'a')").should == true
+      @interpreter.parse_and_process("(#ge 'a' 'b')").should == false
+    end
+  end
+
+  describe "operations" do
+    it "(#add 1 2)" do
+      result = @interpreter.parse_and_process(example.description)
+      result.should == 3
+    end
+
+    it "(#sub 1 2)" do
+      result = @interpreter.parse_and_process(example.description)
+      result.should == -1
+    end
+
+    it "(#mul 2 2)" do
+      result = @interpreter.parse_and_process(example.description)
+      result.should == 4
+    end
+
+    it "(#div 2 2)" do
+      result = @interpreter.parse_and_process(example.description)
+      result.should == 1
+    end
+  end
+
   describe "complex macros" do
     it '(#fn times [n stmts] (#def i 0) (#while (#le ##i ##n) (#do ##stmts)))(##times 2 1' do
       pending
