@@ -1,25 +1,32 @@
+require "readline"
+
 class Gene::ParserRepl
   attr_accessor :_
 
   def start
-    loop do
+    while input = Readline.readline("GM> ", true)
       begin
-        print "GENE> "
-
-        input = gets.chomp
         if input =~ /^_/
-          p instance_eval(input)
+          @_ = instance_eval(input)
+        elsif input.strip == 'exit'
+          puts "Exiting..."
+          puts
+          break
+        elsif input.strip.empty?
+          next
         else
-          self._ = Gene::Parser.parse input
-          puts self._
+          @_ = Gene::Parser.parse input
         end
+
+        p @_
+        puts
       rescue
         puts "#{$!.class}: #{$!}"
         puts $!.backtrace.map{|line| "\t#{line}" }.join("\n")
+        puts
       rescue RuntimeError
         puts "#{$!.class}: #{$!}"
         puts $!.backtrace.map{|line| "\t#{line}" }.join("\n")
-      ensure
         puts
       end
     end

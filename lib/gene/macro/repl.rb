@@ -14,6 +14,7 @@ class Gene::Macro::Repl
           @interpreter._ = @interpreter.instance_eval(input)
         elsif input.strip == 'exit'
           puts "Exiting..."
+          puts
           break
         elsif input.strip.empty?
           next
