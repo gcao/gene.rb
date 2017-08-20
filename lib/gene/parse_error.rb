@@ -1,5 +1,7 @@
 module Gene
   class ParseError < StandardError
   end
-end
 
+  class PrematureEndError < ParseError
+  end
+end

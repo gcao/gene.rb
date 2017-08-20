@@ -162,4 +162,22 @@ describe Gene::Parser do
       }.should raise_error(Gene::ParseError)
     end
   end
+
+  [
+    '(',
+    '(a',
+    "(a # b)",
+    "(a ^b",
+    '{',
+    '{a',
+    '{a :',
+    '{a : b',
+  ].each do |input|
+    it "process #{input.inspect} should fail with PrematureEndError" do
+      pending
+      lambda {
+        Gene::Parser.parse(input)
+      }.should raise_error(Gene::PrematureEndError)
+    end
+  end
 end
