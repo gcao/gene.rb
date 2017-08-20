@@ -1,7 +1,8 @@
 module Gene::Macro::Handlers
   %W(
     DEF DEF_RETAIN
-    FN FNX
+    LET
+    FN FNX FNXX
     DO
     INPUT
     ENV CWD LS READ
@@ -36,6 +37,11 @@ module Gene::Macro::Handlers
         context.scope[data.data[0].to_s] = value
         value
 
+      elsif LET === data
+        value = context.process_internal data.data[1]
+        context.scope.let data.data[0].to_s, value
+        Gene::Macro::IGNORE
+
       elsif FN === data
         name = data.data[0].to_s
         arguments = [data.data[1]].flatten.map(&:to_s).reject{|arg| arg == '_' }
@@ -47,6 +53,10 @@ module Gene::Macro::Handlers
         arguments = [data.data[0]].flatten.map(&:to_s).reject{|arg| arg == '_' }
         statements = data.data[1..-1]
         context.scope[name] = Gene::Macro::Function.new '', context.scope, arguments, statements
+
+      elsif FNXX === data
+        statements = data.data
+        context.scope[name] = Gene::Macro::Function.new '', context.scope, [], statements
 
       elsif DO === data
         result = Gene::UNDEFINED
@@ -139,9 +149,17 @@ module Gene::Macro::Handlers
         when DIV then first.to_f / second.to_f
         end
 
-      elsif INCR === data
-        name = data.data[0].to_s
-        context.scope[name] += 1
+      elsif data.is_a? Gene::Types::Base and [INCR, DECR].include? data.type
+        name  = data.data[0].to_s
+        value = context.scope[name]
+        if data.data.length > 1
+          by_value = context.process data.data[1]
+        else
+          by_value = 1
+        end
+        by_value *= -1 if data.type == DECR
+
+        context.scope.let name, value + by_value
 
       elsif FOR === data
         do_index = data.data.index DO

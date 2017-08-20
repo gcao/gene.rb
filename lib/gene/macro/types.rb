@@ -71,6 +71,14 @@ module Gene::Macro
         parent[name]
       end
     end
+
+    def let name, value
+      if has_key?(name) or parent.nil?
+        self[name] = value
+      elsif parent
+        parent.let name, value
+      end
+    end
   end
 
   class YieldValue

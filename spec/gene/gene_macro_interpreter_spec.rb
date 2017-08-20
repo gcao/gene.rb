@@ -6,7 +6,7 @@ describe Gene::Macro::Interpreter do
     @interpreter = Gene::Macro::Interpreter.new
   end
 
-  describe "Variable" do
+  describe "Variable - def" do
     it "(#def a 'value')" do
       result = @interpreter.parse_and_process(example.description)
       result.should == Gene::UNDEFINED
@@ -38,6 +38,39 @@ describe Gene::Macro::Interpreter do
     end
   end
 
+  describe "Variable - let" do
+    it "(#let a 'value')" do
+      result = @interpreter.parse_and_process(example.description)
+      result.should == Gene::UNDEFINED
+    end
+
+    it "(#let a 'value'){'a' : [1 ##a]}" do
+      result = @interpreter.parse_and_process(example.description)
+      result['a'][1].should == 'value'
+    end
+
+    it "(#let a 'value')(test ^attr ##a ##a)" do
+      result = @interpreter.parse_and_process(example.description)
+      result['attr'].should == 'value'
+      result.data[0].should == 'value'
+    end
+
+    it "(#let-retain a 'value')" do
+      pending
+      result = @interpreter.parse_and_process(example.description)
+      result.should == 'value'
+    end
+
+    it "(#let a 'value') ##a" do
+      result = @interpreter.parse_and_process(example.description)
+      result.should == 'value'
+    end
+
+    it "(#let-multi [a 1] [b 2] [c])" do
+      pending "Verify a=1, b=2 c=undefined"
+    end
+  end
+
   describe "fn" do
     it "(#fn f a)" do
       result = @interpreter.parse_and_process(example.description)
@@ -61,6 +94,18 @@ describe Gene::Macro::Interpreter do
     end
   end
 
+  describe "def vs let" do
+    it "(#def a 'old') (#fn f _ (#def a 'new')) (##f) ##a" do
+      result = @interpreter.parse_and_process(example.description)
+      result.should == 'old'
+    end
+
+    it "(#def a 'old') (#fn f _ (#let a 'new')) (##f) ##a" do
+      result = @interpreter.parse_and_process(example.description)
+      result.should == 'new'
+    end
+  end
+
   # anonymous function
   describe "fnx" do
     it "(#def fa (#fnx a ##a))(##fa 1)" do
@@ -75,6 +120,11 @@ describe Gene::Macro::Interpreter do
 
     # _ is a placeholder for arguments, will be ignored
     it "(#def fa (#fnx _ ##_))(##fa 1)" do
+      result = @interpreter.parse_and_process(example.description)
+      result.should == nil
+    end
+
+    it "(#def fa (#fnxx ##_))(##fa 1)" do
       result = @interpreter.parse_and_process(example.description)
       result.should == nil
     end
@@ -305,15 +355,35 @@ describe Gene::Macro::Interpreter do
       result = @interpreter.parse_and_process(example.description)
       result.should == 1
     end
+
+    it "(#def i 0)(#incr i)" do
+      result = @interpreter.parse_and_process(example.description)
+      result.should == 1
+    end
+
+    it "(#def i 0)(#incr i 2)" do
+      result = @interpreter.parse_and_process(example.description)
+      result.should == 2
+    end
+
+    it "(#def i 0)(#decr i)" do
+      result = @interpreter.parse_and_process(example.description)
+      result.should == -1
+    end
+
+    it "(#def i 0)(#decr i 2)" do
+      result = @interpreter.parse_and_process(example.description)
+      result.should == -2
+    end
   end
 
   describe "complex macros" do
     it '
-      (#fn times [n stmts]
-        (#for (#def i 0)(#lt ##i ##n)(#incr i) #do ##stmts)
+      (#fn times [n callback]
+        (#for (#def i 0)(#lt ##i ##n)(#incr i) #do (##callback))
       )
       (#def result 0)
-      (##times 2 (#add ##result 2))
+      (##times 2 (#fnxx (#incr result 2)))
       ##result
     ' do
       result = @interpreter.parse_and_process(example.description)
