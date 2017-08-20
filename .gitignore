@@ -13,7 +13,10 @@ doc
 .bundle
 
 # Ignore executable files created by bundler
-bin
+bin/*
+!bin/gene
+!bin/gmacro
+!bin/glang
 
 # jeweler generated
 pkg
