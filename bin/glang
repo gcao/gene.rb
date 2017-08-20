@@ -1,0 +1,11 @@
+#!/usr/bin/env ruby
+
+$LOAD_PATH.unshift(File.join(File.dirname(__FILE__), '..', 'lib'))
+
+require "rubygems"
+require "bundler/setup"
+require "gene"
+require "gene/lang/interpreter"
+require "gene/lang/repl"
+
+Gene::Lang::Repl.new.start
