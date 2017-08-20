@@ -4,22 +4,27 @@ class Gene::ParserRepl
   attr_accessor :_
 
   def start
-    while input = Readline.readline("GM> ", true)
+    while input = Readline.readline("Gene> ", true)
       begin
-        if input =~ /^_/
-          @_ = instance_eval(input)
-        elsif input.strip == 'exit'
+        if input.strip == 'exit'
           puts "Exiting..."
           puts
           break
         elsif input.strip.empty?
-          next
+          # Do nothing
+        elsif input =~ /^ /
+          result = instance_eval(input)
+          p result
+          puts
+        elsif input =~ /^_/
+          @_ = instance_eval(input)
+          p @_
+          puts
         else
           @_ = Gene::Parser.parse input
+          p @_
+          puts
         end
-
-        p @_
-        puts
       rescue
         puts "#{$!.class}: #{$!}"
         puts $!.backtrace.map{|line| "\t#{line}" }.join("\n")
