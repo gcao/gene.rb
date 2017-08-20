@@ -1,41 +1,19 @@
 module Gene::Macro::Handlers
-  DEF         = Gene::Types::Ident.new '#def'
-  DEF_RETAIN  = Gene::Types::Ident.new '#def-retain'
-  FN          = Gene::Types::Ident.new '#fn'
-  FNX         = Gene::Types::Ident.new '#fnx'
-  DO          = Gene::Types::Ident.new '#do'
-  INPUT       = Gene::Types::Ident.new '#input'
-
-  MAP         = Gene::Types::Ident.new '#map'
-  FOR         = Gene::Types::Ident.new '#for'
-
-  YIELD       = Gene::Types::Ident.new '#yield'
-
-  IF          = Gene::Types::Ident.new '#if'
-  THEN        = Gene::Types::Ident.new '#then'
-  ELSE        = Gene::Types::Ident.new '#else'
-
-  ENV_        = Gene::Types::Ident.new '#env'
-  CWD         = Gene::Types::Ident.new '#cwd'
-  LS          = Gene::Types::Ident.new '#ls'
-  READ        = Gene::Types::Ident.new '#read'
-
-  GET         = Gene::Types::Ident.new '#get'
-
-  EQ          = Gene::Types::Ident.new '#eq'
-  NE          = Gene::Types::Ident.new '#ne'
-  LT          = Gene::Types::Ident.new '#lt'
-  LE          = Gene::Types::Ident.new '#le'
-  GT          = Gene::Types::Ident.new '#gt'
-  GE          = Gene::Types::Ident.new '#ge'
-
-  ADD         = Gene::Types::Ident.new '#add'
-  SUB         = Gene::Types::Ident.new '#sub'
-  MUL         = Gene::Types::Ident.new '#mul'
-  DIV         = Gene::Types::Ident.new '#div'
-
-  INCR        = Gene::Types::Ident.new '#incr'
-  DECR        = Gene::Types::Ident.new '#decr'
+  %W(
+    DEF DEF_RETAIN
+    FN FNX
+    DO
+    INPUT
+    ENV CWD LS READ
+    MAP FOR IF THEN ELSE
+    YIELD
+    CMD LS READ
+    GET
+    EQ NE LT LE GT GE
+    ADD SUB MUL DIV INCR DECR
+  ).each do |name|
+    const_set name, Gene::Types::Ident.new("##{name.downcase.gsub('_', '-')}")
+  end
 
   class DefaultHandler
     def call context, data
@@ -133,9 +111,9 @@ module Gene::Macro::Handlers
           end
         end
 
-      elsif ENV_ === data
+      elsif ENV === data
         name = data.data[0].to_s
-        ENV[name]
+        ::ENV[name]
 
       elsif LS === data
         name = data.data[0] || Dir.pwd
@@ -153,7 +131,7 @@ module Gene::Macro::Handlers
         when NE then first != second
         when LT then first <  second
         when LE then first <= second
-        when GT then first > second
+        when GT then first >  second
         when GE then first >= second
         when ADD then first.to_f + second.to_f
         when SUB then first.to_f - second.to_f

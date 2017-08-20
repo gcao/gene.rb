@@ -200,37 +200,37 @@ describe Gene::Macro::Interpreter do
     end
 
     it "
-    (#for (#def i 0)(#lt ##i 2)(#incr i) #do
-      (#for (#def j 0)(#lt ##j 2)(#incr j) #do
-        (#yield ##i)
+      (#for (#def i 0)(#lt ##i 2)(#incr i) #do
+        (#for (#def j 0)(#lt ##j 2)(#incr j) #do
+          (#yield ##i)
+        )
       )
-    )
     " do
       result = @interpreter.parse_and_process(example.description)
       result.should == [0, 0, 1, 1]
     end
 
     it "
-    [
-      (#for (#def i 0)(#lt ##i 2)(#incr i) #do
-        (#for (#def j 0)(#lt ##j 2)(#incr j) #do
-          (#yield ##i)
+      [
+        (#for (#def i 0)(#lt ##i 2)(#incr i) #do
+          (#for (#def j 0)(#lt ##j 2)(#incr j) #do
+            (#yield ##i)
+          )
         )
-      )
-    ]
+      ]
     " do
       result = @interpreter.parse_and_process(example.description)
       result.should == Gene::Parser.parse("[0 0 1 1]")
     end
 
     it "
-    (x
-      (#for (#def i 0)(#lt ##i 2)(#incr i) #do
-        (#for (#def j 0)(#lt ##j 2)(#incr j) #do
-          (#yield ##i)
+      (x
+        (#for (#def i 0)(#lt ##i 2)(#incr i) #do
+          (#for (#def j 0)(#lt ##j 2)(#incr j) #do
+            (#yield ##i)
+          )
         )
       )
-    )
     " do
       result = @interpreter.parse_and_process(example.description)
       result.should == Gene::Parser.parse("(x 0 0 1 1)")
@@ -308,10 +308,16 @@ describe Gene::Macro::Interpreter do
   end
 
   describe "complex macros" do
-    it '(#fn times [n stmts] (#def i 0) (#while (#le ##i ##n) (#do ##stmts)))(##times 2 1' do
-      pending
+    it '
+      (#fn times [n stmts]
+        (#for (#def i 0)(#lt ##i ##n)(#incr i) #do ##stmts)
+      )
+      (#def result 0)
+      (##times 2 (#add ##result 2))
+      ##result
+    ' do
       result = @interpreter.parse_and_process(example.description)
-      result.should == 'va'
+      result.should == 4
     end
   end
 end
