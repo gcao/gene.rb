@@ -25,7 +25,7 @@ module Gene::Macro
         # Return result of last statement
         result = Gene::UNDEFINED
         statements.each do |stmt|
-          result = context.process stmt
+          result = context.process_internal stmt
         end
         result
       ensure
@@ -71,5 +71,35 @@ module Gene::Macro
         parent[name]
       end
     end
+  end
+
+  class YieldValue
+    attr_reader :value
+
+    def initialize value
+      @value = value
+    end
+
+    def to_s
+      "(#yield #{@value.inspect})"
+    end
+    alias inspect to_s
+  end
+
+  class YieldValues
+    attr_reader :values
+
+    def initialize values = []
+      @values = values
+    end
+
+    def empty?
+      @values.empty?
+    end
+
+    def to_s
+      "(#yield #{@values.map(&:inspect).join(' ')})"
+    end
+    alias inspect to_s
   end
 end

@@ -172,4 +172,76 @@ describe Gene::Macro::Interpreter do
       result.should == 'va'
     end
   end
+
+  describe "for" do
+    it "(#for (#def i 0)(#le ##i 100)(#incr i) #do ##i)" do
+      result = @interpreter.parse_and_process(example.description)
+      result.should == Gene::UNDEFINED
+    end
+
+    it "(#for (#def i 0)(#le ##i 100)(#incr i) #do ##i) ##i" do
+      result = @interpreter.parse_and_process(example.description)
+      result.should == 101
+    end
+
+    it "(#for (#def i 0)(#le ##i 100) #do (#incr i)) ##i" do
+      result = @interpreter.parse_and_process(example.description)
+      result.should == 101
+    end
+
+    it "(#def i 0)(#for _ (#le ##i 100) #do (#incr i)) ##i" do
+      result = @interpreter.parse_and_process(example.description)
+      result.should == 101
+    end
+
+    it "(#for (#def i 0)(#lt ##i 5)(#incr i) #do (#yield ##i))" do
+      result = @interpreter.parse_and_process(example.description)
+      result.should == [0, 1, 2, 3, 4]
+    end
+
+    it "
+    (#for (#def i 0)(#lt ##i 2)(#incr i) #do
+      (#for (#def j 0)(#lt ##j 2)(#incr j) #do
+        (#yield ##i)
+      )
+    )
+    " do
+      result = @interpreter.parse_and_process(example.description)
+      result.should == [0, 0, 1, 1]
+    end
+
+    it "
+    [
+      (#for (#def i 0)(#lt ##i 2)(#incr i) #do
+        (#for (#def j 0)(#lt ##j 2)(#incr j) #do
+          (#yield ##i)
+        )
+      )
+    ]
+    " do
+      result = @interpreter.parse_and_process(example.description)
+      result.should == Gene::Parser.parse("[0 0 1 1]")
+    end
+
+    it "
+    (x
+      (#for (#def i 0)(#lt ##i 2)(#incr i) #do
+        (#for (#def j 0)(#lt ##j 2)(#incr j) #do
+          (#yield ##i)
+        )
+      )
+    )
+    " do
+      result = @interpreter.parse_and_process(example.description)
+      result.should == Gene::Parser.parse("(x 0 0 1 1)")
+    end
+  end
+
+  describe "complex macros" do
+    it '(#fn times [n stmts] (#def i 0) (#while (#le ##i ##n) (#do ##stmts)))(##times 2 1' do
+      pending
+      result = @interpreter.parse_and_process(example.description)
+      result.should == 'va'
+    end
+  end
 end

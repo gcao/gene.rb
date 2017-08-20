@@ -43,6 +43,19 @@ class Gene::Macro::Interpreter
   end
 
   def process data
+    result = process_internal data
+    if result == Gene::Macro::IGNORE
+      Gene::UNDEFINED
+    elsif result.is_a? Gene::Macro::YieldValue
+      result.value
+    elsif result.is_a? Gene::Macro::YieldValues
+      result.values
+    else
+      result
+    end
+  end
+
+  def process_internal data
     result = nil
 
     if data.is_a? Gene::Types::Stream
@@ -53,10 +66,6 @@ class Gene::Macro::Interpreter
       result = @handlers.call self, data
     end
 
-    if result == Gene::Macro::IGNORE
-      Gene::UNDEFINED
-    else
-      result
-    end
+    result
   end
 end
