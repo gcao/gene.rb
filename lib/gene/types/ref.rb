@@ -13,9 +13,6 @@ class Gene::Types::Ref
   def to_s
     "##{name}"
   end
-
-  def inspect
-    to_s
-  end
+  alias inspect to_s
 end
 

@@ -10,3 +10,5 @@ require 'gene/abstract_interpreter'
 require 'gene/core_interpreter'
 require 'gene/ruby_interpreter'
 require 'gene/javascript_interpreter'
+
+require 'gene/parser_repl'

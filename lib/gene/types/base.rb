@@ -28,18 +28,11 @@ class Gene::Types::Base
 
   def to_s
     s = "("
-    s << type.to_s << ' '
-    s << data.map do |child|
-      if child.is_a? String
-        child.inspect
-      else
-        child.to_s
-      end
-    end.join(' ')
+    s << type.to_s
+    data.each do |child|
+      s << ' ' << child.inspect
+    end
     s << ")"
   end
-
-  def inspect
-    to_s
-  end
+  alias inspect to_s
 end

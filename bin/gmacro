@@ -5,5 +5,7 @@ $LOAD_PATH.unshift(File.join(File.dirname(__FILE__), '..', 'lib'))
 require "rubygems"
 require "bundler/setup"
 require "gene"
+require "gene/macro/interpreter"
+require "gene/macro/repl"
 
-Gene::ParserRepl.new.start
+Gene::Macro::Repl.new.start

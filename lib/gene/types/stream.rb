@@ -20,10 +20,7 @@ module Gene
           end
         end.join(' ')
       end
-
-      def inspect
-        to_s
-      end
+      alias inspect to_s
     end
   end
 end

@@ -13,8 +13,5 @@ class Gene::Types::Tuple
   def to_s
     "(#|| #{data.map(&:inspect).join(' ')})"
   end
-
-  def inspect
-    to_s
-  end
+  alias inspect to_s
 end
