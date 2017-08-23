@@ -22,8 +22,8 @@ describe Gene::Lang::Interpreter do
 
     it "(class A (method doSomething))" do
       result = @interpreter.parse_and_process(example.description)
-      result.class.should        == Gene::Lang::Class
-      result.name.should         == 'A'
+      result.class.should == Gene::Lang::Class
+      result.name.should  == 'A'
       result.instance_methods.size.should == 1
     end
 
@@ -67,7 +67,7 @@ describe Gene::Lang::Interpreter do
       result.block.arguments[0].should   == Gene::Lang::Argument.new(0, 'a')
     end
 
-    it "(fn doSomething [] '1')(doSomething !)" do
+    it "(fn doSomething [] '1')(doSomething)" do
       result = @interpreter.parse_and_process(example.description)
       result.should == '1'
     end

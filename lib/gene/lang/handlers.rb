@@ -1,10 +1,15 @@
 module Gene::Lang::Handlers
+  FUNCTION = Gene::Types::Ident.new('fn')
+  %W(
+    CLASS METHOD NEW INIT
+    LET
+    IF
+  ).each do |name|
+    const_set name, Gene::Types::Ident.new("#{name.downcase.gsub('_', '-')}")
+  end
+
   # Handle scope variables, instance variables like @var and literals
   class DefaultHandler
-    def initialize
-      @logger = Logem::Logger.new(self)
-    end
-
     def call context, data
       return Gene::NOT_HANDLED if data.is_a? Gene::Types::Base
       if data.is_a? Gene::Types::Ident
@@ -23,12 +28,6 @@ module Gene::Lang::Handlers
   end
 
   class ClassHandler
-    CLASS = Gene::Types::Ident.new('class')
-
-    def initialize
-      @logger = Logem::Logger.new(self)
-    end
-
     def call context, data
       return Gene::NOT_HANDLED unless CLASS === data
       name  = data.data[0].to_s
@@ -42,12 +41,6 @@ module Gene::Lang::Handlers
   end
 
   class FunctionHandler
-    FUNCTION = Gene::Types::Ident.new('fn')
-
-    def initialize
-      @logger = Logem::Logger.new(self)
-    end
-
     def call context, data
       return Gene::NOT_HANDLED unless FUNCTION === data
       name = data.data[0].to_s
@@ -63,12 +56,6 @@ module Gene::Lang::Handlers
   end
 
   class MethodHandler
-    METHOD = Gene::Types::Ident.new('method')
-
-    def initialize
-      @logger = Logem::Logger.new(self)
-    end
-
     def call context, data
       return Gene::NOT_HANDLED unless METHOD === data
       name = data.data[0].to_s
@@ -83,12 +70,6 @@ module Gene::Lang::Handlers
   end
 
   class NewHandler
-    NEW = Gene::Types::Ident.new('new')
-
-    def initialize
-      @logger = Logem::Logger.new(self)
-    end
-
     def call context, data
       return Gene::NOT_HANDLED unless NEW === data
       klass = context.process(data.data[0])
@@ -101,12 +82,6 @@ module Gene::Lang::Handlers
   end
 
   class InitHandler
-    INIT = Gene::Types::Ident.new('init')
-
-    def initialize
-      @logger = Logem::Logger.new(self)
-    end
-
     def call context, data
       return Gene::NOT_HANDLED unless INIT === data
       name = INIT.name
@@ -121,12 +96,6 @@ module Gene::Lang::Handlers
   end
 
   class LetHandler
-    LET = Gene::Types::Ident.new('let')
-
-    def initialize
-      @logger = Logem::Logger.new(self)
-    end
-
     def call context, data
       return Gene::NOT_HANDLED unless LET === data
       name  = data.data[0].to_s
@@ -141,10 +110,6 @@ module Gene::Lang::Handlers
   end
 
   class InvocationHandler
-    def initialize
-      @logger = Logem::Logger.new(self)
-    end
-
     def call context, data
       # If first is an ident that starts with [a-zA-Z]
       #   treat as a variable (pointing to function or value)
@@ -159,11 +124,12 @@ module Gene::Lang::Handlers
 
       name  = data.type.name
       value = context.scope[name]
-      if data.data.size == 0
-        value
-      elsif data.data[0] == Gene::Types::Ident.new('!')
-        value.call context: context
-      elsif data.data[0].is_a? Gene::Types::Ident and data.data[0].to_s[0] == '.'
+      # if data.data.size == 0
+      #   value
+      # elsif data.data[0] == Gene::Types::Ident.new('!')
+      #   value.call context: context
+      # elsif data.data[0].is_a? Gene::Types::Ident and data.data[0].to_s[0] == '.'
+      if data.data[0].is_a? Gene::Types::Ident and data.data[0].to_s[0] == '.'
         klass = value.class
         method = klass.instance_methods[data.data[0].to_s[1..-1]]
         method.call context: context, self: value, arguments: data.data[1..-1]
@@ -180,10 +146,6 @@ module Gene::Lang::Handlers
       Gene::Types::Ident.new('*'),
       Gene::Types::Ident.new('/'),
     ]
-
-    def initialize
-      @logger = Logem::Logger.new(self)
-    end
 
     def call context, data
       return Gene::NOT_HANDLED unless data.is_a? Gene::Types::Base and BINARY_OPERATORS.include?(data.data[0])
@@ -207,12 +169,6 @@ module Gene::Lang::Handlers
   # (if cond true_logic cond2 true_logic else_logic) - 6 elements
   # Same as (if cond true_logic (if cond2 true_logic else_logic))
   class IfHandler
-    IF = Gene::Types::Ident.new('if')
-
-    def initialize
-      @logger = Logem::Logger.new(self)
-    end
-
     def call context, data
       return Gene::NOT_HANDLED unless IF === data
 
