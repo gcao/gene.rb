@@ -102,6 +102,12 @@ describe Gene::Parser do
       result.attributes['key'].should == true
     end
 
+    it '(prop x ^a [1] ^b [1 2])' do
+      result = Gene::Parser.parse(example.description)
+      result.attributes['a'].should == [1]
+      result.attributes['b'].should == [1, 2]
+    end
+
     # Alternative syntax: ^^key = ^+key, ^!key = ^-key
     it '(a ^^key)' do
       result = Gene::Parser.parse(example.description)

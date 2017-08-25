@@ -30,10 +30,11 @@ module Gene::Lang
   end
 
   class Class
-    attr_reader :name, :instance_methods
+    attr_reader :name, :instance_methods, :properties
     def initialize name, block
       @name, @block = name, block
       @instance_methods = {}
+      @properties = {}
     end
 
     def call options = {}
@@ -74,6 +75,14 @@ module Gene::Lang
         context.end_scope
         context.end_self
       end
+    end
+  end
+
+  class Property
+    attr_reader :name, :type, :getter, :setter
+
+    def initialize name
+      @name = name
     end
   end
 

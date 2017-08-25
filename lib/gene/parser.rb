@@ -94,8 +94,9 @@ module Gene
           obj = handle_top_level_results obj, value
         # when (value = parse_ref) != UNPARSED
         #   obj = handle_top_level_results obj, value
-        when (value = parse_attribute) != UNPARSED
-          obj = handle_top_level_results obj, value
+        # Attribute should not appear on top level
+        # when (value = parse_attribute) != UNPARSED
+        #   obj = handle_top_level_results obj, value
         when (value = parse_ident) != UNPARSED
           obj = handle_top_level_results obj, value
         else
@@ -186,7 +187,7 @@ module Gene
       end
     end
 
-    def parse_value
+    def parse_value attribute_for_group = nil
       skip(IGNORE)
 
       case
@@ -208,7 +209,7 @@ module Gene
         value
       # when (value = parse_ref) != UNPARSED
       #   value
-      when (value = parse_attribute) != UNPARSED
+      when (value = parse_attribute(attribute_for_group)) != UNPARSED
         value
       when (value = parse_ident) != UNPARSED
         value
@@ -317,7 +318,7 @@ module Gene
     #   Gene::Types::Ref.new(value)
     # end
 
-    def parse_attribute
+    def parse_attribute attribute_for_group
       return UNPARSED unless scan(ATTRIBUTE)
 
       value = ''
@@ -336,16 +337,16 @@ module Gene
       if value =~ /^[\^\!\+\-]?(.*)^?$/
         key = $1
         if value[0] == '+' or value[0] == '^'
-          @attribute_for_group[key] = true
+          attribute_for_group[key] = true
         elsif value[0] == '-' or value[0] == '!'
-          @attribute_for_group[key] = false
+          attribute_for_group[key] = false
         else
           next_value = parse_value
           if next_value == UNPARSED
             raise ParseError, "Attribute for \"#{key}\" is not found"
           end
 
-          @attribute_for_group[key] = next_value
+          attribute_for_group[key] = next_value
         end
         IGNORABLE
       else
@@ -356,7 +357,7 @@ module Gene
     def parse_group
       return UNPARSED unless scan(GROUP_OPEN) || scan(ARRAY_OPEN)
 
-      @attribute_for_group = {}
+      attribute_for_group = {}
 
       result = Array.new
 
@@ -381,7 +382,7 @@ module Gene
          in_comment = true
         when skip(IGNORE)
           ;
-        when (value = parse_value) != UNPARSED
+        when (value = parse_value(attribute_for_group)) != UNPARSED
           result << value unless in_comment or value == IGNORABLE
         else
           raise ParseError, "unexpected token at '#{peek(20)}'!"
@@ -397,7 +398,7 @@ module Gene
       type = result.shift
       data = result
       gene = Gene::Types::Base.new type, *data
-      @attribute_for_group.each do |k, v|
+      attribute_for_group.each do |k, v|
         gene.attributes[k] = v
       end
       gene

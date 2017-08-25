@@ -45,6 +45,24 @@ describe Gene::Lang::Interpreter do
     end
   end
 
+  describe "properties" do
+    it "
+      (class A
+        (prop x
+          ^get [@x]
+          ^set [value (let @x value)]
+        )
+      )
+      (let a (new A))
+      (a .x= 'value')
+      (a .x)
+    " do
+      result = Gene::Parser.parse(example.description)
+      result = @interpreter.parse_and_process(example.description)
+      result.should == 'value'
+    end
+  end
+
   describe "fn" do
     it "(fn doSomething)" do
       result = @interpreter.parse_and_process(example.description)

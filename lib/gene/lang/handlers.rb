@@ -1,7 +1,7 @@
 module Gene::Lang::Handlers
   FUNCTION = Gene::Types::Ident.new('fn')
   %W(
-    CLASS METHOD NEW INIT
+    CLASS PROP METHOD NEW INIT
     LET
     IF
   ).each do |name|
@@ -66,6 +66,26 @@ module Gene::Lang::Handlers
       fn.block = Gene::Lang::Block.new arguments, data.data[2..-1]
       context.self.instance_methods[name] = fn
       fn
+    end
+  end
+
+  class PropertyHandler
+    def call context, data
+      return Gene::NOT_HANDLED unless PROP === data
+      name = data.data[0].to_s
+      prop = Gene::Lang::Property.new name
+      context.self.properties[name] = prop
+
+      get = Gene::Lang::Function.new name
+      get.block = Gene::Lang::Block.new [], data['get']
+      context.self.instance_methods[get.name] = get
+
+      set = Gene::Lang::Function.new "#{name}="
+      arg_name  = data['set'].shift.to_s
+      arguments = [Gene::Lang::Argument.new(0, arg_name)]
+      set.block = Gene::Lang::Block.new arguments, data['set']
+      context.self.instance_methods[set.name] = set
+      nil
     end
   end
 
