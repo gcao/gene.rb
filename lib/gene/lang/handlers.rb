@@ -1,5 +1,4 @@
 module Gene::Lang::Handlers
-  FUNCTION = Gene::Types::Ident.new('fn')
   %W(
     CLASS PROP METHOD NEW INIT CAST
     LET
@@ -8,11 +7,28 @@ module Gene::Lang::Handlers
     const_set name, Gene::Types::Ident.new("#{name.downcase.gsub('_', '-')}")
   end
 
+  FUNCTION  = Gene::Types::Ident.new('fn')
+  CONTEXT   = Gene::Types::Ident.new('_context')
+  SCOPE     = Gene::Types::Ident.new('_scope')
+  INVOKE    = Gene::Types::Ident.new('_invoke')
+
   # Handle scope variables, instance variables like @var and literals
   class DefaultHandler
     def call context, data
-      return Gene::NOT_HANDLED if data.is_a? Gene::Types::Base
-      if data.is_a? Gene::Types::Ident
+      if data.is_a? Gene::Types::Base
+        if INVOKE === data
+          target = context.process data.data[0]
+          method = data.data[1].to_s
+          args   = data.data[2..-1].to_a.map {|item| context.process(item) }
+          target.send method, *args
+        else
+          Gene::NOT_HANDLED
+        end
+      elsif data == CONTEXT
+        context
+      elsif data == SCOPE
+        context.scope
+      elsif data.is_a? Gene::Types::Ident
         if data.to_s[0] == '@'
           # instance variable
           context.self[data.to_s[1..-1]]

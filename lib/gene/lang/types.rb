@@ -86,6 +86,17 @@ module Gene::Lang
     end
   end
 
+  # TODO
+  class FunctionClass < Class
+    def initialize name, block
+      super name, block
+      callFunc = Function.new 'call'
+      callFunc.block = Block.new ['self'], [
+        # invoke block with self set to first arg
+      ]
+    end
+  end
+
   class Property
     attr_reader :name, :type, :getter, :setter
 

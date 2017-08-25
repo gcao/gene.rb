@@ -7,6 +7,32 @@ describe Gene::Lang::Interpreter do
     @interpreter = Gene::Lang::Interpreter.new
   end
 
+  describe "special built-in variables and functions" do
+    it "_context" do
+      result = @interpreter.parse_and_process("
+        (let a 1)
+        _context
+      ")
+      result.scope['a'].should == 1
+    end
+
+    it "_scope" do
+      result = @interpreter.parse_and_process("
+        (let a 1)
+        _scope
+      ")
+      result['a'].should == 1
+    end
+
+    it "_invoke" do
+      result = @interpreter.parse_and_process("
+        (let a 1)
+        (_invoke _scope get 'a')
+      ")
+      result.should == 1
+    end
+  end
+
   describe "class" do
     it "(class A)" do
       result = @interpreter.parse_and_process(example.description)
@@ -141,6 +167,17 @@ describe Gene::Lang::Interpreter do
     it "(fn doSomething [a b] (a + b))(doSomething 1 2)" do
       result = @interpreter.parse_and_process(example.description)
       result.should == 3
+    end
+
+    it "
+      (fn f [] (.x))
+      (class A (method x [] 'value'))
+      (let a (new A))
+      (f .call a)
+    " do
+      pending
+      result = @interpreter.parse_and_process(example.description)
+      result.should == 'value'
     end
   end
 
