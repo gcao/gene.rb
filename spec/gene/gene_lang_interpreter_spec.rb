@@ -61,6 +61,17 @@ describe Gene::Lang::Interpreter do
       result = @interpreter.parse_and_process(example.description)
       result.should == 'value'
     end
+
+    it "
+      (class A (prop x))
+      (let a (new A))
+      (a .x= 'value')
+      (a .x)
+    " do
+      result = Gene::Parser.parse(example.description)
+      result = @interpreter.parse_and_process(example.description)
+      result.should == 'value'
+    end
   end
 
   describe "fn" do

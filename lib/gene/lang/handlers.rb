@@ -77,13 +77,20 @@ module Gene::Lang::Handlers
       context.self.properties[name] = prop
 
       get = Gene::Lang::Function.new name
-      get.block = Gene::Lang::Block.new [], data['get']
+      # Default code: [@x]  assume x is the property name
+      code = data['get'] || [Gene::Types::Ident.new("@#{name}")]
+      get.block = Gene::Lang::Block.new [], code
       context.self.instance_methods[get.name] = get
 
       set = Gene::Lang::Function.new "#{name}="
-      arg_name  = data['set'].shift.to_s
+      # Default code: [value (let @x value)]  assume x is the property name
+      code = data['set'] || [
+        Gene::Types::Ident.new("value"),
+        Gene::Types::Base.new(LET, Gene::Types::Ident.new("@#{name}"), Gene::Types::Ident.new("value"))
+      ]
+      arg_name  = code.shift.to_s
       arguments = [Gene::Lang::Argument.new(0, arg_name)]
-      set.block = Gene::Lang::Block.new arguments, data['set']
+      set.block = Gene::Lang::Block.new arguments, code
       context.self.instance_methods[set.name] = set
       nil
     end
