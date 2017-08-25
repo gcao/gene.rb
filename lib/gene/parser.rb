@@ -57,6 +57,9 @@ module Gene
     UNPARSED  = Object.new
     IGNORABLE = Object.new
 
+    RANGE = Gene::Types::Ident.new('#..')
+    SET   = Gene::Types::Ident.new('#<>')
+
     def self.parse input, options = {}
       new(input, options).parse
     end
@@ -397,6 +400,13 @@ module Gene
 
       type = result.shift
       data = result
+
+      if type == RANGE
+        return Range.new data[0], data[1]
+      elsif type == SET
+        return Set.new data
+      end
+
       gene = Gene::Types::Base.new type, *data
       attribute_for_group.each do |k, v|
         gene.attributes[k] = v

@@ -39,6 +39,8 @@ describe Gene::Parser do
     '("a")'    => Gene::Types::Base.new("a"),
     '(a)'      => Gene::Types::Base.new(Gene::Types::Ident.new('a')),
     '(a b)'    => Gene::Types::Base.new(Gene::Types::Ident.new('a'), Gene::Types::Ident.new('b')),
+    '(#.. 1 2)'  => 1..2,
+    '(#<> 1 2)'  => Set.new([1, 2]),
 
     # Below two should be handled by the parser
     # # line comment
