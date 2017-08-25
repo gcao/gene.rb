@@ -27,6 +27,14 @@ module Gene::Lang
       @attributes[name] = value
     end
     alias_method :[]=, :set
+
+    def as klass
+      obj = Object.new klass
+      @attributes.each do |key, value|
+        obj[key] = value
+      end
+      obj
+    end
   end
 
   class Class

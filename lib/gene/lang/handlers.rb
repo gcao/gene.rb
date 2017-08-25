@@ -1,7 +1,7 @@
 module Gene::Lang::Handlers
   FUNCTION = Gene::Types::Ident.new('fn')
   %W(
-    CLASS PROP METHOD NEW INIT
+    CLASS PROP METHOD NEW INIT CAST
     LET
     IF
   ).each do |name|
@@ -108,6 +108,15 @@ module Gene::Lang::Handlers
     end
   end
 
+  class CastHandler
+    def call context, data
+      return Gene::NOT_HANDLED unless CAST === data
+      object = context.process(data.data[0])
+      klass  = context.process(data.data[1])
+      object.as klass
+    end
+  end
+
   class InitHandler
     def call context, data
       return Gene::NOT_HANDLED unless INIT === data
@@ -138,30 +147,16 @@ module Gene::Lang::Handlers
 
   class InvocationHandler
     def call context, data
-      # If first is an ident that starts with [a-zA-Z]
-      #   treat as a variable (pointing to function or value)
-      # If there are two or more elements in the group,
-      #   treat as invocation
-      # If the second element is !,
-      #   treat as invocation with no argument
-      return Gene::NOT_HANDLED unless
-        data.is_a? Gene::Types::Base and
-        data.type.is_a? Gene::Types::Ident and
-        data.type.name =~ /^[a-zA-Z]/
-
-      name  = data.type.name
-      value = context.scope[name]
-      # if data.data.size == 0
-      #   value
-      # elsif data.data[0] == Gene::Types::Ident.new('!')
-      #   value.call context: context
-      # elsif data.data[0].is_a? Gene::Types::Ident and data.data[0].to_s[0] == '.'
-      if data.data[0].is_a? Gene::Types::Ident and data.data[0].to_s[0] == '.'
+      if data.is_a? Gene::Types::Base and data.data[0].is_a? Gene::Types::Ident and data.data[0].to_s[0] == '.'
+        value = context.process data.type
         klass = value.class
         method = klass.instance_methods[data.data[0].to_s[1..-1]]
         method.call context: context, self: value, arguments: data.data[1..-1]
-      else
+      elsif data.is_a? Gene::Types::Base and data.type.is_a? Gene::Types::Ident and data.type.name =~ /^[a-zA-Z]/
+        value = context.process(data.type)
         value.call context: context, arguments: data.data
+      else
+        Gene::NOT_HANDLED
       end
     end
   end

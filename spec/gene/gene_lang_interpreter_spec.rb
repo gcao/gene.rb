@@ -74,6 +74,29 @@ describe Gene::Lang::Interpreter do
     end
   end
 
+  describe "cast" do
+    it "
+      (class A)
+      (class B)
+      (let a (new A))
+      (cast a B)
+    " do
+      result = @interpreter.parse_and_process(example.description)
+      result.class.class.should == Gene::Lang::Class
+      result.class.name.should  == 'B'
+    end
+
+    it "
+      (class A)
+      (class B (method test [] 'B#test'))
+      (let a (new A))
+      ((cast a B) .test)
+    " do
+      result = @interpreter.parse_and_process(example.description)
+      result.should  == 'B#test'
+    end
+  end
+
   describe "fn" do
     it "(fn doSomething)" do
       result = @interpreter.parse_and_process(example.description)
