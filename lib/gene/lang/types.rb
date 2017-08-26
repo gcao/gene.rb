@@ -49,6 +49,21 @@ module Gene::Lang
       @properties = {}
     end
 
+    def prop name
+      @instance_methods[name.to_s]  = Block.new [], [Gene::Types::Ident.new("@#{name}")]
+      @instance_methods["#{name}="] = Block.new ['value'], [
+        Gene::Types::Base.new(
+          Gene::Types::Ident.new('let'),
+          Gene::Types::Ident.new("@#{name}"),
+          Gene::Types::Ident.new('value'),
+        )
+      ]
+    end
+
+    def method name, block
+      @instance_methods[name.to_s] = block
+    end
+
     def call options = {}
       scope = Scope.new nil
       context = options[:context]
@@ -144,7 +159,6 @@ module Gene::Lang
 
     def call options = {}
       context = options[:context]
-      context.scope['_args'] = options[:arguments]
       result = nil
       statements.each do |stmt|
         result = context.process stmt
@@ -189,4 +203,12 @@ module Gene::Lang
   NIL       = nil
   TRUE      = true
   FALSE     = false
+
+  # FunctionClass = Class.new 'Function', Block.new(nil, nil)
+  # FunctionClass.prop 'name'
+  # FunctionClass.prop 'arguments'
+  # FunctionClass.prop 'block'
+  # FunctionClass.method 'call', Block.new(['options'], [
+  # ])
+
 end

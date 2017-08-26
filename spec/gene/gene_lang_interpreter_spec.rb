@@ -31,14 +31,6 @@ describe Gene::Lang::Interpreter do
       ")
       result.should == 1
     end
-
-    it "_args" do
-      result = @interpreter.parse_and_process("
-        (fn f [] _args)
-        (f 'a')
-      ")
-      result.should == ['a']
-    end
   end
 
   describe "class" do
@@ -68,14 +60,22 @@ describe Gene::Lang::Interpreter do
 
     it "
       (class A
-        (init [a] (let @a a))
-        (method add num (@a + num))
+        (init a
+          (let @a a)
+        )
+        (method incr-a []
+          (let @a (@a + 1))
+        )
+        (method test num
+          (.incr-a)
+          (@a + num)
+        )
       )
       (let a (new A 1))
-      (a .add 2)
+      (a .test 2)
     " do
       result = @interpreter.parse_and_process(example.description)
-      result.should == 3
+      result.should == 4
     end
   end
 
@@ -158,6 +158,11 @@ describe Gene::Lang::Interpreter do
       result.should == '1'
     end
 
+    it "(fn doSomething [] '1')(doSomething)" do
+      result = @interpreter.parse_and_process(example.description)
+      result.should == '1'
+    end
+
     it "(fn doSomething a '1')" do
       result = @interpreter.parse_and_process(example.description)
       result.class.should == Gene::Lang::Function
@@ -181,9 +186,8 @@ describe Gene::Lang::Interpreter do
       (fn f [] (.x))
       (class A (method x [] 'value'))
       (let a (new A))
-      (f .call a)
+      (call f a)
     " do
-      pending
       result = @interpreter.parse_and_process(example.description)
       result.should == 'value'
     end

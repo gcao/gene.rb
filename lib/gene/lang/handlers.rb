@@ -1,6 +1,7 @@
 module Gene::Lang::Handlers
   %W(
     CLASS PROP METHOD NEW INIT CAST
+    CALL
     LET
     IF
   ).each do |name|
@@ -124,6 +125,15 @@ module Gene::Lang::Handlers
     end
   end
 
+  class CallHandler
+    def call context, data
+      return Gene::NOT_HANDLED unless CALL === data
+      function = context.process data.data.shift
+      self_object = context.process data.data.shift
+      function.call context: context, self: self_object, arguments: data.data
+    end
+  end
+
   class CastHandler
     def call context, data
       return Gene::NOT_HANDLED unless CAST === data
@@ -168,9 +178,12 @@ module Gene::Lang::Handlers
         klass = value.class
         method = klass.instance_methods[data.data[0].to_s[1..-1]]
         method.call context: context, self: value, arguments: data.data[1..-1]
-      elsif data.is_a? Gene::Types::Base and data.type.is_a? Gene::Types::Ident and data.type.name =~ /^[a-zA-Z]/
+      elsif data.is_a? Gene::Types::Base and data.type.is_a? Gene::Types::Ident and data.type.name =~ /^[a-zA-Z_]/
         value = context.process(data.type)
         value.call context: context, arguments: data.data
+      elsif data.is_a? Gene::Types::Base and data.type.is_a? Gene::Types::Ident and data.type.name =~ /^.(.*)$/
+        value = context.self.class.instance_methods[$1]
+        value.call context: context, self: context.self, arguments: data.data
       else
         Gene::NOT_HANDLED
       end
