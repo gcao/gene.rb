@@ -1,5 +1,9 @@
 module Gene::Lang
   class Undefined
+    def to_s
+      'undefined'
+    end
+    alias inspect to_s
   end
 
   # All objects other than literals have this structure
@@ -21,12 +25,12 @@ module Gene::Lang
     def get name
       @attributes[name]
     end
-    alias_method :[], :get
+    alias [] get
 
     def set name, value
       @attributes[name] = value
     end
-    alias_method :[]=, :set
+    alias []= set
 
     def as klass
       obj = Object.new klass
@@ -86,20 +90,8 @@ module Gene::Lang
     end
   end
 
-  # TODO
-  class FunctionClass < Class
-    def initialize name, block
-      super name, block
-      callFunc = Function.new 'call'
-      callFunc.block = Block.new ['self'], [
-        # invoke block with self set to first arg
-      ]
-    end
-  end
-
   class Property
     attr_reader :name, :type, :getter, :setter
-
     def initialize name
       @name = name
     end
@@ -122,12 +114,12 @@ module Gene::Lang
         value
       end
     end
-    alias_method :[], :get
+    alias [] get
 
     def set name, value
       variables[name] = value
     end
-    alias_method :[]=, :set
+    alias []= set
 
     def update_arguments values
       if values and values.size > 0
@@ -151,9 +143,11 @@ module Gene::Lang
     end
 
     def call options = {}
+      context = options[:context]
+      context.scope['_args'] = options[:arguments]
       result = nil
       statements.each do |stmt|
-        result = options[:context].process stmt
+        result = context.process stmt
       end
       result
     end

@@ -31,6 +31,14 @@ describe Gene::Lang::Interpreter do
       ")
       result.should == 1
     end
+
+    it "_args" do
+      result = @interpreter.parse_and_process("
+        (fn f [] _args)
+        (f 'a')
+      ")
+      result.should == ['a']
+    end
   end
 
   describe "class" do
