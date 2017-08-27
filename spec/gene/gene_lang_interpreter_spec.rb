@@ -31,6 +31,25 @@ describe Gene::Lang::Interpreter do
       ")
       result.should == 1
     end
+
+    it "_arguments" do
+      result = @interpreter.parse_and_process("
+        (fn f [] _arguments)
+        (f 1 2)
+      ")
+      result.should == [1, 2]
+    end
+
+    it "_self" do
+      result = @interpreter.parse_and_process("
+        (class A
+          (method f [] _self)
+        )
+        (let a (new A))
+        (a .f)
+      ")
+      result.class.name.should == 'A'
+    end
   end
 
   describe "class" do
@@ -142,8 +161,8 @@ describe Gene::Lang::Interpreter do
       result = @interpreter.parse_and_process(example.description)
       result.class.should == Gene::Lang::Function
       result.name.should  == 'doSomething'
-      result.block.arguments.size.should == 1
-      result.block.arguments[0].should   == Gene::Lang::Argument.new(0, 'a')
+      result.arguments.size.should == 1
+      result.arguments[0].should   == Gene::Lang::Argument.new(0, 'a')
     end
 
     it "(fn doSomething [] '1')(doSomething)" do
@@ -160,9 +179,9 @@ describe Gene::Lang::Interpreter do
       result = @interpreter.parse_and_process(example.description)
       result.class.should == Gene::Lang::Function
       result.name.should  == 'doSomething'
-      result.block.arguments.size.should == 1
-      result.block.arguments[0].should   == Gene::Lang::Argument.new(0, 'a')
-      result.block.statements.first.should == '1'
+      result.arguments.size.should == 1
+      result.arguments[0].should   == Gene::Lang::Argument.new(0, 'a')
+      result.statements.first.should == '1'
     end
 
     it "(fn doSomething a a)(doSomething '1')" do

@@ -48,10 +48,8 @@ module Gene::Lang::Handlers
   class ClassHandler
     def call context, data
       return Gene::NOT_HANDLED unless CLASS === data
-      name  = data.data[0].to_s
-      stmts = data.data[1..-1]
-      block = Gene::Lang::Block.new nil, stmts
-      klass = Gene::Lang::Class.new name, block
+      name  = data.data.shift.to_s
+      klass = Gene::Lang::Class.new name, data.data
       klass.call context: context
       context.scope[name] = klass
       klass
@@ -73,10 +71,10 @@ module Gene::Lang::Handlers
 
       fn.parent_scope = context.scope
 
-      arguments = [data.data.shift].flatten
+      fn.arguments = [data.data.shift].flatten
         .select {|item| not item.nil? }
         .map.with_index {|item, i| Gene::Lang::Argument.new(i, item.name) }
-      fn.block = Gene::Lang::Block.new arguments, data.data
+      fn.statements = data.data
 
       fn
     end
@@ -87,10 +85,10 @@ module Gene::Lang::Handlers
       return Gene::NOT_HANDLED unless METHOD === data
       name = data.data[0].to_s
       fn = Gene::Lang::Function.new name
-      arguments = [data.data[1]].flatten
+      fn.arguments = [data.data[1]].flatten
         .select {|item| not item.nil? }
         .map.with_index {|item, i| Gene::Lang::Argument.new(i, item.name) }
-      fn.block = Gene::Lang::Block.new arguments, data.data[2..-1]
+      fn.statements = data.data[2..-1]
       context.self.instance_methods[name] = fn
       fn
     end
@@ -106,7 +104,8 @@ module Gene::Lang::Handlers
       get = Gene::Lang::Function.new name
       # Default code: [@x]  assume x is the property name
       code = data['get'] || [Gene::Types::Ident.new("@#{name}")]
-      get.block = Gene::Lang::Block.new [], code
+      get.arguments = []
+      get.statements = code
       context.self.instance_methods[get.name] = get
 
       set = Gene::Lang::Function.new "#{name}="
@@ -116,8 +115,8 @@ module Gene::Lang::Handlers
         Gene::Types::Base.new(LET, Gene::Types::Ident.new("@#{name}"), Gene::Types::Ident.new("value"))
       ]
       arg_name  = code.shift.to_s
-      arguments = [Gene::Lang::Argument.new(0, arg_name)]
-      set.block = Gene::Lang::Block.new arguments, code
+      set.arguments = [Gene::Lang::Argument.new(0, arg_name)]
+      set.statements = code
       context.self.instance_methods[set.name] = set
       nil
     end
@@ -158,10 +157,10 @@ module Gene::Lang::Handlers
       return Gene::NOT_HANDLED unless INIT === data
       name = INIT.name
       fn = Gene::Lang::Function.new name
-      arguments = [data.data[0]].flatten
+      fn.arguments = [data.data[0]].flatten
         .select {|item| not item.nil? }
         .map.with_index {|item, i| Gene::Lang::Argument.new(i, item.name) }
-      fn.block = Gene::Lang::Block.new arguments, data.data[1..-1]
+      fn.statements = data.data[1..-1]
       context.self.instance_methods[INIT.name] = fn
       fn
     end
@@ -256,19 +255,9 @@ module Gene::Lang::Handlers
       true_logic  = data.data[1]
       false_logic = data.data[2]
       if context.process condition
-        if true_logic.is_a? Array
-          code = Gene::Lang::Block.new([], true_logic)
-          code.call context: context
-        else
-          context.process(true_logic)
-        end
+        context.process_statements true_logic
       else
-        if false_logic.is_a? Array
-          code = Gene::Lang::Block.new([], false_logic)
-          code.call context: context
-        else
-          context.process(false_logic)
-        end
+        context.process_statements false_logic
       end
     end
   end
@@ -282,9 +271,7 @@ module Gene::Lang::Handlers
       condition = data.data.shift
       update    = data.data.shift
       while context.process(condition)
-        data.data.each do |stmt|
-          context.process stmt
-        end
+        context.process_statements data.data
         context.process update
       end
     end

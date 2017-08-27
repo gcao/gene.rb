@@ -43,8 +43,8 @@ module Gene::Lang
 
   class Class
     attr_reader :name, :instance_methods, :properties
-    def initialize name, block
-      @name, @block = name, block
+    def initialize name, statements
+      @name, @statements = name, statements
       @instance_methods = {}
       @properties = {}
     end
@@ -60,8 +60,8 @@ module Gene::Lang
       ]
     end
 
-    def method name, block
-      @instance_methods[name.to_s] = block
+    def method name, function
+      @instance_methods[name.to_s] = function
     end
 
     def call options = {}
@@ -70,7 +70,8 @@ module Gene::Lang
       context.start_self self
       context.start_scope scope
       begin
-        @block.call options
+        context.process_statements @statements
+        self
       ensure
         context.end_scope
         context.end_self
@@ -79,25 +80,22 @@ module Gene::Lang
   end
 
   class Function
-    attr_reader :name, :block
-    attr_accessor :parent_scope
+    attr_reader :name
+    attr_accessor :parent_scope, :arguments, :statements
     def initialize name
       @name = name
     end
 
-    def block= block
-      @block = block
-    end
-
     def call options = {}
-      scope = Scope.new parent_scope
-      scope.arguments = @block.arguments
+      scope = Scope.new @parent_scope
+      scope.arguments = @arguments
+      scope.set '_arguments', options[:arguments]
       scope.update_arguments options[:arguments]
       context = options[:context]
       context.start_self options[:self]
       context.start_scope scope
       begin
-        @block.call options
+        context.process_statements @statements
       ensure
         context.end_scope
         context.end_self
@@ -147,43 +145,6 @@ module Gene::Lang
     end
   end
 
-  class Block
-    attr_accessor :arguments, :statements
-    def initialize arguments, statements
-      @arguments  = arguments  || []
-      @statements = statements || []
-    end
-
-    def [] index
-      @statements[index]
-    end
-
-    def call options = {}
-      context = options[:context]
-      result = nil
-      statements.each do |stmt|
-        result = context.process stmt
-      end
-      result
-    end
-  end
-
-  # class SimpleBlock
-  #   attr_accessor :statements
-  #   def initialize statements
-  #     @statements = statements || []
-  #   end
-
-  #   def call options = {}
-  #     context = options[:context]
-  #     result = nil
-  #     statements.each do |stmt|
-  #       result = context.process stmt
-  #     end
-  #     result
-  #   end
-  # end
-
   class Argument
     attr_reader :index, :name
     def initialize index, name
@@ -221,11 +182,23 @@ module Gene::Lang
   TRUE      = true
   FALSE     = false
 
+  # === SELF HOSTING ===
   # FunctionClass = Class.new 'Function', Block.new(nil, nil)
   # FunctionClass.prop 'name'
   # FunctionClass.prop 'arguments'
   # FunctionClass.prop 'block'
-  # FunctionClass.method 'call', Block.new(['options'], [
-  # ])
+  # init = FunctionClass.new
+  # init.name       = 'init'
+  # init.arguments  = ['name']
+  # init.statements = [
+  #   (let @name name)
+  #   Gene::Types::Base.new(Gene::Types::Ident.new('let'), Gene::Types::Ident.new('@name'), Gene::Types::Ident.new('name'))
+  # ]
+  # FunctionClass.method 'init', call
+  # call = FunctionClass.new
+  # call.name       = 'call'
+  # call.arguments  = []
+  # call.statements = []
+  # FunctionClass.method 'call', call
 
 end

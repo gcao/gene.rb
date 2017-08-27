@@ -71,4 +71,15 @@ class Gene::Lang::Interpreter
   def process data
     @handlers.call self, data
   end
+
+  def process_statements statements
+    result = Gene::UNDEFINED
+    return result if statements.nil?
+
+    [statements].flatten.each do |stmt|
+      result = process stmt
+    end
+
+    result
+  end
 end
