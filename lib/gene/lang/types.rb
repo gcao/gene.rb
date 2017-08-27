@@ -80,7 +80,7 @@ module Gene::Lang
 
   class Function
     attr_reader :name, :block
-    attr_accessor :inherit_scope
+    attr_accessor :parent_scope
     def initialize name
       @name = name
     end
@@ -90,7 +90,7 @@ module Gene::Lang
     end
 
     def call options = {}
-      scope = Scope.new nil
+      scope = Scope.new parent_scope
       scope.arguments = @block.arguments
       scope.update_arguments options[:arguments]
       context = options[:context]
@@ -122,11 +122,12 @@ module Gene::Lang
     end
 
     def get name
-      value = variables[name]
-      if value == nil and not variables.keys.include? name
-        UNDEFINED
+      if variables.keys.include? name
+        variables[name]
+      elsif @parent
+        parent.get name
       else
-        value
+        UNDEFINED
       end
     end
     alias [] get
@@ -166,6 +167,22 @@ module Gene::Lang
       result
     end
   end
+
+  # class SimpleBlock
+  #   attr_accessor :statements
+  #   def initialize statements
+  #     @statements = statements || []
+  #   end
+
+  #   def call options = {}
+  #     context = options[:context]
+  #     result = nil
+  #     statements.each do |stmt|
+  #       result = context.process stmt
+  #     end
+  #     result
+  #   end
+  # end
 
   class Argument
     attr_reader :index, :name

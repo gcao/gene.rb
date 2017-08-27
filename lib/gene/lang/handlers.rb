@@ -1,14 +1,15 @@
 module Gene::Lang::Handlers
   %W(
     CLASS PROP METHOD NEW INIT CAST
+    FN FNX
     CALL
     LET
     IF
+    FOR
   ).each do |name|
     const_set name, Gene::Types::Ident.new("#{name.downcase.gsub('_', '-')}")
   end
 
-  FUNCTION  = Gene::Types::Ident.new('fn')
   CONTEXT   = Gene::Types::Ident.new('_context')
   SCOPE     = Gene::Types::Ident.new('_scope')
   INVOKE    = Gene::Types::Ident.new('_invoke')
@@ -59,15 +60,24 @@ module Gene::Lang::Handlers
 
   class FunctionHandler
     def call context, data
-      return Gene::NOT_HANDLED unless FUNCTION === data
-      name = data.data[0].to_s
-      fn = Gene::Lang::Function.new name
-      arguments = [data.data[1]].flatten
+      return Gene::NOT_HANDLED unless FN === data or FNX === data
+
+      if FN === data
+        name = data.data.shift.to_s
+        fn   = Gene::Lang::Function.new name
+        context.scope[name] = fn
+      else
+        name = 'anonymous'
+        fn   = Gene::Lang::Function.new name
+      end
+
+      fn.parent_scope = context.scope
+
+      arguments = [data.data.shift].flatten
         .select {|item| not item.nil? }
         .map.with_index {|item, i| Gene::Lang::Argument.new(i, item.name) }
-      fn.block = Gene::Lang::Block.new arguments, data.data[2..-1]
-      fn.inherit_scope = data.attributes['inherit_scope']
-      context.scope[name] = fn
+      fn.block = Gene::Lang::Block.new arguments, data.data
+
       fn
     end
   end
@@ -177,13 +187,18 @@ module Gene::Lang::Handlers
         value = context.process data.type
         klass = value.class
         method = klass.instance_methods[data.data[0].to_s[1..-1]]
-        method.call context: context, self: value, arguments: data.data[1..-1]
+        method.call context: context, self: value, arguments: data.data[1..-1].map{|item| context.process item}
       elsif data.is_a? Gene::Types::Base and data.type.is_a? Gene::Types::Ident and data.type.name =~ /^[a-zA-Z_]/
         value = context.process(data.type)
-        value.call context: context, arguments: data.data
+        value.call context: context, arguments: data.data.map{|item| context.process item}
       elsif data.is_a? Gene::Types::Base and data.type.is_a? Gene::Types::Ident and data.type.name =~ /^.(.*)$/
         value = context.self.class.instance_methods[$1]
-        value.call context: context, self: context.self, arguments: data.data
+        value.call context: context, self: context.self, arguments: data.data.map{|item| context.process item}
+      elsif data.is_a? Gene::Types::Base and data.type.is_a? Gene::Types::Base
+        data.type = context.process data.type
+        context.process data
+      elsif data.is_a? Gene::Types::Base and data.type.is_a? Gene::Lang::Function
+        data.type.call context: context, arguments: data.data.map{|item| context.process item}
       else
         Gene::NOT_HANDLED
       end
@@ -192,6 +207,12 @@ module Gene::Lang::Handlers
 
   class BinaryExprHandler
     BINARY_OPERATORS = [
+      Gene::Types::Ident.new('>'),
+      Gene::Types::Ident.new('>='),
+      Gene::Types::Ident.new('<'),
+      Gene::Types::Ident.new('<='),
+
+      Gene::Types::Ident.new('+'),
       Gene::Types::Ident.new('+'),
       Gene::Types::Ident.new('-'),
       Gene::Types::Ident.new('*'),
@@ -205,6 +226,11 @@ module Gene::Lang::Handlers
       left  = context.process(data.type)
       right = context.process(data.data[1])
       case op
+      when '<'  then left < right
+      when '<=' then left <= right
+      when '>'  then left > right
+      when '>=' then left >= right
+
       when '+' then left + right
       when '-' then left - right
       when '*' then left * right
@@ -243,6 +269,23 @@ module Gene::Lang::Handlers
         else
           context.process(false_logic)
         end
+      end
+    end
+  end
+
+  class ForHandler
+    def call context, data
+      return Gene::NOT_HANDLED unless FOR === data
+      # initialize
+      context.process data.data.shift
+
+      condition = data.data.shift
+      update    = data.data.shift
+      while context.process(condition)
+        data.data.each do |stmt|
+          context.process stmt
+        end
+        context.process update
       end
     end
   end

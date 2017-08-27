@@ -138,13 +138,6 @@ describe Gene::Lang::Interpreter do
       result.name.should  == 'doSomething'
     end
 
-    it "(^^inherit_scope fn doSomething)" do
-      result = @interpreter.parse_and_process(example.description)
-      result.class.should == Gene::Lang::Function
-      result.name.should  == 'doSomething'
-      result.inherit_scope.should == true
-    end
-
     it "(fn doSomething a)" do
       result = @interpreter.parse_and_process(example.description)
       result.class.should == Gene::Lang::Function
@@ -191,6 +184,47 @@ describe Gene::Lang::Interpreter do
       result = @interpreter.parse_and_process(example.description)
       result.should == 'value'
     end
+
+    it "
+      (let a 1)
+      (fn f b (a + b))
+      (f 2)
+    " do
+      result = @interpreter.parse_and_process(example.description)
+      result.should == 3
+    end
+  end
+
+  describe "fnx" do
+    it "
+      (let f (fnx [] 1))
+      (f)
+    " do
+      result = @interpreter.parse_and_process(example.description)
+      result.should == 1
+    end
+
+    it "
+      ((fnx [] 1))
+    " do
+      result = @interpreter.parse_and_process(example.description)
+      result.should == 1
+    end
+  end
+
+  describe "Comparison" do
+    it("(1 < 2)")  { @interpreter.parse_and_process(example.description).should == true }
+    it("(2 < 2)")  { @interpreter.parse_and_process(example.description).should == false }
+    it("(3 < 2)")  { @interpreter.parse_and_process(example.description).should == false }
+    it("(1 <= 2)") { @interpreter.parse_and_process(example.description).should == true }
+    it("(2 <= 2)") { @interpreter.parse_and_process(example.description).should == true }
+    it("(3 <= 2)") { @interpreter.parse_and_process(example.description).should == false }
+    it("(1 > 2)")  { @interpreter.parse_and_process(example.description).should == false }
+    it("(2 > 2)")  { @interpreter.parse_and_process(example.description).should == false }
+    it("(3 > 2)")  { @interpreter.parse_and_process(example.description).should == true }
+    it("(1 >= 2)") { @interpreter.parse_and_process(example.description).should == false }
+    it("(2 >= 2)") { @interpreter.parse_and_process(example.description).should == true }
+    it("(3 >= 2)") { @interpreter.parse_and_process(example.description).should == true }
   end
 
   describe "Binary expression" do
@@ -200,7 +234,7 @@ describe Gene::Lang::Interpreter do
     end
   end
 
-  describe "variable definition" do
+  describe "Variable definition" do
     it "(let a 'value')" do
       result = @interpreter.parse_and_process(example.description)
       result.class.should == Gene::Lang::Variable
@@ -243,6 +277,36 @@ describe Gene::Lang::Interpreter do
     end
 
     it "(if false 1 [(let a 1)(a + 2)])" do
+      result = @interpreter.parse_and_process(example.description)
+      result.should == 3
+    end
+  end
+
+
+  describe "for" do
+    it "
+      (let result 0)
+      (for (let i 0)(i < 5)(let i (i + 1))
+        (let result (result + i))
+      )
+      result
+    " do
+      result = @interpreter.parse_and_process(example.description)
+      result.should == 10
+    end
+  end
+
+  describe "Array.each" do
+    it "
+      (let sum 0)
+      ([1 2] .each
+        (fnx item
+          (let sum (sum + item))
+        )
+      )
+      sum
+    " do
+      pending
       result = @interpreter.parse_and_process(example.description)
       result.should == 3
     end
