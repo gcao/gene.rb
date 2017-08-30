@@ -5,6 +5,22 @@ require 'gene/lang/interpreter'
 describe Gene::Lang::Interpreter do
   before do
     @interpreter = Gene::Lang::Interpreter.new
+    @interpreter.parse_and_process "
+      (class Array
+        (method size []
+          (_invoke _self size)
+        )
+        (method get [i]
+          (_invoke _self [] i)
+        )
+        (method each [f]
+          (for (let i 0) (i < (.size)) (let i (i + 1))
+            (let item (.get i))
+            (f item i)
+          )
+        )
+      )
+    "
   end
 
   describe "special built-in variables and functions" do
@@ -214,6 +230,28 @@ describe Gene::Lang::Interpreter do
     end
   end
 
+  describe "def vs let" do
+    it "
+      (def x 0)
+      (fn f [] (def x 1))
+      (f)
+      x
+    " do
+      result = @interpreter.parse_and_process(example.description)
+      result.should == 0
+    end
+
+    it "
+      (let x 0)
+      (fn f [] (let x 1))
+      (f)
+      x
+    " do
+      result = @interpreter.parse_and_process(example.description)
+      result.should == 1
+    end
+  end
+
   describe "fnx" do
     it "
       (let f (fnx [] 1))
@@ -315,7 +353,12 @@ describe Gene::Lang::Interpreter do
     end
   end
 
-  describe "Array.each" do
+  describe "Array" do
+    it "([1] .size)" do
+      result = @interpreter.parse_and_process(example.description)
+      result.should == 1
+    end
+
     it "
       (let sum 0)
       ([1 2] .each
@@ -325,7 +368,6 @@ describe Gene::Lang::Interpreter do
       )
       sum
     " do
-      pending
       result = @interpreter.parse_and_process(example.description)
       result.should == 3
     end

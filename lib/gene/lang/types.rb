@@ -119,6 +119,10 @@ module Gene::Lang
       @arguments = []
     end
 
+    def defined? name
+      @variables.keys.include?(name) or (@parent and @parent.defined?(name))
+    end
+
     def get name
       if variables.keys.include? name
         variables[name]
@@ -134,6 +138,16 @@ module Gene::Lang
       variables[name] = value
     end
     alias []= set
+
+    def let name, value
+      if @variables.keys.include? name
+        @variables[name] = value
+      elsif @parent and @parent.defined?(name)
+        @parent.let name, value
+      else
+        @variables[name] = value
+      end
+    end
 
     def update_arguments values
       if values and values.size > 0

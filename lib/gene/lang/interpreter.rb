@@ -14,6 +14,7 @@ class Gene::Lang::Interpreter
     @handlers.add 100, Gene::Lang::Handlers::PropertyHandler.new
     @handlers.add 100, Gene::Lang::Handlers::MethodHandler.new
     @handlers.add 100, Gene::Lang::Handlers::FunctionHandler.new
+    @handlers.add 100, Gene::Lang::Handlers::DefHandler.new
     @handlers.add 100, Gene::Lang::Handlers::LetHandler.new
     @handlers.add 100, Gene::Lang::Handlers::IfHandler.new
     @handlers.add 100, Gene::Lang::Handlers::ForHandler.new
@@ -61,6 +62,15 @@ class Gene::Lang::Interpreter
   def end_self
     @self_objects.pop
   end
+
+  def get name
+    if scope.defined? name
+      scope[name]
+    else
+      @global_scope[name]
+    end
+  end
+  alias [] get
 
   def parse_and_process input
     Gene::CoreInterpreter.parse_and_process input do |output|

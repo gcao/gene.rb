@@ -3,7 +3,7 @@ module Gene::Lang::Handlers
     CLASS PROP METHOD NEW INIT CAST
     FN FNX
     CALL
-    LET
+    DEF LET
     IF
     FOR
   ).each do |name|
@@ -13,6 +13,7 @@ module Gene::Lang::Handlers
   CONTEXT   = Gene::Types::Ident.new('_context')
   SCOPE     = Gene::Types::Ident.new('_scope')
   INVOKE    = Gene::Types::Ident.new('_invoke')
+  SELF      = Gene::Types::Ident.new('_self')
 
   # Handle scope variables, instance variables like @var and literals
   class DefaultHandler
@@ -30,13 +31,15 @@ module Gene::Lang::Handlers
         context
       elsif data == SCOPE
         context.scope
+      elsif data == SELF
+        context.self
       elsif data.is_a? Gene::Types::Ident
         if data.to_s[0] == '@'
           # instance variable
           context.self[data.to_s[1..-1]]
         else
           # scope variable
-          context.scope[data.name]
+          context[data.name]
         end
       else
         # literals
@@ -51,7 +54,7 @@ module Gene::Lang::Handlers
       name  = data.data.shift.to_s
       klass = Gene::Lang::Class.new name, data.data
       klass.call context: context
-      context.scope[name] = klass
+      context.global_scope[name] = klass
       klass
     end
   end
@@ -166,9 +169,9 @@ module Gene::Lang::Handlers
     end
   end
 
-  class LetHandler
+  class DefHandler
     def call context, data
-      return Gene::NOT_HANDLED unless LET === data
+      return Gene::NOT_HANDLED unless DEF === data
       name  = data.data[0].to_s
       value = context.process data.data[1]
       if name[0] == '@'
@@ -180,18 +183,33 @@ module Gene::Lang::Handlers
     end
   end
 
+  class LetHandler
+    def call context, data
+      return Gene::NOT_HANDLED unless LET === data
+      name  = data.data[0].to_s
+      value = context.process data.data[1]
+      if name[0] == '@'
+        context.self.set name[1..-1], value
+      else
+        context.scope.let name, value
+      end
+      Gene::Lang::Variable.new name, value
+    end
+  end
+
   class InvocationHandler
     def call context, data
       if data.is_a? Gene::Types::Base and data.data[0].is_a? Gene::Types::Ident and data.data[0].to_s[0] == '.'
         value = context.process data.type
-        klass = value.class
+        klass = get_class(value, context)
         method = klass.instance_methods[data.data[0].to_s[1..-1]]
         method.call context: context, self: value, arguments: data.data[1..-1].map{|item| context.process item}
       elsif data.is_a? Gene::Types::Base and data.type.is_a? Gene::Types::Ident and data.type.name =~ /^[a-zA-Z_]/
         value = context.process(data.type)
         value.call context: context, arguments: data.data.map{|item| context.process item}
       elsif data.is_a? Gene::Types::Base and data.type.is_a? Gene::Types::Ident and data.type.name =~ /^.(.*)$/
-        value = context.self.class.instance_methods[$1]
+        klass = get_class(context.self, context)
+        value = klass.instance_methods[$1]
         value.call context: context, self: context.self, arguments: data.data.map{|item| context.process item}
       elsif data.is_a? Gene::Types::Base and data.type.is_a? Gene::Types::Base
         data.type = context.process data.type
@@ -200,6 +218,15 @@ module Gene::Lang::Handlers
         data.type.call context: context, arguments: data.data.map{|item| context.process item}
       else
         Gene::NOT_HANDLED
+      end
+    end
+
+    private
+    def get_class obj, context
+      if obj.is_a? Array
+        context["Array"]
+      else
+        obj.class
       end
     end
   end
@@ -211,7 +238,6 @@ module Gene::Lang::Handlers
       Gene::Types::Ident.new('<'),
       Gene::Types::Ident.new('<='),
 
-      Gene::Types::Ident.new('+'),
       Gene::Types::Ident.new('+'),
       Gene::Types::Ident.new('-'),
       Gene::Types::Ident.new('*'),
