@@ -36,6 +36,26 @@ class Gene::Lang::Interpreter
     @root_scope   = Gene::Lang::Scope.new nil
     @scopes       = [@root_scope]
     @self_objects = []
+
+    parse_and_process %q`
+      (class Array
+        (method class []
+          (_invoke _context "get" "Array")
+        )
+        (method size []
+          (_invoke _self "size")
+        )
+        (method get [i]
+          (_invoke _self [] i)
+        )
+        (method each [f]
+          (for (let i 0) (i < (.size)) (let i (i + 1))
+            (let item (.get i))
+            (f item i)
+          )
+        )
+      )
+    `
   end
 
   def scope

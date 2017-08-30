@@ -124,6 +124,7 @@ module Gene::Lang
     end
 
     def get name
+      name = name.to_s
       if variables.keys.include? name
         variables[name]
       elsif @parent

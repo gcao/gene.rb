@@ -5,22 +5,6 @@ require 'gene/lang/interpreter'
 describe Gene::Lang::Interpreter do
   before do
     @interpreter = Gene::Lang::Interpreter.new
-    @interpreter.parse_and_process "
-      (class Array
-        (method size []
-          (_invoke _self size)
-        )
-        (method get [i]
-          (_invoke _self [] i)
-        )
-        (method each [f]
-          (for (let i 0) (i < (.size)) (let i (i + 1))
-            (let item (.get i))
-            (f item i)
-          )
-        )
-      )
-    "
   end
 
   describe "special built-in variables and functions" do
@@ -30,6 +14,13 @@ describe Gene::Lang::Interpreter do
         _context
       ")
       result.scope['a'].should == 1
+    end
+
+    it "_global" do
+      result = @interpreter.parse_and_process("
+        (_invoke _global 'get' 'Array')
+      ")
+      result.name.should == "Array"
     end
 
     it "_scope" do
@@ -43,7 +34,7 @@ describe Gene::Lang::Interpreter do
     it "_invoke" do
       result = @interpreter.parse_and_process("
         (let a 1)
-        (_invoke _scope get 'a')
+        (_invoke _scope 'get' 'a')
       ")
       result.should == 1
     end

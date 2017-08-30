@@ -11,6 +11,7 @@ module Gene::Lang::Handlers
   end
 
   CONTEXT   = Gene::Types::Ident.new('_context')
+  GLOBAL    = Gene::Types::Ident.new('_global')
   SCOPE     = Gene::Types::Ident.new('_scope')
   INVOKE    = Gene::Types::Ident.new('_invoke')
   SELF      = Gene::Types::Ident.new('_self')
@@ -21,7 +22,7 @@ module Gene::Lang::Handlers
       if data.is_a? Gene::Types::Base
         if INVOKE === data
           target = context.process data.data[0]
-          method = data.data[1].to_s
+          method = context.process(data.data[1]).to_s
           args   = data.data[2..-1].to_a.map {|item| context.process(item) }
           target.send method, *args
         else
@@ -29,6 +30,8 @@ module Gene::Lang::Handlers
         end
       elsif data == CONTEXT
         context
+      elsif data == GLOBAL
+        context.global_scope
       elsif data == SCOPE
         context.scope
       elsif data == SELF
