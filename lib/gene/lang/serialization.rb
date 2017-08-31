@@ -28,22 +28,22 @@ module Gene::Lang
   end
 
   def self.deserialize input
-    obj = JSON.parse input
-    deserialize_json obj
+    obj = Gene::Parser.parse input
+    deserialize_gene obj
   end
 
-  def self.deserialize_json obj
+  def self.deserialize_gene obj
     case obj
     when Hash
       if obj["#class"] == "Gene::Lang::Class"
         result = Gene::Lang::Class.new obj["name"]
-        result.instance_methods = deserialize_json obj["instance_methods"]
-        result.properties       = deserialize_json obj["properties"]
+        result.instance_methods = deserialize_gene obj["instance_methods"]
+        result.properties       = deserialize_gene obj["properties"]
 
       elsif obj["#class"] == "Gene::Lang::Scope"
-        result = Gene::Lang::Scope.new deserialize_json obj["parent"]
-        result.variables = deserialize_json obj["variables"]
-        result.arguments = deserialize_json obj["arguments"]
+        result = Gene::Lang::Scope.new deserialize_gene obj["parent"]
+        result.variables = deserialize_gene obj["variables"]
+        result.arguments = deserialize_gene obj["arguments"]
 
       elsif obj["#class"] == "Gene::Lang::Object"
         result = Gene::Lang::Object.new
@@ -54,6 +54,9 @@ module Gene::Lang
       else
         result = obj
       end
+
+    else
+      result = obj
     end
 
     result
