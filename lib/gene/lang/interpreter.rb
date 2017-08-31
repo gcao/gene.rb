@@ -85,9 +85,9 @@ class Gene::Lang::Interpreter
 
   def get name
     if scope.defined? name
-      scope[name]
+      scope.get_variable name
     else
-      @global_scope[name]
+      @global_scope.get_variable name
     end
   end
   alias [] get

@@ -48,6 +48,7 @@ module Gene::Lang
 
     def self.attr_reader *names
       names.each do |name|
+        name = name.to_s
         define_method(name) do
           @attributes[name.to_s]
         end
@@ -56,6 +57,7 @@ module Gene::Lang
 
     def self.attr_accessor *names
       names.each do |name|
+        name = name.to_s
         define_method(name) do
           @attributes[name]
         end
@@ -107,23 +109,25 @@ module Gene::Lang
     end
   end
 
-  class Function
+  class Function < Object
     attr_reader :name
     attr_accessor :parent_scope, :arguments, :statements
     def initialize name
-      @name = name
+      super(Function)
+
+      set 'name', name
     end
 
     def call options = {}
-      scope = Scope.new @parent_scope
-      scope.arguments = @arguments
-      scope.set '_arguments', options[:arguments]
+      scope = Scope.new parent_scope
+      scope.arguments = arguments
+      scope.set_variable '_arguments', options[:arguments]
       scope.update_arguments options[:arguments]
       context = options[:context]
       context.start_self options[:self]
       context.start_scope scope
       begin
-        context.process_statements @statements
+        context.process_statements statements
       ensure
         context.end_scope
         context.end_self
@@ -131,67 +135,72 @@ module Gene::Lang
     end
   end
 
-  class Property
+  class Property < Object
     attr_reader :name, :type, :getter, :setter
     def initialize name
-      @name = name
+      super(Property)
+
+      set 'name', name
     end
   end
 
-  class Scope
+  class Scope < Object
     attr_reader :parent, :variables
     attr_accessor :arguments
     def initialize parent
-      @parent    = parent
-      @variables = {}
-      @arguments = []
+      super(Scope)
+
+      set 'parent', parent
+      set 'variables', {}
+      set 'arguments', []
     end
 
     def defined? name
-      @variables.keys.include?(name) or (@parent and @parent.defined?(name))
+      self.variables.keys.include?(name) or (self.parent and self.parent.defined?(name))
     end
 
-    def get name
+    def get_variable name
       name = name.to_s
-      if variables.keys.include? name
-        variables[name]
-      elsif @parent
-        parent.get name
+      if self.variables.keys.include? name
+        self.variables[name]
+      elsif self.parent
+        self.parent.get_variable name
       else
         UNDEFINED
       end
     end
-    alias [] get
 
-    def set name, value
-      variables[name] = value
+    def set_variable name, value
+      self.variables[name] = value
     end
-    alias []= set
 
     def let name, value
-      if @variables.keys.include? name
-        @variables[name] = value
-      elsif @parent and @parent.defined?(name)
-        @parent.let name, value
+      if self.variables.keys.include? name
+        self.variables[name] = value
+      elsif self.parent and self.parent.defined?(name)
+        self.parent.let name, value
       else
-        @variables[name] = value
+        self.variables[name] = value
       end
     end
 
     def update_arguments values
       if values and values.size > 0
         values.each.with_index do |value, index|
-          argument = @arguments.find {|arg| arg.index == index }
-          self[argument.name] = value if argument
+          argument = self.arguments.find {|arg| arg.index == index }
+          self.set_variable(argument.name, value) if argument
         end
       end
     end
   end
 
-  class Argument
+  class Argument < Object
     attr_reader :index, :name
     def initialize index, name
-      @index, @name = index, name
+      super(Argument)
+
+      set 'index', index
+      set 'name', name
     end
 
     def == other
@@ -199,24 +208,23 @@ module Gene::Lang
     end
   end
 
-  class Assignment
+  class Assignment < Object
     attr_reader :variable, :expression
     def initialize variable, expression = nil
-      @variable, @expression = variable, expression
-    end
-
-    def call options
+      super(Assignment)
+      set 'variable', variable
+      set 'expression', expression
     end
   end
 
-  class Variable
+  class Variable < Object
     attr_reader :name
     attr_accessor :value
     def initialize name, value = nil
-      @name, @value = name, value
-    end
+      super(Variable)
 
-    def call options
+      set 'name', name
+      set 'value', value
     end
   end
 

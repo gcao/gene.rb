@@ -57,7 +57,7 @@ module Gene::Lang::Handlers
       name  = data.data.shift.to_s
       klass = Gene::Lang::Class.new name, data.data
       klass.call context: context
-      context.global_scope[name] = klass
+      context.global_scope.set_variable name, klass
       klass
     end
   end
@@ -69,7 +69,7 @@ module Gene::Lang::Handlers
       if FN === data
         name = data.data.shift.to_s
         fn   = Gene::Lang::Function.new name
-        context.scope[name] = fn
+        context.scope.set_variable name, fn
       else
         name = 'anonymous'
         fn   = Gene::Lang::Function.new name
@@ -178,9 +178,9 @@ module Gene::Lang::Handlers
       name  = data.data[0].to_s
       value = context.process data.data[1]
       if name[0] == '@'
-        context.self.set name[1..-1], value
+        context.self.set_variable name[1..-1], value
       else
-        context.scope.set name, value
+        context.scope.set_variable name, value
       end
       Gene::Lang::Variable.new name, value
     end

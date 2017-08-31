@@ -13,12 +13,12 @@ describe Gene::Lang::Interpreter do
         (let a 1)
         _context
       ")
-      result.scope['a'].should == 1
+      result.scope.get_variable('a').should == 1
     end
 
     it "_global" do
       result = @interpreter.parse_and_process("
-        (_invoke _global 'get' 'Array')
+        (_invoke _global 'get_variable' 'Array')
       ")
       result.name.should == "Array"
     end
@@ -28,13 +28,13 @@ describe Gene::Lang::Interpreter do
         (let a 1)
         _scope
       ")
-      result['a'].should == 1
+      result.get_variable('a').should == 1
     end
 
     it "_invoke" do
       result = @interpreter.parse_and_process("
         (let a 1)
-        (_invoke _scope 'get' 'a')
+        (_invoke _scope 'get_variable' 'a')
       ")
       result.should == 1
     end
@@ -169,7 +169,8 @@ describe Gene::Lang::Interpreter do
       result.class.should == Gene::Lang::Function
       result.name.should  == 'doSomething'
       result.arguments.size.should == 1
-      result.arguments[0].should   == Gene::Lang::Argument.new(0, 'a')
+      result.arguments[0].index.should == 0
+      result.arguments[0].name.should == 'a'
     end
 
     it "(fn doSomething [] '1')(doSomething)" do
@@ -187,7 +188,8 @@ describe Gene::Lang::Interpreter do
       result.class.should == Gene::Lang::Function
       result.name.should  == 'doSomething'
       result.arguments.size.should == 1
-      result.arguments[0].should   == Gene::Lang::Argument.new(0, 'a')
+      result.arguments[0].index.should == 0
+      result.arguments[0].name.should == 'a'
       result.statements.first.should == '1'
     end
 
