@@ -55,10 +55,19 @@ module Gene::Lang::Handlers
     def call context, data
       return Gene::NOT_HANDLED unless CLASS === data
       name  = data.data.shift.to_s
-      klass = Gene::Lang::Class.new name, data.data
-      klass.call context: context
-      context.global_scope.set_variable name, klass
-      klass
+      klass = Gene::Lang::Class.new name
+
+      scope = Gene::Lang::Scope.new nil
+      context.start_self klass
+      context.start_scope scope
+      begin
+        context.process_statements data.data
+        context.global_scope.set_variable name, klass
+        klass
+      ensure
+        context.end_scope
+        context.end_self
+      end
     end
   end
 

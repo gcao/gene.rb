@@ -14,7 +14,7 @@ module Gene::Lang
   class Object
     attr_reader :attributes
 
-    def initialize klass
+    def initialize klass = Object
       @attributes = {}
       @attributes["#class"] = klass
     end
@@ -69,12 +69,11 @@ module Gene::Lang
   end
 
   class Class < Object
-    attr_reader :name, :statements, :instance_methods, :properties
-    def initialize name, statements
+    attr_reader :name, :instance_methods, :properties
+    def initialize name
       super(Class)
 
       set 'name', name
-      set 'statements', statements
       set 'instance_methods', {}
       set 'properties', {}
     end
@@ -92,20 +91,6 @@ module Gene::Lang
 
     def method name, function
       instance_methods[name.to_s] = function
-    end
-
-    def call options = {}
-      scope = Scope.new nil
-      context = options[:context]
-      context.start_self self
-      context.start_scope scope
-      begin
-        context.process_statements statements
-        self
-      ensure
-        context.end_scope
-        context.end_self
-      end
     end
   end
 
