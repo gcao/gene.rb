@@ -69,7 +69,7 @@ module Gene::Lang
   end
 
   class Class < Object
-    attr_reader :name, :instance_methods, :properties
+    attr_accessor :name, :instance_methods, :properties
     def initialize name
       super(Class)
 

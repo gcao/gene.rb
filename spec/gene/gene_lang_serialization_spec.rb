@@ -23,5 +23,20 @@ describe Gene::Lang do
       result = Gene::Lang.deserialize serialized
       result.class.should == Gene::Lang::Scope
     end
+
+    it "(class A)" do
+      serialized = Gene::Lang.serialize @interpreter.parse_and_process(example.description)
+      result = Gene::Lang.deserialize serialized
+      result.class.should == Gene::Lang::Class
+      result.name.should == "A"
+    end
+
+    it "(fn f)" do
+      pending "doesn't work because of circular references"
+      serialized = Gene::Lang.serialize @interpreter.parse_and_process(example.description)
+      result = Gene::Lang.deserialize serialized
+      result.class.should == Gene::Lang::Function
+      result.name.should == "f"
+    end
   end
 end
