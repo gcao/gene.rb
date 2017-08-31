@@ -13,13 +13,18 @@ module Gene::Lang
   # data: literal or array or anything else
   class Object
     attr_reader :attributes
+
     def initialize klass
-      @_class = klass
       @attributes = {}
+      @attributes["#class"] = klass
     end
 
     def class
-      @_class
+      @attributes["#class"]
+    end
+
+    def class= klass
+      @attributes["#class"] = klass
     end
 
     def get name
@@ -37,21 +42,44 @@ module Gene::Lang
       @attributes.each do |key, value|
         obj[key] = value
       end
+      obj["#class"] = klass
       obj
+    end
+
+    def self.attr_reader *names
+      names.each do |name|
+        define_method(name) do
+          @attributes[name.to_s]
+        end
+      end
+    end
+
+    def self.attr_accessor *names
+      names.each do |name|
+        define_method(name) do
+          @attributes[name]
+        end
+        define_method("#{name}=") do |value|
+          @attributes[name] = value
+        end
+      end
     end
   end
 
-  class Class
-    attr_reader :name, :instance_methods, :properties
+  class Class < Object
+    attr_reader :name, :statements, :instance_methods, :properties
     def initialize name, statements
-      @name, @statements = name, statements
-      @instance_methods = {}
-      @properties = {}
+      super(Class)
+
+      set 'name', name
+      set 'statements', statements
+      set 'instance_methods', {}
+      set 'properties', {}
     end
 
     def prop name
-      @instance_methods[name.to_s]  = Block.new [], [Gene::Types::Ident.new("@#{name}")]
-      @instance_methods["#{name}="] = Block.new ['value'], [
+      instance_methods[name.to_s]  = Block.new [], [Gene::Types::Ident.new("@#{name}")]
+      instance_methods["#{name}="] = Block.new ['value'], [
         Gene::Types::Base.new(
           Gene::Types::Ident.new('let'),
           Gene::Types::Ident.new("@#{name}"),
@@ -61,7 +89,7 @@ module Gene::Lang
     end
 
     def method name, function
-      @instance_methods[name.to_s] = function
+      instance_methods[name.to_s] = function
     end
 
     def call options = {}
@@ -70,7 +98,7 @@ module Gene::Lang
       context.start_self self
       context.start_scope scope
       begin
-        context.process_statements @statements
+        context.process_statements statements
         self
       ensure
         context.end_scope
