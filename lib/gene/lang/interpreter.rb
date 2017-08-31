@@ -112,4 +112,19 @@ class Gene::Lang::Interpreter
 
     result
   end
+
+  def serialize
+    {
+      "global_scope"  => @global_scope.inspect,
+      "scopes"        => @scopes.inspect,
+      "self_objects"  => @self_objects.inspect
+    }.to_json
+  end
+
+  def deserialize input
+    parsed        = JSON.parse input
+    @global_scope = parsed["global_scope"]
+    @scopes       = parsed["scopes"]
+    @self_objects = parsed["self_objects"]
+  end
 end

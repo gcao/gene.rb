@@ -12,3 +12,5 @@ require 'gene/ruby_interpreter'
 require 'gene/javascript_interpreter'
 
 require 'gene/parser_repl'
+
+require 'gene/lang'

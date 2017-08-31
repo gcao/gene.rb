@@ -130,8 +130,7 @@ module Gene::Lang
   end
 
   class Scope < Object
-    attr_reader :parent, :variables
-    attr_accessor :arguments
+    attr_accessor :parent, :variables, :arguments
     def initialize parent
       super(Scope)
 
