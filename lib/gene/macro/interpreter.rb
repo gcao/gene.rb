@@ -1,6 +1,3 @@
-require 'gene/macro/types'
-require 'gene/macro/handlers'
-
 class Gene::Macro::Interpreter
   def initialize
     @handlers = Gene::Handlers::ComboHandler.new

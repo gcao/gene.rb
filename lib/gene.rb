@@ -13,4 +13,5 @@ require 'gene/javascript_interpreter'
 
 require 'gene/parser_repl'
 
+require 'gene/macro'
 require 'gene/lang'

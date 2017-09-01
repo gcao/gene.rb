@@ -1,12 +1,11 @@
 require File.expand_path(File.dirname(__FILE__) + '/../spec_helper')
-require 'gene/macro/interpreter'
 
 describe Gene::Macro::Interpreter do
   before do
     @interpreter = Gene::Macro::Interpreter.new
   end
 
-  describe "Variable - def" do
+  describe "def: create or overwrite variable in current scope" do
     it "(#def a 'value')" do
       result = @interpreter.parse_and_process(example.description)
       result.should == Gene::UNDEFINED
@@ -38,7 +37,7 @@ describe Gene::Macro::Interpreter do
     end
   end
 
-  describe "Variable - let" do
+  describe "let: create or overwrite variable" do
     it "(#let a 'value')" do
       result = @interpreter.parse_and_process(example.description)
       result.should == Gene::UNDEFINED
@@ -56,7 +55,6 @@ describe Gene::Macro::Interpreter do
     end
 
     it "(#let-retain a 'value')" do
-      pending
       result = @interpreter.parse_and_process(example.description)
       result.should == 'value'
     end
@@ -71,7 +69,19 @@ describe Gene::Macro::Interpreter do
     end
   end
 
-  describe "fn" do
+  describe "def vs let" do
+    it "(#def a 'old') (#fn f _ (#def a 'new')) (##f) ##a" do
+      result = @interpreter.parse_and_process(example.description)
+      result.should == 'old'
+    end
+
+    it "(#def a 'old') (#fn f _ (#let a 'new')) (##f) ##a" do
+      result = @interpreter.parse_and_process(example.description)
+      result.should == 'new'
+    end
+  end
+
+  describe "fn: function" do
     it "(#fn f a)" do
       result = @interpreter.parse_and_process(example.description)
       result.should == Gene::UNDEFINED
@@ -94,20 +104,7 @@ describe Gene::Macro::Interpreter do
     end
   end
 
-  describe "def vs let" do
-    it "(#def a 'old') (#fn f _ (#def a 'new')) (##f) ##a" do
-      result = @interpreter.parse_and_process(example.description)
-      result.should == 'old'
-    end
-
-    it "(#def a 'old') (#fn f _ (#let a 'new')) (##f) ##a" do
-      result = @interpreter.parse_and_process(example.description)
-      result.should == 'new'
-    end
-  end
-
-  # anonymous function
-  describe "fnx" do
+  describe "fnx: anonymous function" do
     it "(#def fa (#fnx a ##a))(##fa 1)" do
       result = @interpreter.parse_and_process(example.description)
       result.should == 1
@@ -123,21 +120,23 @@ describe Gene::Macro::Interpreter do
       result = @interpreter.parse_and_process(example.description)
       result.should == nil
     end
+  end
 
+  describe "fnxx: anonymous dummy function" do
     it "(#def fa (#fnxx ##_))(##fa 1)" do
       result = @interpreter.parse_and_process(example.description)
       result.should == nil
     end
   end
 
-  describe "do" do
+  describe "do: execute statements" do
     it "(#do (#def a 1) ##a)" do
       result = @interpreter.parse_and_process(example.description)
       result.should == 1
     end
   end
 
-  describe "map" do
+  describe "map: transform array or hash" do
     it "(#map [1 2] value #do [##value])" do
       result = @interpreter.parse_and_process(example.description)
       result.should == [[1], [2]]
@@ -171,29 +170,7 @@ describe Gene::Macro::Interpreter do
     end
   end
 
-  describe "Environment/file system/etc" do
-    it "(#env HOME)" do
-      result = @interpreter.parse_and_process(example.description)
-      result.should == ENV['HOME']
-    end
-
-    it "#cwd" do
-      result = @interpreter.parse_and_process(example.description)
-      result.should == Dir.pwd
-    end
-
-    it "(#ls)" do
-      result = @interpreter.parse_and_process(example.description)
-      result.should == Dir.entries(Dir.pwd)
-    end
-
-    it "(#read spec/data/test.txt)" do
-      result = @interpreter.parse_and_process(example.description)
-      result.should == "Test\nTest 2"
-    end
-  end
-
-  describe "get" do
+  describe "get: access data inside gene/array/hash etc" do
     it "(#get [1 2 3] 1)" do
       result = @interpreter.parse_and_process(example.description)
       result.should == 2
@@ -215,15 +192,7 @@ describe Gene::Macro::Interpreter do
     end
   end
 
-  describe "inputs" do
-    it "(#get #input a)" do
-      input = Gene::Parser.parse "{a : 'va'}"
-      result = @interpreter.parse_and_process(example.description, input)
-      result.should == 'va'
-    end
-  end
-
-  describe "for" do
+  describe "for: create for-loop" do
     it "(#for (#def i 0)(#le ##i 100)(#incr i) #do ##i)" do
       result = @interpreter.parse_and_process(example.description)
       result.should == Gene::UNDEFINED
@@ -287,6 +256,20 @@ describe Gene::Macro::Interpreter do
     end
   end
 
+  describe "loop: simplest loop" do
+    it "
+      (loop
+        (##incr x)
+        (if (##x > 4) break)
+      )
+      ##x
+    " do
+      pending "loop/break not implemented"
+      result = @interpreter.parse_and_process(example.description)
+      result.should == 10
+    end
+  end
+
   describe "comparison" do
     it "#eq" do
       @interpreter.parse_and_process("(#eq 1 1)").should == true
@@ -341,6 +324,16 @@ describe Gene::Macro::Interpreter do
       result.should == 3
     end
 
+    it "(#add ##i 1)" do
+      result = @interpreter.parse_and_process(example.description)
+      result.should == 1
+    end
+
+    it "(#add 1 ##i)" do
+      result = @interpreter.parse_and_process(example.description)
+      result.should == 1
+    end
+
     it "(#sub 1 2)" do
       result = @interpreter.parse_and_process(example.description)
       result.should == -1
@@ -361,6 +354,11 @@ describe Gene::Macro::Interpreter do
       result.should == 1
     end
 
+    it "(#incr i)" do
+      result = @interpreter.parse_and_process(example.description)
+      result.should == 1
+    end
+
     it "(#def i 0)(#incr i 2)" do
       result = @interpreter.parse_and_process(example.description)
       result.should == 2
@@ -371,9 +369,44 @@ describe Gene::Macro::Interpreter do
       result.should == -1
     end
 
+    it "(#decr i)" do
+      result = @interpreter.parse_and_process(example.description)
+      result.should == -1
+    end
+
     it "(#def i 0)(#decr i 2)" do
       result = @interpreter.parse_and_process(example.description)
       result.should == -2
+    end
+  end
+
+  describe "inputs" do
+    it "(#get #input a)" do
+      input = Gene::Parser.parse "{a : 'va'}"
+      result = @interpreter.parse_and_process(example.description, input)
+      result.should == 'va'
+    end
+  end
+
+  describe "Environment/file system/etc" do
+    it "(#env HOME)" do
+      result = @interpreter.parse_and_process(example.description)
+      result.should == ENV['HOME']
+    end
+
+    it "#cwd" do
+      result = @interpreter.parse_and_process(example.description)
+      result.should == Dir.pwd
+    end
+
+    it "(#ls)" do
+      result = @interpreter.parse_and_process(example.description)
+      result.should == Dir.entries(Dir.pwd)
+    end
+
+    it "(#read spec/data/test.txt)" do
+      result = @interpreter.parse_and_process(example.description)
+      result.should == "Test\nTest 2"
     end
   end
 

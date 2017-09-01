@@ -1,14 +1,13 @@
 module Gene::Macro::Handlers
   %W(
     DEF DEF_RETAIN
-    LET
+    LET LET_RETAIN
     FN FNX FNXX
     DO
     INPUT
     ENV CWD LS READ
     MAP FOR IF THEN ELSE
     YIELD
-    CMD LS READ
     GET
     EQ NE LT LE GT GE
     ADD SUB MUL DIV INCR DECR
@@ -41,6 +40,11 @@ module Gene::Macro::Handlers
         value = context.process_internal data.data[1]
         context.scope.let data.data[0].to_s, value
         Gene::Macro::IGNORE
+
+      elsif LET_RETAIN === data
+        value = context.process_internal data.data[1]
+        context.scope.let data.data[0].to_s, value
+        value
 
       elsif FN === data
         name = data.data[0].to_s
@@ -152,6 +156,7 @@ module Gene::Macro::Handlers
       elsif data.is_a? Gene::Types::Base and [INCR, DECR].include? data.type
         name  = data.data[0].to_s
         value = context.scope[name]
+        value = 0 if value.nil? or value == Gene::Lang::UNDEFINED
         if data.data.length > 1
           by_value = context.process data.data[1]
         else
