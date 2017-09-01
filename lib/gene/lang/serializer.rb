@@ -18,55 +18,6 @@ class Gene::Lang::Serializer
 
   private
 
-  def serialize_references references
-    result = "{"
-
-    result << '"#class": "References", '
-
-    result << references.map do |key, value|
-      serialized_value = serialize_ value, references
-      "\"#{key}\": #{serialized_value}"
-    end.join(", ")
-
-    result + "}"
-  end
-
-  def serialize_with_references obj, references
-    id_str = obj.object_id.to_s
-    if references.include? id_str
-      return '{"#class": "Reference", "id": "' + id_str + '"}'
-    end
-
-    serialize_ obj, references
-  end
-
-  def serialize_ obj, references
-    result = ""
-
-    case obj
-    when Array
-      result << "["
-      result << obj.map {|item| "#{serialize_with_references(item, references)}" }.join(", ")
-      result << "]"
-    when Hash
-      result << "{"
-      result << obj.to_a.map {|pair| "#{pair[0].inspect}: #{serialize_with_references(pair[1], references)}" }.join(", ")
-      result << "}"
-    when Gene::Lang::Object
-      result << "{"
-      result << obj.attributes.to_a.map {|pair| "#{pair[0].inspect}: #{serialize_with_references(pair[1], references)}" }.join(", ")
-      result << "}"
-    when ::Class
-      result << obj.name.inspect
-    when NilClass
-      result << "null"
-    else
-      result << obj.inspect
-    end
-
-    result
-  end
-
   def get_references obj
     references = {}
     calc_references obj, references
@@ -125,5 +76,53 @@ class Gene::Lang::Serializer
     end
 
     references
+  end
+
+  def serialize_references references
+    result = "{"
+    result << '"#class": "References", '
+
+    result << references.map do |key, value|
+      serialized_value = serialize value, references
+      "\"#{key}\": #{serialized_value}"
+    end.join(", ")
+
+    result + "}"
+  end
+
+  def serialize_with_references obj, references
+    id_str = obj.object_id.to_s
+    if references.include? id_str
+      return '{"#class": "Reference", "id": "' + id_str + '"}'
+    end
+
+    serialize obj, references
+  end
+
+  def serialize obj, references
+    result = ""
+
+    case obj
+    when Array
+      result << "["
+      result << obj.map {|item| "#{serialize_with_references(item, references)}" }.join(", ")
+      result << "]"
+    when Hash
+      result << "{"
+      result << obj.to_a.map {|pair| "#{pair[0].inspect}: #{serialize_with_references(pair[1], references)}" }.join(", ")
+      result << "}"
+    when Gene::Lang::Object
+      result << "{"
+      result << obj.attributes.to_a.map {|pair| "#{pair[0].inspect}: #{serialize_with_references(pair[1], references)}" }.join(", ")
+      result << "}"
+    when ::Class
+      result << obj.name.inspect
+    when NilClass
+      result << "null"
+    else
+      result << obj.inspect
+    end
+
+    result
   end
 end

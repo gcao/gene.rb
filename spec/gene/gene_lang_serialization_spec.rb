@@ -8,6 +8,11 @@ describe Gene::Lang do
   end
 
   describe "Serializer" do
+    it "(let a 1)" do
+      result = @serializer.process Gene::Parser.parse(example.description)
+      result.should == '(let a 1)'
+    end
+
     it "(class A)" do
       result = @serializer.process @interpreter.parse_and_process(example.description)
       result.should == '{"#class": "Gene::Lang::Class", "name": "A", "instance_methods": {}, "properties": {}}'
