@@ -10,17 +10,17 @@ describe Gene::Lang do
   describe "Serializer" do
     it "(let a 1)" do
       result = @serializer.process Gene::Parser.parse(example.description)
-      result.should == '[{} (let a 1)]'
+      result.should == '{"references": {}, "data": (let a 1)}'
     end
 
     it "(class A)" do
       result = @serializer.process @interpreter.parse_and_process(example.description)
-      result.should == '[{} {"#class": "Gene::Lang::Class", "name": "A", "instance_methods": {}, "properties": {}}]'
+      result.should == '{"references": {}, "data": {"#class": "Gene::Lang::Class", "name": "A", "instance_methods": {}, "properties": {}}}'
     end
 
     it "$scope" do
       result = @serializer.process @interpreter.parse_and_process(example.description)
-      result.should == '[{} {"#class": "Gene::Lang::Scope", "parent": null, "variables": {}, "arguments": []}]'
+      result.should == '{"references": {}, "data": {"#class": "Gene::Lang::Scope", "parent": null, "variables": {}, "arguments": []}}'
     end
 
     it "(fn f a (a + 1))" do

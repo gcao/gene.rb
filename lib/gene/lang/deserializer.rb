@@ -1,10 +1,10 @@
 class Gene::Lang::Deserializer
   def process input
-    references, obj = Gene::Parser.parse input
+    parsed = Gene::Parser.parse input
 
-    references = process_references references
+    references = process_references parsed["references"]
 
-    transform obj, references
+    transform parsed["data"], references
   end
 
   private

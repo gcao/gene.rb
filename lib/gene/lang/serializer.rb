@@ -1,13 +1,13 @@
 class Gene::Lang::Serializer
   def process obj
-    result = "["
+    result = "{"
 
     references = get_references obj
-    result << serialize_references(references) << " "
+    result << '"references": ' << serialize_references(references) << ", "
 
-    result << serialize_with_references(obj, references)
+    result << '"data": ' << serialize_with_references(obj, references)
 
-    result + "]"
+    result + "}"
   end
 
   private
