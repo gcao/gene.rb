@@ -33,7 +33,7 @@ module Gene::Lang
 
   def self.serialize_with_references obj, references
     id_str = obj.object_id.to_s
-    if references.keys.include? id_str
+    if references.include? id_str
       return '{"#class": "Reference", "id": "' + id_str + '"}'
     end
 
@@ -85,7 +85,7 @@ module Gene::Lang
 
     case obj
     when Array
-      if references.keys.include? id_str
+      if references.include? id_str
         references[id_str][1] += 1
       else
         # Seen for the first time
@@ -98,7 +98,7 @@ module Gene::Lang
       end
 
     when Hash
-      if references.keys.include? id_str
+      if references.include? id_str
         references[id_str][1] += 1
       else
         # Seen for the first time
@@ -111,11 +111,11 @@ module Gene::Lang
       end
 
     when Gene::Lang::Object
-      if references.keys.include? id_str
+      if references.include? id_str
         references[id_str][1] += 1
       else
         # Seen for the first time
-        references[id_str] = [obj, 1]
+       references[id_str] = [obj, 1]
 
         # Traverse its children
         obj.attributes.each do |key, value|
@@ -137,12 +137,60 @@ module Gene::Lang
         references = obj[0]
       end
     elsif obj.is_a? Hash
-      if obj.keys.include? "#references"
+      if obj.include? "#references"
         references = obj.delete '#references'
       end
     end
 
-    deserialize_gene obj, references
+    # Clean up references hash
+    references.delete "#class"
+
+    parsed_references = {}
+    references.each do |key, value|
+      if value.is_a? Array
+        parsed = value
+      elsif value.is_a? Hash
+        if value.is_a? Hash and value["#class"] == "Gene::Lang::Classs"
+          parsed = Gene::Lang::Class.new obj["name"]
+        elsif value.is_a? Hash and value["#class"] == "Gene::Lang::Scope"
+          parsed = Gene::Lang::Scope.new
+        elsif value.is_a? Hash and value["#class"] == "Gene::Lang::Function"
+          parsed = Gene::Lang::Function.new obj["name"]
+        elsif value.is_a? Hash and value["#class"] == "Gene::Lang::Object"
+          parsed = Gene::Lang::Object.new
+        else
+          parsed = value
+        end
+
+        if parsed.is_a? Gene::Lang::Object
+          value.each do |k, v|
+            if k != "#class"
+              parsed.attributes[k] = v
+            end
+          end
+        end
+      end
+
+      parsed_references[key] = parsed
+    end
+
+    parsed_references.each_value do |value|
+      if value.is_a? Array
+        value.each_with_index do |item, i|
+          value[i] = deserialize_gene item, parsed_references
+        end
+      elsif value.is_a? Hash
+        value.attributes.each do |k, v|
+          value[k] = deserialize_gene v, parsed_references
+        end
+      elsif value.is_a? Gene::Lang::Object
+        value.attributes.each do |k, v|
+          value.attributes[k] = deserialize_gene v, parsed_references
+        end
+      end
+    end
+
+    deserialize_gene obj, parsed_references
   end
 
   def self.deserialize_gene obj, references
@@ -161,26 +209,23 @@ module Gene::Lang
       elsif obj["#class"] == "Gene::Lang::Function"
         result = Gene::Lang::Function.new obj["name"]
         result.parent_scope = deserialize_gene obj["parent_scope"], references
-        result.arguments = deserialize_gene obj["arguments"], references
-        result.statements = deserialize_gene obj["statements"], references
+        result.arguments    = deserialize_gene obj["arguments"], references
+        result.statements   = deserialize_gene obj["statements"], references
 
       elsif obj["#class"] == "Gene::Lang::Object"
         result = Gene::Lang::Object.new
         obj.each do |key, value|
-          result[key] = value
+          result[key] = deserialize_gene value, references
         end
 
       elsif obj["#class"] == "Reference"
-        id = obj["id"]
-        result = deserialize_gene references[id], references
-        references[id] = result
+        id     = obj["id"]
+        result = references[id]
 
       else
         result = obj
-        if not references.keys.include? result.object_id.to_s
-          result.each do |key, value|
-            result[key] = deserialize_gene value, references
-          end
+        result.each do |key, value|
+          result[key] = deserialize_gene value, references
         end
       end
 
