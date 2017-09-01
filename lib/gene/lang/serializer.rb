@@ -1,19 +1,13 @@
 class Gene::Lang::Serializer
   def process obj
-    result = ""
+    result = "["
 
     references = get_references obj
-    result = serialize_with_references obj, references
+    result << serialize_references(references) << " "
 
-    if not references.empty?
-      if result[0] == '['
-        result.insert 1, serialize_references(references) + ", "
-      elsif result [0] == '{'
-        result.insert 1, "\"#references\": #{serialize_references(references)}, "
-      end
-    end
+    result << serialize_with_references(obj, references)
 
-    result
+    result + "]"
   end
 
   private
@@ -80,7 +74,6 @@ class Gene::Lang::Serializer
 
   def serialize_references references
     result = "{"
-    result << '"#class": "References", '
 
     result << references.map do |key, value|
       serialized_value = serialize value, references

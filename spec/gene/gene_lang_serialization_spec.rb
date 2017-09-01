@@ -10,17 +10,25 @@ describe Gene::Lang do
   describe "Serializer" do
     it "(let a 1)" do
       result = @serializer.process Gene::Parser.parse(example.description)
-      result.should == '(let a 1)'
+      result.should == '[{} (let a 1)]'
     end
 
     it "(class A)" do
       result = @serializer.process @interpreter.parse_and_process(example.description)
-      result.should == '{"#class": "Gene::Lang::Class", "name": "A", "instance_methods": {}, "properties": {}}'
+      result.should == '[{} {"#class": "Gene::Lang::Class", "name": "A", "instance_methods": {}, "properties": {}}]'
     end
 
     it "$scope" do
       result = @serializer.process @interpreter.parse_and_process(example.description)
-      result.should == '{"#class": "Gene::Lang::Scope", "parent": null, "variables": {}, "arguments": []}'
+      result.should == '[{} {"#class": "Gene::Lang::Scope", "parent": null, "variables": {}, "arguments": []}]'
+    end
+
+    it "(fn f a (a + 1))" do
+      obj = @interpreter.parse_and_process(example.description)
+      result = @serializer.process obj
+      pending
+      # puts result and replace ... below with the real result, replace IDs with placeholders
+      result.should == '...'.gsub("FUNC_ID", obj.object_id.to_s)
     end
   end
 

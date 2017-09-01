@@ -1,31 +1,15 @@
 class Gene::Lang::Deserializer
   def process input
-    obj = Gene::Parser.parse input
+    references, obj = Gene::Parser.parse input
 
-    references = process_references obj
+    references = process_references references
 
     transform obj, references
   end
 
   private
 
-  def process_references obj
-    # Extract raw references
-    raw_references = {}
-    if obj.is_a? Array
-      if obj[0].is_a? Hash and obj[0]["#class"] == "References"
-        obj[0].delete "#class"
-        raw_references = obj[0]
-      end
-    elsif obj.is_a? Hash
-      if obj.include? "#references"
-        raw_references = obj.delete '#references'
-      end
-    end
-
-    # Clean up references hash
-    raw_references.delete "#class"
-
+  def process_references raw_references
     references = {}
 
     # Process top level
@@ -34,11 +18,11 @@ class Gene::Lang::Deserializer
         processed = value
       elsif value.is_a? Hash
         if value["#class"] == "Gene::Lang::Classs"
-          processed = Gene::Lang::Class.new obj["name"]
+          processed = Gene::Lang::Class.new value["name"]
         elsif value["#class"] == "Gene::Lang::Scope"
           processed = Gene::Lang::Scope.new
         elsif value["#class"] == "Gene::Lang::Function"
-          processed = Gene::Lang::Function.new obj["name"]
+          processed = Gene::Lang::Function.new value["name"]
         elsif value["#class"] == "Gene::Lang::Object"
           processed = Gene::Lang::Object.new
         else

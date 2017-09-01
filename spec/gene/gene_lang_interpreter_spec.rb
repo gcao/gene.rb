@@ -6,44 +6,43 @@ describe Gene::Lang::Interpreter do
   end
 
   describe "special built-in variables and functions" do
-    it "$context: The interpreter's context" do
-      result = @interpreter.parse_and_process("
-        (let a 1)
-        $context
-      ")
-      result.scope.get_variable('a').should == 1
+    it "
+      $context    # The interpreter's context
+    " do
+      result = @interpreter.parse_and_process(example.description)
+      result.scope.should_not be_nil
     end
 
-    it "$global: The global scope object" do
-      result = @interpreter.parse_and_process("
-        ($invoke $global 'get_variable' 'Array')
-      ")
-      result.name.should == "Array"
+    it "
+      $global    # The global scope object
+    " do
+      result = @interpreter.parse_and_process(example.description)
+      result.class.should == Gene::Lang::Scope
     end
 
-    it "$scope: The current scope object which inherits from ancestor scopes" do
-      result = @interpreter.parse_and_process("
-        (let a 1)
-        $scope
-      ")
-      result.get_variable('a').should == 1
+    it "
+      $scope    # The current scope object which may or may not inherit from ancestor scopes
+    " do
+      result = @interpreter.parse_and_process(example.description)
+      result.class.should == Gene::Lang::Scope
     end
 
-    it "$arguments: array of arguments passed to current function" do
-      result = @interpreter.parse_and_process("
-        (fn f [] $arguments)
-        (f 1 2)
-      ")
+    it "
+      (fn f []
+        $arguments    # array of arguments passed to current function
+      )
+      (f 1 2) # returns [1, 2]
+    " do
+      result = @interpreter.parse_and_process(example.description)
       result.should == [1, 2]
     end
 
-    it "$invoke: A function that allows invocation of native methods on native objects (this should not be needed if whole interpreter is implemented in Gene Lang)" do
-      result = @interpreter.parse_and_process("
-        (let a 1)
-        # Invoke get_variable method on current scope (the scope is a native object)
-        ($invoke $scope 'get_variable' 'a')
-      ")
-      result.should == 1
+    it "
+      ($invoke    # A function that allows invocation of native methods on native objects (this should not be needed if whole interpreter is implemented in Gene Lang)
+        $scope 'class') # returns 'Gene::Lang::Scope'
+    " do
+      result = @interpreter.parse_and_process(example.description)
+      result.should == Gene::Lang::Scope
     end
   end
 
@@ -151,7 +150,7 @@ describe Gene::Lang::Interpreter do
       (class A)
       (class B)
       (let a (new A))
-      # cast will create a new object of B, replicate all attributes except #class
+      # cast will create a new object of B, shallow-copy all attributes except #class
       (cast a B)
     " do
       result = @interpreter.parse_and_process(example.description)
