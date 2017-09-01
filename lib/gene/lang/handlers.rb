@@ -2,7 +2,7 @@ module Gene::Lang::Handlers
   %W(
     CLASS PROP METHOD NEW INIT CAST
     FN FNX
-    CALL
+    CALL DO
     DEF LET
     IF
     FOR
@@ -25,6 +25,8 @@ module Gene::Lang::Handlers
           method = context.process(data.data[1]).to_s
           args   = data.data[2..-1].to_a.map {|item| context.process(item) }
           target.send method, *args
+        elsif DO === data
+          context.process_statements data.data
         else
           Gene::NOT_HANDLED
         end
@@ -293,9 +295,9 @@ module Gene::Lang::Handlers
       true_logic  = data.data[1]
       false_logic = data.data[2]
       if context.process condition
-        context.process_statements true_logic
+        context.process true_logic
       else
-        context.process_statements false_logic
+        context.process false_logic
       end
     end
   end

@@ -308,13 +308,25 @@ describe Gene::Lang::Interpreter do
     end
   end
 
+  describe "do" do
+    it "(do (let i 1)(i + 2))" do
+      result = @interpreter.parse_and_process(example.description)
+      result.should == 3
+    end
+  end
+
   describe "if" do
     it "(if true 1 2)" do
       result = @interpreter.parse_and_process(example.description)
       result.should == 1
     end
 
-    it "(if true [(let a 1)(a + 2)] 2)" do
+    it "(if true [1 2] 2)" do
+      result = @interpreter.parse_and_process(example.description)
+      result.should == [1, 2]
+    end
+
+    it "(if true (do (let a 1)(a + 2)) 2)" do
       result = @interpreter.parse_and_process(example.description)
       result.should == 3
     end
@@ -324,12 +336,11 @@ describe Gene::Lang::Interpreter do
       result.should == 2
     end
 
-    it "(if false 1 [(let a 1)(a + 2)])" do
+    it "(if false 1 [1 2])" do
       result = @interpreter.parse_and_process(example.description)
-      result.should == 3
+      result.should == [1, 2]
     end
   end
-
 
   describe "for" do
     it "
