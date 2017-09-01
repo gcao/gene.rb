@@ -177,8 +177,10 @@ module Gene::Lang
 
       else
         result = obj
-        result.each do |key, value|
-          result[key] = deserialize_gene value, references
+        if not references.keys.include? result.object_id.to_s
+          result.each do |key, value|
+            result[key] = deserialize_gene value, references
+          end
         end
       end
 

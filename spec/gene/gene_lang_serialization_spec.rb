@@ -38,7 +38,6 @@ describe Gene::Lang do
     end
 
     it "(fn f)" do
-      pending "doesn't work because of circular references"
       serialized = Gene::Lang.serialize @interpreter.parse_and_process(example.description)
       result = Gene::Lang.deserialize serialized
       result.class.should == Gene::Lang::Function
