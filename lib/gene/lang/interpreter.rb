@@ -38,15 +38,16 @@ class Gene::Lang::Interpreter
     @self_objects = []
 
     parse_and_process %q`
+      # Wrapper class for native arrays
       (class Array
         (method class []
-          (_invoke _context "get" "Array")
+          ($invoke $context "get" "Array")
         )
         (method size []
-          (_invoke _self "size")
+          ($invoke self "size")
         )
         (method get [i]
-          (_invoke _self [] i)
+          ($invoke self [] i)
         )
         (method each [f]
           (for (let i 0) (i < (.size)) (let i (i + 1))

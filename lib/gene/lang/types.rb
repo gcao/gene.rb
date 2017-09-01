@@ -106,7 +106,7 @@ module Gene::Lang
     def call options = {}
       scope = Scope.new parent_scope
       scope.arguments = arguments
-      scope.set_variable '_arguments', options[:arguments]
+      scope.set_variable '$arguments', options[:arguments]
       scope.update_arguments options[:arguments]
       context = options[:context]
       context.start_self options[:self]

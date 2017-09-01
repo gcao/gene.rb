@@ -1,7 +1,8 @@
 module Gene::Lang::Handlers
   %W(
     CLASS PROP METHOD NEW INIT CAST
-    FN FNX
+    SELF
+    FN FNX FNXX
     CALL DO
     DEF LET
     IF
@@ -10,11 +11,11 @@ module Gene::Lang::Handlers
     const_set name, Gene::Types::Ident.new("#{name.downcase.gsub('_', '-')}")
   end
 
-  CONTEXT   = Gene::Types::Ident.new('_context')
-  GLOBAL    = Gene::Types::Ident.new('_global')
-  SCOPE     = Gene::Types::Ident.new('_scope')
-  INVOKE    = Gene::Types::Ident.new('_invoke')
-  SELF      = Gene::Types::Ident.new('_self')
+  PLACEHOLDER = Gene::Types::Ident.new('_')
+  CONTEXT     = Gene::Types::Ident.new('$context')
+  GLOBAL      = Gene::Types::Ident.new('$global')
+  SCOPE       = Gene::Types::Ident.new('$scope')
+  INVOKE      = Gene::Types::Ident.new('$invoke')
 
   # Handle scope variables, instance variables like @var and literals
   class DefaultHandler
@@ -30,6 +31,8 @@ module Gene::Lang::Handlers
         else
           Gene::NOT_HANDLED
         end
+      elsif data == PLACEHOLDER
+        Gene::Lang::UNDEFINED
       elsif data == CONTEXT
         context
       elsif data == GLOBAL
@@ -75,22 +78,25 @@ module Gene::Lang::Handlers
 
   class FunctionHandler
     def call context, data
-      return Gene::NOT_HANDLED unless FN === data or FNX === data
+      return Gene::NOT_HANDLED unless FN === data or FNX === data or FNXX === data
 
       if FN === data
         name = data.data.shift.to_s
         fn   = Gene::Lang::Function.new name
         context.scope.set_variable name, fn
       else
-        name = 'anonymous'
+        name = ''
         fn   = Gene::Lang::Function.new name
       end
 
       fn.parent_scope = context.scope
 
-      fn.arguments = [data.data.shift].flatten
-        .select {|item| not item.nil? }
-        .map.with_index {|item, i| Gene::Lang::Argument.new(i, item.name) }
+      if not FNXX === data
+        fn.arguments = [data.data.shift].flatten
+          .select {|item| not item.nil? }
+          .map.with_index {|item, i| Gene::Lang::Argument.new(i, item.name) }
+      end
+
       fn.statements = data.data
 
       fn

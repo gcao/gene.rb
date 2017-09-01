@@ -18,7 +18,7 @@ describe Gene::Lang do
       result.should == '{"#class": "Gene::Lang::Class", "name": "A", "instance_methods": {}, "properties": {}}'
     end
 
-    it "_scope" do
+    it "$scope" do
       result = @serializer.process @interpreter.parse_and_process(example.description)
       result.should == '{"#class": "Gene::Lang::Scope", "parent": null, "variables": {}, "arguments": []}'
     end
@@ -32,7 +32,7 @@ describe Gene::Lang do
       result.name.should  == "A"
     end
 
-    it "_scope" do
+    it "$scope" do
       serialized = @serializer.process @interpreter.parse_and_process(example.description)
       result     = @deserializer.process serialized
       result.class.should == Gene::Lang::Scope
