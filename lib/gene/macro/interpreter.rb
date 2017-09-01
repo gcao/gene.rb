@@ -43,7 +43,7 @@ class Gene::Macro::Interpreter
     result = process_internal data
     if result == Gene::Macro::IGNORE
       Gene::UNDEFINED
-    elsif result.is_a? Gene::Macro::YieldValue
+    elsif result.is_a?(Gene::Macro::ReturnValue) or result.is_a?(Gene::Macro::YieldValue)
       result.value
     elsif result.is_a? Gene::Macro::YieldValues
       result.values

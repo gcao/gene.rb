@@ -26,6 +26,10 @@ module Gene::Macro
         result = Gene::UNDEFINED
         statements.each do |stmt|
           result = context.process_internal stmt
+          if result.is_a? ReturnValue
+            result = result.value
+            break
+          end
         end
         result
       ensure
@@ -79,6 +83,19 @@ module Gene::Macro
         parent.let name, value
       end
     end
+  end
+
+  class ReturnValue
+    attr_reader :value
+
+    def initialize value
+      @value = value
+    end
+
+    def to_s
+      "(#return #{@value.inspect})"
+    end
+    alias inspect to_s
   end
 
   class YieldValue

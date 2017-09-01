@@ -1,16 +1,13 @@
 module Gene::Lang
-  class Undefined
-    def to_s
-      'undefined'
-    end
-    alias inspect to_s
-  end
-
   # All objects other than literals have this structure
   # type: a short Ident to help identify type of the object
   # attributes: Hash
   #   ...
   # data: literal or array or anything else
+  #
+  # type is stored in attributes with key '#type'
+  # data is stored in attributes with key '#data'
+  # class is stored in attributes with key '#class'
   class Object
     attr_reader :attributes
 
@@ -112,7 +109,11 @@ module Gene::Lang
       context.start_self options[:self]
       context.start_scope scope
       begin
-        context.process_statements statements
+        result = context.process_statements statements
+        if result.is_a? ReturnValue
+          result = result.value
+        end
+        result
       ensure
         context.end_scope
         context.end_self
@@ -150,7 +151,7 @@ module Gene::Lang
       elsif self.parent
         self.parent.get_variable name
       else
-        UNDEFINED
+        Gene::UNDEFINED
       end
     end
 
@@ -212,10 +213,23 @@ module Gene::Lang
     end
   end
 
-  UNDEFINED = Undefined.new
-  NIL       = nil
-  TRUE      = true
-  FALSE     = false
+  class ReturnValue < Object
+    attr_reader :value
+    def initialize value = Gene::UNDEFINED
+      super(ReturnValue)
+
+      set 'value', value
+    end
+  end
+
+  class BreakValue < Object
+    attr_reader :value
+    def initialize value = Gene::UNDEFINED
+      super(BreakValue)
+
+      set 'value', value
+    end
+  end
 
   # === SELF HOSTING ===
   # FunctionClass = Class.new 'Function', Block.new(nil, nil)

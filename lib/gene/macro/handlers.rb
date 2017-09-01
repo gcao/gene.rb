@@ -2,7 +2,7 @@ module Gene::Macro::Handlers
   %W(
     DEF DEF_RETAIN
     LET LET_RETAIN
-    FN FNX FNXX
+    FN FNX FNXX RETURN
     DO
     INPUT
     ENV CWD LS READ
@@ -61,6 +61,10 @@ module Gene::Macro::Handlers
       elsif FNXX === data
         statements = data.data
         context.scope[name] = Gene::Macro::Function.new '', context.scope, [], statements
+
+      elsif RETURN === data
+        value = context.process_internal data.data[0]
+        Gene::Macro::ReturnValue.new value
 
       elsif DO === data
         result = Gene::UNDEFINED
@@ -156,7 +160,7 @@ module Gene::Macro::Handlers
       elsif data.is_a? Gene::Types::Base and [INCR, DECR].include? data.type
         name  = data.data[0].to_s
         value = context.scope[name]
-        value = 0 if value.nil? or value == Gene::Lang::UNDEFINED
+        value = 0 if value.nil? or value == Gene::UNDEFINED
         if data.data.length > 1
           by_value = context.process data.data[1]
         else

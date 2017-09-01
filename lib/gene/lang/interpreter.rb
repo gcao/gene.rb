@@ -18,6 +18,7 @@ class Gene::Lang::Interpreter
     @handlers.add 100, Gene::Lang::Handlers::LetHandler.new
     @handlers.add 100, Gene::Lang::Handlers::IfHandler.new
     @handlers.add 100, Gene::Lang::Handlers::ForHandler.new
+    @handlers.add 100, Gene::Lang::Handlers::LoopHandler.new
     @handlers.add 100, Gene::Lang::Handlers::NewHandler.new
     @handlers.add 100, Gene::Lang::Handlers::CallHandler.new
     @handlers.add 100, Gene::Lang::Handlers::CastHandler.new
@@ -109,6 +110,9 @@ class Gene::Lang::Interpreter
 
     [statements].flatten.each do |stmt|
       result = process stmt
+      if result.is_a?(Gene::Lang::ReturnValue) or result.is_a?(Gene::Lang::BreakValue)
+        break
+      end
     end
 
     result

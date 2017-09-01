@@ -3,10 +3,12 @@ module Gene::Lang::Handlers
     CLASS PROP METHOD NEW INIT CAST
     SELF
     FN FNX FNXX
+    RETURN
     CALL DO
     DEF LET
     IF
-    FOR
+    FOR LOOP
+    BREAK
   ).each do |name|
     const_set name, Gene::Types::Ident.new("#{name.downcase.gsub('_', '-')}")
   end
@@ -28,11 +30,19 @@ module Gene::Lang::Handlers
           target.send method, *args
         elsif DO === data
           context.process_statements data.data
+        elsif RETURN === data
+          Gene::Lang::ReturnValue.new context.process(data.data[0])
+        elsif BREAK === data
+          Gene::Lang::BreakValue.new context.process(data.data[0])
         else
           Gene::NOT_HANDLED
         end
       elsif data == PLACEHOLDER
-        Gene::Lang::UNDEFINED
+        Gene::UNDEFINED
+      elsif data == BREAK
+        Gene::Lang::BreakValue.new
+      elsif data == RETURN
+        Gene::Lang::ReturnValue.new
       elsif data == CONTEXT
         context
       elsif data == GLOBAL
@@ -319,6 +329,19 @@ module Gene::Lang::Handlers
       while context.process(condition)
         context.process_statements data.data
         context.process update
+      end
+    end
+  end
+
+  class LoopHandler
+    def call context, data
+      return Gene::NOT_HANDLED unless LOOP === data
+
+      while true do
+        result = context.process_statements data.data
+        if result.is_a? Gene::Lang::BreakValue
+          break result.value
+        end
       end
     end
   end

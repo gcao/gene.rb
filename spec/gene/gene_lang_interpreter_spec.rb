@@ -186,29 +186,50 @@ describe Gene::Lang::Interpreter do
       result.arguments[0].name.should == 'a'
     end
 
-    it "(fn doSomething [] '1')(doSomething)" do
+    it "(fn doSomething [] 1)(doSomething)" do
       result = @interpreter.parse_and_process(example.description)
-      result.should == '1'
+      result.should == 1
     end
 
-    it "((fn doSomething [] '1')) # Note the double '(' and ')'" do
+    it "(fn doSomething [] 1)(doSomething)" do
       result = @interpreter.parse_and_process(example.description)
-      result.should == '1'
+      result.should == 1
     end
 
-    it "(fn doSomething a '1')" do
+    it "(fn doSomething [] (return 1) 2)(doSomething)" do
+      result = @interpreter.parse_and_process(example.description)
+      result.should == 1
+    end
+
+    it "
+      (fn doSomething []
+        return
+        2
+      )
+      (doSomething)
+    " do
+      result = @interpreter.parse_and_process(example.description)
+      result.should == Gene::UNDEFINED
+    end
+
+    it "((fn doSomething [] 1)) # Note the double '(' and ')'" do
+      result = @interpreter.parse_and_process(example.description)
+      result.should == 1
+    end
+
+    it "(fn doSomething a 1)" do
       result = @interpreter.parse_and_process(example.description)
       result.class.should == Gene::Lang::Function
       result.name.should  == 'doSomething'
       result.arguments.size.should == 1
       result.arguments[0].index.should == 0
       result.arguments[0].name.should == 'a'
-      result.statements.first.should == '1'
+      result.statements.first.should == 1
     end
 
-    it "(fn doSomething a a)(doSomething '1')" do
+    it "(fn doSomething a a)(doSomething 1)" do
       result = @interpreter.parse_and_process(example.description)
-      result.should == '1'
+      result.should == 1
     end
 
     it "(fn doSomething [a b] (a + b))(doSomething 1 2)" do
@@ -249,7 +270,7 @@ describe Gene::Lang::Interpreter do
       (a .doSomething)
     " do
       result = @interpreter.parse_and_process(example.description)
-      result.should == Gene::Lang::UNDEFINED
+      result.should == Gene::UNDEFINED
     end
 
     it "
@@ -433,6 +454,31 @@ describe Gene::Lang::Interpreter do
     end
   end
 
+  describe "loop - creates simplist loop" do
+    it "
+      (let i 0)
+      (loop
+        (let i (i + 1))
+        (if (i >= 5) break)
+      )
+      i
+    " do
+      result = @interpreter.parse_and_process(example.description)
+      result.should == 5
+    end
+
+    it "
+      (let i 0)
+      (loop
+        (let i (i + 1))
+        (if (i >= 5) (break 100))
+      )
+    " do
+      result = @interpreter.parse_and_process(example.description)
+      result.should == 100
+    end
+  end
+
   describe "_ is a placeholder, is equivalent to undefined" do
     it "
       # Putting _ at the place of arguments will not create an argument named _
@@ -440,12 +486,12 @@ describe Gene::Lang::Interpreter do
       (f 1)
     " do
       result = @interpreter.parse_and_process(example.description)
-      result.should == Gene::Lang::UNDEFINED
+      result.should == Gene::UNDEFINED
     end
 
     it "(if true _ 1)" do
       result = @interpreter.parse_and_process(example.description)
-      result.should == Gene::Lang::UNDEFINED
+      result.should == Gene::UNDEFINED
     end
 
     it "

@@ -6,7 +6,7 @@ describe Gene::Macro::Interpreter do
   end
 
   describe "def: create or overwrite variable in current scope" do
-    it "(#def a 'value')" do
+    it "(#def a 'value') # returns IGNORE" do
       result = @interpreter.parse_and_process(example.description)
       result.should == Gene::UNDEFINED
     end
@@ -38,7 +38,7 @@ describe Gene::Macro::Interpreter do
   end
 
   describe "let: create or overwrite variable" do
-    it "(#let a 'value')" do
+    it "(#let a 'value') # returns IGNORE" do
       result = @interpreter.parse_and_process(example.description)
       result.should == Gene::UNDEFINED
     end
@@ -82,7 +82,7 @@ describe Gene::Macro::Interpreter do
   end
 
   describe "fn: function" do
-    it "(#fn f a)" do
+    it "(#fn f a) # returns IGNORE" do
       result = @interpreter.parse_and_process(example.description)
       result.should == Gene::UNDEFINED
     end
@@ -97,6 +97,11 @@ describe Gene::Macro::Interpreter do
       result.should == 1
     end
 
+    it "(#fn f [] (#return 1) 2)(##f)" do
+      result = @interpreter.parse_and_process(example.description)
+      result.should == 1
+    end
+
     # _ is a placeholder for arguments, will be ignored
     it "(#fn f _ ##_)(##f 1)" do
       result = @interpreter.parse_and_process(example.description)
@@ -105,6 +110,11 @@ describe Gene::Macro::Interpreter do
   end
 
   describe "fnx: anonymous function" do
+    it "(#fnx) # returns an anonymous function" do
+      result = @interpreter.parse_and_process(example.description)
+      result.class.should == Gene::Macro::Function
+    end
+
     it "(#def fa (#fnx a ##a))(##fa 1)" do
       result = @interpreter.parse_and_process(example.description)
       result.should == 1
@@ -123,13 +133,18 @@ describe Gene::Macro::Interpreter do
   end
 
   describe "fnxx: anonymous dummy function" do
+    it "(#fnxx) # returns an anonymous dummy function" do
+      result = @interpreter.parse_and_process(example.description)
+      result.class.should == Gene::Macro::Function
+    end
+
     it "(#def fa (#fnxx ##_))(##fa 1)" do
       result = @interpreter.parse_and_process(example.description)
       result.should == nil
     end
   end
 
-  describe "do: execute statements" do
+  describe "do: execute statements, return result of last executed statement" do
     it "(#do (#def a 1) ##a)" do
       result = @interpreter.parse_and_process(example.description)
       result.should == 1
@@ -193,7 +208,7 @@ describe Gene::Macro::Interpreter do
   end
 
   describe "for: create for-loop" do
-    it "(#for (#def i 0)(#le ##i 100)(#incr i) #do ##i)" do
+    it "(#for (#def i 0)(#le ##i 100)(#incr i) #do ##i) # returns IGNORE" do
       result = @interpreter.parse_and_process(example.description)
       result.should == Gene::UNDEFINED
     end
