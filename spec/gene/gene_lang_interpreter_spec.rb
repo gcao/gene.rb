@@ -7,21 +7,21 @@ describe Gene::Lang::Interpreter do
 
   describe "special built-in variables and functions" do
     it "
-      $context    # The interpreter's context
+      $context      # The interpreter's context
     " do
       result = @interpreter.parse_and_process(example.description)
       result.scope.should_not be_nil
     end
 
     it "
-      $global    # The global scope object
+      $global       # The global scope object
     " do
       result = @interpreter.parse_and_process(example.description)
       result.class.should == Gene::Lang::Scope
     end
 
     it "
-      $scope    # The current scope object which may or may not inherit from ancestor scopes
+      $scope        # The current scope object which may or may not inherit from ancestor scopes
     " do
       result = @interpreter.parse_and_process(example.description)
       result.class.should == Gene::Lang::Scope
@@ -29,7 +29,7 @@ describe Gene::Lang::Interpreter do
 
     it "
       (fn f []
-        $function    # The current function/method that is being called
+        $function   # The current function/method that is being called
       )
       (f) # returns the function itself
     " do
@@ -40,7 +40,7 @@ describe Gene::Lang::Interpreter do
 
     it "
       (fn f []
-        $arguments    # array of arguments passed to current function
+        $arguments  # array of arguments passed to current function
       )
       (f 1 2) # returns [1, 2]
     " do
@@ -49,7 +49,7 @@ describe Gene::Lang::Interpreter do
     end
 
     it "
-      ($invoke    # A function that allows invocation of native methods on native objects (this should not be needed if whole interpreter is implemented in Gene Lang)
+      ($invoke      # A function that allows invocation of native methods on native objects (this should not be needed if whole interpreter is implemented in Gene Lang)
         $scope 'class') # returns 'Gene::Lang::Scope'
     " do
       result = @interpreter.parse_and_process(example.description)
@@ -171,12 +171,12 @@ describe Gene::Lang::Interpreter do
 
     it "
       (class A)
-      (class B (method test [] 'B#test'))
+      (class B (method test [] 'test in B'))
       (let a (new A))
-      ((cast a B) .test)
+      ((cast a B) .test)  # returns 'test in B'
     " do
       result = @interpreter.parse_and_process(example.description)
-      result.should  == 'B#test'
+      result.should  == 'test in B'
     end
   end
 
@@ -190,10 +190,64 @@ describe Gene::Lang::Interpreter do
         (extend A)
       )
       (let b (new B))
-      (b .testA)
+      (b .testA)  # returns 'testA'
     " do
       result = @interpreter.parse_and_process(example.description)
       result.should  == 'testA'
+    end
+
+    it "
+      # If a method is not defined in my class, search in parent classes
+      (class A
+        (method test _ 'test in A')
+      )
+      (class B)
+      (class C
+        (extend A)
+        (extend B)
+      )
+      (let c (new C))
+      (c .test)  # returns 'test in A'
+    " do
+      result = @interpreter.parse_and_process(example.description)
+      result.should  == 'test in A'
+    end
+
+    it "
+      # Search method up to the top of class hierarchy
+      (class A
+        (method test _ 'test in A')
+      )
+      (class B
+        (extend A)
+      )
+      (class C
+        (extend B)
+      )
+      (let c (new C))
+      (c .test)  # returns 'test in A'
+    " do
+      result = @interpreter.parse_and_process(example.description)
+      result.should  == 'test in A'
+    end
+
+    it "
+      # Super class defined later takes precedence
+      (class A
+        (method test _ 'test in A')
+      )
+      (class B
+        (method test _ 'test in B')
+      )
+      (class C
+        (extend A)
+        (extend B)
+      )
+      (let c (new C))
+      (c .test)  # returns 'test in B'
+    " do
+      result = @interpreter.parse_and_process(example.description)
+      result.should  == 'test in B'
     end
 
     it "
@@ -210,6 +264,23 @@ describe Gene::Lang::Interpreter do
     " do
       result = @interpreter.parse_and_process(example.description)
       result.should  == 3
+    end
+
+    describe "init" do
+      it "
+        # init is not inherited, must be called explicitly
+        (class A
+          (init _ (let @a 1))
+        )
+        (class B
+          (extend A)
+        )
+        (new B)
+      " do
+        result = @interpreter.parse_and_process(example.description)
+        result['a'].should be_nil
+      end
+
     end
   end
 

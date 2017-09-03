@@ -124,6 +124,8 @@ module Gene::Lang
         method = klass.method(name)
         return method if method
       end
+
+      nil
     end
   end
 
