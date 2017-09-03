@@ -148,6 +148,15 @@ describe Gene::Parser do
     end
   end
 
+  describe 'Processing instructions' do
+    it '
+      # Gene version the document conforms to. The parser must be able to parse. If not, throw error
+      (#GENE ^version 1.0)
+    ' do
+      pending
+    end
+  end
+
   [
     '(',
     ')',

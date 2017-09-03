@@ -29,6 +29,17 @@ describe Gene::Lang::Interpreter do
 
     it "
       (fn f []
+        $function    # The current function/method that is being called
+      )
+      (f) # returns the function itself
+    " do
+      result = @interpreter.parse_and_process(example.description)
+      result.class.should == Gene::Lang::Function
+      result.name.should == 'f'
+    end
+
+    it "
+      (fn f []
         $arguments    # array of arguments passed to current function
       )
       (f 1 2) # returns [1, 2]
@@ -63,7 +74,7 @@ describe Gene::Lang::Interpreter do
       result = @interpreter.parse_and_process(example.description)
       result.class.should == Gene::Lang::Class
       result.name.should  == 'A'
-      result.instance_methods.size.should == 1
+      result.methods.size.should == 1
     end
 
     it "
@@ -166,6 +177,39 @@ describe Gene::Lang::Interpreter do
     " do
       result = @interpreter.parse_and_process(example.description)
       result.should  == 'B#test'
+    end
+  end
+
+  describe "inheritance" do
+    it "
+      # If a method is not defined in my class, search in parent classes
+      (class A
+        (method testA _ 'testA')
+      )
+      (class B
+        (extend A)
+      )
+      (let b (new B))
+      (b .testA)
+    " do
+      result = @interpreter.parse_and_process(example.description)
+      result.should  == 'testA'
+    end
+
+    it "
+      # super will invoke same method in parent class
+      (class A
+        (method test [a b] (a + b))
+      )
+      (class B
+        (extend A)
+        (method test [a b] (super a b))
+      )
+      (let b (new B))
+      (b .test 1 2)
+    " do
+      result = @interpreter.parse_and_process(example.description)
+      result.should  == 3
     end
   end
 

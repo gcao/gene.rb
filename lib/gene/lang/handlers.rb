@@ -1,6 +1,7 @@
 module Gene::Lang::Handlers
   %W(
     CLASS PROP METHOD NEW INIT CAST
+    EXTEND SUPER
     SELF
     FN FNX FNXX
     RETURN
@@ -113,6 +114,26 @@ module Gene::Lang::Handlers
     end
   end
 
+  class ExtendHandler
+    def call context, data
+      return Gene::NOT_HANDLED unless EXTEND === data
+
+      klass = context.process data.data[0]
+      context.self.parent_classes.push klass
+      Gene::UNDEFINED
+    end
+  end
+
+  class SuperHandler
+    def call context, data
+      return Gene::NOT_HANDLED unless SUPER === data
+
+      method_name = context['$function'].name
+      super_method = context.self.class.super_method method_name
+      super_method.call context: context, self: context.self, arguments: data.data.map{|item| context.process item}
+    end
+  end
+
   class MethodHandler
     def call context, data
       return Gene::NOT_HANDLED unless METHOD === data
@@ -122,7 +143,7 @@ module Gene::Lang::Handlers
         .select {|item| not item.nil? }
         .map.with_index {|item, i| Gene::Lang::Argument.new(i, item.name) }
       fn.statements = data.data[2..-1]
-      context.self.instance_methods[name] = fn
+      context.self.methods[name] = fn
       fn
     end
   end
@@ -139,7 +160,7 @@ module Gene::Lang::Handlers
       code = data['get'] || [Gene::Types::Ident.new("@#{name}")]
       get.arguments = []
       get.statements = code
-      context.self.instance_methods[get.name] = get
+      context.self.methods[get.name] = get
 
       set = Gene::Lang::Function.new "#{name}="
       # Default code: [value (let @x value)]  assume x is the property name
@@ -150,7 +171,7 @@ module Gene::Lang::Handlers
       arg_name  = code.shift.to_s
       set.arguments = [Gene::Lang::Argument.new(0, arg_name)]
       set.statements = code
-      context.self.instance_methods[set.name] = set
+      context.self.methods[set.name] = set
       nil
     end
   end
@@ -160,7 +181,7 @@ module Gene::Lang::Handlers
       return Gene::NOT_HANDLED unless NEW === data
       klass = context.process(data.data[0])
       instance = Gene::Lang::Object.new klass
-      if init = klass.instance_methods['init']
+      if init = klass.methods[INIT.name]
         init.call context: context, self: instance, arguments: data.data[1..-1]
       end
       instance
@@ -194,7 +215,7 @@ module Gene::Lang::Handlers
         .select {|item| not item.nil? }
         .map.with_index {|item, i| Gene::Lang::Argument.new(i, item.name) }
       fn.statements = data.data[1..-1]
-      context.self.instance_methods[INIT.name] = fn
+      context.self.methods[INIT.name] = fn
       fn
     end
   end
@@ -232,14 +253,14 @@ module Gene::Lang::Handlers
       if data.is_a? Gene::Types::Base and data.data[0].is_a? Gene::Types::Ident and data.data[0].to_s[0] == '.'
         value = context.process data.type
         klass = get_class(value, context)
-        method = klass.instance_methods[data.data[0].to_s[1..-1]]
+        method = klass.method(data.data[0].to_s[1..-1])
         method.call context: context, self: value, arguments: data.data[1..-1].map{|item| context.process item}
       elsif data.is_a? Gene::Types::Base and data.type.is_a? Gene::Types::Ident and data.type.name =~ /^[a-zA-Z_]/
         value = context.process(data.type)
         value.call context: context, arguments: data.data.map{|item| context.process item}
       elsif data.is_a? Gene::Types::Base and data.type.is_a? Gene::Types::Ident and data.type.name =~ /^.(.*)$/
         klass = get_class(context.self, context)
-        value = klass.instance_methods[$1]
+        value = klass.method($1)
         value.call context: context, self: context.self, arguments: data.data.map{|item| context.process item}
       elsif data.is_a? Gene::Types::Base and data.type.is_a? Gene::Types::Base
         data.type = context.process data.type

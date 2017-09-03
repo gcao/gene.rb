@@ -1,0 +1,10 @@
+# Wrapper class for native class Gene::Lang::Object
+(class Object
+  (method class _
+    @#class
+  )
+
+  (method get name
+    # TODO: Return value of <name> attribute
+  )
+)

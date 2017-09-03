@@ -43,6 +43,30 @@ module Gene::Lang
       obj
     end
 
+    # def to_s
+    #   s = "("
+    #   type = self.class ? self.class.name : "Gene::Lang::Object"
+    #   s << type << " "
+
+    #   @attributes.each do |name, value|
+    #     next if %W(#class #data).include? name.to_s
+    #     if value == true
+    #       s << "^^" << name.to_s << " "
+    #     elsif value == false
+    #       s << "^!" << name.to_s << " "
+    #     else
+    #       s << "^" << name.to_s << " " << value.inspect << " "
+    #     end
+    #   end
+
+    #   if @attributes.include? "#data"
+    #     s << @attributes["#data"].inspect
+    #   end
+
+    #   s << ")"
+    # end
+    # alias inspect to_s
+
     def self.attr_reader *names
       names.each do |name|
         name = name.to_s
@@ -66,28 +90,40 @@ module Gene::Lang
   end
 
   class Class < Object
-    attr_accessor :name, :instance_methods, :properties
+    attr_accessor :name, :methods, :properties, :parent_classes
     def initialize name
       super(Class)
 
       set 'name', name
-      set 'instance_methods', {}
+      set 'methods', {}
       set 'properties', {}
+      set 'parent_classes', []
     end
 
-    def prop name
-      instance_methods[name.to_s]  = Block.new [], [Gene::Types::Ident.new("@#{name}")]
-      instance_methods["#{name}="] = Block.new ['value'], [
-        Gene::Types::Base.new(
-          Gene::Types::Ident.new('let'),
-          Gene::Types::Ident.new("@#{name}"),
-          Gene::Types::Ident.new('value'),
-        )
-      ]
+    # def def_property name
+    #   methods[name.to_s]  = Block.new [], [Gene::Types::Ident.new("@#{name}")]
+    #   methods["#{name}="] = Block.new ['value'], [
+    #     Gene::Types::Base.new(
+    #       Gene::Types::Ident.new('let'),
+    #       Gene::Types::Ident.new("@#{name}"),
+    #       Gene::Types::Ident.new('value'),
+    #     )
+    #   ]
+    # end
+
+    # def define_method name, function
+    #   methods[name.to_s] = function
+    # end
+
+    def method name
+      methods[name] or super_method(name)
     end
 
-    def method name, function
-      instance_methods[name.to_s] = function
+    def super_method name
+      parent_classes.reverse.each do |klass|
+        method = klass.method(name)
+        return method if method
+      end
     end
   end
 
@@ -103,6 +139,7 @@ module Gene::Lang
     def call options = {}
       scope = Scope.new parent_scope
       scope.arguments = arguments
+      scope.set_variable '$function', self
       scope.set_variable '$arguments', options[:arguments]
       scope.update_arguments options[:arguments]
       context = options[:context]

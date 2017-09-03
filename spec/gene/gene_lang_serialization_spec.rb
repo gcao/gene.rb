@@ -15,7 +15,7 @@ describe Gene::Lang do
 
     it "(class A)" do
       result = @serializer.process @interpreter.parse_and_process(example.description)
-      result.should == '{"references": {}, "data": {"#class": "Gene::Lang::Class", "name": "A", "instance_methods": {}, "properties": {}}}'
+      result.should == '{"references": {}, "data": {"#class": "Gene::Lang::Class", "name": "A", "methods": {}, "properties": {}, "parent_classes": []}}'
     end
 
     it "$scope" do

@@ -66,8 +66,8 @@ class Gene::Lang::Deserializer
     when Hash
       if obj["#class"] == "Gene::Lang::Class"
         result = Gene::Lang::Class.new obj["name"]
-        result.instance_methods = transform obj["instance_methods"], references
-        result.properties       = transform obj["properties"], references
+        result.methods = transform obj["methods"], references
+        result.properties = transform obj["properties"], references
 
       elsif obj["#class"] == "Gene::Lang::Scope"
         result = Gene::Lang::Scope.new transform obj["parent"], references
