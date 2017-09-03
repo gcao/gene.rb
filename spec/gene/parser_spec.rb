@@ -90,55 +90,55 @@ describe Gene::Parser do
     end
   end
 
-  describe "Attributes" do
+  describe "properties" do
     it '(a ^key true)' do
       result = Gene::Parser.parse(example.description)
       result.class.should == Gene::Types::Base
-      result.attributes['key'].should == true
+      result.properties['key'].should == true
     end
 
     it '(^key true a)' do
       result = Gene::Parser.parse(example.description)
       result.class.should == Gene::Types::Base
       result.type.should == Gene::Types::Ident.new('a')
-      result.attributes['key'].should == true
+      result.properties['key'].should == true
     end
 
     it '(prop x ^a [1] ^b [1 2])' do
       result = Gene::Parser.parse(example.description)
-      result.attributes['a'].should == [1]
-      result.attributes['b'].should == [1, 2]
+      result.properties['a'].should == [1]
+      result.properties['b'].should == [1, 2]
     end
 
     # Alternative syntax: ^^key = ^+key, ^!key = ^-key
     it '(a ^^key)' do
       result = Gene::Parser.parse(example.description)
       result.class.should == Gene::Types::Base
-      result.attributes['key'].should == true
+      result.properties['key'].should == true
     end
 
     it '(^^key a)' do
       result = Gene::Parser.parse(example.description)
       result.class.should == Gene::Types::Base
-      result.attributes['key'].should == true
+      result.properties['key'].should == true
     end
 
     it '(a ^+key)' do
       result = Gene::Parser.parse(example.description)
       result.class.should == Gene::Types::Base
-      result.attributes['key'].should == true
+      result.properties['key'].should == true
     end
 
     it '(a ^!key)' do
       result = Gene::Parser.parse(example.description)
       result.class.should == Gene::Types::Base
-      result.attributes['key'].should == false
+      result.properties['key'].should == false
     end
 
     it '(a ^-key)' do
       result = Gene::Parser.parse(example.description)
       result.class.should == Gene::Types::Base
-      result.attributes['key'].should == false
+      result.properties['key'].should == false
     end
 
     it '(a \^key)' do

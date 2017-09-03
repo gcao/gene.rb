@@ -1,45 +1,43 @@
 module Gene::Lang
   # All objects other than literals have this structure
   # type: a short Ident to help identify type of the object
-  # attributes: Hash
+  # properties: Hash
   #   ...
   # data: literal or array or anything else
   #
-  # type is stored in attributes with key '#type'
-  # data is stored in attributes with key '#data'
-  # class is stored in attributes with key '#class'
+  # type is stored in properties with key '#type'
+  # data is stored in properties with key '#data'
+  # class is stored in properties with key '#class'
   class Object
-    attr_reader :attributes
+    attr_accessor :properties
 
     def initialize klass = Object
-      @attributes = {}
-      @attributes["#class"] = klass
+      @properties = {}
+      @klass = klass
+      # @properties["#class"] = klass
     end
 
     def class
-      @attributes["#class"]
+      @klass
     end
 
     def class= klass
-      @attributes["#class"] = klass
+      @klass = klass
     end
 
     def get name
-      @attributes[name]
+      @properties[name]
     end
     alias [] get
 
     def set name, value
-      @attributes[name] = value
+      @properties[name] = value
     end
     alias []= set
 
     def as klass
       obj = Object.new klass
-      @attributes.each do |key, value|
-        obj[key] = value
-      end
-      obj["#class"] = klass
+      obj.properties = @properties
       obj
     end
 
@@ -48,7 +46,7 @@ module Gene::Lang
     #   type = self.class ? self.class.name : "Gene::Lang::Object"
     #   s << type << " "
 
-    #   @attributes.each do |name, value|
+    #   @properties.each do |name, value|
     #     next if %W(#class #data).include? name.to_s
     #     if value == true
     #       s << "^^" << name.to_s << " "
@@ -59,8 +57,8 @@ module Gene::Lang
     #     end
     #   end
 
-    #   if @attributes.include? "#data"
-    #     s << @attributes["#data"].inspect
+    #   if @properties.include? "#data"
+    #     s << @properties["#data"].inspect
     #   end
 
     #   s << ")"
@@ -71,7 +69,7 @@ module Gene::Lang
       names.each do |name|
         name = name.to_s
         define_method(name) do
-          @attributes[name.to_s]
+          @properties[name.to_s]
         end
       end
     end
@@ -80,23 +78,23 @@ module Gene::Lang
       names.each do |name|
         name = name.to_s
         define_method(name) do
-          @attributes[name]
+          @properties[name]
         end
         define_method("#{name}=") do |value|
-          @attributes[name] = value
+          @properties[name] = value
         end
       end
     end
   end
 
   class Class < Object
-    attr_accessor :name, :methods, :properties, :parent_classes
+    attr_accessor :name, :methods, :prop_descriptors, :parent_classes
     def initialize name
       super(Class)
 
       set 'name', name
       set 'methods', {}
-      set 'properties', {}
+      set 'prop_descriptors', {}
       set 'parent_classes', []
     end
 

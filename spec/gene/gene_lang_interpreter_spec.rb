@@ -161,7 +161,7 @@ describe Gene::Lang::Interpreter do
       (class A)
       (class B)
       (let a (new A))
-      # cast will create a new object of B, shallow-copy all attributes except #class
+      # cast will create a new object of B, shallow-copy all properties except #class
       (cast a B)
     " do
       result = @interpreter.parse_and_process(example.description)
@@ -177,6 +177,17 @@ describe Gene::Lang::Interpreter do
     " do
       result = @interpreter.parse_and_process(example.description)
       result.should  == 'test in B'
+    end
+
+    it "
+      (class A)
+      (class B (method test [] (let @name 'b')))
+      (let a (new A))
+      ((cast a B) .test)
+      a  # @name should be 'b'
+    " do
+      result = @interpreter.parse_and_process(example.description)
+      result['name'].should  == 'b'
     end
   end
 

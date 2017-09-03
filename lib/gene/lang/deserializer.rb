@@ -32,7 +32,7 @@ class Gene::Lang::Deserializer
         if processed.is_a? Gene::Lang::Object
           value.each do |k, v|
             if k != "#class"
-              processed.attributes[k] = v
+              processed.properties[k] = v
             end
           end
         end
@@ -48,12 +48,12 @@ class Gene::Lang::Deserializer
           value[i] = transform item, references
         end
       elsif value.is_a? Hash
-        value.attributes.each do |k, v|
+        value.properties.each do |k, v|
           value[k] = transform v, references
         end
       elsif value.is_a? Gene::Lang::Object
-        value.attributes.each do |k, v|
-          value.attributes[k] = transform v, references
+        value.properties.each do |k, v|
+          value.properties[k] = transform v, references
         end
       end
     end
@@ -67,7 +67,7 @@ class Gene::Lang::Deserializer
       if obj["#class"] == "Gene::Lang::Class"
         result = Gene::Lang::Class.new obj["name"]
         result.methods = transform obj["methods"], references
-        result.properties = transform obj["properties"], references
+        result.prop_descriptors = transform obj["prop_descriptors"], references
 
       elsif obj["#class"] == "Gene::Lang::Scope"
         result = Gene::Lang::Scope.new transform obj["parent"], references

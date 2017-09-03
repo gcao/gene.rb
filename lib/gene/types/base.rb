@@ -1,25 +1,25 @@
 class Gene::Types::Base
   attr_accessor :type, :data
-  attr_reader :attributes
+  attr_reader :properties
 
   def initialize type, *data
     @type = type
     @data = [].concat data
-    @attributes = {}
+    @properties = {}
   end
 
   def [] name
-    @attributes[name.to_s]
+    @properties[name.to_s]
   end
 
   def []= name, value
-    @attributes[name.to_s] = value
+    @properties[name.to_s] = value
   end
 
   def == other
     return unless other.is_a? self.class
 
-    type == other.type and data == other.data and attributes == other.attributes
+    type == other.type and data == other.data and properties == other.properties
   end
 
   def === other

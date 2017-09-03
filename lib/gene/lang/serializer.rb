@@ -63,7 +63,7 @@ class Gene::Lang::Serializer
        references[id_str] = [obj, 1]
 
         # Traverse its children
-        obj.attributes.each do |key, value|
+        obj.properties.each do |key, value|
           calc_references value, references
         end
       end
@@ -106,7 +106,8 @@ class Gene::Lang::Serializer
       result << "}"
     when Gene::Lang::Object
       result << "{"
-      result << obj.attributes.to_a.map {|pair| "#{pair[0].inspect}: #{serialize_with_references(pair[1], references)}" }.join(", ")
+      class_and_properties = obj.properties.to_a.unshift(["#class", obj.class])
+      result << class_and_properties.map {|pair| "#{pair[0].inspect}: #{serialize_with_references(pair[1], references)}" }.join(", ")
       result << "}"
     when ::Class
       result << obj.name.inspect

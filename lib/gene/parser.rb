@@ -409,7 +409,7 @@ module Gene
 
       gene = Gene::Types::Base.new type, *data
       attribute_for_group.each do |k, v|
-        gene.attributes[k] = v
+        gene.properties[k] = v
       end
       gene
     end

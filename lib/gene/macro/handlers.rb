@@ -221,10 +221,10 @@ module Gene::Macro::Handlers
         target
 
       elsif data.is_a? Gene::Types::Base
-        data.attributes.each do |key, value|
+        data.properties.each do |key, value|
           value = context.process_internal value
           if value == Gene::UNDEFINED
-            data.attributes.delete key
+            data.properties.delete key
           else
             data[key] = value
           end
