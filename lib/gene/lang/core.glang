@@ -1,10 +1,6 @@
 (class File
 )
 
-(fn read-file file-name
-  # Invoke native File class to read a file's content and return a string
-)
-
 # Wrapper class for native arrays
 (class Array
   (method class _
