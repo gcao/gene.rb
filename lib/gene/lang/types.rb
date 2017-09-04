@@ -138,10 +138,13 @@ module Gene::Lang
 
     def call options = {}
       scope = Scope.new parent_scope
-      scope.arguments = arguments
       scope.set_variable '$function', self
-      scope.set_variable '$arguments', options[:arguments]
-      scope.update_arguments options[:arguments]
+      scope.arguments = self.arguments
+
+      expanded_arguments = expand_arguments(options[:arguments])
+      scope.set_variable '$arguments', expanded_arguments
+      scope.update_arguments expanded_arguments
+
       context = options[:context]
       context.start_self options[:self]
       context.start_scope scope
@@ -155,6 +158,24 @@ module Gene::Lang
         context.end_scope
         context.end_self
       end
+    end
+
+    private
+
+    def expand_arguments arguments
+      result = []
+
+      arguments.each do |arg|
+        if arg.is_a? Expandable
+          arg.value.each do |value|
+            result << value
+          end
+        else
+          result << arg
+        end
+      end
+
+      result
     end
   end
 
@@ -207,10 +228,13 @@ module Gene::Lang
     end
 
     def update_arguments values
-      if values and values.size > 0
-        values.each.with_index do |value, index|
-          argument = self.arguments.find {|arg| arg.index == index }
-          self.set_variable(argument.name, value) if argument
+      return if not self.arguments
+
+      self.arguments.each_with_index do |arg|
+        if arg.name =~ /^(.*)\.\.\.$/
+          set_variable $1, values
+        else
+          set_variable arg.name, values.shift
         end
       end
     end
@@ -263,6 +287,15 @@ module Gene::Lang
     attr_reader :value
     def initialize value = Gene::UNDEFINED
       super(BreakValue)
+
+      set 'value', value
+    end
+  end
+
+  class Expandable < Object
+    attr_reader :value
+    def initialize value = Gene::UNDEFINED
+      super(Expandable)
 
       set 'value', value
     end

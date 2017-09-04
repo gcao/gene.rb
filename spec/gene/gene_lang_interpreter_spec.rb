@@ -180,6 +180,7 @@ describe Gene::Lang::Interpreter do
     end
 
     it "
+      # Modification on casted object will not be lost
       (class A)
       (class B (method test [] (let @name 'b')))
       (let a (new A))
@@ -311,22 +312,45 @@ describe Gene::Lang::Interpreter do
       result.arguments[0].name.should == 'a'
     end
 
-    it "(fn doSomething [] 1)(doSomething)" do
-      result = @interpreter.parse_and_process(example.description)
-      result.should == 1
+    describe "Variable length arguments" do
+      it "
+        (fn doSomething args... args)
+        (doSomething 1 2)
+      " do
+        result = @interpreter.parse_and_process(example.description)
+        result.should == [1, 2]
+      end
+
+      it "
+        (fn doSomething [a b]
+          (a + b)
+        )
+        (let array [1 2])
+        (doSomething array...)
+      " do
+        result = @interpreter.parse_and_process(example.description)
+        result.should == 3
+      end
+
+      it "
+        (fn doSomething args...
+          args
+        )
+        (let array [1 2])
+        (doSomething array...)
+      " do
+        result = @interpreter.parse_and_process(example.description)
+        result.should == [1, 2]
+      end
     end
 
     it "(fn doSomething [] 1)(doSomething)" do
-      result = @interpreter.parse_and_process(example.description)
-      result.should == 1
-    end
-
-    it "(fn doSomething [] (return 1) 2)(doSomething)" do
       result = @interpreter.parse_and_process(example.description)
       result.should == 1
     end
 
     it "
+      # return from function
       (fn doSomething []
         return
         2
@@ -335,6 +359,17 @@ describe Gene::Lang::Interpreter do
     " do
       result = @interpreter.parse_and_process(example.description)
       result.should == Gene::UNDEFINED
+    end
+
+    it "
+      # return value from function
+      (fn doSomething []
+        (return 1)
+        2
+      )
+      (doSomething)" do
+      result = @interpreter.parse_and_process(example.description)
+      result.should == 1
     end
 
     it "((fn doSomething [] 1)) # Note the double '(' and ')'" do

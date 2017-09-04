@@ -1,10 +1,27 @@
-# Wrapper class for native class Gene::Lang::Object
-(class Object
-  (method class _
-    @#class
+# Wrapper class for native arrays
+(class Array
+  (method class []
+    ($invoke $context "get" "Array")
   )
+  (method size []
+    ($invoke self "size")
+  )
+  (method get [i]
+    ($invoke self [] i)
+  )
+  (method each [f]
+    (for (let i 0) (i < (.size)) (let i (i + 1))
+      (let item (.get i))
+      (f item i)
+    )
+  )
+)
 
-  (method get name
-    # TODO: Return value of <name> attribute
+(class Hash
+)
+
+(class String
+  (method + args...
+    ($invoke $self '<<' args)
   )
 )

@@ -53,12 +53,23 @@ module Gene::Lang::Handlers
       elsif data == SELF
         context.self
       elsif data.is_a? Gene::Types::Ident
-        if data.to_s[0] == '@'
-          # instance variable
-          context.self[data.to_s[1..-1]]
+        name = data.name
+        if name =~ /^(.*)\.\.\.$/
+          if $1[0] == '@'
+            # property
+            Gene::Lang::Expandable.new context.self[$1[1..-1]]
+          else
+            # scope variable
+            Gene::Lang::Expandable.new context[$1]
+          end
         else
-          # scope variable
-          context[data.name]
+          if name[0] == '@'
+            # property
+            context.self[name[1..-1]]
+          else
+            # scope variable
+            context[name]
+          end
         end
       else
         # literals
@@ -148,7 +159,7 @@ module Gene::Lang::Handlers
     end
   end
 
-  class PropertyHandler
+  class PropHandler
     def call context, data
       return Gene::NOT_HANDLED unless PROP === data
       name = data.data[0].to_s

@@ -12,7 +12,7 @@ class Gene::Lang::Interpreter
     @handlers.add 100, Gene::Lang::Handlers::DefaultHandler.new
     @handlers.add 100, Gene::Lang::Handlers::ClassHandler.new
     @handlers.add 100, Gene::Lang::Handlers::ExtendHandler.new
-    @handlers.add 100, Gene::Lang::Handlers::PropertyHandler.new
+    @handlers.add 100, Gene::Lang::Handlers::PropHandler.new
     @handlers.add 100, Gene::Lang::Handlers::MethodHandler.new
     @handlers.add 100, Gene::Lang::Handlers::FunctionHandler.new
     @handlers.add 100, Gene::Lang::Handlers::SuperHandler.new
@@ -40,26 +40,7 @@ class Gene::Lang::Interpreter
     @scopes       = [@root_scope]
     @self_objects = []
 
-    parse_and_process %q`
-      # Wrapper class for native arrays
-      (class Array
-        (method class []
-          ($invoke $context "get" "Array")
-        )
-        (method size []
-          ($invoke self "size")
-        )
-        (method get [i]
-          ($invoke self [] i)
-        )
-        (method each [f]
-          (for (let i 0) (i < (.size)) (let i (i + 1))
-            (let item (.get i))
-            (f item i)
-          )
-        )
-      )
-    `
+    parse_and_process File.read(File.dirname(__FILE__) + '/core.glang')
   end
 
   def scope
