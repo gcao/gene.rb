@@ -1,15 +1,25 @@
+(class File
+)
+
+(fn read-file file-name
+  # Invoke native File class to read a file's content and return a string
+)
+
 # Wrapper class for native arrays
 (class Array
-  (method class []
+  (method class _
     ($invoke $context "get" "Array")
   )
-  (method size []
+  (method size _
     ($invoke self "size")
   )
-  (method get [i]
-    ($invoke self [] i)
+  (method get i
+    (if (i >= (.size))
+      undefined
+      ($invoke self [] i)
+    )
   )
-  (method each [f]
+  (method each f
     (for (let i 0) (i < (.size)) (let i (i + 1))
       (let item (.get i))
       (f item i)
@@ -18,6 +28,9 @@
 )
 
 (class Hash
+  (method size _
+    ($invoke self "size")
+  )
 )
 
 (class String

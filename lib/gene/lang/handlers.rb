@@ -287,6 +287,8 @@ module Gene::Lang::Handlers
     def get_class obj, context
       if obj.is_a? Array
         context["Array"]
+      elsif obj.is_a? Hash
+        context["Hash"]
       else
         obj.class
       end
@@ -295,6 +297,8 @@ module Gene::Lang::Handlers
 
   class BinaryExprHandler
     BINARY_OPERATORS = [
+      Gene::Types::Ident.new('=='),
+      Gene::Types::Ident.new('!='),
       Gene::Types::Ident.new('>'),
       Gene::Types::Ident.new('>='),
       Gene::Types::Ident.new('<'),
@@ -313,6 +317,8 @@ module Gene::Lang::Handlers
       left  = context.process(data.type)
       right = context.process(data.data[1])
       case op
+      when '==' then left == right
+      when '!=' then left != right
       when '<'  then left < right
       when '<=' then left <= right
       when '>'  then left > right
