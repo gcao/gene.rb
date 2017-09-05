@@ -15,6 +15,7 @@ module Gene::Lang::Handlers
   end
 
   PLACEHOLDER = Gene::Types::Ident.new('_')
+  PROP_NAME   = Gene::Types::Ident.new('@')
   CONTEXT     = Gene::Types::Ident.new('$context')
   GLOBAL      = Gene::Types::Ident.new('$global')
   SCOPE       = Gene::Types::Ident.new('$scope')
@@ -29,6 +30,10 @@ module Gene::Lang::Handlers
           method = context.process(data.data[1]).to_s
           args   = data.data[2..-1].to_a.map {|item| context.process(item) }
           target.send method, *args
+        elsif PROP_NAME === data
+          Gene::Lang::PropertyName.new context.process(data.data[0])
+        elsif data.is_a? Gene::Lang::PropertyName
+          context.self[data.name]
         elsif DO === data
           context.process_statements data.data
         elsif RETURN === data
@@ -248,14 +253,23 @@ module Gene::Lang::Handlers
   class LetHandler
     def call context, data
       return Gene::NOT_HANDLED unless LET === data
-      name  = data.data[0].to_s
+
       value = context.process data.data[1]
-      if name[0] == '@'
-        context.self.set name[1..-1], value
+
+      if data.data[0].is_a? Gene::Types::Base
+        name = context.process data.data[0]
+        if name.is_a? Gene::Lang::PropertyName
+          name = name.name
+        end
+        context.self.set name.to_s, value
       else
-        context.scope.let name, value
+        name  = data.data[0].to_s
+        if name[0] == '@'
+          context.self.set name[1..-1], value
+        else
+          context.scope.let name, value
+        end
       end
-      Gene::Lang::Variable.new name, value
     end
   end
 
@@ -308,6 +322,9 @@ module Gene::Lang::Handlers
       Gene::Types::Ident.new('-'),
       Gene::Types::Ident.new('*'),
       Gene::Types::Ident.new('/'),
+
+      Gene::Types::Ident.new('&&'),
+      Gene::Types::Ident.new('||'),
     ]
 
     def call context, data
@@ -328,6 +345,9 @@ module Gene::Lang::Handlers
       when '-' then left - right
       when '*' then left * right
       when '/' then left / right
+
+      when '&&' then left && right
+      when '||' then left || right
       end
     end
   end

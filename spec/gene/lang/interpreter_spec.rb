@@ -94,6 +94,11 @@ describe Gene::Lang::Interpreter do
       result['a'].should == 1
     end
 
+    it "(class A (init name (let (@ name) 1))) (new A 'a')" do
+      result = @interpreter.parse_and_process(example.description)
+      result['a'].should == 1
+    end
+
     it "
       # Define class A
       (class A
@@ -490,6 +495,14 @@ describe Gene::Lang::Interpreter do
     it("(3 >= 2)") { @interpreter.parse_and_process(example.description).should == true }
   end
 
+  describe "Boolean operations" do
+    it("(true && true)")   { @interpreter.parse_and_process(example.description).should == true }
+    it("(true && false)")  { @interpreter.parse_and_process(example.description).should == false }
+    it("(true || true)")   { @interpreter.parse_and_process(example.description).should == true }
+    it("(true || false)")  { @interpreter.parse_and_process(example.description).should == true }
+    it("(false || false)") { @interpreter.parse_and_process(example.description).should == false }
+  end
+
   describe "Binary expression" do
     it "(1 + 2)" do
       result = @interpreter.parse_and_process(example.description)
@@ -519,6 +532,8 @@ describe Gene::Lang::Interpreter do
 
     it "(let a 'value')" do
       result = @interpreter.parse_and_process(example.description)
+      @interpreter.get('a').should == 'value'
+      pending "should we return undefined or value instead?"
       result.class.should == Gene::Lang::Variable
       result.name.should  == 'a'
       result.value.should == 'value'
@@ -526,6 +541,8 @@ describe Gene::Lang::Interpreter do
 
     it "(let a (1 + 2))" do
       result = @interpreter.parse_and_process(example.description)
+      @interpreter.get('a').should == 3
+      pending "should we return undefined or value instead?"
       result.class.should == Gene::Lang::Variable
       result.name.should  == 'a'
       result.value.should == 3

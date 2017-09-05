@@ -1,0 +1,100 @@
+(class $Class
+  (method init [args body]
+    (let f (new $Function))
+    (f .arguments= args)
+    (f .body= body)
+    (let @#init f)
+  )
+
+  (method prop name
+    # TODO: add name to list of properties etc
+    # Define getter
+    (self .method name _
+      ((@ name))
+    )
+    # Define setter
+    (self .method (name + '=') value
+      (let (@ name) value)
+    )
+  )
+
+  (method method [name args body]
+    # TODO: copy logic in MethodHandler
+  )
+
+  # singleton-class returns a pseudo class object. It is created on demand
+  # depending on whether custom behaviors are defined
+  # (singleton-class) returns singleton-class of self
+  # (singleton-class obj) returns singleton-class of obj
+  # ((singleton-class obj) ...) runs code with the singleton-class as self, e.g.
+  #   ((singleton-class "s") (method haha)) defines "haha" method on "s" only
+)
+
+(let $Object (new $Class))
+
+(call
+  (fnxx
+    (method class _
+      ($invoke self "instance_variable_get" "@class")
+    )
+    (method class= class
+      ($invoke self "instance_variable_set" "@class" class)
+    )
+    (method get name @name)
+    (method set name (let @name name))
+    (method as class
+      (let result (new class))
+      # assign my properties to the new object
+      ($invoke result "instance_variable_set"
+        "@properties"
+        ($invoke self "instance_variable_get" "@properties")
+      )
+      result
+    )
+  )
+  $Object
+)
+
+(let $Function (new $Class))
+(call
+  (fnxx
+    (extend $Object) # Add $Object as a parent class
+    (init name (let @name name))
+    (prop name)
+    (prop parent_scope)
+    (prop arguments)
+    (prop body)
+    (method invoke args
+      # TODO: implement logic in Function#call in gene/lang/types.rb
+    )
+  )
+  $Function
+)
+
+(let $Scope (new $Class))
+(call
+  (fnxx
+    (extend $Object)
+    (init parent (let @parent parent))
+    (prop variables)
+    (prop arguments)
+    (method defined? name
+      (@variables .include? name) ||
+      (@parent && (@parent .defined? name))
+    )
+  )
+)
+
+(let $Argument (new $Class))
+(call
+  (fnxx
+    (extend $Object)
+    (init [index name]
+      ($Object .init $Argument)
+      (.set 'index' index)
+      (.set 'name'  name)
+    )
+    (prop index)
+    (prop name)
+  )
+)

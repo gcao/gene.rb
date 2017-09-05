@@ -188,6 +188,15 @@ module Gene::Lang
     end
   end
 
+  class PropertyName < Object
+    attr_reader :name
+    def initialize name
+      super(PropertyName)
+
+      set 'name', name
+    end
+  end
+
   class Scope < Object
     attr_accessor :parent, :variables, :arguments
     def initialize parent
