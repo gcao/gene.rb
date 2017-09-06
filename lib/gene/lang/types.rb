@@ -1,4 +1,7 @@
 module Gene::Lang
+  class BaseObject
+  end
+
   # All objects other than literals have this structure
   # type: a short Ident to help identify type of the object
   # properties: Hash
@@ -84,6 +87,74 @@ module Gene::Lang
           @properties[name] = value
         end
       end
+    end
+  end
+
+  class Context < Object
+    attr_accessor :options, :global_scope, :scopes, :self_objects
+    def initialize options = {}
+      super(Context)
+      set 'options', options
+      reset
+    end
+
+    def reset
+      set 'global_scope', Gene::Lang::Scope.new(nil)
+      set 'scopes', [Gene::Lang::Scope.new(nil)]
+      set 'self_objects', []
+    end
+
+    def scope
+      scopes.last
+    end
+
+    def start_scope scope = Gene::Lang::Scope.new(nil)
+      scopes.push scope
+    end
+
+    def end_scope
+      throw "Scope error: can not close the root scope." if scopes.size == 0
+      scopes.pop
+    end
+
+    def self
+      self_objects.last
+    end
+
+    def start_self self_object
+      self_objects.push self_object
+    end
+
+    def end_self
+      self_objects.pop
+    end
+
+    def get name
+      if scope.defined? name
+        scope.get_variable name
+      else
+        global_scope.get_variable name
+      end
+    end
+    alias [] get
+
+    def process data
+      @interpreter ||= Gene::Lang::Interpreter.new self
+      @interpreter.process data
+    end
+
+    def process_statements statements
+      result = Gene::UNDEFINED
+      return result if statements.nil?
+
+      [statements].flatten.each do |stmt|
+        result = process stmt
+        if result.is_a?(Gene::Lang::ReturnValue) or result.is_a?(Gene::Lang::BreakValue)
+          break
+        end
+      end
+
+      result
     end
   end
 

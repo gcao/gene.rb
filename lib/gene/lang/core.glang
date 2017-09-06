@@ -21,6 +21,31 @@
       (f item i)
     )
   )
+  (method select f
+    (def result [])
+    (for (let i 0) (i < (.size)) (let i (i + 1))
+      (let item (.get i))
+      (if (f item))
+    )
+    result
+  )
+  (method flatten _
+    (def result [])
+    (.each
+      (fnx item
+        (if (($invoke ($invoke item 'class') 'name') == 'Array')
+          ($invoke result '<<' item)
+          (do
+            (let child-array (item .flatten))
+            (child-array .each
+              (fnx item ($invoke result '<<' item))
+            )
+          )
+        )
+      )
+    )
+    result
+  )
 )
 
 (class Hash

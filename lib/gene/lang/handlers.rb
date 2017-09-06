@@ -93,6 +93,8 @@ module Gene::Lang::Handlers
       context.start_self klass
       context.start_scope scope
       begin
+        # TODO: check whether Object class is defined.
+        # If yes, and the newly defined class isn't Object and doesn't have a parent class, set Object as its parent class
         context.process_statements data.data
         context.global_scope.set_variable name, klass
         klass
@@ -135,6 +137,7 @@ module Gene::Lang::Handlers
       return Gene::NOT_HANDLED unless EXTEND === data
 
       klass = context.process data.data[0]
+      # TODO: if the parent class is Object, replace it with klass
       context.self.parent_classes.push klass
       Gene::UNDEFINED
     end
@@ -298,6 +301,7 @@ module Gene::Lang::Handlers
     end
 
     private
+
     def get_class obj, context
       if obj.is_a? Array
         context["Array"]

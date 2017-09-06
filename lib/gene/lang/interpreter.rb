@@ -1,13 +1,12 @@
-require 'gene/lang/types'
-require 'gene/lang/handlers'
-
-#
-# Gene will be our own interpreted language
-#
 class Gene::Lang::Interpreter
-  attr_reader   :global_scope
+  attr_accessor :context
 
-  def initialize
+  def initialize context = Gene::Lang::Context.new
+    init_handlers
+    @context = context
+  end
+
+  def init_handlers
     @handlers = Gene::Handlers::ComboHandler.new
     @handlers.add 100, Gene::Lang::Handlers::DefaultHandler.new
     @handlers.add 100, Gene::Lang::Handlers::ClassHandler.new
@@ -27,55 +26,11 @@ class Gene::Lang::Interpreter
     @handlers.add 100, Gene::Lang::Handlers::InitHandler.new
     @handlers.add 100, Gene::Lang::Handlers::BinaryExprHandler.new
     @handlers.add 50, Gene::Lang::Handlers::InvocationHandler.new
-
-    reset
   end
 
-  def reset
-    # global_scope is a special scope
-    # root_scope is the root of regular scope hierarchy: @scopes
-    # regular scopes can inherit or not inherit from a higher level scope
-    @global_scope = Gene::Lang::Scope.new nil
-    @root_scope   = Gene::Lang::Scope.new nil
-    @scopes       = [@root_scope]
-    @self_objects = []
-
+  def load_core_libs
     parse_and_process File.read(File.dirname(__FILE__) + '/core.glang')
   end
-
-  def scope
-    @scopes.last
-  end
-
-  def start_scope scope = Gene::Lang::Scope.new(nil)
-    @scopes.push scope
-  end
-
-  def end_scope
-    throw "Scope error: can not close the root scope." if @scopes.size == 0
-    @scopes.pop
-  end
-
-  def self
-    @self_objects.last
-  end
-
-  def start_self self_object
-    @self_objects.push self_object
-  end
-
-  def end_self
-    @self_objects.pop
-  end
-
-  def get name
-    if scope.defined? name
-      scope.get_variable name
-    else
-      @global_scope.get_variable name
-    end
-  end
-  alias [] get
 
   def parse_and_process input
     Gene::CoreInterpreter.parse_and_process input do |output|
@@ -84,35 +39,6 @@ class Gene::Lang::Interpreter
   end
 
   def process data
-    @handlers.call self, data
-  end
-
-  def process_statements statements
-    result = Gene::UNDEFINED
-    return result if statements.nil?
-
-    [statements].flatten.each do |stmt|
-      result = process stmt
-      if result.is_a?(Gene::Lang::ReturnValue) or result.is_a?(Gene::Lang::BreakValue)
-        break
-      end
-    end
-
-    result
-  end
-
-  def serialize
-    {
-      "global_scope"  => @global_scope.inspect,
-      "scopes"        => @scopes.inspect,
-      "self_objects"  => @self_objects.inspect
-    }.to_json
-  end
-
-  def deserialize input
-    parsed        = JSON.parse input
-    @global_scope = parsed["global_scope"]
-    @scopes       = parsed["scopes"]
-    @self_objects = parsed["self_objects"]
+    @handlers.call @context, data
   end
 end
