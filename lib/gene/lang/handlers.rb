@@ -387,12 +387,12 @@ module Gene::Lang::Handlers
     def call context, data
       return Gene::NOT_HANDLED unless FOR === data
       # initialize
-      context.process data.data[0]
+      context.process data.data.shift
 
-      condition = data.data[1]
-      update    = data.data[2]
+      condition = data.data.shift
+      update    = data.data.shift
       while context.process(condition)
-        context.process_statements data[3..-1] || []
+        context.process_statements data.data
         context.process update
       end
     end
