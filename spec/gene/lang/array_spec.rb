@@ -29,7 +29,7 @@ describe "Array" do
   end
 
   it "(([1 [2]] .flatten) == [1 2])" do
-    pending
+    # pending
     result = @interpreter.parse_and_process(example.description)
     result.should be_true
   end

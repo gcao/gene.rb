@@ -86,7 +86,7 @@ module Gene::Lang::Handlers
   class ClassHandler
     def call context, data
       return Gene::NOT_HANDLED unless CLASS === data
-      name  = data.data.shift.to_s
+      name  = data.data[0].to_s
       klass = Gene::Lang::Class.new name
 
       scope = Gene::Lang::Scope.new nil
@@ -95,7 +95,7 @@ module Gene::Lang::Handlers
       begin
         # TODO: check whether Object class is defined.
         # If yes, and the newly defined class isn't Object and doesn't have a parent class, set Object as its parent class
-        context.process_statements data.data
+        context.process_statements data.data[1..-1] || []
         context.global_scope.set_variable name, klass
         klass
       ensure
@@ -109,8 +109,10 @@ module Gene::Lang::Handlers
     def call context, data
       return Gene::NOT_HANDLED unless FN === data or FNX === data or FNXX === data
 
+      next_index = 0
       if FN === data
-        name = data.data.shift.to_s
+        name = data.data[next_index].to_s
+        next_index += 1
         fn   = Gene::Lang::Function.new name
         context.scope.set_variable name, fn
       else
@@ -121,12 +123,13 @@ module Gene::Lang::Handlers
       fn.parent_scope = context.scope
 
       if not FNXX === data
-        fn.arguments = [data.data.shift].flatten
+        fn.arguments = [data.data[next_index]].flatten
           .select {|item| not item.nil? }
           .map.with_index {|item, i| Gene::Lang::Argument.new(i, item.name) }
+        next_index += 1
       end
 
-      fn.statements = data.data
+      fn.statements = data.data[next_index..-1] || []
 
       fn
     end
@@ -187,9 +190,9 @@ module Gene::Lang::Handlers
         Gene::Types::Ident.new("value"),
         Gene::Types::Base.new(LET, Gene::Types::Ident.new("@#{name}"), Gene::Types::Ident.new("value"))
       ]
-      arg_name  = code.shift.to_s
+      arg_name  = code[0].to_s
       set.arguments = [Gene::Lang::Argument.new(0, arg_name)]
-      set.statements = code
+      set.statements = code[1..-1] || []
       context.self.methods[set.name] = set
       nil
     end
@@ -210,9 +213,9 @@ module Gene::Lang::Handlers
   class CallHandler
     def call context, data
       return Gene::NOT_HANDLED unless CALL === data
-      function = context.process data.data.shift
-      self_object = context.process data.data.shift
-      function.call context: context, self: self_object, arguments: data.data
+      function = context.process data.data[0]
+      self_object = context.process data.data[1]
+      function.call context: context, self: self_object, arguments: data.data[2..-1] || []
     end
   end
 
@@ -384,12 +387,12 @@ module Gene::Lang::Handlers
     def call context, data
       return Gene::NOT_HANDLED unless FOR === data
       # initialize
-      context.process data.data.shift
+      context.process data.data[0]
 
-      condition = data.data.shift
-      update    = data.data.shift
+      condition = data.data[1]
+      update    = data.data[2]
       while context.process(condition)
-        context.process_statements data.data
+        context.process_statements data[3..-1] || []
         context.process update
       end
     end

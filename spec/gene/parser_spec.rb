@@ -14,6 +14,7 @@ describe Gene::Parser do
     ''         => Gene::Types::Stream.new,
     '"a double-quoted String"' => "a double-quoted String",
     "'a single-quoted String'" => "a single-quoted String",
+    # TODO: "\"a \nmulti-line \nString\"" => "a \nmulti-line \nString",
     '"a"'      => "a",
     '1'        => 1,
     '-1'       => -1,

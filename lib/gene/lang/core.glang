@@ -34,13 +34,13 @@
     (.each
       (fnx item
         (if (($invoke ($invoke item 'class') 'name') == 'Array')
-          ($invoke result '<<' item)
           (do
             (let child-array (item .flatten))
             (child-array .each
               (fnx item ($invoke result '<<' item))
             )
           )
+          ($invoke result '<<' item)
         )
       )
     )

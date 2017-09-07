@@ -91,10 +91,10 @@ module Gene::Lang
   end
 
   class Context < Object
-    attr_accessor :options, :global_scope, :scopes, :self_objects
-    def initialize options = {}
+    attr_accessor :interpreter_options, :global_scope, :scopes, :self_objects
+    def initialize interpreter_options = {}
       super(Context)
-      set 'options', options
+      set 'interpreter_options', interpreter_options
       reset
     end
 
@@ -310,11 +310,13 @@ module Gene::Lang
     def update_arguments values
       return if not self.arguments
 
+      value_index = 0
       self.arguments.each_with_index do |arg|
         if arg.name =~ /^(.*)\.\.\.$/
-          set_variable $1, values
+          set_variable $1, values[value_index..-1] || []
         else
-          set_variable arg.name, values.shift
+          set_variable arg.name, values[value_index]
+          value_index += 1
         end
       end
     end
