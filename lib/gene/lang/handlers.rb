@@ -43,6 +43,16 @@ module Gene::Lang::Handlers
         else
           Gene::NOT_HANDLED
         end
+      elsif data.is_a? Array
+        data.map do |item|
+          context.process item
+        end
+      elsif data.is_a? Hash
+        result = {}
+        data.each do |key, value|
+          result[key] = context.process value
+        end
+        result
       elsif data == PLACEHOLDER
         Gene::UNDEFINED
       elsif data == BREAK
@@ -387,12 +397,12 @@ module Gene::Lang::Handlers
     def call context, data
       return Gene::NOT_HANDLED unless FOR === data
       # initialize
-      context.process data.data.shift
+      context.process data.data[0]
 
-      condition = data.data.shift
-      update    = data.data.shift
+      condition = data.data[1]
+      update    = data.data[2]
       while context.process(condition)
-        context.process_statements data.data
+        context.process_statements data.data[3..-1] || []
         context.process update
       end
     end

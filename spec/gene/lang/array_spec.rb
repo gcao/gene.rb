@@ -13,6 +13,16 @@ describe "Array" do
     This approach is applied on all literals and hash objects as well
   '
 
+  it "
+    (fn f _ [])
+    (let a (f))
+    (let b (f))
+    (($invoke a 'object_id') != ($invoke b 'object_id'))
+  " do
+    result = @interpreter.parse_and_process(example.description)
+    result.should be_true
+  end
+
   it "(([1] .size) == 1)" do
     result = @interpreter.parse_and_process(example.description)
     result.should be_true
@@ -23,15 +33,14 @@ describe "Array" do
     result.should be_true
   end
 
-  it "(([1] .get 1) == undefined)" do
+  it "([1] .get 1)" do
     result = @interpreter.parse_and_process(example.description)
-    result.should be_true
+    result.should == nil
   end
 
-  it "(([1 [2]] .flatten) == [1 2])" do
-    # pending
+  it "([1 [2]] .flatten)" do
     result = @interpreter.parse_and_process(example.description)
-    result.should be_true
+    result.should == [1, 2]
   end
 
   it "

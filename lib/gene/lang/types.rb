@@ -147,7 +147,7 @@ module Gene::Lang
       result = Gene::UNDEFINED
       return result if statements.nil?
 
-      [statements].flatten.each do |stmt|
+      statements.each do |stmt|
         result = process stmt
         if result.is_a?(Gene::Lang::ReturnValue) or result.is_a?(Gene::Lang::BreakValue)
           break

@@ -10,9 +10,8 @@
     ($invoke self "size")
   )
   (method get i
-    (if (i >= (.size))
-      undefined
-      ($invoke self [] i)
+    (if (i < (.size))
+      ($invoke self '[]' i)
     )
   )
   (method each f
@@ -25,7 +24,7 @@
     (def result [])
     (for (let i 0) (i < (.size)) (let i (i + 1))
       (let item (.get i))
-      (if (f item))
+      # TODO:
     )
     result
   )
