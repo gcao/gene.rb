@@ -33,12 +33,21 @@ class Gene::Lang::Interpreter
   end
 
   def parse_and_process input
-    Gene::CoreInterpreter.parse_and_process input do |output|
-      process output
-    end
+    parsed = Gene::Parser.parse input
+    process parsed
   end
 
   def process data
-    @handlers.call @context, data
+    result = nil
+
+    if data.is_a? Gene::Types::Stream
+      data.each do |item|
+        result = @handlers.call @context, item
+      end
+    else
+      result = @handlers.call @context, data
+    end
+
+    result
   end
 end

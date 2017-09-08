@@ -1,32 +1,35 @@
 require "readline"
 
 class Gene::Lang::Repl
-  def initialize
-    @interpreter = Gene::Lang::Interpreter.new
-    # Define _ on the interpreter to save last result
-    @interpreter.class.send :attr_accessor, :_
+  def initialize context = Gene::Lang::Context.new
+    @context = context
+    # Define _ on the context to save last result
+    @context.class.send :attr_accessor, :_
   end
 
   def start
+    puts "<<<   WELCOME TO GENE LANG   >>>"
     while input = Readline.readline("GL> ", true)
       begin
         if input.strip == 'exit'
           puts "Exiting..."
+          puts "<<<         GOOD BYE         >>>"
           puts
           break
         elsif input.strip.empty?
           # Do nothing
-        elsif input =~ /^ /
-          result = @interpreter.instance_eval(input)
+        elsif input =~ /^ /  # eval code but don't change last returned value
+          result = @context.instance_eval(input)
           p result
           puts
-        elsif input =~ /^_/
-          @interpreter._ = @interpreter.instance_eval(input)
-          p @interpreter._
+        elsif input =~ /^_/  # eval code and store returned value to _
+          @context._ = @context.instance_eval(input)
+          p @context._
           puts
-        else
-          @interpreter._ = @interpreter.parse_and_process input
-          p @interpreter._
+        else # treat input as glang code, parse and execute, store result in _
+          parsed = Gene::Parser.parse input
+          @context._ = @context.process parsed
+          p @context._
           puts
         end
       rescue

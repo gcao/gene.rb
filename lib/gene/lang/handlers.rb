@@ -21,6 +21,8 @@ module Gene::Lang::Handlers
   SCOPE       = Gene::Types::Ident.new('$scope')
   INVOKE      = Gene::Types::Ident.new('$invoke')
 
+  REPL        = Gene::Types::Ident.new('open-repl')
+
   # Handle scope variables, instance variables like @var and literals
   class DefaultHandler
     def call context, data
@@ -40,6 +42,10 @@ module Gene::Lang::Handlers
           Gene::Lang::ReturnValue.new context.process(data.data[0])
         elsif BREAK === data
           Gene::Lang::BreakValue.new context.process(data.data[0])
+        elsif REPL === data
+          repl = Gene::Lang::Repl.new context
+          puts
+          repl.start
         else
           Gene::NOT_HANDLED
         end
