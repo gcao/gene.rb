@@ -427,4 +427,9 @@ module Gene::Lang::Handlers
     end
   end
 
+  class CatchAllHandler
+    def call context, data
+      raise "Should not reach here: input=#{data.inspect}"
+    end
+  end
 end

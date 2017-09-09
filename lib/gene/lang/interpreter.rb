@@ -25,7 +25,8 @@ class Gene::Lang::Interpreter
     @handlers.add 100, Gene::Lang::Handlers::CastHandler.new
     @handlers.add 100, Gene::Lang::Handlers::InitHandler.new
     @handlers.add 100, Gene::Lang::Handlers::BinaryExprHandler.new
-    @handlers.add 50, Gene::Lang::Handlers::InvocationHandler.new
+    @handlers.add 50,  Gene::Lang::Handlers::InvocationHandler.new
+    @handlers.add 0,   Gene::Lang::Handlers::CatchAllHandler.new
   end
 
   def load_core_libs

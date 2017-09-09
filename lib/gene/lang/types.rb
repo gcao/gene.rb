@@ -1,7 +1,4 @@
 module Gene::Lang
-  class BaseObject
-  end
-
   # All objects other than literals have this structure
   # type: a short Ident to help identify type of the object
   # properties: Hash
