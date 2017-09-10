@@ -41,29 +41,30 @@ module Gene::Lang
       obj
     end
 
-    # def to_s
-    #   s = "("
-    #   type = self.class ? self.class.name : "Gene::Lang::Object"
-    #   s << type << " "
+    def to_s
+      parts = []
+      parts << self.class ? self.class.name : Object.name
 
-    #   @properties.each do |name, value|
-    #     next if %W(#class #data).include? name.to_s
-    #     if value == true
-    #       s << "^^" << name.to_s << " "
-    #     elsif value == false
-    #       s << "^!" << name.to_s << " "
-    #     else
-    #       s << "^" << name.to_s << " " << value.inspect << " "
-    #     end
-    #   end
+      @properties.each do |name, value|
+        next if name.to_s =~ /^\$/
+        next if %W(#class #data).include? name.to_s
 
-    #   if @properties.include? "#data"
-    #     s << @properties["#data"].inspect
-    #   end
+        if value == true
+          parts << "^^#{name}"
+        elsif value == false
+          parts << "^!#{name}"
+        else
+          parts << "^#{name}" << value.inspect
+        end
+      end
 
-    #   s << ")"
-    # end
-    # alias inspect to_s
+      if @properties.include? "#data"
+        parts << @properties["#data"].inspect
+      end
+
+      "(#{parts.join(' ')})"
+    end
+    alias inspect to_s
 
     def self.attr_reader *names
       names.each do |name|

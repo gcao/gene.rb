@@ -1,4 +1,32 @@
-(class File
+(class Object
+  (method get prop-name
+    ((@ prop-name))
+  )
+
+  (method set [prop-name value]
+    (let (@ prop-name) value)
+  )
+
+  (method is klass
+    (klass .is-self-or-ancestor-of (.class))
+  )
+)
+
+(class Class
+  (method parent_classes _
+    (if ((@parent_classes .size) == 0)
+      [Object]
+      @parent_classes
+    )
+  )
+
+  # check whether I am klass or an ancestor of klass
+  (method is-self-or-ancestor-of klass
+    (if (self == klass)
+      true
+      # TODO: check parent classes
+    )
+  )
 )
 
 # Wrapper class for native arrays
@@ -13,6 +41,15 @@
     (if (i < (.size))
       ($invoke self '[]' i)
     )
+  )
+  (method any f
+    (for (let i 0) (i < (.size)) (let i (i + 1))
+      (let item (.get i))
+      (if (f item i)
+        return true
+      )
+    )
+    false
   )
   (method each f
     (for (let i 0) (i < (.size)) (let i (i + 1))
@@ -58,3 +95,8 @@
     ($invoke $self '<<' args)
   )
 )
+
+(class File
+)
+
+noop

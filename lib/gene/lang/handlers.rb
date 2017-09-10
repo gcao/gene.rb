@@ -7,9 +7,10 @@ module Gene::Lang::Handlers
     RETURN
     CALL DO
     DEF LET
-    IF
+    IF IF_NOT
     FOR LOOP
     BREAK
+    NOOP
   ).each do |name|
     const_set name, Gene::Types::Ident.new("#{name.downcase.gsub('_', '-')}")
   end
@@ -59,7 +60,7 @@ module Gene::Lang::Handlers
           result[key] = context.process value
         end
         result
-      elsif data == PLACEHOLDER
+      elsif data == PLACEHOLDER or data == NOOP
         Gene::UNDEFINED
       elsif data == BREAK
         Gene::Lang::BreakValue.new
@@ -326,6 +327,8 @@ module Gene::Lang::Handlers
         context["Array"]
       elsif obj.is_a? Hash
         context["Hash"]
+      elsif obj.is_a? Gene::Lang::Class
+        context["Class"]
       else
         obj.class
       end
@@ -383,19 +386,17 @@ module Gene::Lang::Handlers
   # Same as (if cond true_logic (if cond2 true_logic else_logic))
   class IfHandler
     def call context, data
-      return Gene::NOT_HANDLED unless IF === data
+      return Gene::NOT_HANDLED unless IF === data or IF_NOT === data
 
-      # data[1] is the condition
-      # data[2] is an array of code to be run when the condition evaluates to true
-      # data[3] is an array of code to be run when the condition evaluates to false
       condition   = data.data[0]
       true_logic  = data.data[1]
       false_logic = data.data[2]
       if context.process condition
-        context.process true_logic
+        logic = IF === data ? true_logic : false_logic
       else
-        context.process false_logic
+        logic = IF === data ? false_logic : true_logic
       end
+      context.process logic
     end
   end
 

@@ -619,6 +619,18 @@ describe Gene::Lang::Interpreter do
     end
   end
 
+  describe "if-not" do
+    it "(if-not true 1 2)" do
+      result = @interpreter.parse_and_process(example.description)
+      result.should == 2
+    end
+
+    it "(if-not false 1 2)" do
+      result = @interpreter.parse_and_process(example.description)
+      result.should == 1
+    end
+  end
+
   describe "for
     # For statement has structure of (for init cond update statements...)
     # It can be used to create other type of loops, iterators etc
@@ -657,6 +669,13 @@ describe Gene::Lang::Interpreter do
     " do
       result = @interpreter.parse_and_process(example.description)
       result.should == 100
+    end
+  end
+
+  describe "noop - no operation, do nothing and return undefined" do
+    it "noop" do
+      result = @interpreter.parse_and_process(example.description)
+      result.should == Gene::UNDEFINED
     end
   end
 

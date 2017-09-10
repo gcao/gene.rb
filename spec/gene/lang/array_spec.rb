@@ -13,6 +13,31 @@ describe "Array" do
     This approach is applied on all literals and hash objects as well
   '
 
+  it "(Array .parent_classes)" do
+    pending
+    result = @interpreter.parse_and_process(example.description)
+    result.size.should == 1
+    result[0].name.should == 'Object'
+  end
+
+  it "(([] .is Object) == true)" do
+    pending
+    result = @interpreter.parse_and_process(example.description)
+    result.should == true
+  end
+
+  it "(([] .is Array) == true)" do
+    pending
+    result = @interpreter.parse_and_process(example.description)
+    result.should == true
+  end
+
+  it "(([] .is Hash) == false)" do
+    pending
+    result = @interpreter.parse_and_process(example.description)
+    result.should == true
+  end
+
   it "
     (fn f _ [])
     (let a (f))
@@ -36,6 +61,18 @@ describe "Array" do
   it "([1] .get 1)" do
     result = @interpreter.parse_and_process(example.description)
     result.should == nil
+  end
+
+  it "([1] .any (fnx item (item == 1))) == true" do
+    pending
+    result = @interpreter.parse_and_process(example.description)
+    result.should == true
+  end
+
+  it "([1] .any (fnx item (item == 2))) == false" do
+    pending
+    result = @interpreter.parse_and_process(example.description)
+    result.should == true
   end
 
   it "([1 [2]] .flatten)" do
