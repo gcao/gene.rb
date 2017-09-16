@@ -2,19 +2,27 @@ require File.expand_path(File.dirname(__FILE__) + '/../../spec_helper')
 
 describe Gene::Lang::Interpreter do
   before do
-    @interpreter = Gene::Lang::Interpreter.new
+    @application = Gene::Lang::Application.new
+    @interpreter = Gene::Lang::Interpreter.new @application.root_context
   end
 
   describe "special built-in variables and functions" do
     it "
-      $context      # The interpreter's context
+      $application  # The application object which is like the start of the universe
+    " do
+      result = @interpreter.parse_and_process(example.description)
+      result.class.should == Gene::Lang::Application
+    end
+
+    it "
+      $context      # The current context
     " do
       result = @interpreter.parse_and_process(example.description)
       result.scope.should_not be_nil
     end
 
     it "
-      $global       # The global scope object
+      $global-scope # The global scope object
     " do
       result = @interpreter.parse_and_process(example.description)
       result.class.should == Gene::Lang::Scope
@@ -532,7 +540,7 @@ describe Gene::Lang::Interpreter do
 
     it "(let a 'value')" do
       result = @interpreter.parse_and_process(example.description)
-      @interpreter.context.get('a').should == 'value'
+      @interpreter.application.root_context.get('a').should == 'value'
       pending "should we return undefined or value instead?"
       result.class.should == Gene::Lang::Variable
       result.name.should  == 'a'
@@ -541,7 +549,7 @@ describe Gene::Lang::Interpreter do
 
     it "(let a (1 + 2))" do
       result = @interpreter.parse_and_process(example.description)
-      @interpreter.context.get('a').should == 3
+      @interpreter.application.root_context.get('a').should == 3
       pending "should we return undefined or value instead?"
       result.class.should == Gene::Lang::Variable
       result.name.should  == 'a'
@@ -663,6 +671,24 @@ describe Gene::Lang::Interpreter do
     it "
       (let i 0)
       (loop
+        (let i (i + 1))
+        (if (i >= 5) (break 100))
+      )
+    " do
+      result = @interpreter.parse_and_process(example.description)
+      result.should == 100
+    end
+
+    it "
+      # Loop as a regular function
+      (fn loop-test args...
+        # Do not create new scope
+        # Do not inherit current scope
+        # Get self, scope from caller
+        # args are not evaluated before passed in
+      )
+      (let i 0)
+      (loop-test
         (let i (i + 1))
         (if (i >= 5) (break 100))
       )

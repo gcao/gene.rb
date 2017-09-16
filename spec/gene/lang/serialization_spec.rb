@@ -2,7 +2,8 @@ require File.expand_path(File.dirname(__FILE__) + '/../../spec_helper')
 
 describe Gene::Lang do
   before do
-    @interpreter  = Gene::Lang::Interpreter.new
+    @application  = Gene::Lang::Application.new
+    @interpreter  = Gene::Lang::Interpreter.new @application.root_context
     @serializer   = Gene::Lang::Serializer.new
     @deserializer = Gene::Lang::Deserializer.new
   end

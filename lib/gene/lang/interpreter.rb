@@ -1,7 +1,7 @@
 class Gene::Lang::Interpreter
   attr_accessor :context
 
-  def initialize context = Gene::Lang::Context.new
+  def initialize context
     init_handlers
     @context = context
   end

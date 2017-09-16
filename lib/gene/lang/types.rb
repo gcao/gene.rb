@@ -88,44 +88,66 @@ module Gene::Lang
     end
   end
 
-  class Context < Object
-    attr_accessor :interpreter_options, :global_scope, :scopes, :self_objects
-    def initialize interpreter_options = {}
-      super(Context)
-      set 'interpreter_options', interpreter_options
-      reset
-    end
+  class Application < Object
+    attr_accessor :global_scope, :root_context, :interpreter_options
+    def initialize
+      super(Application)
 
-    def reset
       set 'global_scope', Gene::Lang::Scope.new(nil)
-      set 'scopes', [Gene::Lang::Scope.new(nil)]
-      set 'self_objects', []
+
+      context = Context.new
+      context.application = self
+      context.scope = Gene::Lang::Scope.new(nil)
+      set 'root_context', context
+    end
+  end
+
+  class Context < Object
+    attr_accessor :scope, :self
+    def initialize
+      super(Context)
     end
 
-    def scope
-      scopes.last
+    def extend scope, _self
+      new_context = Context.new
+      new_context.application = @application
+      new_context.scope = scope
+      new_context.self = _self
+      new_context
     end
 
-    def start_scope scope = Gene::Lang::Scope.new(nil)
-      scopes.push scope
+    def application
+      @application
     end
 
-    def end_scope
-      throw "Scope error: can not close the root scope." if scopes.size == 0
-      scopes.pop
+    def application= application
+      @application = application
     end
 
-    def self
-      self_objects.last
+    def global_scope
+      application.global_scope
     end
 
-    def start_self self_object
-      self_objects.push self_object
-    end
+    # def start_scope scope = Gene::Lang::Scope.new(nil)
+    #   scopes.push scope
+    # end
 
-    def end_self
-      self_objects.pop
-    end
+    # def end_scope
+    #   throw "Scope error: can not close the root scope." if scopes.size == 0
+    #   scopes.pop
+    # end
+
+    # def self
+    #   self_objects.last
+    # end
+
+    # def start_self self_object
+    #   self_objects.push self_object
+    # end
+
+    # def end_self
+    #   self_objects.pop
+    # end
 
     def get name
       if scope.defined? name
@@ -215,18 +237,12 @@ module Gene::Lang
       scope.update_arguments expanded_arguments
 
       context = options[:context]
-      context.start_self options[:self]
-      context.start_scope scope
-      begin
-        result = context.process_statements statements
-        if result.is_a? ReturnValue
-          result = result.value
-        end
-        result
-      ensure
-        context.end_scope
-        context.end_self
+      new_context = context.extend scope, options[:self]
+      result = new_context.process_statements statements
+      if result.is_a? ReturnValue
+        result = result.value
       end
+      result
     end
 
     private

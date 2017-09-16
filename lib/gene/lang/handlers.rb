@@ -17,8 +17,9 @@ module Gene::Lang::Handlers
 
   PLACEHOLDER = Gene::Types::Ident.new('_')
   PROP_NAME   = Gene::Types::Ident.new('@')
+  APPLICATION = Gene::Types::Ident.new('$application')
   CONTEXT     = Gene::Types::Ident.new('$context')
-  GLOBAL      = Gene::Types::Ident.new('$global')
+  GLOBAL      = Gene::Types::Ident.new('$global-scope')
   SCOPE       = Gene::Types::Ident.new('$scope')
   INVOKE      = Gene::Types::Ident.new('$invoke')
 
@@ -66,6 +67,8 @@ module Gene::Lang::Handlers
         Gene::Lang::BreakValue.new
       elsif data == RETURN
         Gene::Lang::ReturnValue.new
+      elsif data == APPLICATION
+        context.application
       elsif data == CONTEXT
         context
       elsif data == GLOBAL
@@ -107,18 +110,12 @@ module Gene::Lang::Handlers
       klass = Gene::Lang::Class.new name
 
       scope = Gene::Lang::Scope.new nil
-      context.start_self klass
-      context.start_scope scope
-      begin
-        # TODO: check whether Object class is defined.
-        # If yes, and the newly defined class isn't Object and doesn't have a parent class, set Object as its parent class
-        context.process_statements data.data[1..-1] || []
-        context.global_scope.set_variable name, klass
-        klass
-      ensure
-        context.end_scope
-        context.end_self
-      end
+      new_context = context.extend scope, klass
+      # TODO: check whether Object class is defined.
+      # If yes, and the newly defined class isn't Object and doesn't have a parent class, set Object as its parent class
+      new_context.process_statements data.data[1..-1] || []
+      new_context.global_scope.set_variable name, klass
+      klass
     end
   end
 
