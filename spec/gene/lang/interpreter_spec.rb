@@ -540,7 +540,7 @@ describe Gene::Lang::Interpreter do
 
     it "(let a 'value')" do
       result = @interpreter.parse_and_process(example.description)
-      @interpreter.application.root_context.get('a').should == 'value'
+      @interpreter.context.get('a').should == 'value'
       pending "should we return undefined or value instead?"
       result.class.should == Gene::Lang::Variable
       result.name.should  == 'a'
@@ -549,7 +549,7 @@ describe Gene::Lang::Interpreter do
 
     it "(let a (1 + 2))" do
       result = @interpreter.parse_and_process(example.description)
-      @interpreter.application.root_context.get('a').should == 3
+      @interpreter.context.get('a').should == 3
       pending "should we return undefined or value instead?"
       result.class.should == Gene::Lang::Variable
       result.name.should  == 'a'
