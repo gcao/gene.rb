@@ -134,7 +134,20 @@ module Gene::Lang::Handlers
         fn   = Gene::Lang::Function.new name
       end
 
-      fn.parent_scope = context.scope
+      # inherit-scope defaults to true unless its value is set to false
+      if data['inherit-scope'] == false
+        fn.inherit_scope = false
+      else
+        fn.inherit_scope = true
+        fn.parent_scope  = context.scope
+      end
+
+      # eval-arguments defaults to true unless its value is set to false
+      if data['eval-arguments'] == false
+        fn.eval_arguments = false
+      else
+        fn.eval_arguments = true
+      end
 
       if not FNXX === data
         fn.arguments = [data.data[next_index]].flatten
@@ -302,7 +315,11 @@ module Gene::Lang::Handlers
         method.call context: context, self: value, arguments: data.data[1..-1].map{|item| context.process item}
       elsif data.is_a? Gene::Types::Base and data.type.is_a? Gene::Types::Ident and data.type.name =~ /^[a-zA-Z_]/
         value = context.process(data.type)
-        value.call context: context, arguments: data.data.map{|item| context.process item}
+        arguments = data.data
+        if value.eval_arguments
+          arguments = arguments.map{|item| context.process item}
+        end
+        value.call context: context, arguments: arguments
       elsif data.is_a? Gene::Types::Base and data.type.is_a? Gene::Types::Ident and data.type.name =~ /^.(.*)$/
         klass = get_class(context.self, context)
         value = klass.method($1)
@@ -420,6 +437,8 @@ module Gene::Lang::Handlers
         result = context.process_statements data.data
         if result.is_a? Gene::Lang::BreakValue
           break result.value
+        elsif result.is_a? Gene::Lang::ReturnValue
+          break result
         end
       end
     end

@@ -681,7 +681,8 @@ describe Gene::Lang::Interpreter do
 
     it "
       # Loop as a regular function
-      (raw-fn loop-test args...
+      (fn loop-test args...
+        ^!inherit-scope ^!eval-arguments
         # Do not inherit scope from where it's defined in: equivalent to ^!inherit-scope
         # args are not evaluated before passed in: equivalent to ^!eval-arguments
         #
@@ -699,7 +700,6 @@ describe Gene::Lang::Interpreter do
         (if (i >= 5) (break 100))
       )
     " do
-      pending
       result = @interpreter.parse_and_process(example.description)
       result.should == 100
     end

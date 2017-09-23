@@ -227,6 +227,7 @@ module Gene::Lang
 
       set 'name', name
       self.inherit_scope = true # Default inherit_scope to true
+      self.eval_arguments = true # Default inherit_scope to true
     end
 
     def call options = {}
