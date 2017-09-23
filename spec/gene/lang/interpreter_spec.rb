@@ -681,11 +681,17 @@ describe Gene::Lang::Interpreter do
 
     it "
       # Loop as a regular function
-      (fn loop-test args...
-        # Do not create new scope
-        # Do not inherit current scope
-        # Get self, scope from caller
-        # args are not evaluated before passed in
+      (raw-fn loop-test args...
+        # Do not inherit scope from where it's defined in: equivalent to ^!inherit-scope
+        # args are not evaluated before passed in: equivalent to ^!eval-arguments
+        #
+        # After evaluation, ReturnValue are returned as is, BreakValue are unwrapped and returned
+        (loop
+          (let result ($invoke $caller-context 'process_statements' args))
+          (if (($invoke ($invoke result 'class') 'name') == 'BreakValue')
+            (return ($invoke result 'value'))
+          )
+        )
       )
       (let i 0)
       (loop-test
@@ -693,6 +699,7 @@ describe Gene::Lang::Interpreter do
         (if (i >= 5) (break 100))
       )
     " do
+      pending
       result = @interpreter.parse_and_process(example.description)
       result.should == 100
     end

@@ -273,9 +273,9 @@ describe Gene::Macro::Interpreter do
 
   describe "loop: simplest loop" do
     it "
-      (loop
+      (#loop
         (##incr x)
-        (if (##x > 4) break)
+        (#if (##x > 4) #break)
       )
       ##x
     " do

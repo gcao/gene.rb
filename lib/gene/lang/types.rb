@@ -221,22 +221,27 @@ module Gene::Lang
   class Function < Object
     attr_reader :name
     attr_accessor :parent_scope, :arguments, :statements
+    attr_accessor :inherit_scope, :eval_arguments
     def initialize name
       super(Function)
 
       set 'name', name
+      self.inherit_scope = true # Default inherit_scope to true
     end
 
     def call options = {}
-      scope = Scope.new parent_scope
+      _parent_scope = inherit_scope ? parent_scope : nil
+      scope = Scope.new _parent_scope
+      context = options[:context]
+
       scope.set_variable '$function', self
+      scope.set_variable '$caller-context', context
       scope.arguments = self.arguments
 
       expanded_arguments = expand_arguments(options[:arguments])
       scope.set_variable '$arguments', expanded_arguments
       scope.update_arguments expanded_arguments
 
-      context = options[:context]
       new_context = context.extend scope, options[:self]
       result = new_context.process_statements statements
       if result.is_a? ReturnValue
