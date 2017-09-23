@@ -7,6 +7,10 @@
     (let (@ prop-name) value)
   )
 
+  (method call name args...
+    ($invoke self name args...)
+  )
+
   (method is klass
     (klass .is-self-or-ancestor-of (.class))
   )

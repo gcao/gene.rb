@@ -1,8 +1,10 @@
 require "readline"
 
 class Gene::Lang::Repl
-  def initialize context = Gene::Lang::Context.new
-    @context = context
+  def initialize
+    application = Gene::Lang::Application.new
+    @context = application.root_context
+    @context.interpreter.load_core_libs
     # Define _ on the context to save last result
     @context.class.send :attr_accessor, :_
   end

@@ -116,6 +116,10 @@ module Gene::Lang
       new_context
     end
 
+    def interpreter
+      @interpreter ||= Gene::Lang::Interpreter.new self
+    end
+
     def application
       @application
     end
@@ -159,8 +163,7 @@ module Gene::Lang
     alias [] get
 
     def process data
-      @interpreter ||= Gene::Lang::Interpreter.new self
-      @interpreter.process data
+      interpreter.process data
     end
 
     def process_statements statements

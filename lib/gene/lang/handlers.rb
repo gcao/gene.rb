@@ -36,8 +36,6 @@ module Gene::Lang::Handlers
           target.send method, *args
         elsif PROP_NAME === data
           Gene::Lang::PropertyName.new context.process(data.data[0])
-        elsif data.is_a? Gene::Lang::PropertyName
-          context.self[data.name]
         elsif DO === data
           context.process_statements data.data
         elsif RETURN === data
@@ -48,6 +46,8 @@ module Gene::Lang::Handlers
           repl = Gene::Lang::Repl.new context
           puts
           repl.start
+        elsif data.type.is_a? Gene::Lang::PropertyName
+          context.self[data.type.name]
         else
           Gene::NOT_HANDLED
         end
