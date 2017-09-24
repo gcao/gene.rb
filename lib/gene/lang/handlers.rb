@@ -50,9 +50,7 @@ module Gene::Lang::Handlers
         if INVOKE === data
           target = context.process data.data[0]
           method = context.process(data.data[1]).to_s
-          p data
           args   = data.data[2..-1].to_a.map {|item| context.process(item) }
-          p args
           args   = expand args
           target.send method, *args
         elsif PROP_NAME === data

@@ -25,10 +25,11 @@
   )
 
   # check whether I am klass or an ancestor of klass
-  (method is-self-or-ancestor-of klass
+  (method is_sub_class klass
     (if (self == klass)
       true
       # TODO: check parent classes
+      ((.parent_classes) .any (fnx _klass (_klass .is_sub_class klass)))
     )
   )
 )
