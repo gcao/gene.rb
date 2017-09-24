@@ -7,7 +7,7 @@
     (let (@ prop-name) value)
   )
 
-  (method call name args...
+  (method call [name args...]
     ($invoke self name args...)
   )
 

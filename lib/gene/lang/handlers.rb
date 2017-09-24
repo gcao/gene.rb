@@ -25,14 +25,35 @@ module Gene::Lang::Handlers
 
   REPL        = Gene::Types::Ident.new('open-repl')
 
+  module Utilities
+    def expand array
+      result = []
+      array.each do |item|
+        if item.is_a? Gene::Lang::Expandable
+          item.value.each do |x|
+            result.push x
+          end
+        else
+          result.push item
+        end
+      end
+      result
+    end
+  end
+
   # Handle scope variables, instance variables like @var and literals
   class DefaultHandler
+    include Utilities
+
     def call context, data
       if data.is_a? Gene::Types::Base
         if INVOKE === data
           target = context.process data.data[0]
           method = context.process(data.data[1]).to_s
+          p data
           args   = data.data[2..-1].to_a.map {|item| context.process(item) }
+          p args
+          args   = expand args
           target.send method, *args
         elsif PROP_NAME === data
           Gene::Lang::PropertyName.new context.process(data.data[0])
@@ -307,28 +328,37 @@ module Gene::Lang::Handlers
   end
 
   class InvocationHandler
+    include Utilities
+
     def call context, data
       if data.is_a? Gene::Types::Base and data.data[0].is_a? Gene::Types::Ident and data.data[0].to_s[0] == '.'
         value = context.process data.type
         klass = get_class(value, context)
         method = klass.method(data.data[0].to_s[1..-1])
-        method.call context: context, self: value, arguments: data.data[1..-1].map{|item| context.process item}
+        args = data.data[1..-1].map{|item| context.process item}
+        args = expand args
+        method.call context: context, self: value, arguments: args
       elsif data.is_a? Gene::Types::Base and data.type.is_a? Gene::Types::Ident and data.type.name =~ /^[a-zA-Z_]/
         value = context.process(data.type)
-        arguments = data.data
+        args = data.data
         if value.eval_arguments
-          arguments = arguments.map{|item| context.process item}
+          args = args.map{|item| context.process item}
         end
-        value.call context: context, arguments: arguments
+        args = expand args
+        value.call context: context, arguments: args
       elsif data.is_a? Gene::Types::Base and data.type.is_a? Gene::Types::Ident and data.type.name =~ /^.(.*)$/
         klass = get_class(context.self, context)
         value = klass.method($1)
-        value.call context: context, self: context.self, arguments: data.data.map{|item| context.process item}
+        args = data.data.map{|item| context.process item}
+        args = expand args
+        value.call context: context, self: context.self, arguments: args
       elsif data.is_a? Gene::Types::Base and data.type.is_a? Gene::Types::Base
         data.type = context.process data.type
         context.process data
       elsif data.is_a? Gene::Types::Base and data.type.is_a? Gene::Lang::Function
-        data.type.call context: context, arguments: data.data.map{|item| context.process item}
+        args = data.data.map{|item| context.process item}
+        args = expand args
+        data.type.call context: context, arguments: args
       else
         Gene::NOT_HANDLED
       end
