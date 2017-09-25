@@ -26,9 +26,9 @@
 
   # check whether I am klass or an ancestor of klass
   (method is_sub_class klass
+    # (open-repl)
     (if (self == klass)
       true
-      # TODO: check parent classes
       ((.parent_classes) .any (fnx _klass (_klass .is_sub_class klass)))
     )
   )

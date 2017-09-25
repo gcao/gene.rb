@@ -1,8 +1,8 @@
 module Gene
   module Handlers
     class RefHandler
-      SET   = Gene::Types::Ident.new('#SET')
-      UNSET = Gene::Types::Ident.new('#UNSET')
+      SET   = Gene::Types::Symbol.new('#SET')
+      UNSET = Gene::Types::Symbol.new('#UNSET')
 
       def initialize
         @logger = Logem::Logger.new(self)

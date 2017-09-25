@@ -2,7 +2,7 @@ module Gene
   module Handlers
     module Ruby
       class IfHandler
-        IF = Gene::Types::Ident.new 'if'
+        IF = Gene::Types::Symbol.new 'if'
 
         def initialize
           @logger = Logem::Logger.new(self)

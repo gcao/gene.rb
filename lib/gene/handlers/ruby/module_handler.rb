@@ -2,7 +2,7 @@ module Gene
   module Handlers
     module Ruby
       class ModuleHandler
-        MODULE = Gene::Types::Ident.new 'module'
+        MODULE = Gene::Types::Symbol.new 'module'
 
         def initialize
           @logger = Logem::Logger.new(self)

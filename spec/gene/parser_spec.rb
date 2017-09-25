@@ -21,25 +21,25 @@ describe Gene::Parser do
     '1.0'      => 1.0,
     '-1.0'     => -1.0,
     'true'     => true,
-    'truea'    => Gene::Types::Ident.new('truea'),
+    'truea'    => Gene::Types::Symbol.new('truea'),
     'false'    => false,
     'null'     => nil,
     'undefined'=> Gene::UNDEFINED,
     '#_'       => Gene::PLACEHOLDER,
     # '#a'       => Gene::Types::Ref.new('a'),
-    '\#'       => Gene::Types::Ident.new('#', true),
-    '\#a'      => Gene::Types::Ident.new('#a', true),
-    'a'        => Gene::Types::Ident.new('a'),
+    '\#'       => Gene::Types::Symbol.new('#', true),
+    '\#a'      => Gene::Types::Symbol.new('#a', true),
+    'a'        => Gene::Types::Symbol.new('a'),
     # Quoted identity, support escaping with "\"
-    # '#""'      => Gene::Types::Ident.new(''),
-    # "#''"      => Gene::Types::Ident.new(''),
-    'a b'      => Gene::Types::Stream.new(Gene::Types::Ident.new('a'), Gene::Types::Ident.new('b')),
-    '\\('      => Gene::Types::Ident.new('(', true),
+    # '#""'      => Gene::Types::Symbol.new(''),
+    # "#''"      => Gene::Types::Symbol.new(''),
+    'a b'      => Gene::Types::Stream.new(Gene::Types::Symbol.new('a'), Gene::Types::Symbol.new('b')),
+    '\\('      => Gene::Types::Symbol.new('(', true),
     '()'       => Gene::NOOP,
     '1 ()'     => Gene::Types::Stream.new(1, Gene::NOOP),
     '("a")'    => Gene::Types::Base.new("a"),
-    '(a)'      => Gene::Types::Base.new(Gene::Types::Ident.new('a')),
-    '(a b)'    => Gene::Types::Base.new(Gene::Types::Ident.new('a'), Gene::Types::Ident.new('b')),
+    '(a)'      => Gene::Types::Base.new(Gene::Types::Symbol.new('a')),
+    '(a b)'    => Gene::Types::Base.new(Gene::Types::Symbol.new('a'), Gene::Types::Symbol.new('b')),
     '(#.. 1 2)'  => 1..2,
     '(#<> 1 2)'  => Set.new([1, 2]),
 
@@ -50,18 +50,18 @@ describe Gene::Parser do
     # ## comment out next item (structural)
     # ##< comment out up to >## or end of group/array/hash (structural)
     # TODO need to add more tests espectially for structural comments
-    "(a # b\n)"                   => Gene::Types::Base.new(Gene::Types::Ident.new('a')),
-    "(a #< this is a test ># b)"  => Gene::Types::Base.new(Gene::Types::Ident.new('a'), Gene::Types::Ident.new('b')),
-    "(a #< this is a test)"       => Gene::Types::Base.new(Gene::Types::Ident.new('a')),
-    "(a ## b c)"                  => Gene::Types::Base.new(Gene::Types::Ident.new('a'), Gene::COMMENT_NEXT, Gene::Types::Ident.new('b'), Gene::Types::Ident.new('c')),
-    "(a ##(b))"                   => Gene::Types::Base.new(Gene::Types::Ident.new('a'), Gene::COMMENT_NEXT, Gene::Types::Base.new(Gene::Types::Ident.new('b'))),
-    #"(a ##< b c)"                 => Gene::Types::Base.new(Gene::Types::Ident.new('a')),
-    #"(a ##< b >## c)"             => Gene::Types::Base.new(Gene::Types::Ident.new('a'), Gene::Types::Ident.new('c')),
+    "(a # b\n)"                   => Gene::Types::Base.new(Gene::Types::Symbol.new('a')),
+    "(a #< this is a test ># b)"  => Gene::Types::Base.new(Gene::Types::Symbol.new('a'), Gene::Types::Symbol.new('b')),
+    "(a #< this is a test)"       => Gene::Types::Base.new(Gene::Types::Symbol.new('a')),
+    "(a ## b c)"                  => Gene::Types::Base.new(Gene::Types::Symbol.new('a'), Gene::COMMENT_NEXT, Gene::Types::Symbol.new('b'), Gene::Types::Symbol.new('c')),
+    "(a ##(b))"                   => Gene::Types::Base.new(Gene::Types::Symbol.new('a'), Gene::COMMENT_NEXT, Gene::Types::Base.new(Gene::Types::Symbol.new('b'))),
+    #"(a ##< b c)"                 => Gene::Types::Base.new(Gene::Types::Symbol.new('a')),
+    #"(a ##< b >## c)"             => Gene::Types::Base.new(Gene::Types::Symbol.new('a'), Gene::Types::Symbol.new('c')),
 
-    '(a (b))'  => Gene::Types::Base.new(Gene::Types::Ident.new('a'), Gene::Types::Base.new(Gene::Types::Ident.new('b'))),
-    '[a]'      => [Gene::Types::Ident.new('a')],
-    #'(\[\] a)' => Gene::Types::Base.new(Gene::Types::Ident.new('[]'), Gene::Types::Ident.new('a')),
-    '[[a]]'    => [[Gene::Types::Ident.new('a')]],
+    '(a (b))'  => Gene::Types::Base.new(Gene::Types::Symbol.new('a'), Gene::Types::Base.new(Gene::Types::Symbol.new('b'))),
+    '[a]'      => [Gene::Types::Symbol.new('a')],
+    #'(\[\] a)' => Gene::Types::Base.new(Gene::Types::Symbol.new('[]'), Gene::Types::Symbol.new('a')),
+    '[[a]]'    => [[Gene::Types::Symbol.new('a')]],
   }.each do |input, result|
     it "parse #{input} should work" do
       Gene::Parser.parse(input).should == result
@@ -76,17 +76,17 @@ describe Gene::Parser do
 
     it '{a : b}' do
       result = Gene::Parser.parse(example.description)
-      result.keys.first.should == Gene::Types::Ident.new('a')
-      result.values.first.should == Gene::Types::Ident.new('b')
+      result.keys.first.should == Gene::Types::Symbol.new('a')
+      result.values.first.should == Gene::Types::Symbol.new('b')
     end
 
     ['{a : b c : d}', '{a : b, c : d}', '{,a : b, c : d,}'].each do |input|
       it input do
         result = Gene::Parser.parse(example.description)
-        result.keys.should include(Gene::Types::Ident.new('a'))
-        result.keys.should include(Gene::Types::Ident.new('c'))
-        result.values.should include(Gene::Types::Ident.new('b'))
-        result.values.should include(Gene::Types::Ident.new('d'))
+        result.keys.should include(Gene::Types::Symbol.new('a'))
+        result.keys.should include(Gene::Types::Symbol.new('c'))
+        result.values.should include(Gene::Types::Symbol.new('b'))
+        result.values.should include(Gene::Types::Symbol.new('d'))
       end
     end
   end
@@ -101,7 +101,7 @@ describe Gene::Parser do
     it '(^key true a)' do
       result = Gene::Parser.parse(example.description)
       result.class.should == Gene::Types::Base
-      result.type.should == Gene::Types::Ident.new('a')
+      result.type.should == Gene::Types::Symbol.new('a')
       result.properties['key'].should == true
     end
 
@@ -145,7 +145,7 @@ describe Gene::Parser do
     it '(a \^key)' do
       result = Gene::Parser.parse(example.description)
       result.class.should == Gene::Types::Base
-      result.data[0].should == Gene::Types::Ident.new('^key', true)
+      result.data[0].should == Gene::Types::Symbol.new('^key', true)
     end
   end
 

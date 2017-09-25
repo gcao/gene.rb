@@ -1,7 +1,7 @@
 module Gene
   module Handlers
     class Base64Handler
-      BASE64 = Gene::Types::Ident.new('#BASE64')
+      BASE64 = Gene::Types::Symbol.new('#BASE64')
 
       def initialize
         @logger = Logem::Logger.new(self)

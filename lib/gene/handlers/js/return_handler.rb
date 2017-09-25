@@ -2,7 +2,7 @@ module Gene
   module Handlers
     module Js
       class ReturnHandler
-        RETURN = Gene::Types::Ident.new('return')
+        RETURN = Gene::Types::Symbol.new('return')
 
         def initialize
           @logger = Logem::Logger.new(self)

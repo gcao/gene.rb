@@ -57,8 +57,8 @@ module Gene
     UNPARSED  = Object.new
     IGNORABLE = Object.new
 
-    RANGE = Gene::Types::Ident.new('#..')
-    SET   = Gene::Types::Ident.new('#<>')
+    RANGE = Gene::Types::Symbol.new('#..')
+    SET   = Gene::Types::Symbol.new('#<>')
 
     def self.parse input, options = {}
       new(input, options).parse
@@ -299,7 +299,7 @@ module Gene
         end
       end
 
-      Gene::Types::Ident.new(value, escaped)
+      Gene::Types::Symbol.new(value, escaped)
     end
 
     # def parse_ref

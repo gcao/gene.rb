@@ -2,7 +2,7 @@ module Gene
   module Handlers
     module Js
       class ClassHandler
-        CLASS = Gene::Types::Ident.new 'class'
+        CLASS = Gene::Types::Symbol.new 'class'
 
         def initialize
           @logger = Logem::Logger.new(self)

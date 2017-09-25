@@ -1,6 +1,6 @@
 module Gene::Lang
   # All objects other than literals have this structure
-  # type: a short Ident to help identify type of the object
+  # type: a short Symbol to help identify type of the object
   # properties: Hash
   #   ...
   # data: literal or array or anything else
@@ -43,7 +43,8 @@ module Gene::Lang
 
     def to_s
       parts = []
-      parts << self.class ? self.class.name : Object.name
+      type = self.class ? self.class.name : Object.name
+      parts << type.sub(/^Gene::Lang::/, '')
 
       @properties.each do |name, value|
         next if name.to_s =~ /^\$/
@@ -193,12 +194,12 @@ module Gene::Lang
     end
 
     # def def_property name
-    #   methods[name.to_s]  = Block.new [], [Gene::Types::Ident.new("@#{name}")]
+    #   methods[name.to_s]  = Block.new [], [Gene::Types::Symbol.new("@#{name}")]
     #   methods["#{name}="] = Block.new ['value'], [
     #     Gene::Types::Base.new(
-    #       Gene::Types::Ident.new('let'),
-    #       Gene::Types::Ident.new("@#{name}"),
-    #       Gene::Types::Ident.new('value'),
+    #       Gene::Types::Symbol.new('let'),
+    #       Gene::Types::Symbol.new("@#{name}"),
+    #       Gene::Types::Symbol.new('value'),
     #     )
     #   ]
     # end
@@ -416,7 +417,7 @@ module Gene::Lang
   # init.arguments  = ['name']
   # init.statements = [
   #   (let @name name)
-  #   Gene::Types::Base.new(Gene::Types::Ident.new('let'), Gene::Types::Ident.new('@name'), Gene::Types::Ident.new('name'))
+  #   Gene::Types::Base.new(Gene::Types::Symbol.new('let'), Gene::Types::Symbol.new('@name'), Gene::Types::Symbol.new('name'))
   # ]
   # FunctionClass.method 'init', call
   # call = FunctionClass.new

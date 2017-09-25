@@ -12,12 +12,12 @@ module Gene::Macro::Handlers
     EQ NE LT LE GT GE
     ADD SUB MUL DIV INCR DECR
   ).each do |name|
-    const_set name, Gene::Types::Ident.new("##{name.downcase.gsub('_', '-')}")
+    const_set name, Gene::Types::Symbol.new("##{name.downcase.gsub('_', '-')}")
   end
 
   class DefaultHandler
     def call context, data
-      if data.is_a? Gene::Types::Ident and data.name =~ /^##(.*)$/
+      if data.is_a? Gene::Types::Symbol and data.name =~ /^##(.*)$/
         context.scope[$1]
 
       elsif data == CWD

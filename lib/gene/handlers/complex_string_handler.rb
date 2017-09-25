@@ -1,8 +1,8 @@
 module Gene
   module Handlers
     class ComplexStringHandler
-      COMPLEX_STRING1 = Gene::Types::Ident.new('#""')
-      COMPLEX_STRING2 = Gene::Types::Ident.new("#''")
+      COMPLEX_STRING1 = Gene::Types::Symbol.new('#""')
+      COMPLEX_STRING2 = Gene::Types::Symbol.new("#''")
 
       def initialize
         @logger = Logem::Logger.new(self)

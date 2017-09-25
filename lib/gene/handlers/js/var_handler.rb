@@ -2,7 +2,7 @@ module Gene
   module Handlers
     module Js
       class VarHandler
-        VAR = Gene::Types::Ident.new('var')
+        VAR = Gene::Types::Symbol.new('var')
 
         def initialize
           @logger = Logem::Logger.new(self)

@@ -1,7 +1,7 @@
 module Gene
   module Handlers
     class SetHandler
-      SET = Gene::Types::Ident.new('#<>')
+      SET = Gene::Types::Symbol.new('#<>')
 
       def initialize
         @logger = Logem::Logger.new(self)

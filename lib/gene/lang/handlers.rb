@@ -10,20 +10,21 @@ module Gene::Lang::Handlers
     IF IF_NOT
     FOR LOOP
     BREAK
+    PRINT PRINTLN
     NOOP
   ).each do |name|
-    const_set name, Gene::Types::Ident.new("#{name.downcase.gsub('_', '-')}")
+    const_set name, Gene::Types::Symbol.new("#{name.downcase.gsub('_', '-')}")
   end
 
-  PLACEHOLDER = Gene::Types::Ident.new('_')
-  PROP_NAME   = Gene::Types::Ident.new('@')
-  APPLICATION = Gene::Types::Ident.new('$application')
-  CONTEXT     = Gene::Types::Ident.new('$context')
-  GLOBAL      = Gene::Types::Ident.new('$global-scope')
-  SCOPE       = Gene::Types::Ident.new('$scope')
-  INVOKE      = Gene::Types::Ident.new('$invoke')
+  PLACEHOLDER = Gene::Types::Symbol.new('_')
+  PROP_NAME   = Gene::Types::Symbol.new('@')
+  APPLICATION = Gene::Types::Symbol.new('$application')
+  CONTEXT     = Gene::Types::Symbol.new('$context')
+  GLOBAL      = Gene::Types::Symbol.new('$global-scope')
+  SCOPE       = Gene::Types::Symbol.new('$scope')
+  INVOKE      = Gene::Types::Symbol.new('$invoke')
 
-  REPL        = Gene::Types::Ident.new('open-repl')
+  REPL        = Gene::Types::Symbol.new('open-repl')
 
   module Utilities
     def expand array
@@ -96,7 +97,7 @@ module Gene::Lang::Handlers
         context.scope
       elsif data == SELF
         context.self
-      elsif data.is_a? Gene::Types::Ident
+      elsif data.is_a? Gene::Types::Symbol
         name = data.name
         if name =~ /^(.*)\.\.\.$/
           if $1[0] == '@'
@@ -225,7 +226,7 @@ module Gene::Lang::Handlers
 
       get = Gene::Lang::Function.new name
       # Default code: [@x]  assume x is the property name
-      code = data['get'] || [Gene::Types::Ident.new("@#{name}")]
+      code = data['get'] || [Gene::Types::Symbol.new("@#{name}")]
       get.arguments = []
       get.statements = code
       context.self.methods[get.name] = get
@@ -233,8 +234,8 @@ module Gene::Lang::Handlers
       set = Gene::Lang::Function.new "#{name}="
       # Default code: [value (let @x value)]  assume x is the property name
       code = data['set'] || [
-        Gene::Types::Ident.new("value"),
-        Gene::Types::Base.new(LET, Gene::Types::Ident.new("@#{name}"), Gene::Types::Ident.new("value"))
+        Gene::Types::Symbol.new("value"),
+        Gene::Types::Base.new(LET, Gene::Types::Symbol.new("@#{name}"), Gene::Types::Symbol.new("value"))
       ]
       arg_name  = code[0].to_s
       set.arguments = [Gene::Lang::Argument.new(0, arg_name)]
@@ -329,14 +330,14 @@ module Gene::Lang::Handlers
     include Utilities
 
     def call context, data
-      if data.is_a? Gene::Types::Base and data.data[0].is_a? Gene::Types::Ident and data.data[0].to_s[0] == '.'
+      if data.is_a? Gene::Types::Base and data.data[0].is_a? Gene::Types::Symbol and data.data[0].to_s[0] == '.'
         value = context.process data.type
         klass = get_class(value, context)
         method = klass.method(data.data[0].to_s[1..-1])
         args = data.data[1..-1].map{|item| context.process item}
         args = expand args
         method.call context: context, self: value, arguments: args
-      elsif data.is_a? Gene::Types::Base and data.type.is_a? Gene::Types::Ident and data.type.name =~ /^[a-zA-Z_]/
+      elsif data.is_a? Gene::Types::Base and data.type.is_a? Gene::Types::Symbol and data.type.name =~ /^[a-zA-Z_]/
         value = context.process(data.type)
         args = data.data
         if value.eval_arguments
@@ -344,7 +345,7 @@ module Gene::Lang::Handlers
         end
         args = expand args
         value.call context: context, arguments: args
-      elsif data.is_a? Gene::Types::Base and data.type.is_a? Gene::Types::Ident and data.type.name =~ /^.(.*)$/
+      elsif data.is_a? Gene::Types::Base and data.type.is_a? Gene::Types::Symbol and data.type.name =~ /^.(.*)$/
         klass = get_class(context.self, context)
         value = klass.method($1)
         args = data.data.map{|item| context.process item}
@@ -379,20 +380,20 @@ module Gene::Lang::Handlers
 
   class BinaryExprHandler
     BINARY_OPERATORS = [
-      Gene::Types::Ident.new('=='),
-      Gene::Types::Ident.new('!='),
-      Gene::Types::Ident.new('>'),
-      Gene::Types::Ident.new('>='),
-      Gene::Types::Ident.new('<'),
-      Gene::Types::Ident.new('<='),
+      Gene::Types::Symbol.new('=='),
+      Gene::Types::Symbol.new('!='),
+      Gene::Types::Symbol.new('>'),
+      Gene::Types::Symbol.new('>='),
+      Gene::Types::Symbol.new('<'),
+      Gene::Types::Symbol.new('<='),
 
-      Gene::Types::Ident.new('+'),
-      Gene::Types::Ident.new('-'),
-      Gene::Types::Ident.new('*'),
-      Gene::Types::Ident.new('/'),
+      Gene::Types::Symbol.new('+'),
+      Gene::Types::Symbol.new('-'),
+      Gene::Types::Symbol.new('*'),
+      Gene::Types::Symbol.new('/'),
 
-      Gene::Types::Ident.new('&&'),
-      Gene::Types::Ident.new('||'),
+      Gene::Types::Symbol.new('&&'),
+      Gene::Types::Symbol.new('||'),
     ]
 
     def call context, data
@@ -468,6 +469,17 @@ module Gene::Lang::Handlers
         elsif result.is_a? Gene::Lang::ReturnValue
           break result
         end
+      end
+    end
+  end
+
+  class PrintHandler
+    def call context, data
+      return Gene::NOT_HANDLED unless PRINT === data or PRINTLN === data
+
+      data.data.each do |item|
+        print context.process item
+        print "\n" if PRINTLN === data
       end
     end
   end

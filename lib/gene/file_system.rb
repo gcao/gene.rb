@@ -1,7 +1,7 @@
 module Gene
   class FileSystem < AbstractInterpreter
-    DIR  = Gene::Types::Ident.new('dir')
-    FILE = Gene::Types::Ident.new('file')
+    DIR  = Gene::Types::Symbol.new('dir')
+    FILE = Gene::Types::Symbol.new('file')
 
     require 'gene/file_system/dir_handler'
     require 'gene/file_system/file_handler'

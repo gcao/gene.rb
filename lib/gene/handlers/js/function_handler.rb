@@ -2,7 +2,7 @@ module Gene
   module Handlers
     module Js
       class FunctionHandler
-        FUNCTION = Gene::Types::Ident.new 'function'
+        FUNCTION = Gene::Types::Symbol.new 'function'
 
         def initialize
           @logger = Logem::Logger.new(self)
@@ -19,7 +19,7 @@ module Gene
 
           @logger.debug('call', data)
 
-          fn_name = data.data[0].is_a?(Gene::Types::Ident) ? data.data.shift.name : ""
+          fn_name = data.data[0].is_a?(Gene::Types::Symbol) ? data.data.shift.name : ""
 
           args = data.data.shift
           #if args

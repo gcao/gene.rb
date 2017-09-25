@@ -1,7 +1,7 @@
 module Gene
   module Handlers
     class TupleHandler
-      TUPLE = Gene::Types::Ident.new('#||')
+      TUPLE = Gene::Types::Symbol.new('#||')
 
       def initialize
         @logger = Logem::Logger.new(self)

@@ -12,7 +12,7 @@ class Gene::FileSystem::FileHandler
     dir  = context.current_dir
     name = data.data.shift
 
-    if name.is_a? Gene::Types::Ident
+    if name.is_a? Gene::Types::Symbol
       name = name.name
     end
 

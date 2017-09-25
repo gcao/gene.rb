@@ -1,4 +1,4 @@
-class Gene::Types::Ident
+class Gene::Types::Symbol
   attr :name
   attr :escaped
 
