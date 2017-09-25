@@ -27,7 +27,7 @@ module Gene
                                 (?i:e[+-]?\d+)
                               )
                             )/x
-    IDENT                 = /([^,\s\(\)\[\]\{\}]+)/
+    SYMBOL                 = /([^,\s\(\)\[\]\{\}]+)/
     # REF                   = /#(?=[a-z])/
     COMMENT               = /#<(?=[,\s\(\)\[\]\{\}]|$)/
     COMMENT_END           = />#(?=[,\s\(\)\[\]\{\}]|$)/
@@ -100,7 +100,7 @@ module Gene
         # Attribute should not appear on top level
         # when (value = parse_attribute) != UNPARSED
         #   obj = handle_top_level_results obj, value
-        when (value = parse_ident) != UNPARSED
+        when (value = parse_symbol) != UNPARSED
           obj = handle_top_level_results obj, value
         else
           raise ParseError, "source '#{peek(20)}' is not valid GENE!"
@@ -214,7 +214,7 @@ module Gene
       #   value
       when (value = parse_attribute(attribute_for_group)) != UNPARSED
         value
-      when (value = parse_ident) != UNPARSED
+      when (value = parse_symbol) != UNPARSED
         value
       else
         UNPARSED
@@ -282,8 +282,8 @@ module Gene
       Gene::PLACEHOLDER
     end
 
-    def parse_ident
-      return UNPARSED unless check(IDENT)
+    def parse_symbol
+      return UNPARSED unless check(symbol)
 
       escaped = !!check(ESCAPE)
       value = ''
