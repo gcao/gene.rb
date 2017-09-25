@@ -30,7 +30,7 @@ describe Gene::Parser do
     '\#'       => Gene::Types::Symbol.new('#', true),
     '\#a'      => Gene::Types::Symbol.new('#a', true),
     'a'        => Gene::Types::Symbol.new('a'),
-    # Quoted identity, support escaping with "\"
+    # Quoted symbol, support escaping with "\"
     # '#""'      => Gene::Types::Symbol.new(''),
     # "#''"      => Gene::Types::Symbol.new(''),
     'a b'      => Gene::Types::Stream.new(Gene::Types::Symbol.new('a'), Gene::Types::Symbol.new('b')),

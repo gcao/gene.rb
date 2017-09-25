@@ -64,13 +64,12 @@ describe "Array" do
     result.should == nil
   end
 
-  it "([1] .any (fnx item (item == 1))) == true" do
-    pending
+  it "(([1] .any (fnx item (item == 1))) == true)" do
     result = @interpreter.parse_and_process(example.description)
     result.should == true
   end
 
-  it "([1] .any (fnx item (item == 2))) == false" do
+  it "(([1] .any (fnx item (item == 2))) == false)" do
     pending
     result = @interpreter.parse_and_process(example.description)
     result.should == true
