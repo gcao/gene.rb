@@ -283,7 +283,7 @@ module Gene
     end
 
     def parse_symbol
-      return UNPARSED unless check(symbol)
+      return UNPARSED unless check(SYMBOL)
 
       escaped = !!check(ESCAPE)
       value = ''

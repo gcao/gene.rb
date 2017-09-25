@@ -11,6 +11,7 @@ module Gene::Lang::Handlers
     FOR LOOP
     BREAK
     PRINT PRINTLN
+    DEBUG
     NOOP
   ).each do |name|
     const_set name, Gene::Types::Symbol.new("#{name.downcase.gsub('_', '-')}")
@@ -97,6 +98,8 @@ module Gene::Lang::Handlers
         context.scope
       elsif data == SELF
         context.self
+      elsif data == DEBUG
+        Gene::UNDEFINED
       elsif data.is_a? Gene::Types::Symbol
         name = data.name
         if name =~ /^(.*)\.\.\.$/
@@ -452,9 +455,18 @@ module Gene::Lang::Handlers
       condition = data.data[1]
       update    = data.data[2]
       while context.process(condition)
-        context.process_statements data.data[3..-1] || []
+        # TODO: add tests for next, break and return
+        result = context.process_statements data.data[3..-1] || []
+        if result.is_a? Gene::Lang::ReturnValue
+          return result
+        elsif result.is_a? Gene::Lang::BreakValue
+          break
+        end
         context.process update
       end
+
+      # TODO: for loop should return last value from the inside, NOT what the condition evaluates to
+      Gene::UNDEFINED
     end
   end
 
