@@ -648,10 +648,34 @@ describe Gene::Lang::Interpreter do
       (for (let i 0)(i < 5)(let i (i + 1))
         (let result (result + i))
       )
-      result
+      (result == 10)
     " do
       result = @interpreter.parse_and_process(example.description)
-      result.should == 10
+      result.should be_true
+    end
+
+    it "
+      (let result 0)
+      (for (let i 0)(i < 100)(let i (i + 1))
+        (if (i >= 5) break)
+        (let result (result + i))
+      )
+      (result == 10)
+    " do
+      result = @interpreter.parse_and_process(example.description)
+      result.should be_true
+    end
+
+    it "
+      (let result 0)
+      (for (let i 0)(i < 100)(let i (i + 1))
+        (if (i >= 5) return)
+        (let result (result + i))
+      )
+      (result == 10)
+    " do
+      result = @interpreter.parse_and_process(example.description)
+      result.should be_true
     end
   end
 
@@ -662,10 +686,10 @@ describe Gene::Lang::Interpreter do
         (let i (i + 1))
         (if (i >= 5) break)
       )
-      i
+      (i == 5)
     " do
       result = @interpreter.parse_and_process(example.description)
-      result.should == 5
+      result.should be_true
     end
 
     it "

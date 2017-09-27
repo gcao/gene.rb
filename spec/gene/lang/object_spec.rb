@@ -16,7 +16,15 @@ describe "Object" do
     result.should be_true
   end
 
-  it "# send should work
+  it "# is should work
+    (let o (new Object))
+    (o .is Object)
+  " do
+    result = @interpreter.parse_and_process(example.description)
+    result.should be_true
+  end
+
+  it "# call should work
     (let o (new Object))
     (o .set 'x' 1)
     ((o .call 'get' 'x') == 1)

@@ -375,6 +375,8 @@ module Gene::Lang::Handlers
         context["Hash"]
       elsif obj.is_a? Gene::Lang::Class
         context["Class"]
+      elsif obj.class == Gene::Lang::Object
+        context["Object"]
       else
         obj.class
       end

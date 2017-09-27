@@ -11,15 +11,22 @@
     ($invoke self name args...)
   )
 
+  (method class _
+    ($invoke self 'instance_variable_get' '@klass')
+  )
+
   (method is klass
-    (klass .is-self-or-ancestor-of (.class))
+    ((.class) .is_sub_class klass)
   )
 )
 
 (class Class
   (method parent_classes _
     (if ((@parent_classes .size) == 0)
-      [Object]
+      (if (self == Object)
+        []
+        [Object]
+      )
       @parent_classes
     )
   )
