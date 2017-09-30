@@ -169,6 +169,31 @@ describe Gene::Lang::Interpreter do
     end
   end
 
+  describe "module" do
+    it "
+      (class A)
+      (module M)
+      (module N)
+      (module O)
+      (class B
+        (extend A)
+        (include N)
+        (include O)
+        (init _ (let @value []))
+        (method test _
+          (super)
+          (let @value ($invoke @value 'push' 'B.test'))
+          @value
+        )
+      )
+      (let b (new B))
+      ((a .test) == ['B.test'])
+    " do
+      result = @interpreter.parse_and_process(example.description)
+      result.should == true
+    end
+  end
+
   describe "cast" do
     it "
       (class A)

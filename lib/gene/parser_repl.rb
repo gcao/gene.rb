@@ -4,10 +4,12 @@ class Gene::ParserRepl
   attr_accessor :_
 
   def start
+    puts "<<<   WELCOME TO GENE PARSER   >>>"
     while input = Readline.readline("Gene> ", true)
       begin
         if input.strip == 'exit'
           puts "Exiting..."
+          puts "<<<         GOOD BYE         >>>"
           puts
           break
         elsif input.strip.empty?

@@ -1,7 +1,7 @@
 require "readline"
 
 class Gene::Lang::Repl
-  def initialize context
+  def initialize context = nil
     if context
       @context = context
     else

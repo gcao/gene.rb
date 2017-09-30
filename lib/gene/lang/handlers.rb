@@ -1,6 +1,7 @@
 module Gene::Lang::Handlers
   %W(
     CLASS PROP METHOD NEW INIT CAST
+    MODULE INCLUDE
     EXTEND SUPER
     SELF
     FN FNX FNXX
@@ -126,6 +127,22 @@ module Gene::Lang::Handlers
     end
   end
 
+  class ModuleHandler
+    def call context, data
+      return Gene::NOT_HANDLED unless MODULE === data
+      name  = data.data[0].to_s
+      klass = Gene::Lang::Module.new name
+
+      scope = Gene::Lang::Scope.new nil
+      new_context = context.extend scope, klass
+      # TODO: check whether Object class is defined.
+      # If yes, and the newly defined class isn't Object and doesn't have a parent class, set Object as its parent class
+      new_context.process_statements data.data[1..-1] || []
+      new_context.global_scope.set_variable name, klass
+      klass
+    end
+  end
+
   class ClassHandler
     def call context, data
       return Gene::NOT_HANDLED unless CLASS === data
@@ -192,6 +209,16 @@ module Gene::Lang::Handlers
       klass = context.process data.data[0]
       # TODO: if the parent class is Object, replace it with klass
       context.self.parent_classes.push klass
+      Gene::UNDEFINED
+    end
+  end
+
+  class IncludeHandler
+    def call context, data
+      return Gene::NOT_HANDLED unless INCLUDE === data
+
+      mod = context.process data.data[0]
+      context.self.modules.push mod
       Gene::UNDEFINED
     end
   end

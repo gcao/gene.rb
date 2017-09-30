@@ -8,10 +8,12 @@ class Gene::Macro::Repl
   end
 
   def start
+    puts "<<<   WELCOME TO GENE MACROS   >>>"
     while input = Readline.readline("GM> ", true)
       begin
         if input.strip == 'exit'
           puts "Exiting..."
+          puts "<<<         GOOD BYE         >>>"
           puts
           break
         elsif input.strip.empty?

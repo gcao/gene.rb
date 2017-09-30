@@ -9,8 +9,10 @@ class Gene::Lang::Interpreter
   def init_handlers
     @handlers = Gene::Handlers::ComboHandler.new
     @handlers.add 100, Gene::Lang::Handlers::DefaultHandler.new
+    @handlers.add 100, Gene::Lang::Handlers::ModuleHandler.new
     @handlers.add 100, Gene::Lang::Handlers::ClassHandler.new
     @handlers.add 100, Gene::Lang::Handlers::ExtendHandler.new
+    @handlers.add 100, Gene::Lang::Handlers::IncludeHandler.new
     @handlers.add 100, Gene::Lang::Handlers::PropHandler.new
     @handlers.add 100, Gene::Lang::Handlers::MethodHandler.new
     @handlers.add 100, Gene::Lang::Handlers::FunctionHandler.new

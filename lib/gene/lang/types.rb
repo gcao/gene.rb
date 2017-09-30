@@ -182,8 +182,23 @@ module Gene::Lang
     end
   end
 
+  # Module is like Class, except it doesn't include init and parent class
+  # TODO: Support prepend like how Ruby does
+  class Module < Object
+    attr_accessor :name, :methods, :prop_descriptors, :modules
+    def initialize name
+      super(Class)
+
+      set 'name', name
+      set 'methods', {}
+      set 'prop_descriptors', {}
+      set 'modules', []
+    end
+  end
+
+  # TODO: change to single inheritance and include modules like Ruby
   class Class < Object
-    attr_accessor :name, :methods, :prop_descriptors, :parent_classes
+    attr_accessor :name, :methods, :prop_descriptors, :parent_classes, :modules
     def initialize name
       super(Class)
 
@@ -191,6 +206,7 @@ module Gene::Lang
       set 'methods', {}
       set 'prop_descriptors', {}
       set 'parent_classes', []
+      set 'modules', []
     end
 
     # def def_property name
