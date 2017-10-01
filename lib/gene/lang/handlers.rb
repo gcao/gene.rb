@@ -543,7 +543,10 @@ module Gene::Lang::Handlers
 
       condition = data.data[1]
       update    = data.data[2]
-      while context.process(condition)
+      # (for _ _ _ ...) is same as (loop ...)
+      # _ is treated as true in place of condition
+      while condition == PLACEHOLDER ||
+            ((value = context.process(condition)) && value != Gene::UNDEFINED)
         # TODO: add tests for next, break and return
         result = context.process_statements data.data[3..-1] || []
         if result.is_a? Gene::Lang::ReturnValue

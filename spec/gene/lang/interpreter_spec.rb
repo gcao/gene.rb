@@ -805,7 +805,8 @@ describe Gene::Lang::Interpreter do
     it "
       (def sum 0)
       (def i 0)
-      (for _ (i <= 4) _
+      (for _ _ _
+        (if (i > 4) break)
         (sum += i)
         (i += 1)
       )
