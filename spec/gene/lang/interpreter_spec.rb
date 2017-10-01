@@ -187,9 +187,8 @@ describe Gene::Lang::Interpreter do
         )
       )
       (def b (new B))
-      ((a .test) == ['B.test'])
+      ((b .test) == ['B.test'])
     " do
-      pending
       result = @interpreter.parse_and_process(example.description)
       result.should == true
     end
@@ -260,6 +259,7 @@ describe Gene::Lang::Interpreter do
       (def c (new C))
       (c .test)  # returns 'test in A'
     " do
+      pending "TODO: change to module/include"
       result = @interpreter.parse_and_process(example.description)
       result.should  == 'test in A'
     end
@@ -297,6 +297,8 @@ describe Gene::Lang::Interpreter do
       (def c (new C))
       (c .test)  # returns 'test in B'
     " do
+      pending "TODO: change to module/include"
+      result = @interpreter.parse_and_process(example.description)
       result = @interpreter.parse_and_process(example.description)
       result.should  == 'test in B'
     end

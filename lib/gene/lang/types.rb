@@ -198,15 +198,18 @@ module Gene::Lang
 
   # TODO: change to single inheritance and include modules like Ruby
   class Class < Object
-    attr_accessor :name, :methods, :prop_descriptors, :parent_classes, :modules
+    attr_accessor :name, :methods, :prop_descriptors, :parent_class, :modules
     def initialize name
       super(Class)
 
       set 'name', name
       set 'methods', {}
       set 'prop_descriptors', {}
-      set 'parent_classes', []
       set 'modules', []
+    end
+
+    def parent_class
+      get('parent_class')
     end
 
     # def def_property name
@@ -228,13 +231,12 @@ module Gene::Lang
       methods[name] or super_method(name)
     end
 
+    # This can be a very slow operation
+    # Pass in the hierarchy, searched stack, method name
+    # The hierarchy is like a flattened tree
+    # Or construct the hierarchy lazily to improve performance
     def super_method name
-      parent_classes.reverse.each do |klass|
-        method = klass.method(name)
-        return method if method
-      end
-
-      nil
+      parent_class.method(name)
     end
   end
 

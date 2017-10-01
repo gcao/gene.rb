@@ -208,7 +208,7 @@ module Gene::Lang::Handlers
 
       klass = context.process data.data[0]
       # TODO: if the parent class is Object, replace it with klass
-      context.self.parent_classes.push klass
+      context.self.parent_class = klass
       Gene::UNDEFINED
     end
   end
