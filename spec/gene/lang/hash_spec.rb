@@ -9,8 +9,8 @@ describe "Hash" do
 
   it "
     (fn f _ {})
-    (let a (f))
-    (let b (f))
+    (def a (f))
+    (def b (f))
     (($invoke a 'object_id') != ($invoke b 'object_id'))
   " do
     result = @interpreter.parse_and_process(example.description)

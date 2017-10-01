@@ -324,6 +324,8 @@ module Gene::Lang
 
     def get_variable name
       name = name.to_s
+      raise "#{name} is not defined." unless self.defined? name
+
       if self.variables.keys.include? name
         self.variables[name]
       elsif self.parent
@@ -338,6 +340,8 @@ module Gene::Lang
     end
 
     def let name, value
+      raise "#{name} is not defined." unless self.defined? name
+
       if self.variables.keys.include? name
         self.variables[name] = value
       elsif self.parent and self.parent.defined?(name)

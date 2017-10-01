@@ -4,7 +4,7 @@
   )
 
   (method set [prop-name value]
-    (let (@ prop-name) value)
+    ((@ prop-name) = value)
   )
 
   (method call [name args...]
@@ -55,8 +55,8 @@
     )
   )
   (method any f
-    (for (let i 0) (i < (.size)) (let i (i + 1))
-      (let item (.get i))
+    (for (def i 0) (i < (.size)) (i += 1)
+      (def item (.get i))
       (if (f item i)
         (return true)
       )
@@ -64,15 +64,15 @@
     false
   )
   (method each f
-    (for (let i 0) (i < (.size)) (let i (i + 1))
-      (let item (.get i))
+    (for (def i 0) (i < (.size)) (i += 1)
+      (def item (.get i))
       (f item i)
     )
   )
   (method select f
     (def result [])
-    (for (let i 0) (i < (.size)) (let i (i + 1))
-      (let item (.get i))
+    (for (def i 0) (i < (.size)) (i += 1)
+      (def item (.get i))
       # TODO:
     )
     result
@@ -83,7 +83,7 @@
       (fnx item
         (if (($invoke ($invoke item 'class') 'name') == 'Array')
           (do
-            (let child-array (item .flatten))
+            (def child-array (item .flatten))
             (child-array .each
               (fnx item ($invoke result '<<' item))
             )

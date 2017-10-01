@@ -41,8 +41,8 @@ describe "Array" do
 
   it "
     (fn f _ [])
-    (let a (f))
-    (let b (f))
+    (def a (f))
+    (def b (f))
     (($invoke a 'object_id') != ($invoke b 'object_id'))
   " do
     result = @interpreter.parse_and_process(example.description)
@@ -81,11 +81,11 @@ describe "Array" do
   end
 
   it "
-    (let sum 0)
+    (def sum 0)
     # each is a method defined in Gene::Lang::Array
     ([1 2] .each
       (fnx item
-        (let sum (sum + item))
+        (sum += item)
       )
     )
     sum

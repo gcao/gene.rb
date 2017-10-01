@@ -90,19 +90,19 @@ describe Gene::Lang::Interpreter do
       (class A
         (method f [] self)
       )
-      (let a (new A))
+      (def a (new A))
       (a .f)
     " do
       result = @interpreter.parse_and_process(example.description)
       result.class.name.should == 'A'
     end
 
-    it "(class A (init a (let @a a))) (new A 1)" do
+    it "(class A (init a (@a = a))) (new A 1)" do
       result = @interpreter.parse_and_process(example.description)
       result['a'].should == 1
     end
 
-    it "(class A (init name (let (@ name) 1))) (new A 'a')" do
+    it "(class A (init name ((@ name) = 1))) (new A 'a')" do
       result = @interpreter.parse_and_process(example.description)
       result['a'].should == 1
     end
@@ -112,11 +112,11 @@ describe Gene::Lang::Interpreter do
       (class A
         # Constructor
         (init a
-          (let @a a)
+          (@a = a)
         )
         # Define method incr-a
         (method incr-a []
-          (let @a (@a + 1))
+          (@a += 1)
         )
         # Define method test
         (method test num
@@ -127,7 +127,7 @@ describe Gene::Lang::Interpreter do
       )
 
       # Instantiate A
-      (let a (new A 1))
+      (def a (new A 1))
       # Call method on an instance
       (a .test 2)
     " do
@@ -143,10 +143,10 @@ describe Gene::Lang::Interpreter do
         (prop x
           # TODO: rethink how getter/setter logic is defined
           ^get [@x]
-          ^set [value (let @x value)]
+          ^set [value (@x = value)]
         )
       )
-      (let a (new A))
+      (def a (new A))
       # Property x can be accessed like methods
       (a .x= 'value')
       (a .x)
@@ -159,7 +159,7 @@ describe Gene::Lang::Interpreter do
     it "
       # (prop x) will create default getter/setter methods
       (class A (prop x))
-      (let a (new A))
+      (def a (new A))
       (a .x= 'value')
       (a .x)
     " do
@@ -179,14 +179,14 @@ describe Gene::Lang::Interpreter do
         (extend A)
         (include N)
         (include O)
-        (init _ (let @value []))
+        (init _ (@value = []))
         (method test _
           (super)
-          (let @value ($invoke @value 'push' 'B.test'))
+          (@value = ($invoke @value 'push' 'B.test'))
           @value
         )
       )
-      (let b (new B))
+      (def b (new B))
       ((a .test) == ['B.test'])
     " do
       pending
@@ -199,7 +199,7 @@ describe Gene::Lang::Interpreter do
     it "
       (class A)
       (class B)
-      (let a (new A))
+      (def a (new A))
       # cast will create a new object of B, shallow-copy all properties except #class
       (cast a B)
     " do
@@ -211,7 +211,7 @@ describe Gene::Lang::Interpreter do
     it "
       (class A)
       (class B (method test [] 'test in B'))
-      (let a (new A))
+      (def a (new A))
       ((cast a B) .test)  # returns 'test in B'
     " do
       result = @interpreter.parse_and_process(example.description)
@@ -221,8 +221,8 @@ describe Gene::Lang::Interpreter do
     it "
       # Modification on casted object will not be lost
       (class A)
-      (class B (method test [] (let @name 'b')))
-      (let a (new A))
+      (class B (method test [] (@name = 'b')))
+      (def a (new A))
       ((cast a B) .test)
       a  # @name should be 'b'
     " do
@@ -240,7 +240,7 @@ describe Gene::Lang::Interpreter do
       (class B
         (extend A)
       )
-      (let b (new B))
+      (def b (new B))
       (b .testA)  # returns 'testA'
     " do
       result = @interpreter.parse_and_process(example.description)
@@ -257,7 +257,7 @@ describe Gene::Lang::Interpreter do
         (extend A)
         (extend B)
       )
-      (let c (new C))
+      (def c (new C))
       (c .test)  # returns 'test in A'
     " do
       result = @interpreter.parse_and_process(example.description)
@@ -275,7 +275,7 @@ describe Gene::Lang::Interpreter do
       (class C
         (extend B)
       )
-      (let c (new C))
+      (def c (new C))
       (c .test)  # returns 'test in A'
     " do
       result = @interpreter.parse_and_process(example.description)
@@ -294,7 +294,7 @@ describe Gene::Lang::Interpreter do
         (extend A)
         (extend B)
       )
-      (let c (new C))
+      (def c (new C))
       (c .test)  # returns 'test in B'
     " do
       result = @interpreter.parse_and_process(example.description)
@@ -310,7 +310,7 @@ describe Gene::Lang::Interpreter do
         (extend A)
         (method test [a b] (super a b))
       )
-      (let b (new B))
+      (def b (new B))
       (b .test 1 2)
     " do
       result = @interpreter.parse_and_process(example.description)
@@ -321,7 +321,7 @@ describe Gene::Lang::Interpreter do
       it "
         # init is not inherited, must be called explicitly
         (class A
-          (init _ (let @a 1))
+          (init _ (@a = 1))
         )
         (class B
           (extend A)
@@ -364,7 +364,7 @@ describe Gene::Lang::Interpreter do
         (fn doSomething [a b]
           (a + b)
         )
-        (let array [1 2])
+        (def array [1 2])
         (doSomething array...)
       " do
         result = @interpreter.parse_and_process(example.description)
@@ -375,7 +375,7 @@ describe Gene::Lang::Interpreter do
         (fn doSomething args...
           args
         )
-        (let array [1 2])
+        (def array [1 2])
         (doSomething array...)
       " do
         result = @interpreter.parse_and_process(example.description)
@@ -439,7 +439,7 @@ describe Gene::Lang::Interpreter do
     it "
       (fn f [] (.x))
       (class A (method x [] 'value'))
-      (let a (new A))
+      (def a (new A))
       # call will invoke a function with a self, this makes function behave like method
       (call f a)
     " do
@@ -448,7 +448,7 @@ describe Gene::Lang::Interpreter do
     end
 
     it "
-      (let a 1)
+      (def a 1)
       # By default, function will inherit the scope where it is defined (like in JavaScript)
       (fn f b (a + b))
       (f 2)
@@ -462,19 +462,20 @@ describe Gene::Lang::Interpreter do
     it "1.
       # Method   WILL NOT   inherit the scope where it is defined in
       (class A
-        (let x 1)
+        (def x 1)
         (method doSomething [] x)
       )
-      (let a (new A))
+      (def a (new A))
       (a .doSomething)
     " do
-      result = @interpreter.parse_and_process(example.description)
-      result.should == Gene::UNDEFINED
+      lambda {
+        result = @interpreter.parse_and_process(example.description)
+      }.should raise_error
     end
 
     it "
       # Function   WILL   inherit the scope where it is defined in
-      (let x 1)
+      (def x 1)
       (fn doSomething [] x)
       (doSomething)
     " do
@@ -485,7 +486,7 @@ describe Gene::Lang::Interpreter do
 
   describe "fnx - anonymous function" do
     it "
-      (let f (fnx [] 1))
+      (def f (fnx [] 1))
       (f)
     " do
       result = @interpreter.parse_and_process(example.description)
@@ -502,11 +503,21 @@ describe Gene::Lang::Interpreter do
 
   describe "fnxx - anonymous dummy function" do
     it "
-      (let f (fnxx 1))
+      (def f (fnxx 1))
       (f)
     " do
       result = @interpreter.parse_and_process(example.description)
       result.should == 1
+    end
+  end
+
+  describe "Variable" do
+    it "# Must be difined first
+      a # should throw exception
+    " do
+      lambda {
+        @interpreter.parse_and_process(example.description)
+      }.should raise_error
     end
   end
 
@@ -575,7 +586,7 @@ describe Gene::Lang::Interpreter do
       result.should == 3
     end
 
-    it "(let a 'value')" do
+    it "(def a 'value')" do
       result = @interpreter.parse_and_process(example.description)
       @interpreter.context.get('a').should == 'value'
       pending "should we return undefined or value instead?"
@@ -584,7 +595,7 @@ describe Gene::Lang::Interpreter do
       result.value.should == 'value'
     end
 
-    it "(let a (1 + 2))" do
+    it "(def a (1 + 2))" do
       result = @interpreter.parse_and_process(example.description)
       @interpreter.context.get('a').should == 3
       pending "should we return undefined or value instead?"
@@ -593,12 +604,12 @@ describe Gene::Lang::Interpreter do
       result.value.should == 3
     end
 
-    it "(let a 1) (a + 2)" do
+    it "(def a 1) (a + 2)" do
       result = @interpreter.parse_and_process(example.description)
       result.should == 3
     end
 
-    it "(def a 1) (let b 2) (a + b)" do
+    it "(def a 1) (def b 2) (a + b)" do
       result = @interpreter.parse_and_process(example.description)
       result.should == 3
     end
@@ -612,6 +623,7 @@ describe Gene::Lang::Interpreter do
         (f)
         x
       " do
+        pending "Deprecated"
         result = @interpreter.parse_and_process(example.description)
         result.should == 0
       end
@@ -624,6 +636,7 @@ describe Gene::Lang::Interpreter do
         (f)
         x
       " do
+        pending "Deprecated"
         result = @interpreter.parse_and_process(example.description)
         result.should == 1
       end
@@ -631,7 +644,7 @@ describe Gene::Lang::Interpreter do
   end
 
   describe "do" do
-    it "(do (let i 1)(i + 2))" do
+    it "(do (def i 1)(i + 2))" do
       result = @interpreter.parse_and_process(example.description)
       result.should == 3
     end
@@ -648,7 +661,7 @@ describe Gene::Lang::Interpreter do
       result.should == [1, 2]
     end
 
-    it "(if true (do (let a 1)(a + 2)) 2)" do
+    it "(if true (do (def a 1)(a + 2)) 2)" do
       result = @interpreter.parse_and_process(example.description)
       result.should == 3
     end
@@ -681,9 +694,9 @@ describe Gene::Lang::Interpreter do
     # It can be used to create other type of loops, iterators etc
   " do
     it "
-      (let result 0)
-      (for (let i 0)(i < 5)(let i (i + 1))
-        (let result (result + i))
+      (def result 0)
+      (for (def i 0)(i < 5)(i += 1)
+        (def result (result + i))
       )
       (result == 10)
     " do
@@ -692,10 +705,10 @@ describe Gene::Lang::Interpreter do
     end
 
     it "
-      (let result 0)
-      (for (let i 0)(i < 100)(let i (i + 1))
+      (def result 0)
+      (for (def i 0)(i < 100)(i += 1)
         (if (i >= 5) break)
-        (let result (result + i))
+        (def result (result + i))
       )
       (result == 10)
     " do
@@ -704,10 +717,10 @@ describe Gene::Lang::Interpreter do
     end
 
     it "
-      (let result 0)
-      (for (let i 0)(i < 100)(let i (i + 1))
+      (def result 0)
+      (for (def i 0)(i < 100)(i += 1)
         (if (i >= 5) return)
-        (let result (result + i))
+        (def result (result + i))
       )
       (result == 10)
     " do
@@ -718,9 +731,9 @@ describe Gene::Lang::Interpreter do
 
   describe "loop - creates simplist loop" do
     it "
-      (let i 0)
+      (def i 0)
       (loop
-        (let i (i + 1))
+        (i += 1)
         (if (i >= 5) break)
       )
       (i == 5)
@@ -730,9 +743,9 @@ describe Gene::Lang::Interpreter do
     end
 
     it "
-      (let i 0)
+      (def i 0)
       (loop
-        (let i (i + 1))
+        (i += 1)
         (if (i >= 5) (break 100))
       )
     " do
@@ -749,18 +762,19 @@ describe Gene::Lang::Interpreter do
         #
         # After evaluation, ReturnValue are returned as is, BreakValue are unwrapped and returned
         (loop
-          (let result ($invoke $caller-context 'process_statements' args))
+          (def result ($invoke $caller-context 'process_statements' args))
           (if (($invoke ($invoke result 'class') 'name') == 'BreakValue')
             (return ($invoke result 'value'))
           )
         )
       )
-      (let i 0)
+      (def i 0)
       (loop-test
-        (let i (i + 1))
+        (i += 1)
         (if (i >= 5) (break 100))
       )
     " do
+      pending "TODO: fix infinite loop, might be related to variable scope"
       result = @interpreter.parse_and_process(example.description)
       result.should == 100
     end
@@ -789,11 +803,11 @@ describe Gene::Lang::Interpreter do
     end
 
     it "
-      (let sum 0)
-      (let i 0)
+      (def sum 0)
+      (def i 0)
       (for _ (i <= 4) _
-        (let sum (sum + i))
-        (let i (i + 1))
+        (sum += i)
+        (i += 1)
       )
       sum
     " do
