@@ -410,6 +410,66 @@ module Gene::Lang::Handlers
     end
   end
 
+  class AssignmentHandler
+    ASSIGNMENT_OPERATORS = [
+      Gene::Types::Symbol.new('='),
+      Gene::Types::Symbol.new('+='),
+      Gene::Types::Symbol.new('-='),
+      Gene::Types::Symbol.new('*='),
+      Gene::Types::Symbol.new('/='),
+      Gene::Types::Symbol.new('&&='),
+      Gene::Types::Symbol.new('||='),
+    ]
+
+    def call context, data
+      return Gene::NOT_HANDLED unless data.is_a? Gene::Types::Base and ASSIGNMENT_OPERATORS.include?(data.data[0])
+
+      op    = data.data[0].name
+      value = context.process(data.data[1])
+
+      is_property = false
+
+      if data.type.is_a? Gene::Types::Base
+        name = context.process data.type
+        if name.is_a? Gene::Lang::PropertyName
+          name = name.name
+          is_property = true
+        end
+      else
+        name = data.type.to_s
+        if name[0] == '@'
+          name = name[1..-1]
+          is_property = true
+        end
+      end
+
+      if is_property
+        old_value = context.self.get name
+        value     = handle(op, old_value, value)
+        context.self.set name, value
+      else
+        old_value = context.scope.get_variable name
+        value     = handle(op, old_value, value)
+        context.scope.let name, value
+      end
+
+      value
+    end
+
+    def handle op, old_value, change_value
+      case op
+      when '='   then change_value
+      when '+='  then old_value +  change_value
+      when '-='  then old_value -  change_value
+      when '*='  then old_value *  change_value
+      when '/='  then old_value /  change_value
+      when '&&=' then old_value && change_value
+      when '||=' then old_value || value
+      else raise "Invalid operator #{op.inspect}"
+      end
+    end
+  end
+
   class BinaryExprHandler
     BINARY_OPERATORS = [
       Gene::Types::Symbol.new('=='),

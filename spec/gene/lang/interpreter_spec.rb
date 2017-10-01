@@ -189,6 +189,7 @@ describe Gene::Lang::Interpreter do
       (let b (new B))
       ((a .test) == ['B.test'])
     " do
+      pending
       result = @interpreter.parse_and_process(example.description)
       result.should == true
     end
@@ -506,6 +507,17 @@ describe Gene::Lang::Interpreter do
     " do
       result = @interpreter.parse_and_process(example.description)
       result.should == 1
+    end
+  end
+
+  describe "Assignment" do
+    it "# = should work
+      (def a)
+      (a = 1)
+      (a == 1)
+    " do
+      result = @interpreter.parse_and_process(example.description)
+      result.should be_true
     end
   end
 
