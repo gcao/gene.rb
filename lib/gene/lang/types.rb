@@ -320,7 +320,7 @@ module Gene::Lang
       scope.set_variable '$caller-context', context
       scope.arguments = self.arguments
 
-      expanded_arguments = expand_arguments(options[:arguments])
+      expanded_arguments = expand_arguments(context, options[:arguments])
       scope.set_variable '$arguments', expanded_arguments
       scope.update_arguments expanded_arguments
 
@@ -334,10 +334,11 @@ module Gene::Lang
 
     private
 
-    def expand_arguments arguments
+    def expand_arguments context, arguments
       result = []
 
       arguments.each do |arg|
+        arg = context.process arg
         if arg.is_a? Expandable
           arg.value.each do |value|
             result << value

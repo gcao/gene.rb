@@ -21,22 +21,18 @@
 )
 
 (class Class
-  (method parent_classes _
-    (if ((@parent_classes .size) == 0)
-      (if (self == Object)
-        []
-        [Object]
-      )
-      @parent_classes
-    )
+  (method parent_class _
+    (@parent_class || Object)
   )
 
   # check whether I am klass or an ancestor of klass
   (method is_sub_class klass
-    # (open-repl)
     (if (self == klass)
       true
-      ((.parent_classes) .any (fnx _klass (_klass .is_sub_class klass)))
+      (if (self == Object)
+        false
+        ((.parent_class) .is_sub_class klass)
+      )
     )
   )
 )
