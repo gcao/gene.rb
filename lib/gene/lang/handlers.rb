@@ -233,10 +233,10 @@ module Gene::Lang::Handlers
       args      = context['$arguments']
       hierarchy = context['$hierarchy']
       hierarchy.next.handle_method(
-        '$context': context,
-        '$method': method,
-        '$hierarchy': hierarchy,
-        '$arguments': args
+        context: context,
+        method: method,
+        hierarchy: hierarchy,
+        arguments: args
       )
     end
   end
@@ -374,13 +374,13 @@ module Gene::Lang::Handlers
         hierarchy = Gene::Lang::HierarchySearch.new(klass.ancestors)
         method = data.data[0].to_s[1..-1]
         args = data.data[1..-1]
-        hierarchy.next.handle_method(
-          '$hierarchy': hierarchy,
-          '$method': method,
-          '$context': context,
-          '$arguments': args,
-          '$self': value
-        )
+        hierarchy.next.handle_method({
+          hierarchy: hierarchy,
+          method: method,
+          context: context,
+          arguments: args,
+          self: value
+        })
         # method = klass.method(data.data[0].to_s[1..-1])
         # args = data.data[1..-1].map{|item| context.process item}
         # args = expand args
@@ -400,11 +400,11 @@ module Gene::Lang::Handlers
         args = data.data.map{|item| context.process item}
         args = expand args
         hierarchy.next.handle_method(
-          '$hierarchy': hierarchy,
-          '$method': method,
-          '$context': context,
-          '$arguments': args,
-          '$self': context.self
+          hierarchy: hierarchy,
+          method: method,
+          context: context,
+          arguments: args,
+          self: context.self
         )
         # value = klass.method($1)
         # value.call context: context, self: context.self, arguments: args
