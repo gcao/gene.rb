@@ -1,5 +1,6 @@
 module Gene::Lang::Handlers
   %W(
+    NS
     CLASS PROP METHOD NEW INIT CAST
     MODULE INCLUDE
     EXTEND SUPER
@@ -115,6 +116,13 @@ module Gene::Lang::Handlers
           if name[0] == '@'
             # property
             context.self[name[1..-1]]
+          elsif name.include? '/'
+            parts = name.split '/'
+            ns = context[parts.shift]
+            # TODO: add test case for nested namespaces and finish below logic
+            # while parts.size > 1
+            # end
+            ns.members[parts.shift]
           else
             # scope variable
             context[name]
@@ -148,6 +156,11 @@ module Gene::Lang::Handlers
       return Gene::NOT_HANDLED unless CLASS === data
       name  = data.data[0].to_s
       klass = Gene::Lang::Class.new name
+
+      if context.scope.defined? '$namespace'
+        ns = context['$namespace']
+        ns.members[name] = klass
+      end
 
       scope = Gene::Lang::Scope.new nil
       new_context = context.extend scope, klass
@@ -227,9 +240,18 @@ module Gene::Lang::Handlers
     def call context, data
       return Gene::NOT_HANDLED unless SUPER === data
 
-      method_name = context['$function'].name
-      super_method = context.self.class.super_method method_name
-      super_method.call context: context, self: context.self, arguments: data.data.map{|item| context.process item}
+      # TODO: what do we do with arguments?
+      # If there is arguments, then pass in, else re-use them
+      method    = context['$method']
+      args      = context['$arguments']
+      hierarchy = context['$hierarchy']
+      hierarchy.next.handle_method(
+        context: context,
+        method: method,
+        hierarchy: hierarchy,
+        arguments: args,
+        self: context.self
+      )
     end
   end
 
@@ -363,10 +385,20 @@ module Gene::Lang::Handlers
       if data.is_a? Gene::Types::Base and data.data[0].is_a? Gene::Types::Symbol and data.data[0].to_s[0] == '.'
         value = context.process data.type
         klass = get_class(value, context)
-        method = klass.method(data.data[0].to_s[1..-1])
-        args = data.data[1..-1].map{|item| context.process item}
-        args = expand args
-        method.call context: context, self: value, arguments: args
+        hierarchy = Gene::Lang::HierarchySearch.new(klass.ancestors)
+        method = data.data[0].to_s[1..-1]
+        args = data.data[1..-1]
+        hierarchy.next.handle_method({
+          hierarchy: hierarchy,
+          method: method,
+          context: context,
+          arguments: args,
+          self: value
+        })
+        # method = klass.method(data.data[0].to_s[1..-1])
+        # args = data.data[1..-1].map{|item| context.process item}
+        # args = expand args
+        # method.call context: context, self: value, arguments: args
       elsif data.is_a? Gene::Types::Base and data.type.is_a? Gene::Types::Symbol and data.type.name =~ /^[a-zA-Z_]/
         value = context.process(data.type)
         args = data.data
@@ -376,11 +408,20 @@ module Gene::Lang::Handlers
         args = expand args
         value.call context: context, arguments: args
       elsif data.is_a? Gene::Types::Base and data.type.is_a? Gene::Types::Symbol and data.type.name =~ /^.(.*)$/
+        method = $1
         klass = get_class(context.self, context)
-        value = klass.method($1)
+        hierarchy = Gene::Lang::HierarchySearch.new(klass.ancestors)
         args = data.data.map{|item| context.process item}
         args = expand args
-        value.call context: context, self: context.self, arguments: args
+        hierarchy.next.handle_method(
+          hierarchy: hierarchy,
+          method: method,
+          context: context,
+          arguments: args,
+          self: context.self
+        )
+        # value = klass.method($1)
+        # value.call context: context, self: context.self, arguments: args
       elsif data.is_a? Gene::Types::Base and data.type.is_a? Gene::Types::Base
         data.type = context.process data.type
         context.process data
@@ -574,6 +615,18 @@ module Gene::Lang::Handlers
           break result
         end
       end
+    end
+  end
+
+  class NamespaceHandler
+    def call context, data
+      return Gene::NOT_HANDLED unless NS === data
+
+      name = data.data[0].to_s
+      ns = Gene::Lang::Namespace.new name
+      context.scope.set_variable name, ns
+      context.scope.set_variable '$namespace', ns
+      context.process data.data[1..-1]
     end
   end
 
