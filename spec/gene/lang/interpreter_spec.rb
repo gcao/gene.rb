@@ -171,9 +171,16 @@ describe Gene::Lang::Interpreter do
 
   describe "module" do
     it "
-      (class A)
+      (class A
+        (method test _
+          (@value = ($invoke @value 'push' 'A.test'))
+          @value
+        )
+      )
       (module M)
-      (module N)
+      (module N
+        (include M)
+      )
       (module O)
       (class B
         (extend A)
@@ -187,7 +194,7 @@ describe Gene::Lang::Interpreter do
         )
       )
       (def b (new B))
-      ((b .test) == ['B.test'])
+      ((b .test) == ['A.test' 'B.test'])
     " do
       result = @interpreter.parse_and_process(example.description)
       result.should == true

@@ -236,7 +236,8 @@ module Gene::Lang::Handlers
         context: context,
         method: method,
         hierarchy: hierarchy,
-        arguments: args
+        arguments: args,
+        self: context.self
       )
     end
   end
