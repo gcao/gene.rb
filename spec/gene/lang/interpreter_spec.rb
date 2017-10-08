@@ -828,11 +828,26 @@ describe Gene::Lang::Interpreter do
   end
 
   describe "Namespace / module system" do
-    it "
+    it "# Namespace and members can be referenced from same scope
       (ns a
         (class C)
       )
       ((a/C .name) == 'C')
+    " do
+      result = @interpreter.parse_and_process(example.description)
+      result.should be_true
+    end
+
+    it "# Namespace and members can be referenced from nested scope
+      (ns a
+        (class C)
+      )
+      (class B
+        (method test _
+          (a/C .name)
+        )
+      )
+      (((new B) .test) == 'C')
     " do
       result = @interpreter.parse_and_process(example.description)
       result.should be_true

@@ -110,11 +110,11 @@ module Gene::Lang
     def initialize
       super(Application)
 
-      set 'global_scope', Gene::Lang::Scope.new(nil)
+      set 'global_scope', Gene::Lang::Scope.new(nil, false)
 
       context = Context.new
       context.application = self
-      context.scope = Gene::Lang::Scope.new(nil)
+      context.scope = Gene::Lang::Scope.new(nil, false)
       set 'root_context', context
     end
   end
@@ -148,27 +148,6 @@ module Gene::Lang
     def global_scope
       application.global_scope
     end
-
-    # def start_scope scope = Gene::Lang::Scope.new(nil)
-    #   scopes.push scope
-    # end
-
-    # def end_scope
-    #   throw "Scope error: can not close the root scope." if scopes.size == 0
-    #   scopes.pop
-    # end
-
-    # def self
-    #   self_objects.last
-    # end
-
-    # def start_self self_object
-    #   self_objects.push self_object
-    # end
-
-    # def end_self
-    #   self_objects.pop
-    # end
 
     def get name
       if scope.defined? name
@@ -316,8 +295,7 @@ module Gene::Lang
     end
 
     def call options = {}
-      _parent_scope = inherit_scope ? parent_scope : nil
-      scope = Scope.new _parent_scope
+      scope = Scope.new parent_scope, inherit_scope
       context = options[:context]
 
       scope.set_variable '$method', options[:method] if options[:method]
@@ -378,8 +356,8 @@ module Gene::Lang
   end
 
   class Scope < Object
-    attr_accessor :parent, :variables, :arguments
-    def initialize parent
+    attr_accessor :parent, :variables, :arguments, :inherit_variables
+    def initialize parent, inherit_variables
       super(Scope)
 
       set 'parent', parent
@@ -432,6 +410,18 @@ module Gene::Lang
           value_index += 1
         end
       end
+    end
+  end
+
+  class Namespace < Scope
+    attr_reader :name, :members
+    def initialize name, parent
+      super(parent, false)
+
+      @klass = Namespace
+
+      set 'name', name
+      set 'members', {}
     end
   end
 
@@ -493,16 +483,6 @@ module Gene::Lang
       super(Expandable)
 
       set 'value', value
-    end
-  end
-
-  class Namespace < Object
-    attr_reader :name, :members
-    def initialize name
-      super(Namespace)
-
-      set 'name', name
-      set 'members', {}
     end
   end
 

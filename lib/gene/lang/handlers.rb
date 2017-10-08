@@ -141,7 +141,7 @@ module Gene::Lang::Handlers
       name  = data.data[0].to_s
       klass = Gene::Lang::Module.new name
 
-      scope = Gene::Lang::Scope.new nil
+      scope = Gene::Lang::Scope.new context.scope, false
       new_context = context.extend scope, klass
       # TODO: check whether Object class is defined.
       # If yes, and the newly defined class isn't Object and doesn't have a parent class, set Object as its parent class
@@ -162,7 +162,7 @@ module Gene::Lang::Handlers
         ns.members[name] = klass
       end
 
-      scope = Gene::Lang::Scope.new nil
+      scope = Gene::Lang::Scope.new context.scope, false
       new_context = context.extend scope, klass
       # TODO: check whether Object class is defined.
       # If yes, and the newly defined class isn't Object and doesn't have a parent class, set Object as its parent class
@@ -284,7 +284,7 @@ module Gene::Lang::Handlers
       context.self.methods[get.name] = get
 
       set = Gene::Lang::Function.new "#{name}="
-      # Default code: [value (let @x value)]  assume x is the property name
+      # Default code: [value (@x = value)]  assume x is the property name
       code = data['set'] || [
         Gene::Types::Symbol.new("value"),
         Gene::Types::Base.new(Gene::Types::Symbol.new("@#{name}"), Gene::Types::Symbol.new("="), Gene::Types::Symbol.new("value"))
@@ -354,29 +354,6 @@ module Gene::Lang::Handlers
       Gene::Lang::Variable.new name, value
     end
   end
-
-  # class LetHandler
-  #   def call context, data
-  #     return Gene::NOT_HANDLED unless LET === data
-
-  #     value = context.process data.data[1]
-
-  #     if data.data[0].is_a? Gene::Types::Base
-  #       name = context.process data.data[0]
-  #       if name.is_a? Gene::Lang::PropertyName
-  #         name = name.name
-  #       end
-  #       context.self.set name.to_s, value
-  #     else
-  #       name  = data.data[0].to_s
-  #       if name[0] == '@'
-  #         context.self.set name[1..-1], value
-  #       else
-  #         context.scope.let name, value
-  #       end
-  #     end
-  #   end
-  # end
 
   class InvocationHandler
     include Utilities
@@ -623,7 +600,7 @@ module Gene::Lang::Handlers
       return Gene::NOT_HANDLED unless NS === data
 
       name = data.data[0].to_s
-      ns = Gene::Lang::Namespace.new name
+      ns = Gene::Lang::Namespace.new name, context.scope
       context.scope.set_variable name, ns
       context.scope.set_variable '$namespace', ns
       context.process data.data[1..-1]
