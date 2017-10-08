@@ -4,6 +4,7 @@ describe Gene::Lang::Interpreter do
   before do
     @application = Gene::Lang::Application.new
     @interpreter = Gene::Lang::Interpreter.new @application.root_context
+    @interpreter.load_core_libs
   end
 
   describe "special built-in variables and functions" do
@@ -171,9 +172,16 @@ describe Gene::Lang::Interpreter do
 
   describe "module" do
     it "
-      (class A)
+      (class A
+        (method test _
+          (@value = ($invoke @value 'push' 'A.test'))
+          @value
+        )
+      )
       (module M)
-      (module N)
+      (module N
+        (include M)
+      )
       (module O)
       (class B
         (extend A)
@@ -187,7 +195,7 @@ describe Gene::Lang::Interpreter do
         )
       )
       (def b (new B))
-      ((b .test) == ['B.test'])
+      ((b .test) == ['A.test' 'B.test'])
     " do
       result = @interpreter.parse_and_process(example.description)
       result.should == true
@@ -816,6 +824,18 @@ describe Gene::Lang::Interpreter do
     " do
       result = @interpreter.parse_and_process(example.description)
       result.should == 10
+    end
+  end
+
+  describe "Namespace / module system" do
+    it "
+      (ns a
+        (class C)
+      )
+      ((a/C .name) == 'C')
+    " do
+      result = @interpreter.parse_and_process(example.description)
+      result.should be_true
     end
   end
 end

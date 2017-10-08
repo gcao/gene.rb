@@ -35,6 +35,15 @@ module Gene::Lang
     end
     alias []= set
 
+    # Return #data - should always be an array or undefined
+    def data
+      @properties['#data']
+    end
+
+    def data= data
+      set '#data', data
+    end
+
     def as klass
       obj = Object.new klass
       obj.properties = @properties
@@ -183,6 +192,9 @@ module Gene::Lang
   end
 
   # Module is like Class, except it doesn't include init and parent class
+  # TODO: support aspects - before, after, when - works like  before -> when -> method -> when -> after
+  # TODO: support meta programming - method_added, method_removed, method_missing
+  # TODO: support meta programming - module_created, module_included
   # TODO: Support prepend like how Ruby does
   class Module < Object
     attr_accessor :name, :methods, :prop_descriptors, :modules
@@ -194,49 +206,93 @@ module Gene::Lang
       set 'prop_descriptors', {}
       set 'modules', []
     end
+
+    def method name
+      methods[name]
+    end
+
+    # include myself
+    def ancestors
+      return @ancestors if @ancestors
+
+      @ancestors = [self]
+      modules.each do |mod|
+        @ancestors.push mod
+        @ancestors += mod.ancestors
+      end
+      @ancestors
+    end
+
+    def handle_method options
+      method_name = options[:method]
+      m = method(method_name)
+      if m
+        m.call options
+      else
+        hierarchy = options[:hierarchy]
+        next_class_or_module = hierarchy.next
+        if next_class_or_module
+          next_class_or_module.handle_method options
+        else
+          #TODO: throw error or invoke method_missing
+        end
+      end
+    end
   end
 
   # TODO: change to single inheritance and include modules like Ruby
-  class Class < Object
-    attr_accessor :name, :methods, :prop_descriptors, :parent_class, :modules
+  # TODO: support meta programming - class_created, class_extended
+  class Class < Module
+    attr_accessor :parent_class
     def initialize name
-      super(Class)
-
-      set 'name', name
-      set 'methods', {}
-      set 'prop_descriptors', {}
-      set 'modules', []
+      super(name)
     end
 
     def parent_class
-      get('parent_class')
+      return nil if self == Gene::Lang::Object
+
+      get('parent_class') || Gene::Lang::Object
     end
 
-    # def def_property name
-    #   methods[name.to_s]  = Block.new [], [Gene::Types::Symbol.new("@#{name}")]
-    #   methods["#{name}="] = Block.new ['value'], [
-    #     Gene::Types::Base.new(
-    #       Gene::Types::Symbol.new('let'),
-    #       Gene::Types::Symbol.new("@#{name}"),
-    #       Gene::Types::Symbol.new('value'),
-    #     )
-    #   ]
-    # end
+    # include myself
+    def ancestors
+      return @ancestors if @ancestors
 
-    # def define_method name, function
-    #   methods[name.to_s] = function
-    # end
+      @ancestors = [self]
+      modules.each do |mod|
+        @ancestors += mod.ancestors
+      end
+      if parent_class
+        @ancestors += parent_class.ancestors
+      end
+      @ancestors
+    end
+  end
 
-    def method name
-      methods[name] or super_method(name)
+  # An algorithm to lazily calculate a class/module's ancestors hierarchy
+  # Create a new array to store the hierarchy
+  # Push the class itself to the hierarchy
+  # Save the class's parent class and modules in a temporary stack
+  # When trying to access next item in the hierarchy
+  # Check whether the stack is empty
+  # If not, pop up the last item, add to the hierarchy
+  # And push the parent class + modules to the end of the stack
+  # If the stack is empty, add Object to the hierarchy and mark the hierarchy as complete
+  #
+  # When do we invalidate the hierarchy?
+  # each class/module store a number and increment when it is extended, included, unincluded
+
+  class HierarchySearch < Object
+    attr_accessor :hierarchy, :index
+    def initialize(hierarchy)
+      super(HierarchySearch)
+      set 'hierarchy', hierarchy
+      set 'index', -1
     end
 
-    # This can be a very slow operation
-    # Pass in the hierarchy, searched stack, method name
-    # The hierarchy is like a flattened tree
-    # Or construct the hierarchy lazily to improve performance
-    def super_method name
-      parent_class.method(name)
+    def next
+      self.index += 1
+      hierarchy[self.index]
     end
   end
 
@@ -257,11 +313,14 @@ module Gene::Lang
       scope = Scope.new _parent_scope
       context = options[:context]
 
+      scope.set_variable '$method', options[:method] if options[:method]
+      scope.set_variable '$hierarchy', options[:hierarchy] if options[:hierarchy]
+
       scope.set_variable '$function', self
       scope.set_variable '$caller-context', context
       scope.arguments = self.arguments
 
-      expanded_arguments = expand_arguments(options[:arguments])
+      expanded_arguments = expand_arguments(context, options[:arguments])
       scope.set_variable '$arguments', expanded_arguments
       scope.update_arguments expanded_arguments
 
@@ -275,10 +334,11 @@ module Gene::Lang
 
     private
 
-    def expand_arguments arguments
+    def expand_arguments context, arguments
       result = []
 
       arguments.each do |arg|
+        arg = context.process arg
         if arg.is_a? Expandable
           arg.value.each do |value|
             result << value
@@ -426,6 +486,16 @@ module Gene::Lang
       super(Expandable)
 
       set 'value', value
+    end
+  end
+
+  class Namespace < Object
+    attr_reader :name, :members
+    def initialize name
+      super(Namespace)
+
+      set 'name', name
+      set 'members', {}
     end
   end
 
