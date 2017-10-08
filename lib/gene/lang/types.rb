@@ -96,6 +96,13 @@ module Gene::Lang
         end
       end
     end
+
+    def self.handle_method options
+      method_name = options[:method]
+      args        = options[:arguments]
+      _self       = options[:self]
+      _self.send method_name, *args
+    end
   end
 
   class Application < Object
