@@ -95,7 +95,8 @@ module Gene::Lang::Handlers
       elsif data == CONTEXT
         context
       elsif data == GLOBAL
-        context.global_scope
+        # context.global_scope
+        context.global_namespace
       elsif data == SCOPE
         context.scope
       elsif data == SELF
@@ -142,11 +143,12 @@ module Gene::Lang::Handlers
       klass = Gene::Lang::Module.new name
 
       scope = Gene::Lang::Scope.new context.scope, false
-      new_context = context.extend scope, klass
+      new_context = context.extend scope: scope, self: klass
       # TODO: check whether Object class is defined.
       # If yes, and the newly defined class isn't Object and doesn't have a parent class, set Object as its parent class
       new_context.process_statements data.data[1..-1] || []
-      new_context.global_scope.set_variable name, klass
+      # new_context.global_scope.set_variable name, klass
+      new_context.set name, klass
       klass
     end
   end
@@ -157,17 +159,18 @@ module Gene::Lang::Handlers
       name  = data.data[0].to_s
       klass = Gene::Lang::Class.new name
 
-      if context.scope.defined? '$namespace'
-        ns = context['$namespace']
-        ns.members[name] = klass
-      end
+      # if context.scope.defined? '$namespace'
+      #   ns = context['$namespace']
+      #   ns.members[name] = klass
+      # end
 
       scope = Gene::Lang::Scope.new context.scope, false
-      new_context = context.extend scope, klass
+      new_context = context.extend scope: scope, self: klass
       # TODO: check whether Object class is defined.
       # If yes, and the newly defined class isn't Object and doesn't have a parent class, set Object as its parent class
       new_context.process_statements data.data[1..-1] || []
-      new_context.global_scope.set_variable name, klass
+      # new_context.global_scope.set_variable name, klass
+      new_context.set name, klass
       klass
     end
   end
@@ -181,7 +184,8 @@ module Gene::Lang::Handlers
         name = data.data[next_index].to_s
         next_index += 1
         fn   = Gene::Lang::Function.new name
-        context.scope.set_variable name, fn
+        # context.scope.set_variable name, fn
+        context.set name, fn
       else
         name = ''
         fn   = Gene::Lang::Function.new name
@@ -349,7 +353,8 @@ module Gene::Lang::Handlers
       if name[0] == '@'
         context.self.set_variable name[1..-1], value
       else
-        context.scope.set_variable name, value
+        # context.scope.set_variable name, value
+        context.set name, value
       end
       Gene::Lang::Variable.new name, value
     end
@@ -466,7 +471,8 @@ module Gene::Lang::Handlers
         value     = handle(op, old_value, value)
         context.self.set name, value
       else
-        old_value = context.scope.get_variable name
+        # old_value = context.scope.get_variable name
+        old_value = context.get name
         value     = handle(op, old_value, value)
         context.scope.let name, value
       end
@@ -601,8 +607,9 @@ module Gene::Lang::Handlers
 
       name = data.data[0].to_s
       ns = Gene::Lang::Namespace.new name, context.scope
-      context.scope.set_variable name, ns
-      context.scope.set_variable '$namespace', ns
+      # context.scope.set_variable name, ns
+      context.set name, ns
+      # context.scope.set_variable '$namespace', ns
       context.process data.data[1..-1]
     end
   end

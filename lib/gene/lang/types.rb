@@ -106,30 +106,50 @@ module Gene::Lang
   end
 
   class Application < Object
-    attr_accessor :global_scope, :root_context, :interpreter_options
+    # attr_accessor :global_scope, :global_namespace, :root_context, :interpreter_options
+    attr_accessor :global_namespace
+
     def initialize
       super(Application)
 
-      set 'global_scope', Gene::Lang::Scope.new(nil, false)
+      # set 'global_scope', Gene::Lang::Scope.new(nil, false)
+      set 'global_namespace', Gene::Lang::Namespace.new('global', nil)
 
+      # reset_context
+    end
+
+    def create_root_context
       context = Context.new
       context.application = self
-      context.scope = Gene::Lang::Scope.new(nil, false)
-      set 'root_context', context
+      # Create an anonymous namespace
+      context.self = context.namespace = Gene::Lang::Namespace.new(nil, global_namespace)
+      context
+    end
+
+    def parse_and_process code
+      context = create_root_context
+      interpreter = Gene::Lang::Interpreter.new context
+      interpreter.parse_and_process code
+    end
+
+    def load_core_libs
+      parse_and_process File.read(File.dirname(__FILE__) + '/core.glang')
     end
   end
 
   class Context < Object
-    attr_accessor :scope, :self
+    attr_accessor :global_namespace, :namespace, :scope, :self
     def initialize
       super(Context)
     end
 
-    def extend scope, _self
-      new_context = Context.new
+    def extend options
+      new_context             = Context.new
       new_context.application = @application
-      new_context.scope = scope
-      new_context.self = _self
+      new_context.global_namespace = @application.global_namespace
+      new_context.namespace   = options[:namespace] || namespace
+      new_context.scope       = options[:scope]     || scope
+      new_context.self        = options[:self]
       new_context
     end
 
@@ -145,18 +165,28 @@ module Gene::Lang
       @application = application
     end
 
-    def global_scope
-      application.global_scope
-    end
+    # def global_scope
+    #   application.global_scope
+    # end
 
     def get name
-      if scope.defined? name
+      if scope && scope.defined?(name)
         scope.get_variable name
-      else
-        global_scope.get_variable name
+      elsif namespace && namespace.defined?(name)
+        namespace.get_member name
+      # else
+      #   global_scope.get_variable name
       end
     end
     alias [] get
+
+    def set name, value
+      if self.self.is_a? Namespace
+        self.self.set_member name, value
+      else
+        self.scope.set_variable name, value
+      end
+    end
 
     def process data
       interpreter.process data
@@ -309,7 +339,7 @@ module Gene::Lang
       scope.set_variable '$arguments', expanded_arguments
       scope.update_arguments expanded_arguments
 
-      new_context = context.extend scope, options[:self]
+      new_context = context.extend scope: scope, self: options[:self]
       result = new_context.process_statements statements
       if result.is_a? ReturnValue
         result = result.value
@@ -413,15 +443,30 @@ module Gene::Lang
     end
   end
 
-  class Namespace < Scope
-    attr_reader :name, :members
+  class Namespace < Object
+    attr_reader :name, :parent, :members
     def initialize name, parent
-      super(parent, false)
-
-      @klass = Namespace
+      super(Namespace)
 
       set 'name', name
+      set 'parent', parent
       set 'members', {}
+    end
+
+    def defined? name
+      members.include?(name) || (parent && parent.defined?(name))
+    end
+
+    def get_member name
+      if members.include? name
+        members[name]
+      elsif parent
+        parent.members[name]
+      end
+    end
+
+    def set_member name, value
+      members[name] = value
     end
   end
 
