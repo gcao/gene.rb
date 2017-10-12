@@ -169,13 +169,28 @@ module Gene::Lang
         raise "#{name} is not defined."
       end
     end
+    alias [] get
+
+    def def name, value
+      if self.self.is_a? Namespace
+        self.self.def_member name, value
+      else
+        self.scope.set_variable name, value
+      end
+    end
 
     def set name, value
       if self.self.is_a? Namespace
         self.self.set_member name, value
+      elsif self.scope.defined? name
+        self.scope.let name, value
       else
-        self.scope.set_variable name, value
+        self.namespace.set_member name, value
       end
+    end
+
+    def set_global name, value
+      application.global_namespace.def_member name, value
     end
 
     def process data
@@ -311,7 +326,7 @@ module Gene::Lang
 
       set 'name', name
       self.inherit_scope  = true # Default inherit_scope to true
-      self.eval_arguments = true # Default inherit_scope to true
+      self.eval_arguments = true # Default eval_arguments to true
     end
 
     def call options = {}
@@ -454,8 +469,18 @@ module Gene::Lang
       end
     end
 
-    def set_member name, value
+    def def_member name, value
       members[name] = value
+    end
+
+    def set_member name, value
+      if members.include? name
+        members[name] = value
+      elsif parent
+        parent.set_member name, value
+      else
+        raise "Unknown member '#{name}'"
+      end
     end
   end
 
