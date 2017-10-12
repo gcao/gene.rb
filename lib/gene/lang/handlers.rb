@@ -23,7 +23,7 @@ module Gene::Lang::Handlers
   PROP_NAME   = Gene::Types::Symbol.new('@')
   APPLICATION = Gene::Types::Symbol.new('$application')
   CONTEXT     = Gene::Types::Symbol.new('$context')
-  GLOBAL      = Gene::Types::Symbol.new('$global-scope')
+  GLOBAL      = Gene::Types::Symbol.new('$global')
   SCOPE       = Gene::Types::Symbol.new('$scope')
   INVOKE      = Gene::Types::Symbol.new('$invoke')
 
@@ -95,8 +95,7 @@ module Gene::Lang::Handlers
       elsif data == CONTEXT
         context
       elsif data == GLOBAL
-        # context.global_scope
-        context.global_namespace
+        context.application.global_namespace
       elsif data == SCOPE
         context.scope
       elsif data == SELF
@@ -147,8 +146,7 @@ module Gene::Lang::Handlers
       # TODO: check whether Object class is defined.
       # If yes, and the newly defined class isn't Object and doesn't have a parent class, set Object as its parent class
       new_context.process_statements data.data[1..-1] || []
-      # new_context.global_scope.set_variable name, klass
-      new_context.set name, klass
+      context.set name, klass
       klass
     end
   end
@@ -169,8 +167,7 @@ module Gene::Lang::Handlers
       # TODO: check whether Object class is defined.
       # If yes, and the newly defined class isn't Object and doesn't have a parent class, set Object as its parent class
       new_context.process_statements data.data[1..-1] || []
-      # new_context.global_scope.set_variable name, klass
-      new_context.set name, klass
+      context.set name, klass
       klass
     end
   end
@@ -471,10 +468,9 @@ module Gene::Lang::Handlers
         value     = handle(op, old_value, value)
         context.self.set name, value
       else
-        # old_value = context.scope.get_variable name
         old_value = context.get name
         value     = handle(op, old_value, value)
-        context.scope.let name, value
+        context.set name, value
       end
 
       value

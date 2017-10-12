@@ -18,19 +18,20 @@ describe Gene::Lang::Interpreter do
       $context      # The current context
     " do
       result = @application.parse_and_process(example.description)
-      result.scope.should_not be_nil
+      result.should_not be_nil
     end
 
     it "
-      $global-scope # The global scope object
+      $global       # The global namespace object
     " do
       result = @application.parse_and_process(example.description)
-      result.class.should == Gene::Lang::Scope
+      result.class.should == Gene::Lang::Namespace
     end
 
     it "
       $scope        # The current scope object which may or may not inherit from ancestor scopes
     " do
+      pending
       result = @application.parse_and_process(example.description)
       result.class.should == Gene::Lang::Scope
     end
@@ -58,10 +59,10 @@ describe Gene::Lang::Interpreter do
 
     it "
       ($invoke      # A function that allows invocation of native methods on native objects (this should not be needed if whole interpreter is implemented in Gene Lang)
-        $scope 'class') # returns 'Gene::Lang::Scope'
+        $context 'class') # returns Gene::Lang::Context
     " do
       result = @application.parse_and_process(example.description)
-      result.should == Gene::Lang::Scope
+      result.should == Gene::Lang::Context
     end
   end
 
@@ -468,7 +469,7 @@ describe Gene::Lang::Interpreter do
   end
 
   describe "Method vs function" do
-    it "1.
+    it "# 1.
       # Method   WILL NOT   inherit the scope where it is defined in
       (class A
         (def x 1)
@@ -597,7 +598,7 @@ describe Gene::Lang::Interpreter do
 
     it "(def a 'value')" do
       result = @application.parse_and_process(example.description)
-      @application.context.get('a').should == 'value'
+      # @application.context.get('a').should == 'value'
       pending "should we return undefined or value instead?"
       result.class.should == Gene::Lang::Variable
       result.name.should  == 'a'
@@ -606,7 +607,7 @@ describe Gene::Lang::Interpreter do
 
     it "(def a (1 + 2))" do
       result = @application.parse_and_process(example.description)
-      @application.context.get('a').should == 3
+      # @application.context.get('a').should == 3
       pending "should we return undefined or value instead?"
       result.class.should == Gene::Lang::Variable
       result.name.should  == 'a'

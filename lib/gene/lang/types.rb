@@ -13,8 +13,7 @@ module Gene::Lang
 
     def initialize klass = Object
       @properties = {}
-      @klass = klass
-      # @properties["#class"] = klass
+      @klass      = klass
     end
 
     def class
@@ -106,16 +105,12 @@ module Gene::Lang
   end
 
   class Application < Object
-    # attr_accessor :global_scope, :global_namespace, :root_context, :interpreter_options
     attr_accessor :global_namespace
 
     def initialize
       super(Application)
 
-      # set 'global_scope', Gene::Lang::Scope.new(nil, false)
       set 'global_namespace', Gene::Lang::Namespace.new('global', nil)
-
-      # reset_context
     end
 
     def create_root_context
@@ -165,20 +160,15 @@ module Gene::Lang
       @application = application
     end
 
-    # def global_scope
-    #   application.global_scope
-    # end
-
     def get name
       if scope && scope.defined?(name)
         scope.get_variable name
       elsif namespace && namespace.defined?(name)
         namespace.get_member name
-      # else
-      #   global_scope.get_variable name
+      else
+        raise "#{name} is not defined."
       end
     end
-    alias [] get
 
     def set name, value
       if self.self.is_a? Namespace
@@ -320,7 +310,7 @@ module Gene::Lang
       super(Function)
 
       set 'name', name
-      self.inherit_scope = true # Default inherit_scope to true
+      self.inherit_scope  = true # Default inherit_scope to true
       self.eval_arguments = true # Default inherit_scope to true
     end
 
@@ -401,7 +391,6 @@ module Gene::Lang
 
     def get_variable name
       name = name.to_s
-      raise "#{name} is not defined." unless self.defined? name
 
       if self.variables.keys.include? name
         self.variables[name]

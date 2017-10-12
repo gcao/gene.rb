@@ -2,11 +2,11 @@ require File.expand_path(File.dirname(__FILE__) + '/../../spec_helper')
 
 describe Gene::Lang do
   before do
+    pending
     @application  = Gene::Lang::Application.new
     @interpreter  = Gene::Lang::Interpreter.new @application.root_context
     @serializer   = Gene::Lang::Serializer.new
     @deserializer = Gene::Lang::Deserializer.new
-    pending
   end
 
   describe "Serializer" do
