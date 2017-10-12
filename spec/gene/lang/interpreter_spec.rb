@@ -3,36 +3,36 @@ require File.expand_path(File.dirname(__FILE__) + '/../../spec_helper')
 describe Gene::Lang::Interpreter do
   before do
     @application = Gene::Lang::Application.new
-    @interpreter = Gene::Lang::Interpreter.new @application.root_context
-    @interpreter.load_core_libs
+    # @application.load_core_libs
   end
 
   describe "special built-in variables and functions" do
     it "
       $application  # The application object which is like the start of the universe
     " do
-      result = @interpreter.parse_and_process(example.description)
+      result = @application.parse_and_process(example.description)
       result.class.should == Gene::Lang::Application
     end
 
     it "
       $context      # The current context
     " do
-      result = @interpreter.parse_and_process(example.description)
-      result.scope.should_not be_nil
+      result = @application.parse_and_process(example.description)
+      result.should_not be_nil
     end
 
     it "
-      $global-scope # The global scope object
+      $global       # The global namespace object
     " do
-      result = @interpreter.parse_and_process(example.description)
-      result.class.should == Gene::Lang::Scope
+      result = @application.parse_and_process(example.description)
+      result.class.should == Gene::Lang::Namespace
     end
 
     it "
       $scope        # The current scope object which may or may not inherit from ancestor scopes
     " do
-      result = @interpreter.parse_and_process(example.description)
+      pending
+      result = @application.parse_and_process(example.description)
       result.class.should == Gene::Lang::Scope
     end
 
@@ -42,7 +42,7 @@ describe Gene::Lang::Interpreter do
       )
       (f) # returns the function itself
     " do
-      result = @interpreter.parse_and_process(example.description)
+      result = @application.parse_and_process(example.description)
       result.class.should == Gene::Lang::Function
       result.name.should == 'f'
     end
@@ -53,34 +53,34 @@ describe Gene::Lang::Interpreter do
       )
       (f 1 2) # returns [1, 2]
     " do
-      result = @interpreter.parse_and_process(example.description)
+      result = @application.parse_and_process(example.description)
       result.should == [1, 2]
     end
 
     it "
       ($invoke      # A function that allows invocation of native methods on native objects (this should not be needed if whole interpreter is implemented in Gene Lang)
-        $scope 'class') # returns 'Gene::Lang::Scope'
+        $context 'class') # returns Gene::Lang::Context
     " do
-      result = @interpreter.parse_and_process(example.description)
-      result.should == Gene::Lang::Scope
+      result = @application.parse_and_process(example.description)
+      result.should == Gene::Lang::Context
     end
   end
 
   describe "class" do
     it "(class A)" do
-      result = @interpreter.parse_and_process(example.description)
+      result = @application.parse_and_process(example.description)
       result.class.should == Gene::Lang::Class
       result.name.should  == 'A'
     end
 
     it "(class A)(new A)" do
-      result = @interpreter.parse_and_process(example.description)
+      result = @application.parse_and_process(example.description)
       result.class.class.should == Gene::Lang::Class
       result.class.name.should  == 'A'
     end
 
     it "(class A (method doSomething))" do
-      result = @interpreter.parse_and_process(example.description)
+      result = @application.parse_and_process(example.description)
       result.class.should == Gene::Lang::Class
       result.name.should  == 'A'
       result.methods.size.should == 1
@@ -94,17 +94,17 @@ describe Gene::Lang::Interpreter do
       (def a (new A))
       (a .f)
     " do
-      result = @interpreter.parse_and_process(example.description)
+      result = @application.parse_and_process(example.description)
       result.class.name.should == 'A'
     end
 
     it "(class A (init a (@a = a))) (new A 1)" do
-      result = @interpreter.parse_and_process(example.description)
+      result = @application.parse_and_process(example.description)
       result['a'].should == 1
     end
 
     it "(class A (init name ((@ name) = 1))) (new A 'a')" do
-      result = @interpreter.parse_and_process(example.description)
+      result = @application.parse_and_process(example.description)
       result['a'].should == 1
     end
 
@@ -132,7 +132,7 @@ describe Gene::Lang::Interpreter do
       # Call method on an instance
       (a .test 2)
     " do
-      result = @interpreter.parse_and_process(example.description)
+      result = @application.parse_and_process(example.description)
       result.should == 4
     end
   end
@@ -153,7 +153,7 @@ describe Gene::Lang::Interpreter do
       (a .x)
     " do
       result = Gene::Parser.parse(example.description)
-      result = @interpreter.parse_and_process(example.description)
+      result = @application.parse_and_process(example.description)
       result.should == 'value'
     end
 
@@ -165,7 +165,7 @@ describe Gene::Lang::Interpreter do
       (a .x)
     " do
       result = Gene::Parser.parse(example.description)
-      result = @interpreter.parse_and_process(example.description)
+      result = @application.parse_and_process(example.description)
       result.should == 'value'
     end
   end
@@ -197,7 +197,7 @@ describe Gene::Lang::Interpreter do
       (def b (new B))
       ((b .test) == ['A.test' 'B.test'])
     " do
-      result = @interpreter.parse_and_process(example.description)
+      result = @application.parse_and_process(example.description)
       result.should == true
     end
   end
@@ -210,7 +210,7 @@ describe Gene::Lang::Interpreter do
       # cast will create a new object of B, shallow-copy all properties except #class
       (cast a B)
     " do
-      result = @interpreter.parse_and_process(example.description)
+      result = @application.parse_and_process(example.description)
       result.class.class.should == Gene::Lang::Class
       result.class.name.should  == 'B'
     end
@@ -221,7 +221,7 @@ describe Gene::Lang::Interpreter do
       (def a (new A))
       ((cast a B) .test)  # returns 'test in B'
     " do
-      result = @interpreter.parse_and_process(example.description)
+      result = @application.parse_and_process(example.description)
       result.should  == 'test in B'
     end
 
@@ -233,7 +233,7 @@ describe Gene::Lang::Interpreter do
       ((cast a B) .test)
       a  # @name should be 'b'
     " do
-      result = @interpreter.parse_and_process(example.description)
+      result = @application.parse_and_process(example.description)
       result['name'].should  == 'b'
     end
   end
@@ -250,7 +250,7 @@ describe Gene::Lang::Interpreter do
       (def b (new B))
       (b .testA)  # returns 'testA'
     " do
-      result = @interpreter.parse_and_process(example.description)
+      result = @application.parse_and_process(example.description)
       result.should  == 'testA'
     end
 
@@ -268,7 +268,7 @@ describe Gene::Lang::Interpreter do
       (c .test)  # returns 'test in A'
     " do
       pending "TODO: change to module/include"
-      result = @interpreter.parse_and_process(example.description)
+      result = @application.parse_and_process(example.description)
       result.should  == 'test in A'
     end
 
@@ -286,7 +286,7 @@ describe Gene::Lang::Interpreter do
       (def c (new C))
       (c .test)  # returns 'test in A'
     " do
-      result = @interpreter.parse_and_process(example.description)
+      result = @application.parse_and_process(example.description)
       result.should  == 'test in A'
     end
 
@@ -306,8 +306,8 @@ describe Gene::Lang::Interpreter do
       (c .test)  # returns 'test in B'
     " do
       pending "TODO: change to module/include"
-      result = @interpreter.parse_and_process(example.description)
-      result = @interpreter.parse_and_process(example.description)
+      result = @application.parse_and_process(example.description)
+      result = @application.parse_and_process(example.description)
       result.should  == 'test in B'
     end
 
@@ -323,7 +323,7 @@ describe Gene::Lang::Interpreter do
       (def b (new B))
       (b .test 1 2)
     " do
-      result = @interpreter.parse_and_process(example.description)
+      result = @application.parse_and_process(example.description)
       result.should  == 3
     end
 
@@ -338,7 +338,7 @@ describe Gene::Lang::Interpreter do
         )
         (new B)
       " do
-        result = @interpreter.parse_and_process(example.description)
+        result = @application.parse_and_process(example.description)
         result['a'].should be_nil
       end
 
@@ -347,13 +347,13 @@ describe Gene::Lang::Interpreter do
 
   describe "fn" do
     it "(fn doSomething)" do
-      result = @interpreter.parse_and_process(example.description)
+      result = @application.parse_and_process(example.description)
       result.class.should == Gene::Lang::Function
       result.name.should  == 'doSomething'
     end
 
     it "(fn doSomething [a] (a + 1))" do
-      result = @interpreter.parse_and_process(example.description)
+      result = @application.parse_and_process(example.description)
       result.class.should == Gene::Lang::Function
       result.name.should  == 'doSomething'
       result.arguments.size.should == 1
@@ -366,7 +366,7 @@ describe Gene::Lang::Interpreter do
         (fn doSomething args... args)
         (doSomething 1 2)
       " do
-        result = @interpreter.parse_and_process(example.description)
+        result = @application.parse_and_process(example.description)
         result.should == [1, 2]
       end
 
@@ -377,7 +377,7 @@ describe Gene::Lang::Interpreter do
         (def array [1 2])
         (doSomething array...)
       " do
-        result = @interpreter.parse_and_process(example.description)
+        result = @application.parse_and_process(example.description)
         result.should == 3
       end
 
@@ -388,13 +388,13 @@ describe Gene::Lang::Interpreter do
         (def array [1 2])
         (doSomething array...)
       " do
-        result = @interpreter.parse_and_process(example.description)
+        result = @application.parse_and_process(example.description)
         result.should == [1, 2]
       end
     end
 
     it "(fn doSomething [] 1)(doSomething)" do
-      result = @interpreter.parse_and_process(example.description)
+      result = @application.parse_and_process(example.description)
       result.should == 1
     end
 
@@ -406,7 +406,7 @@ describe Gene::Lang::Interpreter do
       )
       (doSomething)
     " do
-      result = @interpreter.parse_and_process(example.description)
+      result = @application.parse_and_process(example.description)
       result.should == Gene::UNDEFINED
     end
 
@@ -417,17 +417,17 @@ describe Gene::Lang::Interpreter do
         2
       )
       (doSomething)" do
-      result = @interpreter.parse_and_process(example.description)
+      result = @application.parse_and_process(example.description)
       result.should == 1
     end
 
     it "((fn doSomething [] 1)) # Note the double '(' and ')'" do
-      result = @interpreter.parse_and_process(example.description)
+      result = @application.parse_and_process(example.description)
       result.should == 1
     end
 
     it "(fn doSomething a 1)" do
-      result = @interpreter.parse_and_process(example.description)
+      result = @application.parse_and_process(example.description)
       result.class.should == Gene::Lang::Function
       result.name.should  == 'doSomething'
       result.arguments.size.should == 1
@@ -437,12 +437,12 @@ describe Gene::Lang::Interpreter do
     end
 
     it "(fn doSomething a a)(doSomething 1)" do
-      result = @interpreter.parse_and_process(example.description)
+      result = @application.parse_and_process(example.description)
       result.should == 1
     end
 
     it "(fn doSomething [a b] (a + b))(doSomething 1 2)" do
-      result = @interpreter.parse_and_process(example.description)
+      result = @application.parse_and_process(example.description)
       result.should == 3
     end
 
@@ -453,7 +453,7 @@ describe Gene::Lang::Interpreter do
       # call will invoke a function with a self, this makes function behave like method
       (call f a)
     " do
-      result = @interpreter.parse_and_process(example.description)
+      result = @application.parse_and_process(example.description)
       result.should == 'value'
     end
 
@@ -463,13 +463,13 @@ describe Gene::Lang::Interpreter do
       (fn f b (a + b))
       (f 2)
     " do
-      result = @interpreter.parse_and_process(example.description)
+      result = @application.parse_and_process(example.description)
       result.should == 3
     end
   end
 
   describe "Method vs function" do
-    it "1.
+    it "# 1.
       # Method   WILL NOT   inherit the scope where it is defined in
       (class A
         (def x 1)
@@ -479,7 +479,7 @@ describe Gene::Lang::Interpreter do
       (a .doSomething)
     " do
       lambda {
-        result = @interpreter.parse_and_process(example.description)
+        result = @application.parse_and_process(example.description)
       }.should raise_error
     end
 
@@ -489,7 +489,7 @@ describe Gene::Lang::Interpreter do
       (fn doSomething [] x)
       (doSomething)
     " do
-      result = @interpreter.parse_and_process(example.description)
+      result = @application.parse_and_process(example.description)
       result.should == 1
     end
   end
@@ -499,14 +499,14 @@ describe Gene::Lang::Interpreter do
       (def f (fnx [] 1))
       (f)
     " do
-      result = @interpreter.parse_and_process(example.description)
+      result = @application.parse_and_process(example.description)
       result.should == 1
     end
 
     it "
       ((fnx [] 1))
     " do
-      result = @interpreter.parse_and_process(example.description)
+      result = @application.parse_and_process(example.description)
       result.should == 1
     end
   end
@@ -516,7 +516,7 @@ describe Gene::Lang::Interpreter do
       (def f (fnxx 1))
       (f)
     " do
-      result = @interpreter.parse_and_process(example.description)
+      result = @application.parse_and_process(example.description)
       result.should == 1
     end
   end
@@ -526,7 +526,7 @@ describe Gene::Lang::Interpreter do
       a # should throw exception
     " do
       lambda {
-        @interpreter.parse_and_process(example.description)
+        @application.parse_and_process(example.description)
       }.should raise_error
     end
   end
@@ -537,68 +537,68 @@ describe Gene::Lang::Interpreter do
       (a = 1)
       (a == 1)
     " do
-      result = @interpreter.parse_and_process(example.description)
+      result = @application.parse_and_process(example.description)
       result.should be_true
     end
   end
 
   describe "Comparison" do
-    it("(1 == 1)") { @interpreter.parse_and_process(example.description).should == true }
-    it("(1 == 2)") { @interpreter.parse_and_process(example.description).should == false }
-    it("(1 != 1)") { @interpreter.parse_and_process(example.description).should == false }
-    it("(1 != 2)") { @interpreter.parse_and_process(example.description).should == true }
-    it("(1 < 2)")  { @interpreter.parse_and_process(example.description).should == true }
-    it("(2 < 2)")  { @interpreter.parse_and_process(example.description).should == false }
-    it("(3 < 2)")  { @interpreter.parse_and_process(example.description).should == false }
-    it("(1 <= 2)") { @interpreter.parse_and_process(example.description).should == true }
-    it("(2 <= 2)") { @interpreter.parse_and_process(example.description).should == true }
-    it("(3 <= 2)") { @interpreter.parse_and_process(example.description).should == false }
-    it("(1 > 2)")  { @interpreter.parse_and_process(example.description).should == false }
-    it("(2 > 2)")  { @interpreter.parse_and_process(example.description).should == false }
-    it("(3 > 2)")  { @interpreter.parse_and_process(example.description).should == true }
-    it("(1 >= 2)") { @interpreter.parse_and_process(example.description).should == false }
-    it("(2 >= 2)") { @interpreter.parse_and_process(example.description).should == true }
-    it("(3 >= 2)") { @interpreter.parse_and_process(example.description).should == true }
+    it("(1 == 1)") { @application.parse_and_process(example.description).should == true }
+    it("(1 == 2)") { @application.parse_and_process(example.description).should == false }
+    it("(1 != 1)") { @application.parse_and_process(example.description).should == false }
+    it("(1 != 2)") { @application.parse_and_process(example.description).should == true }
+    it("(1 < 2)")  { @application.parse_and_process(example.description).should == true }
+    it("(2 < 2)")  { @application.parse_and_process(example.description).should == false }
+    it("(3 < 2)")  { @application.parse_and_process(example.description).should == false }
+    it("(1 <= 2)") { @application.parse_and_process(example.description).should == true }
+    it("(2 <= 2)") { @application.parse_and_process(example.description).should == true }
+    it("(3 <= 2)") { @application.parse_and_process(example.description).should == false }
+    it("(1 > 2)")  { @application.parse_and_process(example.description).should == false }
+    it("(2 > 2)")  { @application.parse_and_process(example.description).should == false }
+    it("(3 > 2)")  { @application.parse_and_process(example.description).should == true }
+    it("(1 >= 2)") { @application.parse_and_process(example.description).should == false }
+    it("(2 >= 2)") { @application.parse_and_process(example.description).should == true }
+    it("(3 >= 2)") { @application.parse_and_process(example.description).should == true }
   end
 
   describe "Boolean operations" do
-    it("(true && true)")   { @interpreter.parse_and_process(example.description).should == true }
-    it("(true && false)")  { @interpreter.parse_and_process(example.description).should == false }
-    it("(true || true)")   { @interpreter.parse_and_process(example.description).should == true }
-    it("(true || false)")  { @interpreter.parse_and_process(example.description).should == true }
-    it("(false || false)") { @interpreter.parse_and_process(example.description).should == false }
+    it("(true && true)")   { @application.parse_and_process(example.description).should == true }
+    it("(true && false)")  { @application.parse_and_process(example.description).should == false }
+    it("(true || true)")   { @application.parse_and_process(example.description).should == true }
+    it("(true || false)")  { @application.parse_and_process(example.description).should == true }
+    it("(false || false)") { @application.parse_and_process(example.description).should == false }
   end
 
   describe "Binary expression" do
     it "(1 + 2)" do
-      result = @interpreter.parse_and_process(example.description)
+      result = @application.parse_and_process(example.description)
       result.should == 3
     end
   end
 
   describe "Variable definition" do
     it "(def a 'value')" do
-      result = @interpreter.parse_and_process(example.description)
+      result = @application.parse_and_process(example.description)
       result.class.should == Gene::Lang::Variable
       result.name.should  == 'a'
       result.value.should == 'value'
     end
 
     it "(def a (1 + 2))" do
-      result = @interpreter.parse_and_process(example.description)
+      result = @application.parse_and_process(example.description)
       result.class.should == Gene::Lang::Variable
       result.name.should  == 'a'
       result.value.should == 3
     end
 
     it "(def a 1) (a + 2)" do
-      result = @interpreter.parse_and_process(example.description)
+      result = @application.parse_and_process(example.description)
       result.should == 3
     end
 
     it "(def a 'value')" do
-      result = @interpreter.parse_and_process(example.description)
-      @interpreter.context.get('a').should == 'value'
+      result = @application.parse_and_process(example.description)
+      # @application.context.get('a').should == 'value'
       pending "should we return undefined or value instead?"
       result.class.should == Gene::Lang::Variable
       result.name.should  == 'a'
@@ -606,8 +606,8 @@ describe Gene::Lang::Interpreter do
     end
 
     it "(def a (1 + 2))" do
-      result = @interpreter.parse_and_process(example.description)
-      @interpreter.context.get('a').should == 3
+      result = @application.parse_and_process(example.description)
+      # @application.context.get('a').should == 3
       pending "should we return undefined or value instead?"
       result.class.should == Gene::Lang::Variable
       result.name.should  == 'a'
@@ -615,12 +615,12 @@ describe Gene::Lang::Interpreter do
     end
 
     it "(def a 1) (a + 2)" do
-      result = @interpreter.parse_and_process(example.description)
+      result = @application.parse_and_process(example.description)
       result.should == 3
     end
 
     it "(def a 1) (def b 2) (a + b)" do
-      result = @interpreter.parse_and_process(example.description)
+      result = @application.parse_and_process(example.description)
       result.should == 3
     end
 
@@ -634,7 +634,7 @@ describe Gene::Lang::Interpreter do
         x
       " do
         pending "Deprecated"
-        result = @interpreter.parse_and_process(example.description)
+        result = @application.parse_and_process(example.description)
         result.should == 0
       end
 
@@ -647,7 +647,7 @@ describe Gene::Lang::Interpreter do
         x
       " do
         pending "Deprecated"
-        result = @interpreter.parse_and_process(example.description)
+        result = @application.parse_and_process(example.description)
         result.should == 1
       end
     end
@@ -655,46 +655,46 @@ describe Gene::Lang::Interpreter do
 
   describe "do" do
     it "(do (def i 1)(i + 2))" do
-      result = @interpreter.parse_and_process(example.description)
+      result = @application.parse_and_process(example.description)
       result.should == 3
     end
   end
 
   describe "if" do
     it "(if true 1 2)" do
-      result = @interpreter.parse_and_process(example.description)
+      result = @application.parse_and_process(example.description)
       result.should == 1
     end
 
     it "(if true [1 2] 2)" do
-      result = @interpreter.parse_and_process(example.description)
+      result = @application.parse_and_process(example.description)
       result.should == [1, 2]
     end
 
     it "(if true (do (def a 1)(a + 2)) 2)" do
-      result = @interpreter.parse_and_process(example.description)
+      result = @application.parse_and_process(example.description)
       result.should == 3
     end
 
     it "(if false 1 2)" do
-      result = @interpreter.parse_and_process(example.description)
+      result = @application.parse_and_process(example.description)
       result.should == 2
     end
 
     it "(if false 1 [1 2])" do
-      result = @interpreter.parse_and_process(example.description)
+      result = @application.parse_and_process(example.description)
       result.should == [1, 2]
     end
   end
 
   describe "if-not" do
     it "(if-not true 1 2)" do
-      result = @interpreter.parse_and_process(example.description)
+      result = @application.parse_and_process(example.description)
       result.should == 2
     end
 
     it "(if-not false 1 2)" do
-      result = @interpreter.parse_and_process(example.description)
+      result = @application.parse_and_process(example.description)
       result.should == 1
     end
   end
@@ -710,7 +710,7 @@ describe Gene::Lang::Interpreter do
       )
       (result == 10)
     " do
-      result = @interpreter.parse_and_process(example.description)
+      result = @application.parse_and_process(example.description)
       result.should be_true
     end
 
@@ -722,7 +722,7 @@ describe Gene::Lang::Interpreter do
       )
       (result == 10)
     " do
-      result = @interpreter.parse_and_process(example.description)
+      result = @application.parse_and_process(example.description)
       result.should be_true
     end
 
@@ -734,7 +734,7 @@ describe Gene::Lang::Interpreter do
       )
       (result == 10)
     " do
-      result = @interpreter.parse_and_process(example.description)
+      result = @application.parse_and_process(example.description)
       result.should be_true
     end
   end
@@ -748,7 +748,7 @@ describe Gene::Lang::Interpreter do
       )
       (i == 5)
     " do
-      result = @interpreter.parse_and_process(example.description)
+      result = @application.parse_and_process(example.description)
       result.should be_true
     end
 
@@ -759,7 +759,7 @@ describe Gene::Lang::Interpreter do
         (if (i >= 5) (break 100))
       )
     " do
-      result = @interpreter.parse_and_process(example.description)
+      result = @application.parse_and_process(example.description)
       result.should == 100
     end
 
@@ -785,14 +785,14 @@ describe Gene::Lang::Interpreter do
       )
     " do
       pending "TODO: fix infinite loop, might be related to variable scope"
-      result = @interpreter.parse_and_process(example.description)
+      result = @application.parse_and_process(example.description)
       result.should == 100
     end
   end
 
   describe "noop - no operation, do nothing and return undefined" do
     it "noop" do
-      result = @interpreter.parse_and_process(example.description)
+      result = @application.parse_and_process(example.description)
       result.should == Gene::UNDEFINED
     end
   end
@@ -803,12 +803,12 @@ describe Gene::Lang::Interpreter do
       (fn f _ _)
       (f 1)
     " do
-      result = @interpreter.parse_and_process(example.description)
+      result = @application.parse_and_process(example.description)
       result.should == Gene::UNDEFINED
     end
 
     it "(if true _ 1)" do
-      result = @interpreter.parse_and_process(example.description)
+      result = @application.parse_and_process(example.description)
       result.should == Gene::UNDEFINED
     end
 
@@ -822,19 +822,34 @@ describe Gene::Lang::Interpreter do
       )
       sum
     " do
-      result = @interpreter.parse_and_process(example.description)
+      result = @application.parse_and_process(example.description)
       result.should == 10
     end
   end
 
   describe "Namespace / module system" do
-    it "
+    it "# Namespace and members can be referenced from same scope
       (ns a
         (class C)
       )
       ((a/C .name) == 'C')
     " do
-      result = @interpreter.parse_and_process(example.description)
+      result = @application.parse_and_process(example.description)
+      result.should be_true
+    end
+
+    it "# Namespace and members can be referenced from nested scope
+      (ns a
+        (class C)
+      )
+      (class B
+        (method test _
+          (a/C .name)
+        )
+      )
+      (((new B) .test) == 'C')
+    " do
+      result = @application.parse_and_process(example.description)
       result.should be_true
     end
   end

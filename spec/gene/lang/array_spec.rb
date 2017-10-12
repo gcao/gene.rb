@@ -3,8 +3,7 @@ require File.expand_path(File.dirname(__FILE__) + '/../../spec_helper')
 describe "Array" do
   before do
     @application = Gene::Lang::Application.new
-    @interpreter = Gene::Lang::Interpreter.new @application.root_context
-    @interpreter.load_core_libs
+    @application.load_core_libs
   end
 
   it '
@@ -16,26 +15,26 @@ describe "Array" do
 
   it "(Array .parent_classes)" do
     pending
-    result = @interpreter.parse_and_process(example.description)
+    result = @application.parse_and_process(example.description)
     result.size.should == 1
     result[0].name.should == 'Object'
   end
 
   it "(([] .is Object) == true)" do
     pending
-    result = @interpreter.parse_and_process(example.description)
+    result = @application.parse_and_process(example.description)
     result.should == true
   end
 
   it "(([] .is Array) == true)" do
     pending
-    result = @interpreter.parse_and_process(example.description)
+    result = @application.parse_and_process(example.description)
     result.should == true
   end
 
   it "(([] .is Hash) == false)" do
     pending
-    result = @interpreter.parse_and_process(example.description)
+    result = @application.parse_and_process(example.description)
     result.should == true
   end
 
@@ -45,38 +44,37 @@ describe "Array" do
     (def b (f))
     (($invoke a 'object_id') != ($invoke b 'object_id'))
   " do
-    result = @interpreter.parse_and_process(example.description)
+    result = @application.parse_and_process(example.description)
     result.should be_true
   end
 
   it "(([1] .size) == 1)" do
-    result = @interpreter.parse_and_process(example.description)
+    result = @application.parse_and_process(example.description)
     result.should be_true
   end
 
   it "(([1] .get 0) == 1)" do
-    result = @interpreter.parse_and_process(example.description)
+    result = @application.parse_and_process(example.description)
     result.should be_true
   end
 
   it "([1] .get 1)" do
-    result = @interpreter.parse_and_process(example.description)
+    result = @application.parse_and_process(example.description)
     result.should == nil
   end
 
   it "(([1] .any (fnx item (item == 1))) == true)" do
-    result = @interpreter.parse_and_process(example.description)
+    result = @application.parse_and_process(example.description)
     result.should == true
   end
 
   it "(([1] .any (fnx item (item == 2))) == false)" do
-    pending
-    result = @interpreter.parse_and_process(example.description)
+    result = @application.parse_and_process(example.description)
     result.should == true
   end
 
   it "([1 [2]] .flatten)" do
-    result = @interpreter.parse_and_process(example.description)
+    result = @application.parse_and_process(example.description)
     result.should == [1, 2]
   end
 
@@ -90,7 +88,7 @@ describe "Array" do
     )
     sum
   " do
-    result = @interpreter.parse_and_process(example.description)
+    result = @application.parse_and_process(example.description)
     result.should == 3
   end
 end

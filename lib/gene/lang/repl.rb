@@ -6,10 +6,10 @@ class Gene::Lang::Repl
       @context = context
     else
       application = Gene::Lang::Application.new
-      @context = application.root_context
+      application.load_core_libs
+      @context = application.create_root_context
     end
 
-    @context.interpreter.load_core_libs
     # Define _ on the context to save last result
     @context.class.send :attr_accessor, :_
   end

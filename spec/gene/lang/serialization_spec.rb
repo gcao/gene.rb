@@ -2,6 +2,7 @@ require File.expand_path(File.dirname(__FILE__) + '/../../spec_helper')
 
 describe Gene::Lang do
   before do
+    pending
     @application  = Gene::Lang::Application.new
     @interpreter  = Gene::Lang::Interpreter.new @application.root_context
     @serializer   = Gene::Lang::Serializer.new
@@ -27,7 +28,6 @@ describe Gene::Lang do
     it "(fn f a (a + 1))" do
       obj = @interpreter.parse_and_process(example.description)
       result = @serializer.process obj
-      pending
       # puts result and replace ... below with the real result, replace IDs with placeholders
       result.should == '...'.gsub("FUNC_ID", obj.object_id.to_s)
     end

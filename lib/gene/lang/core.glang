@@ -1,4 +1,4 @@
-(class Object
+(class Object ^^global
   (method get prop-name
     ((@ prop-name))
   )
@@ -20,7 +20,7 @@
   )
 )
 
-(class Class
+(class Class ^^global
   (method parent_class _
     (@parent_class || Object)
   )
@@ -38,7 +38,7 @@
 )
 
 # Wrapper class for native arrays
-(class Array
+(class Array ^^global
   (method class _
     ($invoke $context "get" "Array")
   )
@@ -95,17 +95,17 @@
   )
 )
 
-(class Hash
+(class Hash ^^global
   (method size _
     ($invoke self "size")
   )
 )
 
-(class String
+(class String ^^global
   (method + args...
     ($invoke $self '<<' args)
   )
 )
 
-(class File
+(class File ^^global
 )

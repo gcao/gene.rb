@@ -13,8 +13,7 @@ module Gene::Lang
 
     def initialize klass = Object
       @properties = {}
-      @klass = klass
-      # @properties["#class"] = klass
+      @klass      = klass
     end
 
     def class
@@ -106,30 +105,46 @@ module Gene::Lang
   end
 
   class Application < Object
-    attr_accessor :global_scope, :root_context, :interpreter_options
+    attr_accessor :global_namespace
+
     def initialize
       super(Application)
 
-      set 'global_scope', Gene::Lang::Scope.new(nil)
+      set 'global_namespace', Gene::Lang::Namespace.new('global', nil)
+    end
 
+    def create_root_context
       context = Context.new
       context.application = self
-      context.scope = Gene::Lang::Scope.new(nil)
-      set 'root_context', context
+      # Create an anonymous namespace
+      context.self = context.namespace = Gene::Lang::Namespace.new(nil, global_namespace)
+      context
+    end
+
+    def parse_and_process code
+      context = create_root_context
+      interpreter = Gene::Lang::Interpreter.new context
+      interpreter.parse_and_process code
+    end
+
+    def load_core_libs
+      parse_and_process File.read(File.dirname(__FILE__) + '/core.glang')
     end
   end
 
   class Context < Object
-    attr_accessor :scope, :self
+    attr_accessor :global_namespace, :namespace, :scope, :self
     def initialize
       super(Context)
     end
 
-    def extend scope, _self
-      new_context = Context.new
+    def extend options
+      new_context             = Context.new
       new_context.application = @application
-      new_context.scope = scope
-      new_context.self = _self
+      new_context.global_namespace = @application.global_namespace
+      new_context.namespace   = options[:namespace] || namespace
+      new_context.scope       = options[:scope]     || scope
+      new_context.self        = options[:self]
       new_context
     end
 
@@ -145,39 +160,38 @@ module Gene::Lang
       @application = application
     end
 
-    def global_scope
-      application.global_scope
-    end
-
-    # def start_scope scope = Gene::Lang::Scope.new(nil)
-    #   scopes.push scope
-    # end
-
-    # def end_scope
-    #   throw "Scope error: can not close the root scope." if scopes.size == 0
-    #   scopes.pop
-    # end
-
-    # def self
-    #   self_objects.last
-    # end
-
-    # def start_self self_object
-    #   self_objects.push self_object
-    # end
-
-    # def end_self
-    #   self_objects.pop
-    # end
-
     def get name
-      if scope.defined? name
+      if scope && scope.defined?(name)
         scope.get_variable name
+      elsif namespace && namespace.defined?(name)
+        namespace.get_member name
       else
-        global_scope.get_variable name
+        raise "#{name} is not defined."
       end
     end
     alias [] get
+
+    def def name, value
+      if self.self.is_a? Namespace
+        self.self.def_member name, value
+      else
+        self.scope.set_variable name, value
+      end
+    end
+
+    def set name, value
+      if self.self.is_a? Namespace
+        self.self.set_member name, value
+      elsif self.scope.defined? name
+        self.scope.let name, value
+      else
+        self.namespace.set_member name, value
+      end
+    end
+
+    def set_global name, value
+      application.global_namespace.def_member name, value
+    end
 
     def process data
       interpreter.process data
@@ -311,13 +325,12 @@ module Gene::Lang
       super(Function)
 
       set 'name', name
-      self.inherit_scope = true # Default inherit_scope to true
-      self.eval_arguments = true # Default inherit_scope to true
+      self.inherit_scope  = true # Default inherit_scope to true
+      self.eval_arguments = true # Default eval_arguments to true
     end
 
     def call options = {}
-      _parent_scope = inherit_scope ? parent_scope : nil
-      scope = Scope.new _parent_scope
+      scope = Scope.new parent_scope, inherit_scope
       context = options[:context]
 
       scope.set_variable '$method', options[:method] if options[:method]
@@ -331,7 +344,7 @@ module Gene::Lang
       scope.set_variable '$arguments', expanded_arguments
       scope.update_arguments expanded_arguments
 
-      new_context = context.extend scope, options[:self]
+      new_context = context.extend scope: scope, self: options[:self]
       result = new_context.process_statements statements
       if result.is_a? ReturnValue
         result = result.value
@@ -378,8 +391,8 @@ module Gene::Lang
   end
 
   class Scope < Object
-    attr_accessor :parent, :variables, :arguments
-    def initialize parent
+    attr_accessor :parent, :variables, :arguments, :inherit_variables
+    def initialize parent, inherit_variables
       super(Scope)
 
       set 'parent', parent
@@ -393,7 +406,6 @@ module Gene::Lang
 
     def get_variable name
       name = name.to_s
-      raise "#{name} is not defined." unless self.defined? name
 
       if self.variables.keys.include? name
         self.variables[name]
@@ -431,6 +443,43 @@ module Gene::Lang
           set_variable arg.name, values[value_index]
           value_index += 1
         end
+      end
+    end
+  end
+
+  class Namespace < Object
+    attr_reader :name, :parent, :members
+    def initialize name, parent
+      super(Namespace)
+
+      set 'name', name
+      set 'parent', parent
+      set 'members', {}
+    end
+
+    def defined? name
+      members.include?(name) || (parent && parent.defined?(name))
+    end
+
+    def get_member name
+      if members.include? name
+        members[name]
+      elsif parent
+        parent.members[name]
+      end
+    end
+
+    def def_member name, value
+      members[name] = value
+    end
+
+    def set_member name, value
+      if members.include? name
+        members[name] = value
+      elsif parent
+        parent.set_member name, value
+      else
+        raise "Unknown member '#{name}'"
       end
     end
   end
@@ -493,16 +542,6 @@ module Gene::Lang
       super(Expandable)
 
       set 'value', value
-    end
-  end
-
-  class Namespace < Object
-    attr_reader :name, :members
-    def initialize name
-      super(Namespace)
-
-      set 'name', name
-      set 'members', {}
     end
   end
 
