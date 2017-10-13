@@ -3,7 +3,7 @@ require File.expand_path(File.dirname(__FILE__) + '/../../spec_helper')
 describe Gene::Lang::Interpreter do
   before do
     @application = Gene::Lang::Application.new
-    # @application.load_core_libs
+    @application.load_core_libs
   end
 
   describe "special built-in variables and functions" do

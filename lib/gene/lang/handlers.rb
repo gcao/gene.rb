@@ -609,9 +609,14 @@ module Gene::Lang::Handlers
       return Gene::NOT_HANDLED unless NS === data
 
       name = data.data[0].to_s
-      ns = Gene::Lang::Namespace.new name, context.scope
+      ns   = Gene::Lang::Namespace.new name, context.scope
       context.def name, ns
-      context.process data.data[1..-1]
+
+      new_context             = Gene::Lang::Context.new
+      new_context.application = context.application
+      new_context.self        = ns
+      new_context.namespace   = ns
+      new_context.process data.data[1..-1]
     end
   end
 
