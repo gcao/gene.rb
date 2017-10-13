@@ -160,26 +160,25 @@ module Gene::Lang
       @application = application
     end
 
-    def get name
+    def get_member name
       if scope && scope.defined?(name)
-        scope.get_variable name
+        scope.get_member name
       elsif namespace && namespace.defined?(name)
         namespace.get_member name
       else
         raise "#{name} is not defined."
       end
     end
-    alias [] get
 
     def def name, value
       if self.self.is_a? Namespace
         self.self.def_member name, value
       else
-        self.scope.set_variable name, value
+        self.scope.set_member name, value
       end
     end
 
-    def set name, value
+    def set_member name, value
       if self.self.is_a? Namespace
         self.self.set_member name, value
       elsif self.scope.defined? name
@@ -333,15 +332,15 @@ module Gene::Lang
       scope = Scope.new parent_scope, inherit_scope
       context = options[:context]
 
-      scope.set_variable '$method', options[:method] if options[:method]
-      scope.set_variable '$hierarchy', options[:hierarchy] if options[:hierarchy]
+      scope.set_member '$method', options[:method] if options[:method]
+      scope.set_member '$hierarchy', options[:hierarchy] if options[:hierarchy]
 
-      scope.set_variable '$function', self
-      scope.set_variable '$caller-context', context
+      scope.set_member '$function', self
+      scope.set_member '$caller-context', context
       scope.arguments = self.arguments
 
       expanded_arguments = expand_arguments(context, options[:arguments])
-      scope.set_variable '$arguments', expanded_arguments
+      scope.set_member '$arguments', expanded_arguments
       scope.update_arguments expanded_arguments
 
       new_context = context.extend scope: scope, self: options[:self]
@@ -404,19 +403,19 @@ module Gene::Lang
       self.variables.keys.include?(name) or (self.parent and self.parent.defined?(name))
     end
 
-    def get_variable name
+    def get_member name
       name = name.to_s
 
       if self.variables.keys.include? name
         self.variables[name]
       elsif self.parent
-        self.parent.get_variable name
+        self.parent.get_member name
       else
         Gene::UNDEFINED
       end
     end
 
-    def set_variable name, value
+    def set_member name, value
       self.variables[name] = value
     end
 
@@ -438,9 +437,9 @@ module Gene::Lang
       value_index = 0
       self.arguments.each_with_index do |arg|
         if arg.name =~ /^(.*)\.\.\.$/
-          set_variable $1, values[value_index..-1] || []
+          set_member $1, values[value_index..-1] || []
         else
-          set_variable arg.name, values[value_index]
+          set_member arg.name, values[value_index]
           value_index += 1
         end
       end

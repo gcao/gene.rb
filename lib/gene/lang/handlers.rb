@@ -110,7 +110,7 @@ module Gene::Lang::Handlers
             Gene::Lang::Expandable.new context.self[$1[1..-1]]
           else
             # scope variable
-            Gene::Lang::Expandable.new context[$1]
+            Gene::Lang::Expandable.new context.get_member($1)
           end
         else
           if name[0] == '@'
@@ -118,14 +118,14 @@ module Gene::Lang::Handlers
             context.self[name[1..-1]]
           elsif name.include? '/'
             parts = name.split '/'
-            ns = context[parts.shift]
+            ns = context.get_member(parts.shift)
             # TODO: add test case for nested namespaces and finish below logic
             # while parts.size > 1
             # end
             ns.members[parts.shift]
           else
             # scope variable
-            context[name]
+            context.get_member(name)
           end
         end
       else
@@ -161,11 +161,6 @@ module Gene::Lang::Handlers
       name  = data.data[0].to_s
       klass = Gene::Lang::Class.new name
 
-      # if context.scope.defined? '$namespace'
-      #   ns = context['$namespace']
-      #   ns.members[name] = klass
-      # end
-
       scope = Gene::Lang::Scope.new nil, false
       new_context = context.extend scope: scope, self: klass
       # TODO: check whether Object class is defined.
@@ -189,7 +184,7 @@ module Gene::Lang::Handlers
         name = data.data[next_index].to_s
         next_index += 1
         fn   = Gene::Lang::Function.new name
-        # context.scope.set_variable name, fn
+        # context.scope.set_member name, fn
         context.def name, fn
       else
         name = ''
@@ -251,9 +246,9 @@ module Gene::Lang::Handlers
 
       # TODO: what do we do with arguments?
       # If there is arguments, then pass in, else re-use them
-      method    = context['$method']
-      args      = context['$arguments']
-      hierarchy = context['$hierarchy']
+      method    = context.get_member('$method')
+      args      = context.get_member('$arguments')
+      hierarchy = context.get_member('$hierarchy')
       hierarchy.next.handle_method(
         context: context,
         method: method,
@@ -356,7 +351,7 @@ module Gene::Lang::Handlers
       name  = data.data[0].to_s
       value = context.process data.data[1]
       if name[0] == '@'
-        context.self.set_variable name[1..-1], value
+        context.self.set_member name[1..-1], value
       else
         context.def name, value
       end
@@ -424,13 +419,13 @@ module Gene::Lang::Handlers
 
     def get_class obj, context
       if obj.is_a? Array
-        context["Array"]
+        context.get_member("Array")
       elsif obj.is_a? Hash
-        context["Hash"]
+        context.get_member("Hash")
       elsif obj.is_a? Gene::Lang::Class
-        context["Class"]
+        context.get_member("Class")
       elsif obj.class == Gene::Lang::Object
-        context["Object"]
+        context.get_member("Object")
       else
         obj.class
       end
@@ -475,9 +470,9 @@ module Gene::Lang::Handlers
         value     = handle(op, old_value, value)
         context.self.set name, value
       else
-        old_value = context.get name
+        old_value = context.get_member(name)
         value     = handle(op, old_value, value)
-        context.set name, value
+        context.set_member name, value
       end
 
       value
