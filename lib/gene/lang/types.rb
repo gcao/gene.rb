@@ -121,14 +121,18 @@ module Gene::Lang
       context
     end
 
-    def parse_and_process code
+    def parse_and_process code, options = {}
       context = create_root_context
+      context.define '__DIR__',  options[:dir]
+      context.define '__FILE__', options[:file]
       interpreter = Gene::Lang::Interpreter.new context
       interpreter.parse_and_process code
     end
 
     def load_core_libs
-      parse_and_process File.read(File.dirname(__FILE__) + '/core.glang')
+      dir  = File.dirname(__FILE__)
+      file = "#{dir}/core.glang"
+      parse_and_process File.read(file), dir: dir, file: file
     end
   end
 
@@ -170,7 +174,7 @@ module Gene::Lang
       end
     end
 
-    def def name, value
+    def define name, value
       if self.self.is_a? Namespace
         self.self.def_member name, value
       else
@@ -237,7 +241,6 @@ module Gene::Lang
 
       @ancestors = [self]
       modules.each do |mod|
-        @ancestors.push mod
         @ancestors += mod.ancestors
       end
       @ancestors

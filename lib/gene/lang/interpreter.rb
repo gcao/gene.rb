@@ -10,6 +10,8 @@ class Gene::Lang::Interpreter
     @handlers = Gene::Handlers::ComboHandler.new
     @handlers.add 100, Gene::Lang::Handlers::DefaultHandler.new
     @handlers.add 100, Gene::Lang::Handlers::NamespaceHandler.new
+    @handlers.add 100, Gene::Lang::Handlers::ImportHandler.new
+    @handlers.add 100, Gene::Lang::Handlers::PropHandler.new
     @handlers.add 100, Gene::Lang::Handlers::ModuleHandler.new
     @handlers.add 100, Gene::Lang::Handlers::ClassHandler.new
     @handlers.add 100, Gene::Lang::Handlers::ExtendHandler.new

@@ -9,6 +9,7 @@ module Gene::Lang::Handlers
     RETURN
     CALL DO
     DEF
+    IMPORT EXPORT FROM
     IF IF_NOT
     FOR LOOP
     BREAK
@@ -149,7 +150,7 @@ module Gene::Lang::Handlers
       if data['global']
         context.set_global name, klass
       else
-        context.def name, klass
+        context.define name, klass
       end
       klass
     end
@@ -169,7 +170,7 @@ module Gene::Lang::Handlers
       if data['global']
         context.set_global name, klass
       else
-        context.def name, klass
+        context.define name, klass
       end
       klass
     end
@@ -185,7 +186,7 @@ module Gene::Lang::Handlers
         next_index += 1
         fn   = Gene::Lang::Function.new name
         # context.scope.set_member name, fn
-        context.def name, fn
+        context.define name, fn
       else
         name = ''
         fn   = Gene::Lang::Function.new name
@@ -353,7 +354,7 @@ module Gene::Lang::Handlers
       if name[0] == '@'
         context.self.set_member name[1..-1], value
       else
-        context.def name, value
+        context.define name, value
       end
       Gene::Lang::Variable.new name, value
     end
@@ -605,13 +606,35 @@ module Gene::Lang::Handlers
 
       name = data.data[0].to_s
       ns   = Gene::Lang::Namespace.new name, context.scope
-      context.def name, ns
+      context.define name, ns
 
       new_context             = Gene::Lang::Context.new
       new_context.application = context.application
       new_context.self        = ns
       new_context.namespace   = ns
       new_context.process data.data[1..-1]
+    end
+  end
+
+  class ImportHandler
+    def call context, data
+      return Gene::NOT_HANDLED unless IMPORT === data
+
+      raise "Invalid import statement: #{data}" if data.data.length <= 2 or data.data[-2] != FROM
+
+      file = data.data.last.to_s
+      file += '.glang' unless file =~ /\.glang$/
+      # Parse file, which should return a namespace object
+      new_context = context.application.create_root_context
+      interpreter = Gene::Lang::Interpreter.new new_context
+      interpreter.parse_and_process File.read(context.get_member('__DIR__') + '/' + file)
+
+      data.data[0..-3].each do |item|
+        name = item.to_s
+        context.define name, new_context.get_member(name)
+      end
+
+      Gene::UNDEFINED
     end
   end
 
