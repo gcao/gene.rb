@@ -10,6 +10,7 @@ module Gene::Lang::Handlers
     CALL DO
     DEF
     IMPORT EXPORT FROM
+    PUBLIC PRIVATE
     IF IF_NOT
     FOR LOOP
     BREAK
@@ -629,12 +630,33 @@ module Gene::Lang::Handlers
       interpreter = Gene::Lang::Interpreter.new new_context
       interpreter.parse_and_process File.read(context.get_member('__DIR__') + '/' + file)
 
+      ns = new_context.self
+
       data.data[0..-3].each do |item|
         name = item.to_s
+        if ns.defined? name
+          if ns.get_access_level(name) == 'private'
+            raise "#{name} is not public."
+          end
+        else
+          raise "#{name} is not defined."
+        end
         context.define name, new_context.get_member(name)
       end
 
       Gene::UNDEFINED
+    end
+  end
+
+  class AccessLevelHandler
+    def call context, data
+      return Gene::NOT_HANDLED unless PUBLIC === data or PRIVATE === data
+
+      raise "This statement is only supported inside a namespace: #{data}" unless context.self.is_a? Gene::Lang::Namespace
+
+      data.data.each do |item|
+        context.self.set_access_level item.to_s, data.type.to_s
+      end
     end
   end
 

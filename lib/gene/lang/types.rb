@@ -450,13 +450,14 @@ module Gene::Lang
   end
 
   class Namespace < Object
-    attr_reader :name, :parent, :members
+    attr_reader :name, :parent, :members, :public_members
     def initialize name, parent
       super(Namespace)
 
       set 'name', name
       set 'parent', parent
       set 'members', {}
+      set 'public_members', []
     end
 
     def defined? name
@@ -473,6 +474,7 @@ module Gene::Lang
 
     def def_member name, value
       members[name] = value
+      set_access_level name, 'public'
     end
 
     def set_member name, value
@@ -483,6 +485,18 @@ module Gene::Lang
       else
         raise "Unknown member '#{name}'"
       end
+    end
+
+    def set_access_level name, access_level
+      if access_level.to_s == 'public'
+        public_members.push name unless public_members.include? name
+      elsif access_level.to_s == 'private'
+        public_members.delete name
+      end
+    end
+
+    def get_access_level name
+      public_members.include?(name) ? 'public' : 'private'
     end
   end
 
