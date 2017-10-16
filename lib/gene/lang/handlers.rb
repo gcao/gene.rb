@@ -33,17 +33,20 @@ module Gene::Lang::Handlers
 
   module Utilities
     def expand array
-      result = []
-      array.each do |item|
+      i = 0
+      while i < array.length
+        item = array[i]
         if item.is_a? Gene::Lang::Expandable
+          array.delete_at i
           item.value.each do |x|
-            result.push x
+            array.insert i, x
+            i += 1
           end
         else
-          result.push item
+          i += 1
         end
       end
-      result
+      array
     end
   end
 
@@ -71,17 +74,21 @@ module Gene::Lang::Handlers
           repl = Gene::Lang::Repl.new context
           puts
           repl.start
+        elsif data === DEBUG
+          Gene::UNDEFINED
         elsif data.type.is_a? Gene::Lang::PropertyName
           context.self[data.type.name]
         else
           Gene::NOT_HANDLED
         end
-      elsif data.is_a? Array
-        data.map do |item|
-          context.process item
+      elsif data.is_a?(::Array) and not data.is_a?(Gene::Lang::Array)
+        result = Gene::Lang::Array.new
+        data.each do |item|
+          result.push context.process(item)
         end
-      elsif data.is_a? Hash
-        result = {}
+        result
+      elsif data.is_a?(Hash) and not data.is_a?(Gene::Lang::Hash)
+        result = Gene::Lang::Hash.new
         data.each do |key, value|
           result[key] = context.process value
         end
@@ -102,8 +109,6 @@ module Gene::Lang::Handlers
         context.scope
       elsif data == SELF
         context.self
-      elsif data == DEBUG
-        Gene::UNDEFINED
       elsif data.is_a? Gene::Types::Symbol
         name = data.name
         if name =~ /^(.*)\.\.\.$/
@@ -424,6 +429,8 @@ module Gene::Lang::Handlers
         context.get_member("Array")
       elsif obj.is_a? Hash
         context.get_member("Hash")
+      elsif obj.is_a? Fixnum
+        context.get_member("Int")
       elsif obj.is_a? Gene::Lang::Class
         context.get_member("Class")
       elsif obj.class == Gene::Lang::Object

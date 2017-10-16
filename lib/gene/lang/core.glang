@@ -37,6 +37,9 @@
   )
 )
 
+(class Int ^^global
+)
+
 # Wrapper class for native arrays
 (class Array ^^global
   (method class _
@@ -80,7 +83,7 @@
     (def result [])
     (.each
       (fnx item
-        (if (($invoke ($invoke item 'class') 'name') == 'Array')
+        (if (($invoke ($invoke item 'class') 'name') == 'Gene::Lang::Array')
           (do
             (def child-array (item .flatten))
             (child-array .each

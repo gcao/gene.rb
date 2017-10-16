@@ -361,6 +361,30 @@ describe Gene::Lang::Interpreter do
       result.arguments[0].name.should == 'a'
     end
 
+    it "
+      (def a [])
+      (fn doSomething array
+        ($invoke array 'push' 'doSomething')
+      )
+      (doSomething a)
+      (a == ['doSomething'])
+    " do
+      result = @application.parse_and_process(example.description)
+      result.should be_true
+    end
+
+    it "
+      (def a {})
+      (fn doSomething hash
+        ($invoke hash '[]=' 'key' 'value')
+      )
+      (doSomething a)
+      (($invoke a '[]' 'key') == 'value')
+    " do
+      result = @application.parse_and_process(example.description)
+      result.should be_true
+    end
+
     describe "Variable length arguments" do
       it "
         (fn doSomething args... args)

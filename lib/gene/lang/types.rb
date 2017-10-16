@@ -561,6 +561,12 @@ module Gene::Lang
     end
   end
 
+  class Array < ::Array
+  end
+
+  class Hash < ::Hash
+  end
+
   # === SELF HOSTING ===
   # FunctionClass = Class.new 'Function', Block.new(nil, nil)
   # FunctionClass.prop 'name'
