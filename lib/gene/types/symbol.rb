@@ -7,6 +7,10 @@ class Gene::Types::Symbol
     @escaped = escaped
   end
 
+  def is_decorator?
+    @name.length > 1 and @name[0] == '+' and @name != '+='
+  end
+
   def == other
     return false unless other.is_a? self.class
     @name == other.name and @escaped == other.escaped

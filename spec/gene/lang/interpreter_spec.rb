@@ -853,4 +853,59 @@ describe Gene::Lang::Interpreter do
       result.should be_true
     end
   end
+
+  describe "Decorators" do
+    it "# should work on top level
+      (def members [])
+      (fn add_to_members f
+        ($invoke members 'push' (f .name))
+      )
+      +add_to_members
+      (fn test)
+      (members == ['test'])
+    " do
+      result = @application.parse_and_process(example.description)
+      result.should be_true
+    end
+
+    it "# should work inside ()
+      (ns a
+        (def members [])
+        (fn add_to_members f
+          ($invoke members 'push' (f .name))
+        )
+        +add_to_members
+        (fn test)
+      )
+      (a/members == ['test'])
+    " do
+      result = @application.parse_and_process(example.description)
+      result.should be_true
+    end
+
+    it "# should work inside []
+      (fn increment x
+        (x + 1)
+      )
+      (def a [+increment 1])
+      (a == [2])
+    " do
+      result = @application.parse_and_process(example.description)
+      result.should be_true
+    end
+
+    it "# decorator can be invoked with arguments
+      (def members [])
+      (fn add_to_members [array f]
+        ($invoke array 'push' (f .name))
+      )
+      (+add_to_members members)
+      (fn test)
+      (members == ['test'])
+    " do
+      result = @application.parse_and_process(example.description)
+      result.should be_true
+    end
+
+  end
 end
