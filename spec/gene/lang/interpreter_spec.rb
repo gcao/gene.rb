@@ -7,62 +7,62 @@ describe Gene::Lang::Interpreter do
   end
 
   describe "special built-in variables and functions" do
-    it "
-      $application  # The application object which is like the start of the universe
+    it "# $application: the application object which is like the start of the universe
+      (($invoke ($invoke $application 'class') 'name') == 'Gene::Lang::Application')
     " do
       result = @application.parse_and_process(example.description)
-      result.class.should == Gene::Lang::Application
+      result.should be_true
     end
 
-    it "
-      $context      # The current context
+    it "# $context: the current context
+      (($invoke ($invoke $context 'class') 'name') == 'Gene::Lang::Context')
     " do
       result = @application.parse_and_process(example.description)
-      result.should_not be_nil
+      result.should be_true
     end
 
-    it "
-      $global       # The global namespace object
+    it "# $global: the global namespace object
+      (($invoke ($invoke $global 'class') 'name') == 'Gene::Lang::Namespace')
     " do
       result = @application.parse_and_process(example.description)
-      result.class.should == Gene::Lang::Namespace
+      result.should be_true
     end
 
-    it "
-      $scope        # The current scope object which may or may not inherit from ancestor scopes
-    " do
-      pending
-      result = @application.parse_and_process(example.description)
-      result.class.should == Gene::Lang::Scope
-    end
-
-    it "
-      (fn f []
-        $function   # The current function/method that is being called
+    it "# $scope: the current scope object which may or may not inherit from ancestor scopes
+      (fn f _
+        $scope
       )
-      (f) # returns the function itself
+      (($invoke ($invoke (f) 'class') 'name') == 'Gene::Lang::Scope')
     " do
       result = @application.parse_and_process(example.description)
-      result.class.should == Gene::Lang::Function
-      result.name.should == 'f'
+      result.should be_true
     end
 
-    it "
+    it "# $function: the current function/method that is being called
       (fn f []
-        $arguments  # array of arguments passed to current function
+        $function
       )
-      (f 1 2) # returns [1, 2]
+      (($invoke ($invoke (f) 'class') 'name') == 'Gene::Lang::Function')
     " do
       result = @application.parse_and_process(example.description)
-      result.should == [1, 2]
+      result.should be_true
     end
 
-    it "
-      ($invoke      # A function that allows invocation of native methods on native objects (this should not be needed if whole interpreter is implemented in Gene Lang)
-        $context 'class') # returns Gene::Lang::Context
+    it "# $arguments: arguments passed to current function
+      (fn f []
+        $arguments
+      )
+      ((f 1 2) == [1 2])
     " do
       result = @application.parse_and_process(example.description)
-      result.should == Gene::Lang::Context
+      result.should be_true
+    end
+
+    it "# $invoke: a function that allows invocation of native methods on native objects (this should not be needed if whole interpreter is implemented in Gene Lang)
+      (($invoke 'a' 'length') == 1)
+    " do
+      result = @application.parse_and_process(example.description)
+      result.should be_true
     end
   end
 
@@ -86,39 +86,60 @@ describe Gene::Lang::Interpreter do
       result.methods.size.should == 1
     end
 
-    it "
-      # self is the self object in a method
+    it "# self: the self object in a method
       (class A
-        (method f [] self)
+        (method f _ self)
       )
       (def a (new A))
-      (a .f)
+      (((a .f) .class) == A)
     " do
       result = @application.parse_and_process(example.description)
-      result.class.name.should == 'A'
+      result.should be_true
     end
 
-    it "(class A (init a (@a = a))) (new A 1)" do
+    it "# @a: access property `a` directly
+      (class A
+        (init a
+          (@a = a)
+        )
+        (method test _
+          @a
+        )
+      )
+      (((new A 1) .test) == 1)
+    " do
       result = @application.parse_and_process(example.description)
-      result['a'].should == 1
+      result.should be_true
     end
 
-    it "(class A (init name ((@ name) = 1))) (new A 'a')" do
+    it "# (@ a): access dynamic property
+      (class A
+        (init [name value]
+          ((@ name) = value)
+        )
+        (method test name
+          ((@ name))
+        )
+      )
+      (((new A 'a' 100) .test 'a') == 100)
+    " do
       result = @application.parse_and_process(example.description)
-      result['a'].should == 1
+      result.should be_true
     end
 
-    it "
+    it "# Typical usecase
       # Define class A
       (class A
         # Constructor
         (init a
           (@a = a)
         )
+
         # Define method incr-a
-        (method incr-a []
+        (method incr-a _
           (@a += 1)
         )
+
         # Define method test
         (method test num
           # Here is how you call method from same class
@@ -129,16 +150,17 @@ describe Gene::Lang::Interpreter do
 
       # Instantiate A
       (def a (new A 1))
+
       # Call method on an instance
-      (a .test 2)
+      ((a .test 2) == 4)
     " do
       result = @application.parse_and_process(example.description)
-      result.should == 4
+      result.should be_true
     end
   end
 
   describe "properties" do
-    it "
+    it "# with custom getter/setter
       (class A
         # Define a property named x
         (prop x
@@ -150,28 +172,25 @@ describe Gene::Lang::Interpreter do
       (def a (new A))
       # Property x can be accessed like methods
       (a .x= 'value')
-      (a .x)
+      ((a .x) == 'value')
     " do
-      result = Gene::Parser.parse(example.description)
       result = @application.parse_and_process(example.description)
-      result.should == 'value'
+      result.should be_true
     end
 
-    it "
-      # (prop x) will create default getter/setter methods
+    it "# (prop x) will create default getter/setter methods
       (class A (prop x))
       (def a (new A))
       (a .x= 'value')
-      (a .x)
+      ((a .x) == 'value')
     " do
-      result = Gene::Parser.parse(example.description)
       result = @application.parse_and_process(example.description)
-      result.should == 'value'
+      result.should be_true
     end
   end
 
   describe "module" do
-    it "
+    it "# creating module, including module and inheritance etc should work
       (class A
         (method test _
           (@value = ($invoke @value 'push' 'A.test'))
@@ -198,49 +217,54 @@ describe Gene::Lang::Interpreter do
       ((b .test) == ['A.test' 'B.test'])
     " do
       result = @application.parse_and_process(example.description)
-      result.should == true
+      result.should be_true
     end
   end
 
-  describe "cast" do
-    it "
+  describe "cast: will create a new object of the new class and shallow-copy all properties
+  " do
+    it "# `class` should return the new class
       (class A)
       (class B)
       (def a (new A))
-      # cast will create a new object of B, shallow-copy all properties except #class
-      (cast a B)
+      (((cast a B) .class) == B)
     " do
       result = @application.parse_and_process(example.description)
-      result.class.class.should == Gene::Lang::Class
-      result.class.name.should  == 'B'
+      result.should be_true
     end
 
-    it "
+    it "# invoking method on the new class should work
       (class A)
-      (class B (method test [] 'test in B'))
+      (class B
+        (method test _ 'test in B')
+      )
       (def a (new A))
-      ((cast a B) .test)  # returns 'test in B'
+      (((cast a B) .test) == 'test in B')
     " do
       result = @application.parse_and_process(example.description)
-      result.should  == 'test in B'
+      result.should be_true
     end
 
-    it "
-      # Modification on casted object will not be lost
-      (class A)
-      (class B (method test [] (@name = 'b')))
+    it "# Modification on casted object will not be lost
+      (class A
+        (method name _ @name)
+      )
+      (class B
+        (method test _
+          (@name = 'b')
+        )
+      )
       (def a (new A))
       ((cast a B) .test)
-      a  # @name should be 'b'
+      ((a .name) == 'b')
     " do
       result = @application.parse_and_process(example.description)
-      result['name'].should  == 'b'
+      result.should be_true
     end
   end
 
   describe "inheritance" do
-    it "
-      # If a method is not defined in my class, search in parent classes
+    it "# If a method is not defined in my class, search in parent classes
       (class A
         (method testA _ 'testA')
       )
@@ -248,32 +272,13 @@ describe Gene::Lang::Interpreter do
         (extend A)
       )
       (def b (new B))
-      (b .testA)  # returns 'testA'
+      ((b .testA) == 'testA')
     " do
       result = @application.parse_and_process(example.description)
-      result.should  == 'testA'
+      result.should be_true
     end
 
-    it "
-      # If a method is not defined in my class, search in parent classes
-      (class A
-        (method test _ 'test in A')
-      )
-      (class B)
-      (class C
-        (extend A)
-        (extend B)
-      )
-      (def c (new C))
-      (c .test)  # returns 'test in A'
-    " do
-      pending "TODO: change to module/include"
-      result = @application.parse_and_process(example.description)
-      result.should  == 'test in A'
-    end
-
-    it "
-      # Search method up to the top of class hierarchy
+    it "# Search method up to the top of class hierarchy
       (class A
         (method test _ 'test in A')
       )
@@ -284,64 +289,48 @@ describe Gene::Lang::Interpreter do
         (extend B)
       )
       (def c (new C))
-      (c .test)  # returns 'test in A'
+      ((c .test) == 'test in A')
     " do
       result = @application.parse_and_process(example.description)
-      result.should  == 'test in A'
+      result.should be_true
     end
 
-    it "
-      # Super class defined later takes precedence
+    it "# `super` will invoke same method in parent class
       (class A
-        (method test _ 'test in A')
-      )
-      (class B
-        (method test _ 'test in B')
-      )
-      (class C
-        (extend A)
-        (extend B)
-      )
-      (def c (new C))
-      (c .test)  # returns 'test in B'
-    " do
-      pending "TODO: change to module/include"
-      result = @application.parse_and_process(example.description)
-      result = @application.parse_and_process(example.description)
-      result.should  == 'test in B'
-    end
-
-    it "
-      # super will invoke same method in parent class
-      (class A
-        (method test [a b] (a + b))
+        (method test [a b]
+          (a + b)
+        )
       )
       (class B
         (extend A)
-        (method test [a b] (super a b))
+        (method test [a b]
+          (super a b)
+        )
       )
       (def b (new B))
-      (b .test 1 2)
+      ((b .test 1 2) == 3)
     " do
       result = @application.parse_and_process(example.description)
-      result.should  == 3
+      result.should be_true
     end
 
-    describe "init" do
-      it "
-        # init is not inherited, must be called explicitly
-        (class A
-          (init _ (@a = 1))
+    it "# `init` should be inherited
+      (class A
+        (init name
+          (@name = name)
         )
-        (class B
-          (extend A)
+        (method name _
+          @name
         )
-        (new B)
-      " do
-        result = @application.parse_and_process(example.description)
-        result['a'].should be_nil
-      end
-
+      )
+      (class B
+        (extend A)
+      )
+      (((new B 'test') .name) == 'test')
+    " do
+      result = @application.parse_and_process(example.description)
+      pending
+      result.should be_true
     end
   end
 
@@ -361,11 +350,11 @@ describe Gene::Lang::Interpreter do
       result.arguments[0].name.should == 'a'
     end
 
-    it "
-      (def a [])
+    it "# Function parameters are passed by reference: check []
       (fn doSomething array
         ($invoke array 'push' 'doSomething')
       )
+      (def a [])
       (doSomething a)
       (a == ['doSomething'])
     " do
@@ -373,11 +362,11 @@ describe Gene::Lang::Interpreter do
       result.should be_true
     end
 
-    it "
-      (def a {})
+    it "# Function parameters are passed by reference: check {}
       (fn doSomething hash
         ($invoke hash '[]=' 'key' 'value')
       )
+      (def a {})
       (doSomething a)
       (($invoke a '[]' 'key') == 'value')
     " do
@@ -386,68 +375,75 @@ describe Gene::Lang::Interpreter do
     end
 
     describe "Variable length arguments" do
-      it "
+      it "# In function definition
         (fn doSomething args... args)
-        (doSomething 1 2)
+        ((doSomething 1 2) == [1 2])
       " do
         result = @application.parse_and_process(example.description)
-        result.should == [1, 2]
+        result.should be_true
       end
 
-      it "
+      it "# In function invocation
         (fn doSomething [a b]
           (a + b)
         )
         (def array [1 2])
-        (doSomething array...)
+        ((doSomething array...) == 3)
       " do
         result = @application.parse_and_process(example.description)
-        result.should == 3
+        result.should be_true
       end
 
-      it "
+      it "# In both function definition and function invocation
         (fn doSomething args...
           args
         )
         (def array [1 2])
-        (doSomething array...)
+        ((doSomething array...) == [1 2])
       " do
         result = @application.parse_and_process(example.description)
-        result.should == [1, 2]
+        result.should be_true
       end
     end
 
-    it "(fn doSomething [] 1)(doSomething)" do
+    it "# Define and invoke function without arguments
+      (fn doSomething _ 1)
+      ((doSomething) == 1)
+    " do
       result = @application.parse_and_process(example.description)
-      result.should == 1
+      result.should be_true
     end
 
-    it "
-      # return from function
-      (fn doSomething []
+    it "# return nothing
+      (fn doSomething _
         return
         2
       )
-      (doSomething)
+      ((doSomething) == undefined)
     " do
       result = @application.parse_and_process(example.description)
-      result.should == Gene::UNDEFINED
+      result.should be_true
     end
 
     it "
-      # return value from function
-      (fn doSomething []
+      # return something
+      (fn doSomething _
         (return 1)
         2
       )
-      (doSomething)" do
+      ((doSomething) == 1)
+    " do
       result = @application.parse_and_process(example.description)
-      result.should == 1
+      result.should be_true
     end
 
-    it "((fn doSomething [] 1)) # Note the double '(' and ')'" do
+    it "# Invoke function immediately, note the double '(' and ')'
+      (
+        ((fn doSomething _ 1)) == 1
+      )
+    " do
       result = @application.parse_and_process(example.description)
-      result.should == 1
+      result.should be_true
     end
 
     it "(fn doSomething a 1)" do
@@ -460,94 +456,104 @@ describe Gene::Lang::Interpreter do
       result.statements.first.should == 1
     end
 
-    it "(fn doSomething a a)(doSomething 1)" do
+    it "# Define and invoke function with one argument
+      (fn doSomething a a)
+      ((doSomething 1) == 1)
+    " do
       result = @application.parse_and_process(example.description)
-      result.should == 1
+      result.should be_true
     end
 
-    it "(fn doSomething [a b] (a + b))(doSomething 1 2)" do
+    it "# Define and invoke function with multiple arguments
+      (fn doSomething [a b]
+        (a + b)
+      )
+      ((doSomething 1 2) == 3)
+    " do
       result = @application.parse_and_process(example.description)
-      result.should == 3
+      result.should be_true
     end
 
-    it "
-      (fn f [] (.x))
-      (class A (method x [] 'value'))
+    it "# `call` invokes a function with a self, therefore makes the function behave like a method
+      (fn f arg
+        (.test arg)
+      )
+      (class A
+        (method test arg arg)
+      )
       (def a (new A))
-      # call will invoke a function with a self, this makes function behave like method
-      (call f a)
+      ((call f a 'value') == 'value') # self: a, arguments: 'value'
     " do
       result = @application.parse_and_process(example.description)
-      result.should == 'value'
+      result.should be_true
     end
 
-    it "
+    it "# By default, function will inherit the scope where it is defined (like in JavaScript)
       (def a 1)
-      # By default, function will inherit the scope where it is defined (like in JavaScript)
-      (fn f b (a + b))
-      (f 2)
+      (fn f b (a + b)) # `a` is inherited, `b` is an argument
+      ((f 2) == 3)
     " do
       result = @application.parse_and_process(example.description)
-      result.should == 3
+      result.should be_true
     end
   end
 
   describe "Method vs function" do
-    it "# 1.
-      # Method   WILL NOT   inherit the scope where it is defined in
+    it "# Method   WILL NOT   inherit the scope where it is defined in
       (class A
         (def x 1)
-        (method doSomething [] x)
+        (method doSomething _ x)
       )
       (def a (new A))
-      (a .doSomething)
+      (a .doSomething) # should throw error
     " do
       lambda {
         result = @application.parse_and_process(example.description)
       }.should raise_error
     end
 
-    it "
-      # Function   WILL   inherit the scope where it is defined in
+    it "# Function   WILL   inherit the scope where it is defined in
       (def x 1)
-      (fn doSomething [] x)
-      (doSomething)
+      (fn doSomething _ x)
+      ((doSomething) == 1)
     " do
       result = @application.parse_and_process(example.description)
-      result.should == 1
+      result.should be_true
     end
   end
 
   describe "fnx - anonymous function" do
-    it "
-      (def f (fnx [] 1))
-      (f)
+    it "# Define and invoke an anonymous function
+      (
+        ((fnx _ 1)) == 1
+      )
     " do
       result = @application.parse_and_process(example.description)
-      result.should == 1
+      result.should be_true
     end
 
-    it "
-      ((fnx [] 1))
+    it "# Can be assigned to a variable and invoked later
+      (def f (fnx _ 1))
+      ((f) == 1)
     " do
       result = @application.parse_and_process(example.description)
-      result.should == 1
+      result.should be_true
     end
   end
 
   describe "fnxx - anonymous dummy function" do
-    it "
+    it "# Can be assigned to a variable and invoked later
       (def f (fnxx 1))
-      (f)
+      ((f) == 1)
     " do
       result = @application.parse_and_process(example.description)
-      result.should == 1
+      result.should be_true
     end
   end
 
   describe "Variable" do
-    it "# Must be difined first
-      a # should throw exception
+    it "# Must be defined first
+      a # should throw error
     " do
       lambda {
         @application.parse_and_process(example.description)
@@ -556,7 +562,7 @@ describe Gene::Lang::Interpreter do
   end
 
   describe "Assignment" do
-    it "# = should work
+    it "# `=` should work
       (def a)
       (a = 1)
       (a == 1)
@@ -594,9 +600,9 @@ describe Gene::Lang::Interpreter do
   end
 
   describe "Binary expression" do
-    it "(1 + 2)" do
+    it "((1 + 2) == 3)" do
       result = @application.parse_and_process(example.description)
-      result.should == 3
+      result.should be_true
     end
   end
 
@@ -608,101 +614,82 @@ describe Gene::Lang::Interpreter do
       result.value.should == 'value'
     end
 
-    it "(def a (1 + 2))" do
+    it "# Define a variable and assign expression result as value
+      (def a (1 + 2))
+    " do
       result = @application.parse_and_process(example.description)
       result.class.should == Gene::Lang::Variable
       result.name.should  == 'a'
       result.value.should == 3
     end
 
-    it "(def a 1) (a + 2)" do
+    it "# Define and use variable
+      (def a 1)
+      ((a + 2) == 3)
+    " do
       result = @application.parse_and_process(example.description)
-      result.should == 3
+      result.should be_true
     end
 
-    it "(def a 'value')" do
+    it "# Use multiple variables in one expression
+      (def a 1)
+      (def b 2)
+      ((a + b) == 3)
+    " do
       result = @application.parse_and_process(example.description)
-      # @application.context.get('a').should == 'value'
-      pending "should we return undefined or value instead?"
-      result.class.should == Gene::Lang::Variable
-      result.name.should  == 'a'
-      result.value.should == 'value'
-    end
-
-    it "(def a (1 + 2))" do
-      result = @application.parse_and_process(example.description)
-      # @application.context.get('a').should == 3
-      pending "should we return undefined or value instead?"
-      result.class.should == Gene::Lang::Variable
-      result.name.should  == 'a'
-      result.value.should == 3
-    end
-
-    it "(def a 1) (a + 2)" do
-      result = @application.parse_and_process(example.description)
-      result.should == 3
-    end
-
-    it "(def a 1) (def b 2) (a + b)" do
-      result = @application.parse_and_process(example.description)
-      result.should == 3
-    end
-
-    describe "def vs let" do
-      it "
-        # def will not overwrite variable in ancestor scope,
-        # but will create a new variable in current scope
-        (def x 0)
-        (fn f [] (def x 1))
-        (f)
-        x
-      " do
-        pending "Deprecated"
-        result = @application.parse_and_process(example.description)
-        result.should == 0
-      end
-
-      it "
-        # let will overwrite variable in ancestor scope,
-        # or create a new variable if it doesn't exist in current or ancestor scopes
-        (let x 0)
-        (fn f [] (let x 1))
-        (f)
-        x
-      " do
-        pending "Deprecated"
-        result = @application.parse_and_process(example.description)
-        result.should == 1
-      end
+      result.should be_true
     end
   end
 
   describe "do" do
-    it "(do (def i 1)(i + 2))" do
+    it "# returns result of last expression
+      (
+        (do (def i 1)(i + 2)) == 3
+      )
+    " do
       result = @application.parse_and_process(example.description)
-      result.should == 3
+      result.should be_true
     end
   end
 
   describe "if" do
-    it "(if true 1 2)" do
+    it "# condition evaluates to true
+      (
+        (if true 1 2) == 1
+      )
+    " do
       result = @application.parse_and_process(example.description)
-      result.should == 1
+      result.should be_true
     end
 
-    it "(if true [1 2] 2)" do
+    it "# condition evaluates to true
+      (
+        (if true [1 2] 2) == [1 2]
+      )
+    " do
       result = @application.parse_and_process(example.description)
-      result.should == [1, 2]
+      result.should be_true
     end
 
-    it "(if true (do (def a 1)(a + 2)) 2)" do
+    it "# condition evaluates to true
+      (
+        (if true
+          (do (def a 1)(a + 2))
+          2
+        ) == 3
+      )
+    " do
       result = @application.parse_and_process(example.description)
-      result.should == 3
+      result.should be_true
     end
 
-    it "(if false 1 2)" do
+    it "# condition evaluates to false
+      (
+        (if false 1 2) == 2
+      )
+    " do
       result = @application.parse_and_process(example.description)
-      result.should == 2
+      result.should be_true
     end
 
     it "(if false 1 [1 2])" do
@@ -887,6 +874,21 @@ describe Gene::Lang::Interpreter do
       +add_to_members
       (fn test)
       (members == ['test'])
+    " do
+      result = @application.parse_and_process(example.description)
+      result.should be_true
+    end
+
+    it "# can be chained
+      (def members [])
+      (fn add_to_members f
+        ($invoke members 'push' (f .name))
+        f
+      )
+      +add_to_members
+      +add_to_members
+      (fn test)
+      (members == ['test' 'test'])
     " do
       result = @application.parse_and_process(example.description)
       result.should be_true
