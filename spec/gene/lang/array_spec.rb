@@ -1,23 +1,20 @@
 require File.expand_path(File.dirname(__FILE__) + '/../../spec_helper')
 
-describe "Array" do
+describe "Array
+  Array is created as a native array in the hosted language
+  When a method invocation occurs to an array, a proxy object is created on the fly
+  The proxy object is an instance of Gene::Lang::Array
+  This approach is applied on all literals and hash objects as well
+" do
+
   before do
     @application = Gene::Lang::Application.new
     @application.load_core_libs
   end
 
-  it '
-    Array is created as a native array in the hosted language
-    When a method invocation occurs to an array, a proxy object is created on the fly
-    The proxy object is an instance of Gene::Lang::Array
-    This approach is applied on all literals and hash objects as well
-  '
-
-  it "(Array .parent_classes)" do
-    pending
+  it "((Array .parent_class) == Object)" do
     result = @application.parse_and_process(example.description)
-    result.size.should == 1
-    result[0].name.should == 'Object'
+    result.should be_true
   end
 
   it "(([] .is Object) == true)" do

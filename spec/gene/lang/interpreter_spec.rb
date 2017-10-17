@@ -221,8 +221,7 @@ describe Gene::Lang::Interpreter do
     end
   end
 
-  describe "cast: will create a new object of the new class and shallow-copy all properties
-  " do
+  describe "cast: will create a new object of the new class and shallow-copy all properties" do
     it "# `class` should return the new class
       (class A)
       (class B)
@@ -573,30 +572,31 @@ describe Gene::Lang::Interpreter do
   end
 
   describe "Comparison" do
-    it("(1 == 1)") { @application.parse_and_process(example.description).should be_true }
-    it("(1 == 2)") { @application.parse_and_process(example.description).should be_false }
-    it("(1 != 1)") { @application.parse_and_process(example.description).should be_false }
-    it("(1 != 2)") { @application.parse_and_process(example.description).should be_true }
-    it("(1 < 2)")  { @application.parse_and_process(example.description).should be_true }
-    it("(2 < 2)")  { @application.parse_and_process(example.description).should be_false }
-    it("(3 < 2)")  { @application.parse_and_process(example.description).should be_false }
-    it("(1 <= 2)") { @application.parse_and_process(example.description).should be_true }
-    it("(2 <= 2)") { @application.parse_and_process(example.description).should be_true }
-    it("(3 <= 2)") { @application.parse_and_process(example.description).should be_false }
-    it("(1 > 2)")  { @application.parse_and_process(example.description).should be_false }
-    it("(2 > 2)")  { @application.parse_and_process(example.description).should be_false }
-    it("(3 > 2)")  { @application.parse_and_process(example.description).should be_true }
-    it("(1 >= 2)") { @application.parse_and_process(example.description).should be_false }
-    it("(2 >= 2)") { @application.parse_and_process(example.description).should be_true }
-    it("(3 >= 2)") { @application.parse_and_process(example.description).should be_true }
+    it("((1 == 1) == true)")  { @application.parse_and_process(example.description).should be_true }
+    it("((1 == 2) == false)") { @application.parse_and_process(example.description).should be_true }
+    it("((1 != 1) == false)") { @application.parse_and_process(example.description).should be_true }
+    it("((1 != 2) == true)")  { @application.parse_and_process(example.description).should be_true }
+    it("((1 <  2) == true)")  { @application.parse_and_process(example.description).should be_true }
+    it("((2 <  2) == false)") { @application.parse_and_process(example.description).should be_true }
+    it("((3 <  2) == false)") { @application.parse_and_process(example.description).should be_true }
+    it("((1 <= 2) == true)")  { @application.parse_and_process(example.description).should be_true }
+    it("((2 <= 2) == true)")  { @application.parse_and_process(example.description).should be_true }
+    it("((3 <= 2) == false)") { @application.parse_and_process(example.description).should be_true }
+    it("((1 >  2) == false)") { @application.parse_and_process(example.description).should be_true }
+    it("((2 >  2) == false)") { @application.parse_and_process(example.description).should be_true }
+    it("((3 >  2) == true)")  { @application.parse_and_process(example.description).should be_true }
+    it("((1 >= 2) == false)") { @application.parse_and_process(example.description).should be_true }
+    it("((2 >= 2) == true)")  { @application.parse_and_process(example.description).should be_true }
+    it("((3 >= 2) == true)")  { @application.parse_and_process(example.description).should be_true }
   end
 
   describe "Boolean operations" do
-    it("(true && true)")   { @application.parse_and_process(example.description).should be_true }
-    it("(true && false)")  { @application.parse_and_process(example.description).should be_false }
-    it("(true || true)")   { @application.parse_and_process(example.description).should be_true }
-    it("(true || false)")  { @application.parse_and_process(example.description).should be_true }
-    it("(false || false)") { @application.parse_and_process(example.description).should be_false }
+    it("((true  && true)  == true)")  { @application.parse_and_process(example.description).should be_true }
+    it("((true  && false) == false)") { @application.parse_and_process(example.description).should be_true }
+    it("((false && false) == false)") { @application.parse_and_process(example.description).should be_true }
+    it("((true  || true)  == true)")  { @application.parse_and_process(example.description).should be_true }
+    it("((true  || false) == true)")  { @application.parse_and_process(example.description).should be_true }
+    it("((false || false) == false)") { @application.parse_and_process(example.description).should be_true }
   end
 
   describe "Binary expression" do
