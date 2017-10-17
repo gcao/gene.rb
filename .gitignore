@@ -16,7 +16,7 @@ doc
 bin/*
 !bin/gene
 !bin/gmacro
-!bin/glang
+!bin/gparser
 
 # jeweler generated
 pkg

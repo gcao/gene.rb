@@ -4,7 +4,7 @@ describe Gene::Lang::Interpreter do
   before do
     @application = Gene::Lang::Application.new
     pending
-    @application.parse_and_process File.read(File.dirname(__FILE__) + '/../../../lib/gene/lang/test.glang')
+    @application.parse_and_process File.read(File.dirname(__FILE__) + '/../../../lib/gene/lang/test.gene')
   end
 
   it "()" do

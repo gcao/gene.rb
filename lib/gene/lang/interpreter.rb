@@ -37,7 +37,7 @@ class Gene::Lang::Interpreter
   end
 
   def load_core_libs
-    parse_and_process File.read(File.dirname(__FILE__) + '/core.glang')
+    parse_and_process File.read(File.dirname(__FILE__) + '/core.gene')
   end
 
   def parse_and_process input

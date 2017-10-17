@@ -631,7 +631,7 @@ module Gene::Lang::Handlers
       raise "Invalid import statement: #{data}" if data.data.length <= 2 or data.data[-2] != FROM
 
       file = data.data.last.to_s
-      file += '.glang' unless file =~ /\.glang$/
+      file += '.gene' unless file =~ /\.gene$/
       # Parse file, which should return a namespace object
       new_context = context.application.create_root_context
       interpreter = Gene::Lang::Interpreter.new new_context

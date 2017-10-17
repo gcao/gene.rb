@@ -131,7 +131,7 @@ module Gene::Lang
 
     def load_core_libs
       dir  = File.dirname(__FILE__)
-      file = "#{dir}/core.glang"
+      file = "#{dir}/core.gene"
       parse_and_process File.read(file), dir: dir, file: file
     end
   end
