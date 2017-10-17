@@ -573,30 +573,30 @@ describe Gene::Lang::Interpreter do
   end
 
   describe "Comparison" do
-    it("(1 == 1)") { @application.parse_and_process(example.description).should == true }
-    it("(1 == 2)") { @application.parse_and_process(example.description).should == false }
-    it("(1 != 1)") { @application.parse_and_process(example.description).should == false }
-    it("(1 != 2)") { @application.parse_and_process(example.description).should == true }
-    it("(1 < 2)")  { @application.parse_and_process(example.description).should == true }
-    it("(2 < 2)")  { @application.parse_and_process(example.description).should == false }
-    it("(3 < 2)")  { @application.parse_and_process(example.description).should == false }
-    it("(1 <= 2)") { @application.parse_and_process(example.description).should == true }
-    it("(2 <= 2)") { @application.parse_and_process(example.description).should == true }
-    it("(3 <= 2)") { @application.parse_and_process(example.description).should == false }
-    it("(1 > 2)")  { @application.parse_and_process(example.description).should == false }
-    it("(2 > 2)")  { @application.parse_and_process(example.description).should == false }
-    it("(3 > 2)")  { @application.parse_and_process(example.description).should == true }
-    it("(1 >= 2)") { @application.parse_and_process(example.description).should == false }
-    it("(2 >= 2)") { @application.parse_and_process(example.description).should == true }
-    it("(3 >= 2)") { @application.parse_and_process(example.description).should == true }
+    it("(1 == 1)") { @application.parse_and_process(example.description).should be_true }
+    it("(1 == 2)") { @application.parse_and_process(example.description).should be_false }
+    it("(1 != 1)") { @application.parse_and_process(example.description).should be_false }
+    it("(1 != 2)") { @application.parse_and_process(example.description).should be_true }
+    it("(1 < 2)")  { @application.parse_and_process(example.description).should be_true }
+    it("(2 < 2)")  { @application.parse_and_process(example.description).should be_false }
+    it("(3 < 2)")  { @application.parse_and_process(example.description).should be_false }
+    it("(1 <= 2)") { @application.parse_and_process(example.description).should be_true }
+    it("(2 <= 2)") { @application.parse_and_process(example.description).should be_true }
+    it("(3 <= 2)") { @application.parse_and_process(example.description).should be_false }
+    it("(1 > 2)")  { @application.parse_and_process(example.description).should be_false }
+    it("(2 > 2)")  { @application.parse_and_process(example.description).should be_false }
+    it("(3 > 2)")  { @application.parse_and_process(example.description).should be_true }
+    it("(1 >= 2)") { @application.parse_and_process(example.description).should be_false }
+    it("(2 >= 2)") { @application.parse_and_process(example.description).should be_true }
+    it("(3 >= 2)") { @application.parse_and_process(example.description).should be_true }
   end
 
   describe "Boolean operations" do
-    it("(true && true)")   { @application.parse_and_process(example.description).should == true }
-    it("(true && false)")  { @application.parse_and_process(example.description).should == false }
-    it("(true || true)")   { @application.parse_and_process(example.description).should == true }
-    it("(true || false)")  { @application.parse_and_process(example.description).should == true }
-    it("(false || false)") { @application.parse_and_process(example.description).should == false }
+    it("(true && true)")   { @application.parse_and_process(example.description).should be_true }
+    it("(true && false)")  { @application.parse_and_process(example.description).should be_false }
+    it("(true || true)")   { @application.parse_and_process(example.description).should be_true }
+    it("(true || false)")  { @application.parse_and_process(example.description).should be_true }
+    it("(false || false)") { @application.parse_and_process(example.description).should be_false }
   end
 
   describe "Binary expression" do
@@ -654,18 +654,14 @@ describe Gene::Lang::Interpreter do
 
   describe "if" do
     it "# condition evaluates to true
-      (
-        (if true 1 2) == 1
-      )
+      ((if true 1 2) == 1)
     " do
       result = @application.parse_and_process(example.description)
       result.should be_true
     end
 
     it "# condition evaluates to true
-      (
-        (if true [1 2] 2) == [1 2]
-      )
+      ((if true [1 2] 2) == [1 2])
     " do
       result = @application.parse_and_process(example.description)
       result.should be_true
@@ -684,29 +680,29 @@ describe Gene::Lang::Interpreter do
     end
 
     it "# condition evaluates to false
-      (
-        (if false 1 2) == 2
-      )
+      ((if false 1 2) == 2)
     " do
       result = @application.parse_and_process(example.description)
       result.should be_true
     end
 
-    it "(if false 1 [1 2])" do
+    it "# condition evaluates to false
+      ((if false 1 [1 2]) == [1 2])
+    " do
       result = @application.parse_and_process(example.description)
-      result.should == [1, 2]
+      result.should be_true
     end
   end
 
   describe "if-not" do
-    it "(if-not true 1 2)" do
+    it "((if-not true 1 2) == 2)" do
       result = @application.parse_and_process(example.description)
-      result.should == 2
+      result.should be_true
     end
 
-    it "(if-not false 1 2)" do
+    it "((if-not false 1 2) == 1)" do
       result = @application.parse_and_process(example.description)
-      result.should == 1
+      result.should be_true
     end
   end
 
@@ -714,10 +710,10 @@ describe Gene::Lang::Interpreter do
     # For statement has structure of (for init cond update statements...)
     # It can be used to create other type of loops, iterators etc
   " do
-    it "
+    it "# Basic usecase
       (def result 0)
       (for (def i 0)(i < 5)(i += 1)
-        (def result (result + i))
+        (result += i)
       )
       (result == 10)
     " do
@@ -725,11 +721,11 @@ describe Gene::Lang::Interpreter do
       result.should be_true
     end
 
-    it "
+    it "# break from the for-loop
       (def result 0)
       (for (def i 0)(i < 100)(i += 1)
         (if (i >= 5) break)
-        (def result (result + i))
+        (result += i)
       )
       (result == 10)
     " do
@@ -737,11 +733,11 @@ describe Gene::Lang::Interpreter do
       result.should be_true
     end
 
-    it "
+    it "# return from for-loop ?!
       (def result 0)
       (for (def i 0)(i < 100)(i += 1)
         (if (i >= 5) return)
-        (def result (result + i))
+        (result += i)
       )
       (result == 10)
     " do
@@ -751,7 +747,7 @@ describe Gene::Lang::Interpreter do
   end
 
   describe "loop - creates simplist loop" do
-    it "
+    it "# Basic usecase
       (def i 0)
       (loop
         (i += 1)
@@ -763,19 +759,20 @@ describe Gene::Lang::Interpreter do
       result.should be_true
     end
 
-    it "
+    it "# return value passed to `break`
       (def i 0)
-      (loop
-        (i += 1)
-        (if (i >= 5) (break 100))
+      (
+        (loop
+          (i += 1)
+          (if (i >= 5) (break 100))
+        ) == 100
       )
     " do
       result = @application.parse_and_process(example.description)
-      result.should == 100
+      result.should be_true
     end
 
-    it "
-      # Loop as a regular function
+    it "# Loop as a regular function
       (fn loop-test args...
         ^!inherit-scope ^!eval-arguments
         # Do not inherit scope from where it's defined in: equivalent to ^!inherit-scope
@@ -790,40 +787,41 @@ describe Gene::Lang::Interpreter do
         )
       )
       (def i 0)
-      (loop-test
-        (i += 1)
-        (if (i >= 5) (break 100))
+      (
+        (loop-test
+          (i += 1)
+          (if (i >= 5) (break 100))
+        ) == 100
       )
     " do
       pending "TODO: fix infinite loop, might be related to variable scope"
       result = @application.parse_and_process(example.description)
-      result.should == 100
+      result.should be_true
     end
   end
 
   describe "noop - no operation, do nothing and return undefined" do
-    it "noop" do
+    it "(noop == undefined)" do
       result = @application.parse_and_process(example.description)
-      result.should == Gene::UNDEFINED
+      result.should be_true
     end
   end
 
   describe "_ is a placeholder, is equivalent to undefined" do
-    it "
-      # Putting _ at the place of arguments will not create an argument named _
+    it "# Putting _ at the place of arguments will not create an argument named `_`
       (fn f _ _)
-      (f 1)
+      ((f 1) == undefined)
     " do
       result = @application.parse_and_process(example.description)
-      result.should == Gene::UNDEFINED
+      result.should be_true
     end
 
-    it "(if true _ 1)" do
+    it "((if true _ 1) == undefined)" do
       result = @application.parse_and_process(example.description)
-      result.should == Gene::UNDEFINED
+      result.should be_true
     end
 
-    it "
+    it "# _ can be used in for-loop as placeholder
       (def sum 0)
       (def i 0)
       (for _ _ _
@@ -831,10 +829,10 @@ describe Gene::Lang::Interpreter do
         (sum += i)
         (i += 1)
       )
-      sum
+      (sum == 10)
     " do
       result = @application.parse_and_process(example.description)
-      result.should == 10
+      result.should be_true
     end
   end
 
@@ -932,6 +930,5 @@ describe Gene::Lang::Interpreter do
       result = @application.parse_and_process(example.description)
       result.should be_true
     end
-
   end
 end
