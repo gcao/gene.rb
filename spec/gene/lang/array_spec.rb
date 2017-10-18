@@ -18,21 +18,18 @@ describe "Array
   end
 
   it "(([] .is Object) == true)" do
-    pending
     result = @application.parse_and_process(example.description)
-    result.should == true
+    result.should be_true
   end
 
   it "(([] .is Array) == true)" do
-    pending
     result = @application.parse_and_process(example.description)
-    result.should == true
+    result.should be_true
   end
 
   it "(([] .is Hash) == false)" do
-    pending
     result = @application.parse_and_process(example.description)
-    result.should == true
+    result.should be_true
   end
 
   it "
@@ -62,12 +59,12 @@ describe "Array
 
   it "(([1] .any (fnx item (item == 1))) == true)" do
     result = @application.parse_and_process(example.description)
-    result.should == true
+    result.should be_true
   end
 
   it "(([1] .any (fnx item (item == 2))) == false)" do
     result = @application.parse_and_process(example.description)
-    result.should == true
+    result.should be_true
   end
 
   it "([1 [2]] .flatten)" do

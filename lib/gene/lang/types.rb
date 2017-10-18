@@ -97,10 +97,17 @@ module Gene::Lang
     end
 
     def self.handle_method options
-      method_name = options[:method]
-      args        = options[:arguments]
-      _self       = options[:self]
-      _self.send method_name, *args
+      context      = options[:context]
+      object_class = context.get_member('Object')
+      method_name  = options[:method]
+      method       = object_class.method(method_name)
+      if method
+        method.call options
+      else
+        _self      = options[:self]
+        args       = options[:arguments]
+        _self.send method_name, *args
+      end
     end
   end
 
@@ -169,6 +176,8 @@ module Gene::Lang
         scope.get_member name
       elsif namespace && namespace.defined?(name)
         namespace.get_member name
+      elsif global_namespace.defined?(name)
+        global_namespace.get_member name
       else
         raise "#{name} is not defined."
       end

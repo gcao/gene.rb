@@ -43,7 +43,7 @@
 # Wrapper class for native arrays
 (class Array ^^global
   (method class _
-    ($invoke $context "get" "Array")
+    ($invoke $context "get_member" "Array")
   )
   (method size _
     ($invoke self "size")
