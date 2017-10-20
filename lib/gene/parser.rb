@@ -417,7 +417,7 @@ module Gene
     def parse_hash
       return UNPARSED unless scan(HASH_OPEN)
 
-      result = []
+      result = {}
 
       expects = %w(key delimiter value)
       expect_index = 0
@@ -435,10 +435,12 @@ module Gene
             next
           elsif scan(COMMENT_NEXT)
             raise ParseError, "unexpected token at '#{peek(20)}'!"
+          elsif (parsed = parse_attribute(result)) != UNPARSED
+            next
           elsif (parsed = parse_value) == UNPARSED
             raise ParseError, "unexpected token at '#{peek(20)}'!"
           else
-            key = parsed
+            key = parsed.to_s
           end
         when 'delimiter'
           if !scan(PAIR_DELIMITER)
@@ -453,7 +455,7 @@ module Gene
             raise ParseError, "unexpected token at '#{peek(20)}'!"
           else
             value = parsed
-            result << [key, value]
+            result[key] = value
           end
         else
 
@@ -461,10 +463,7 @@ module Gene
         expect_index += 1
       end
 
-      result.reduce({}) do |hash, pair|
-        hash[pair[0]] = pair[1]
-        hash
-      end
+      result
     end
   end
 end

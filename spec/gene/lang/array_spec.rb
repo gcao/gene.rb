@@ -12,6 +12,16 @@ describe "Array
     @application.load_core_libs
   end
 
+  it "# `[]` will always create a new Array object
+    (fn f _ [])
+    (def a (f))
+    (def b (f))
+    (($invoke a 'object_id') != ($invoke b 'object_id'))
+  " do
+    result = @application.parse_and_process(example.description)
+    result.should be_true
+  end
+
   it "((Array .parent_class) == Object)" do
     result = @application.parse_and_process(example.description)
     result.should be_true
@@ -67,22 +77,21 @@ describe "Array
     result.should be_true
   end
 
-  it "([1 [2]] .flatten)" do
+  it "(([1 [2]] .flatten) == [1 2])" do
     result = @application.parse_and_process(example.description)
-    result.should == [1, 2]
+    result.should be_true
   end
 
-  it "
+  it "# `each` should work
     (def sum 0)
-    # each is a method defined in Gene::Lang::Array
     ([1 2] .each
       (fnx item
         (sum += item)
       )
     )
-    sum
+    (sum == 3)
   " do
     result = @application.parse_and_process(example.description)
-    result.should == 3
+    result.should be_true
   end
 end

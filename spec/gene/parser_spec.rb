@@ -76,15 +76,27 @@ describe Gene::Parser do
 
     it '{a : b}' do
       result = Gene::Parser.parse(example.description)
-      result.keys.first.should == Gene::Types::Symbol.new('a')
+      result.keys.first.should == 'a'
       result.values.first.should == Gene::Types::Symbol.new('b')
+    end
+
+    it '{^a b}' do
+      result = Gene::Parser.parse(example.description)
+      result.keys.first.should == 'a'
+      result.values.first.should == Gene::Types::Symbol.new('b')
+    end
+
+    it '{^^a}' do
+      result = Gene::Parser.parse(example.description)
+      result.keys.first.should == 'a'
+      result.values.first.should == true
     end
 
     ['{a : b c : d}', '{a : b, c : d}', '{,a : b, c : d,}'].each do |input|
       it input do
         result = Gene::Parser.parse(example.description)
-        result.keys.should include(Gene::Types::Symbol.new('a'))
-        result.keys.should include(Gene::Types::Symbol.new('c'))
+        result.keys.should include('a')
+        result.keys.should include('c')
         result.values.should include(Gene::Types::Symbol.new('b'))
         result.values.should include(Gene::Types::Symbol.new('d'))
       end

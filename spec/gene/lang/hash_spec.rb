@@ -6,7 +6,7 @@ describe "Hash" do
     @application.load_core_libs
   end
 
-  it "
+  it "# `{}` will always create a new Hash object
     (fn f _ {})
     (def a (f))
     (def b (f))
@@ -16,8 +16,8 @@ describe "Hash" do
     result.should be_true
   end
 
-  it "({} .size)" do
+  it "(({} .size) == 0)" do
     result = @application.parse_and_process(example.description)
-    result.should == 0
+    result.should be_true
   end
 end
