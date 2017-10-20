@@ -208,7 +208,7 @@ module Gene::Macro::Handlers
           break unless target
           if target.is_a? Hash
             # target[item] does not work
-            key = target.keys.find {|k| k.eql? item }
+            key = target.keys.find {|k| k.eql? item.to_s }
             if key
               target = target[key]
             else
