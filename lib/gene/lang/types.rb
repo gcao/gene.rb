@@ -230,13 +230,13 @@ module Gene::Lang
   # TODO: support meta programming - module_created, module_included
   # TODO: Support prepend like how Ruby does
   class Module < Object
-    attr_accessor :name, :methods, :prop_descriptors, :modules
+    attr_accessor :name, :methods, :prop_matchers, :modules
     def initialize name
       super(Class)
 
       set 'name', name
       set 'methods', {}
-      set 'prop_descriptors', {}
+      set 'prop_matchers', {}
       set 'modules', []
     end
 
@@ -511,9 +511,9 @@ module Gene::Lang
 
   class Argument < Object
     attr_reader :index, :name
+
     def initialize index, name
       super(Argument)
-
       set 'index', index
       set 'name', name
     end
@@ -523,8 +523,113 @@ module Gene::Lang
     end
   end
 
+  class Arguments < Object
+    attr_accessor :matcher
+
+    def initialize
+      super(Arguments)
+    end
+
+    def get_member name
+    end
+
+    def set_member name, value
+    end
+  end
+
+  class Matcher < Object
+    attr_accessor :data_matchers, :prop_matchers
+
+    def initialize
+      super(Matcher)
+      set 'data_matchers', []
+      set 'prop_matchers', {}
+    end
+
+    def include? name
+      prop_matchers[name] or data_matchers.find {|matcher| matcher.name == name }
+    end
+
+    # TODO: support `arg...`
+    # TODO: support `^arg...`
+    def from_array array
+      array = [array] unless array.is_a? ::Array
+
+      data_matcher = nil
+
+      while not array.empty?
+        item = array.shift.to_s
+
+        if item == '='
+          if data_matcher
+            data_matcher.default_value = array.shift
+            data_matcher = nil
+          else
+            raise 'Syntax error: argument name is expected before `=`'
+          end
+
+        elsif item =~ /^\^\^(.*)$/
+          name = $1
+          raise "Name conflict: #{name}" if include? name
+          prop_matchers[name] = Gene::Lang::PropMatcher.new name
+          data_matcher = nil
+
+        elsif item =~ /^\^(.*)$/
+          name = $1
+          raise "Name conflict: #{name}" if include? name
+          prop_matcher = Gene::Lang::PropMatcher.new name
+          prop_matcher.default_value = array.shift
+          prop_matchers[name] = prop_matcher
+          data_matcher = nil
+
+        else
+          if item =~ /^(.*)(\.\.\.)$/
+            name       = $1
+            expandable = true
+          else
+            name       = item
+            expandable = false
+          end
+          raise "Name conflict: #{name}" if include? name
+          data_matcher = Gene::Lang::DataMatcher.new name
+          data_matcher.expandable = expandable
+          data_matchers << data_matcher
+        end
+      end
+    end
+  end
+
+  # [name]
+  # [name = 'Default value']
+  # [rest...]: default to []
+  class DataMatcher < Object
+    attr_reader :name
+    attr_accessor :index, :expandable, :default_value
+
+    def initialize name
+      super(DataMatcher)
+      set 'name', name
+      set 'default_value', Gene::UNDEFINED
+    end
+  end
+
+  # [^^attr]
+  # [^attr 'Default value']
+  # [^^attrs...]: default to {}
+  class PropMatcher < Object
+    attr_reader :name
+    attr_accessor :expandable, :default_value
+
+    def initialize name
+      super(PropMatcher)
+      set 'name', name
+      set 'default_value', Gene::UNDEFINED
+    end
+  end
+
   class Assignment < Object
     attr_reader :variable, :expression
+
     def initialize variable, expression = nil
       super(Assignment)
       set 'variable', variable
