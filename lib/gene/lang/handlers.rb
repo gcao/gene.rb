@@ -15,7 +15,7 @@ module Gene::Lang::Handlers
     FOR LOOP
     BREAK
     PRINT PRINTLN
-    DEBUG
+    ASSERT DEBUG
     NOOP
   ).each do |name|
     const_set name, Gene::Types::Symbol.new("#{name.downcase.gsub('_', '-')}")
@@ -674,6 +674,21 @@ module Gene::Lang::Handlers
       data.data.each do |item|
         print context.process item
         print "\n" if PRINTLN === data
+      end
+    end
+  end
+
+  class AssertHandler
+    def call context, data
+      return Gene::NOT_HANDLED unless ASSERT === data
+
+      expr = data.data[0]
+      if not context.process(expr)
+        message = context.process data.data[1]
+        error  = "Assertion failure: "
+        error << message.to_s << ": " if message
+        error << expr.to_s
+        raise error
       end
     end
   end

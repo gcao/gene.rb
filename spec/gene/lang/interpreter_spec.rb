@@ -925,8 +925,40 @@ describe Gene::Lang::Interpreter do
       )
       (+add_to_members members)
       (fn test)
-      (members == ['test'])
+      (assert (members == ['test']))
     " do
+      @application.parse_and_process(example.description)
+    end
+  end
+
+  describe "Assert" do
+    it "(assert true)" do
+      @application.parse_and_process(example.description)
+    end
+
+    it "(assert false)" do
+      lambda {
+        @application.parse_and_process(example.description)
+      }.should raise_error('Assertion failure: false')
+    end
+
+    it "(assert false 'test message')" do
+      lambda {
+        @application.parse_and_process(example.description)
+      }.should raise_error('Assertion failure: test message: false')
+    end
+  end
+
+  describe "Arguments" do
+    it "# should work
+      (fn f [a b]
+        (a += 1)
+        (b *= 10)
+        $arguments
+      )
+      (((f 1 2).data) == [2 20])
+    " do
+      pending
       result = @application.parse_and_process(example.description)
       result.should be_true
     end
