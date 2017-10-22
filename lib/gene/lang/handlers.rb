@@ -379,7 +379,7 @@ module Gene::Lang::Handlers
         klass = get_class(value, context)
         hierarchy = Gene::Lang::HierarchySearch.new(klass.ancestors)
         method = data.data[0].to_s[1..-1]
-        args = data.data[1..-1]
+        args = data.data[1..-1].map {|arg| context.process arg }
         args = Gene::Lang::Object.from_array(args)
         hierarchy.next.handle_method({
           hierarchy: hierarchy,

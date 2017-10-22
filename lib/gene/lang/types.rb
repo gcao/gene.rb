@@ -240,13 +240,13 @@ module Gene::Lang
   # TODO: support meta programming - module_created, module_included
   # TODO: Support prepend like how Ruby does
   class Module < Object
-    attr_accessor :name, :methods, :prop_matchers, :modules
+    attr_accessor :name, :methods, :prop_descriptors, :modules
     def initialize name
       super(Class)
 
       set 'name', name
       set 'methods', {}
-      set 'prop_matchers', {}
+      set 'prop_descriptors', {}
       set 'modules', []
     end
 
@@ -359,9 +359,8 @@ module Gene::Lang
 
       scope.set_member '$function', self
       scope.set_member '$caller-context', context
-      scope.arguments = Gene::Lang::ArgumentsScope.new options[:arguments], self.args_matcher
-
       scope.set_member '$arguments', options[:arguments]
+      scope.arguments = Gene::Lang::ArgumentsScope.new options[:arguments], self.args_matcher
 
       new_context = context.extend scope: scope, self: options[:self]
       result = new_context.process_statements statements
