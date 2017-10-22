@@ -530,10 +530,38 @@ module Gene::Lang
       super(Arguments)
     end
 
+    def defined? name
+      matcher.defined? name
+    end
+
     def get_member name
+      m = matcher.get_matcher name
+      return unless m
+
+      if m.is_a? DataMatcher
+        if m.expandable
+          self.data[m.index .. m.end_index]
+        else
+          self.data[m.index]
+        end
+      else
+        self.get m.name
+      end
     end
 
     def set_member name, value
+      m = matcher.get_matcher name
+      return unless m
+
+      if m.is_a? DataMatcher
+        if m.expandable
+          self.data[m.index .. m.end_index] = value
+        else
+          self.data[m.index] = value
+        end
+      else
+        self.set name, value
+      end
     end
   end
 
@@ -546,11 +574,24 @@ module Gene::Lang
       set 'prop_matchers', {}
     end
 
-    def include? name
+    def defined? name
       prop_matchers[name] or data_matchers.find {|matcher| matcher.name == name }
     end
 
-    # TODO: support `arg...`
+    def all_matchers
+      return @all_matchers if @all_matchers
+
+      @all_matchers = prop_matchers.clone
+      data_matchers.each do |matcher|
+        @all_matchers[matcher.name] = matcher
+      end
+      @all_matchers
+    end
+
+    def get_matcher name
+      all_matchers[name]
+    end
+
     # TODO: support `^arg...`
     def from_array array
       array = [array] unless array.is_a? ::Array
@@ -570,13 +611,13 @@ module Gene::Lang
 
         elsif item =~ /^\^\^(.*)$/
           name = $1
-          raise "Name conflict: #{name}" if include? name
+          raise "Name conflict: #{name}" if self.defined? name
           prop_matchers[name] = Gene::Lang::PropMatcher.new name
           data_matcher = nil
 
         elsif item =~ /^\^(.*)$/
           name = $1
-          raise "Name conflict: #{name}" if include? name
+          raise "Name conflict: #{name}" if self.defined? name
           prop_matcher = Gene::Lang::PropMatcher.new name
           prop_matcher.default_value = array.shift
           prop_matchers[name] = prop_matcher
@@ -590,11 +631,28 @@ module Gene::Lang
             name       = item
             expandable = false
           end
-          raise "Name conflict: #{name}" if include? name
+          raise "Name conflict: #{name}" if self.defined? name
           data_matcher = Gene::Lang::DataMatcher.new name
           data_matcher.expandable = expandable
           data_matchers << data_matcher
         end
+      end
+
+      calc_indexes
+    end
+
+    private
+
+    def calc_indexes
+      return if data_matchers.size == 0
+
+      data_matchers.each_with_index do |matcher, i|
+        matcher.index = i
+      end
+
+      last = data_matchers[-1]
+      if last.expandable
+        last.end_index = -1
       end
     end
   end
@@ -604,7 +662,7 @@ module Gene::Lang
   # [rest...]: default to []
   class DataMatcher < Object
     attr_reader :name
-    attr_accessor :index, :expandable, :default_value
+    attr_accessor :index, :end_index, :expandable, :default_value
 
     def initialize name
       super(DataMatcher)

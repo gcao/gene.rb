@@ -47,6 +47,26 @@ describe Gene::Lang::Matcher do
     data_matcher.expandable.should be_true
   end
 
+  it "data matcher index & end index" do
+    @matcher.from_array [
+      Gene::Types::Symbol.new('arg1'),
+      Gene::Types::Symbol.new('arg2...'),
+    ]
+
+    @matcher.data_matchers.size.should == 2
+
+    data_matcher1 = @matcher.data_matchers[0]
+    data_matcher1.name.should == 'arg1'
+    data_matcher1.expandable.should be_false
+    data_matcher1.index.should == 0
+
+    data_matcher2 = @matcher.data_matchers[1]
+    data_matcher2.name.should == 'arg2'
+    data_matcher2.expandable.should be_true
+    data_matcher2.index.should == 1
+    data_matcher2.end_index.should == -1
+  end
+
   it "prop matcher" do
     @matcher.from_array [
       Gene::Types::Symbol.new('^^arg1'),
