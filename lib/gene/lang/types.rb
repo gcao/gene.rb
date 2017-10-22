@@ -106,8 +106,18 @@ module Gene::Lang
       else
         _self      = options[:self]
         args       = options[:arguments]
-        _self.send method_name, *args
+        if args.is_a? Gene::Lang::Object
+          _self.send method_name, *args.data
+        else
+          _self.send method_name, *args
+        end
       end
+    end
+
+    def self.from_array data
+      obj = new
+      obj.data = data
+      obj
     end
   end
 
@@ -330,7 +340,7 @@ module Gene::Lang
 
   class Function < Object
     attr_reader :name
-    attr_accessor :parent_scope, :arguments, :statements
+    attr_accessor :parent_scope, :args_matcher, :statements
     attr_accessor :inherit_scope, :eval_arguments
     def initialize name
       super(Function)
@@ -349,36 +359,15 @@ module Gene::Lang
 
       scope.set_member '$function', self
       scope.set_member '$caller-context', context
-      scope.arguments = self.arguments
+      scope.arguments = Gene::Lang::ArgumentsScope.new options[:arguments], self.args_matcher
 
-      expanded_arguments = expand_arguments(context, options[:arguments])
-      scope.set_member '$arguments', expanded_arguments
-      scope.update_arguments expanded_arguments
+      scope.set_member '$arguments', options[:arguments]
 
       new_context = context.extend scope: scope, self: options[:self]
       result = new_context.process_statements statements
       if result.is_a? ReturnValue
         result = result.value
       end
-      result
-    end
-
-    private
-
-    def expand_arguments context, arguments
-      result = []
-
-      arguments.each do |arg|
-        arg = context.process arg
-        if arg.is_a? Expandable
-          arg.value.each do |value|
-            result << value
-          end
-        else
-          result << arg
-        end
-      end
-
       result
     end
   end
@@ -403,16 +392,17 @@ module Gene::Lang
 
   class Scope < Object
     attr_accessor :parent, :variables, :arguments, :inherit_variables
+
     def initialize parent, inherit_variables
       super(Scope)
-
       set 'parent', parent
       set 'variables', {}
-      set 'arguments', []
     end
 
     def defined? name
-      self.variables.keys.include?(name) or (self.parent and self.parent.defined?(name))
+      self.variables.keys.include?(name)                  or
+      (self.arguments and self.arguments.defined?(name))  or
+      (self.parent and self.parent.defined?(name))
     end
 
     def get_member name
@@ -420,6 +410,8 @@ module Gene::Lang
 
       if self.variables.keys.include? name
         self.variables[name]
+      elsif self.arguments and self.arguments.defined?(name)
+        self.arguments.get_member(name)
       elsif self.parent
         self.parent.get_member name
       else
@@ -436,24 +428,12 @@ module Gene::Lang
 
       if self.variables.keys.include? name
         self.variables[name] = value
+      elsif self.arguments and self.arguments.defined?(name)
+        self.arguments.set_member name, value
       elsif self.parent and self.parent.defined?(name)
         self.parent.let name, value
       else
         self.variables[name] = value
-      end
-    end
-
-    def update_arguments values
-      return if not self.arguments
-
-      value_index = 0
-      self.arguments.each_with_index do |arg|
-        if arg.name =~ /^(.*)\.\.\.$/
-          set_member $1, values[value_index..-1] || []
-        else
-          set_member arg.name, values[value_index]
-          value_index += 1
-        end
       end
     end
   end
@@ -506,20 +486,6 @@ module Gene::Lang
 
     def get_access_level name
       public_members.include?(name) ? 'public' : 'private'
-    end
-  end
-
-  class Argument < Object
-    attr_reader :index, :name
-
-    def initialize index, name
-      super(Argument)
-      set 'index', index
-      set 'name', name
-    end
-
-    def == other
-      other.is_a? self.class and @index == other.index and @name == other.name
     end
   end
 

@@ -52,7 +52,7 @@ describe Gene::Lang::Interpreter do
       (fn f []
         $arguments
       )
-      ((f 1 2) == [1 2])
+      (((f 1 2) .data) == [1 2])
     " do
       result = @application.parse_and_process(example.description)
       result.should be_true
@@ -344,9 +344,10 @@ describe Gene::Lang::Interpreter do
       result = @application.parse_and_process(example.description)
       result.class.should == Gene::Lang::Function
       result.name.should  == 'doSomething'
-      result.arguments.size.should == 1
-      result.arguments[0].index.should == 0
-      result.arguments[0].name.should == 'a'
+      result.args_matcher.all_matchers.size.should == 1
+      arg1 = result.args_matcher.data_matchers[0]
+      arg1.index.should == 0
+      arg1.name.should == 'a'
     end
 
     it "# Function parameters are passed by reference: check []
@@ -449,9 +450,10 @@ describe Gene::Lang::Interpreter do
       result = @application.parse_and_process(example.description)
       result.class.should == Gene::Lang::Function
       result.name.should  == 'doSomething'
-      result.arguments.size.should == 1
-      result.arguments[0].index.should == 0
-      result.arguments[0].name.should == 'a'
+      result.args_matcher.all_matchers.size.should == 1
+      arg1 = result.args_matcher.data_matchers[0]
+      arg1.index.should == 0
+      arg1.name.should == 'a'
       result.statements.first.should == 1
     end
 

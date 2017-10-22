@@ -214,9 +214,9 @@ module Gene::Lang::Handlers
       end
 
       if not FNXX === data
-        fn.arguments = [data.data[next_index]].flatten
-          .select {|item| not item.nil? }
-          .map.with_index {|item, i| Gene::Lang::Argument.new(i, item.name) }
+        fn.args_matcher = Gene::Lang::Matcher.new
+        fn.args_matcher.from_array data.data[next_index]
+
         next_index += 1
       end
 
@@ -271,9 +271,8 @@ module Gene::Lang::Handlers
       return Gene::NOT_HANDLED unless METHOD === data
       name = data.data[0].to_s
       fn = Gene::Lang::Function.new name
-      fn.arguments = [data.data[1]].flatten
-        .select {|item| not item.nil? }
-        .map.with_index {|item, i| Gene::Lang::Argument.new(i, item.name) }
+      fn.args_matcher = Gene::Lang::Matcher.new
+      fn.args_matcher.from_array data.data[1]
       fn.statements = data.data[2..-1]
       context.self.methods[name] = fn
       fn
@@ -290,7 +289,8 @@ module Gene::Lang::Handlers
       get = Gene::Lang::Function.new name
       # Default code: [@x]  assume x is the property name
       code = data['get'] || [Gene::Types::Symbol.new("@#{name}")]
-      get.arguments = []
+      get.args_matcher = Gene::Lang::Matcher.new
+      get.args_matcher.from_array []
       get.statements = code
       context.self.methods[get.name] = get
 
@@ -301,7 +301,8 @@ module Gene::Lang::Handlers
         Gene::Types::Base.new(Gene::Types::Symbol.new("@#{name}"), Gene::Types::Symbol.new("="), Gene::Types::Symbol.new("value"))
       ]
       arg_name  = code[0].to_s
-      set.arguments = [Gene::Lang::Argument.new(0, arg_name)]
+      set.args_matcher = Gene::Lang::Matcher.new
+      set.args_matcher.from_array arg_name
       set.statements = code[1..-1] || []
       context.self.methods[set.name] = set
       nil
@@ -314,7 +315,9 @@ module Gene::Lang::Handlers
       klass = context.process(data.data[0])
       instance = Gene::Lang::Object.new klass
       if init = klass.methods[INIT.name]
-        init.call context: context, self: instance, arguments: data.data[1..-1]
+        args = data.data[1..-1]
+        args = Gene::Lang::Object.from_array(args)
+        init.call context: context, self: instance, arguments: args
       end
       instance
     end
@@ -325,7 +328,9 @@ module Gene::Lang::Handlers
       return Gene::NOT_HANDLED unless CALL === data
       function = context.process data.data[0]
       self_object = context.process data.data[1]
-      function.call context: context, self: self_object, arguments: data.data[2..-1] || []
+      args = data.data[2..-1] || []
+      args = Gene::Lang::Object.from_array(args)
+      function.call context: context, self: self_object, arguments: args
     end
   end
 
@@ -343,9 +348,8 @@ module Gene::Lang::Handlers
       return Gene::NOT_HANDLED unless INIT === data
       name = INIT.name
       fn = Gene::Lang::Function.new name
-      fn.arguments = [data.data[0]].flatten
-        .select {|item| not item.nil? }
-        .map.with_index {|item, i| Gene::Lang::Argument.new(i, item.name) }
+      fn.args_matcher = Gene::Lang::Matcher.new
+      fn.args_matcher.from_array data.data[0]
       fn.statements = data.data[1..-1]
       context.self.methods[INIT.name] = fn
       fn
@@ -376,6 +380,7 @@ module Gene::Lang::Handlers
         hierarchy = Gene::Lang::HierarchySearch.new(klass.ancestors)
         method = data.data[0].to_s[1..-1]
         args = data.data[1..-1]
+        args = Gene::Lang::Object.from_array(args)
         hierarchy.next.handle_method({
           hierarchy: hierarchy,
           method: method,
@@ -383,10 +388,6 @@ module Gene::Lang::Handlers
           arguments: args,
           self: value
         })
-        # method = klass.method(data.data[0].to_s[1..-1])
-        # args = data.data[1..-1].map{|item| context.process item}
-        # args = expand args
-        # method.call context: context, self: value, arguments: args
       elsif data.is_a? Gene::Types::Base and data.type.is_a? Gene::Types::Symbol and data.type.name =~ /^[a-zA-Z_]/
         value = context.process(data.type)
         args = data.data
@@ -394,6 +395,7 @@ module Gene::Lang::Handlers
           args = args.map{|item| context.process item}
         end
         args = expand args
+        args = Gene::Lang::Object.from_array(args)
         value.call context: context, arguments: args
       elsif data.is_a? Gene::Types::Base and data.type.is_a? Gene::Types::Symbol and data.type.name =~ /^.(.*)$/
         method = $1
@@ -401,6 +403,7 @@ module Gene::Lang::Handlers
         hierarchy = Gene::Lang::HierarchySearch.new(klass.ancestors)
         args = data.data.map{|item| context.process item}
         args = expand args
+        args = Gene::Lang::Object.from_array(args)
         hierarchy.next.handle_method(
           hierarchy: hierarchy,
           method: method,
@@ -408,14 +411,13 @@ module Gene::Lang::Handlers
           arguments: args,
           self: context.self
         )
-        # value = klass.method($1)
-        # value.call context: context, self: context.self, arguments: args
       elsif data.is_a? Gene::Types::Base and data.type.is_a? Gene::Types::Base
         data.type = context.process data.type
         context.process data
       elsif data.is_a? Gene::Types::Base and data.type.is_a? Gene::Lang::Function
         args = data.data.map{|item| context.process item}
         args = expand args
+        args = Gene::Lang::Object.from_array(args)
         data.type.call context: context, arguments: args
       else
         Gene::NOT_HANDLED
