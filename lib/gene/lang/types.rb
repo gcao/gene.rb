@@ -523,11 +523,13 @@ module Gene::Lang
     end
   end
 
-  class Arguments < Object
-    attr_accessor :matcher
+  class ArgumentsScope < Object
+    attr_accessor :arguments, :matcher
 
-    def initialize
-      super(Arguments)
+    def initialize arguments, matcher
+      super(ArgumentsScope)
+      set 'arguments', arguments
+      set 'matcher',   matcher
     end
 
     def defined? name
@@ -540,12 +542,12 @@ module Gene::Lang
 
       if m.is_a? DataMatcher
         if m.expandable
-          self.data[m.index .. m.end_index]
+          arguments.data[m.index .. m.end_index]
         else
-          self.data[m.index]
+          arguments.data[m.index]
         end
       else
-        self.get m.name
+        arguments.get m.name
       end
     end
 
@@ -555,12 +557,12 @@ module Gene::Lang
 
       if m.is_a? DataMatcher
         if m.expandable
-          self.data[m.index .. m.end_index] = value
+          arguments.data[m.index .. m.end_index] = value
         else
-          self.data[m.index] = value
+          arguments.data[m.index] = value
         end
       else
-        self.set name, value
+        arguments.set name, value
       end
     end
   end
