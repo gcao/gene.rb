@@ -508,17 +508,17 @@ module Gene::Lang::Handlers
     def call context, data
       return Gene::NOT_HANDLED unless BEFORE === data or AFTER === data or WHEN === data
 
-      aspect = Gene::Lang::Aspect.new data.type.to_s
-      aspect.method_matcher = data.data[0]
-      aspect.args_matcher = data.data[1]
-      aspect.logic = data.data[2..-1]
+      advice = Gene::Lang::Advice.new data.type.to_s
+      advice.method_matcher = data.data[0]
+      advice.args_matcher = data.data[1]
+      advice.logic = data.data[2..-1]
 
       if BEFORE === data
-        context.self.before_aspects << aspect
+        context.self.before_aspects << advice
       elsif AFTER === data
-        context.self.after_aspects << aspect
+        context.self.after_aspects << advice
       else
-        context.self.when_aspects << aspect
+        context.self.when_aspects << advice
       end
     end
   end

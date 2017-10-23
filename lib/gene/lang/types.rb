@@ -755,12 +755,12 @@ module Gene::Lang
   class Hash < ::Hash
   end
 
-  class Aspect < Object
-    attr_accessor :aspect_type, :method_matcher, :args_matcher, :logic
+  class Advice < Object
+    attr_accessor :advice_type, :method_matcher, :args_matcher, :logic
 
-    def initialize aspect_type
-      super(Aspect)
-      set 'aspect_type', aspect_type
+    def initialize advice_type
+      super(Advice)
+      set 'advice_type', advice_type
     end
 
     def match_method? name
