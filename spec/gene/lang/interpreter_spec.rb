@@ -958,11 +958,159 @@ describe Gene::Lang::Interpreter do
         (b *= 10)
         $arguments
       )
-      (((f 1 2).data) == [2 20])
+      (assert (((f 1 2).data) == [2 20]))
     " do
-      pending
-      result = @application.parse_and_process(example.description)
-      result.should be_true
+      @application.parse_and_process(example.description)
+    end
+  end
+
+  describe "AOP" do
+    describe "before" do
+      it "# should work
+        (class A
+          (init _
+            (@values = [])
+          )
+          (before test _
+            ($invoke @values 'push' 'before')
+          )
+          (method test _
+            ($invoke @values 'push' 'test')
+          )
+        )
+        (assert (((new A) .test) == ['before' 'test']))
+      " do
+        @application.parse_and_process(example.description)
+      end
+
+      it "# multiple `before`
+        (class A
+          (init _
+            (@values = [])
+          )
+          (before test _
+            ($invoke @values 'push' 'before')
+          )
+          (before test _
+            ($invoke @values 'push' 'before2')
+          )
+          (method test _
+            ($invoke @values 'push' 'test')
+          )
+        )
+        (assert (((new A) .test) == ['before' 'before2' 'test']))
+      " do
+        @application.parse_and_process(example.description)
+      end
+    end
+
+    describe "after" do
+      it "# should work
+        (class A
+          (init _
+            (@values = [])
+          )
+          (after test _
+            ($invoke @values 'push' 'after')
+          )
+          (method test _
+            ($invoke @values 'push' 'test')
+          )
+        )
+        (assert (((new A) .test) == ['test' 'after']))
+      " do
+        @application.parse_and_process(example.description)
+      end
+
+      it "# multiple `after`
+        (class A
+          (init _
+            (@values = [])
+          )
+          (after test _
+            ($invoke @values 'push' 'after')
+          )
+          (after test _
+            ($invoke @values 'push' 'after2')
+          )
+          (method test _
+            ($invoke @values 'push' 'test')
+          )
+        )
+        (assert (((new A) .test) == ['test' 'after' 'after2']))
+      " do
+        @application.parse_and_process(example.description)
+      end
+    end
+
+    describe "when" do
+      it "# should work
+        (class A
+          (init _
+            (@values = [])
+          )
+          (when test _
+            ($invoke @values 'push' 'when before')
+            (continue)
+            ($invoke @values 'push' 'when after')
+          )
+          (method test _
+            ($invoke @values 'push' 'test')
+          )
+        )
+        (assert (((new A) .test) == ['when before' 'test' 'when after']))
+      " do
+        @application.parse_and_process(example.description)
+      end
+
+      it "# multiple `when`
+        (class A
+          (init _
+            (@values = [])
+          )
+          (when test _
+            ($invoke @values 'push' 'when before')
+            (continue)
+            ($invoke @values 'push' 'when after')
+          )
+          (when test _
+            ($invoke @values 'push' 'when before2')
+            (continue)
+            ($invoke @values 'push' 'when after2')
+          )
+          (method test _
+            ($invoke @values 'push' 'test')
+          )
+        )
+        (assert (((new A) .test) == ['when before' 'when before2' 'test' 'when after2' 'when after']))
+      " do
+        @application.parse_and_process(example.description)
+      end
+    end
+
+    it "# before + when + after
+      (class A
+        (init _
+          (@values = [])
+        )
+        (before test _
+          ($invoke @values 'push' 'before')
+        )
+        (when test _
+          ($invoke @values 'push' 'when before')
+          (continue)
+          ($invoke @values 'push' 'when after')
+        )
+        (after test _
+          ($invoke @values 'push' 'after')
+        )
+        (method test _
+          ($invoke @values 'push' 'test')
+        )
+      )
+      (assert (((new A) .test) == ['before' 'when before' 'test' 'when after' 'after']))
+    " do
+      @application.parse_and_process(example.description)
     end
   end
 end

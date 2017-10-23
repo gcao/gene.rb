@@ -9,6 +9,7 @@ module Gene::Lang::Handlers
     RETURN
     CALL DO
     DEF
+    BEFORE AFTER WHEN CONTINUE
     IMPORT EXPORT FROM
     PUBLIC PRIVATE
     IF IF_NOT
@@ -500,6 +501,44 @@ module Gene::Lang::Handlers
       when '||=' then old_value || value
       else raise "Invalid operator #{op.inspect}"
       end
+    end
+  end
+
+  class AspectHandler
+    def call context, data
+      return Gene::NOT_HANDLED unless BEFORE === data or AFTER === data or WHEN === data
+
+      aspect = Gene::Lang::Aspect.new data.type.to_s
+      aspect.method_matcher = data.data[0]
+      aspect.args_matcher = data.data[1]
+      aspect.logic = data.data[2..-1]
+
+      if BEFORE === data
+        context.self.before_aspects << aspect
+      elsif AFTER === data
+        context.self.after_aspects << aspect
+      else
+        context.self.when_aspects << aspect
+      end
+    end
+  end
+
+  class ContinueHandler
+    def call context, data
+      return Gene::NOT_HANDLED unless CONTINUE === data
+
+      method    = context.get_member('$method')
+      args      = context.get_member('$arguments')
+      hierarchy = context.get_member('$hierarchy')
+      aspects   = context.get_member('$aspects')
+      hierarchy.current.handle_method(
+        context: context,
+        method: method,
+        hierarchy: hierarchy,
+        arguments: args,
+        aspects: aspects,
+        self: context.self
+      )
     end
   end
 

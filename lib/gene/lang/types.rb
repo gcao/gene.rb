@@ -241,6 +241,7 @@ module Gene::Lang
   # TODO: Support prepend like how Ruby does
   class Module < Object
     attr_accessor :name, :methods, :prop_descriptors, :modules
+    attr_accessor :before_aspects, :after_aspects, :when_aspects
     def initialize name
       super(Class)
 
@@ -248,6 +249,9 @@ module Gene::Lang
       set 'methods', {}
       set 'prop_descriptors', {}
       set 'modules', []
+      set 'before_aspects', []
+      set 'after_aspects', []
+      set 'when_aspects', []
     end
 
     def method name
@@ -266,6 +270,47 @@ module Gene::Lang
     end
 
     def handle_method options
+      if options.keys.include?(:aspects)
+        aspect = options[:aspects].shift
+        if aspect
+          aspect.handle_method options
+        else
+          handle_method_without_aspects options
+        end
+      else
+        # process before-aspects
+        if before_aspects and before_aspects.size > 0
+          before_aspects.each do |aspect|
+            if aspect.match_method? options[:method]
+              aspect.handle_method options
+            end
+          end
+        end
+
+        # process first when-aspect and pass other aspects thru options[:aspects]
+        if when_aspects and when_aspects.size > 0
+          my_when_aspects = when_aspects.clone
+          aspect = my_when_aspects.shift
+          options[:aspects] = my_when_aspects
+          result = aspect.handle_method options
+        else
+          result = handle_method_without_aspects options
+        end
+
+        # process after-aspects
+        if after_aspects and after_aspects.size > 0
+          after_aspects.each do |aspect|
+            if aspect.match_method? options[:method]
+              aspect.handle_method options
+            end
+          end
+        end
+
+        result
+      end
+    end
+
+    def handle_method_without_aspects options
       method_name = options[:method]
       m = method(method_name)
       if m
@@ -334,6 +379,10 @@ module Gene::Lang
 
     def next
       self.index += 1
+      hierarchy[self.index]
+    end
+
+    def current
       hierarchy[self.index]
     end
   end
@@ -705,6 +754,34 @@ module Gene::Lang
 
   class Hash < ::Hash
   end
+
+  class Aspect < Object
+    attr_accessor :aspect_type, :method_matcher, :args_matcher, :logic
+
+    def initialize aspect_type
+      super(Aspect)
+      set 'aspect_type', aspect_type
+    end
+
+    def match_method? name
+      method_matcher.to_s == name.to_s
+    end
+
+    def handle_method options
+      scope = Scope.new nil, false
+      context = options[:context]
+
+      scope.set_member '$method', options[:method] if options[:method]
+      scope.set_member '$arguments', options[:arguments]
+      scope.set_member '$hierarchy', options[:hierarchy]
+      scope.set_member '$aspects', options[:aspects]
+      scope.arguments = Gene::Lang::ArgumentsScope.new options[:arguments], self.args_matcher
+
+      new_context = context.extend scope: scope, self: options[:self]
+      new_context.process_statements logic
+    end
+  end
+
 
   # === SELF HOSTING ===
   # FunctionClass = Class.new 'Function', Block.new(nil, nil)
