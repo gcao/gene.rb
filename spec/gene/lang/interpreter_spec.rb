@@ -1024,6 +1024,32 @@ describe Gene::Lang::Interpreter do
         result = @application.parse_and_process(example.description)
         result.should == ['when before', 'test', 'when after']
       end
+
+      it "# multiple `when` should work
+        (class A
+          (init _
+            (@values = [])
+          )
+          (when test _
+            ($invoke @values 'push' 'when before')
+            (continue)
+            ($invoke @values 'push' 'when after')
+          )
+          (when test _
+            ($invoke @values 'push' 'when before2')
+            (continue)
+            ($invoke @values 'push' 'when after2')
+          )
+          (method test _
+            ($invoke @values 'push' 'test')
+          )
+        )
+        #(assert (((new A) .test) == ['when before' 'test' 'when after']))
+        ((new A) .test)
+      " do
+        result = @application.parse_and_process(example.description)
+        result.should == ['when before', 'when before2', 'test', 'when after2', 'when after']
+      end
     end
   end
 end
