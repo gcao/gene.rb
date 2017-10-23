@@ -755,6 +755,59 @@ module Gene::Lang
   class Hash < ::Hash
   end
 
+  class Aspect < Object
+    attr_accessor :before_advices, :when_advices, :after_advices
+
+    def initialize
+      super(Aspect)
+      set 'before_advices', []
+      set 'when_advices',   []
+      set 'after_advices',  []
+    end
+
+    def add advice
+      if advice.advice_type == 'before'
+        before_advices << advice
+      elsif advice.advice_type == 'when'
+        when_advices << advice
+      elsif advice.advice_type == 'after'
+        after_advices << advice
+      else
+        raise "Unrecognized advice: #{advice}"
+      end
+    end
+
+    def apply target
+    end
+
+    # TODO: Return a new Aspect that includes only advices applicable or nil if none is applicable
+    def for_method method
+      self
+    end
+  end
+
+  class AppliedAspect < Object
+    attr_accessor :aspect, :target
+
+    def initialize aspect, target
+      super(AppliedAspect)
+      set 'aspect', aspect
+      set 'target', target
+    end
+
+    def before_advices
+      aspect.before_advices
+    end
+
+    def when_advices
+      aspect.when_advices
+    end
+
+    def after_advices
+      aspect.after_advices
+    end
+  end
+
   class Advice < Object
     attr_accessor :advice_type, :method_matcher, :args_matcher, :logic
 
@@ -781,7 +834,6 @@ module Gene::Lang
       new_context.process_statements logic
     end
   end
-
 
   # === SELF HOSTING ===
   # FunctionClass = Class.new 'Function', Block.new(nil, nil)

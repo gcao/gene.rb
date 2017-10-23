@@ -1112,5 +1112,37 @@ describe Gene::Lang::Interpreter do
     " do
       @application.parse_and_process(example.description)
     end
+
+    it "
+      (class C
+        (init _
+          (@values = [])
+        )
+        (method test _
+          ($invoke @values 'push' 'test')
+        )
+      )
+      (aspect A
+        # constructor for the AppliedAspect instance which is a class
+        (init _
+        )
+        (before test _
+          ($invoke @values 'push' 'before')
+        )
+        # method defined on AppliedAspect instance
+        (method doX _
+        )
+        # logic that runs with target as self
+        (target
+          (method doY _
+          )
+        )
+      )
+      (A .apply C)
+      ((new C) .test)
+    " do
+      result = @application.parse_and_process(example.description)
+      result.should == ['before', 'test']
+    end
   end
 end

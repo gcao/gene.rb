@@ -9,7 +9,7 @@ module Gene::Lang::Handlers
     RETURN
     CALL DO
     DEF
-    BEFORE AFTER WHEN CONTINUE
+    ASPECT BEFORE AFTER WHEN CONTINUE
     IMPORT EXPORT FROM
     PUBLIC PRIVATE
     IF IF_NOT
@@ -505,6 +505,12 @@ module Gene::Lang::Handlers
   end
 
   class AspectHandler
+    def call context, data
+      return Gene::NOT_HANDLED unless ASPECT === data
+    end
+  end
+
+  class AdviceHandler
     def call context, data
       return Gene::NOT_HANDLED unless BEFORE === data or AFTER === data or WHEN === data
 
