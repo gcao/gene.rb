@@ -958,11 +958,72 @@ describe Gene::Lang::Interpreter do
         (b *= 10)
         $arguments
       )
-      (((f 1 2).data) == [2 20])
+      (assert (((f 1 2).data) == [2 20]))
     " do
-      pending
-      result = @application.parse_and_process(example.description)
-      result.should be_true
+      @application.parse_and_process(example.description)
+    end
+  end
+
+  describe "AOP" do
+    describe "before" do
+      it "# should work
+        (class A
+          (init _
+            (@values = [])
+          )
+          (before test _
+            ($invoke @values 'push' 'before')
+          )
+          (method test _
+            ($invoke @values 'push' 'test')
+          )
+        )
+        (assert (((new A) .test) == ['before' 'test']))
+      " do
+        @application.parse_and_process(example.description)
+      end
+    end
+
+    describe "after" do
+      it "# should work
+        (class A
+          (init _
+            (@values = [])
+          )
+          (after test _
+            ($invoke @values 'push' 'after')
+          )
+          (method test _
+            ($invoke @values 'push' 'test')
+          )
+        )
+        (assert (((new A) .test) == ['test' 'after']))
+      " do
+        @application.parse_and_process(example.description)
+      end
+    end
+
+    describe "when" do
+      it "# should work
+        (class A
+          (init _
+            (@values = [])
+          )
+          (when test _
+            ($invoke @values 'push' 'when before')
+            (continue)
+            ($invoke @values 'push' 'when after')
+          )
+          (method test _
+            ($invoke @values 'push' 'test')
+          )
+        )
+        #(assert (((new A) .test) == ['when before' 'test' ' when after']))
+        ((new A) .test)
+      " do
+        result = @application.parse_and_process(example.description)
+        result.should == ['when before', 'test', ' when after']
+      end
     end
   end
 end
