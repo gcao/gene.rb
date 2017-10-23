@@ -1123,16 +1123,35 @@ describe Gene::Lang::Interpreter do
         )
       )
       (aspect A
-        # constructor for the AppliedAspect instance which is a class
-        (init _
-        )
+        # a meta advice, will take effect after applied to a target
         (before test _
+          # Inside advice logic, target is self, aspect can be accessed by `$aspect`
+          # $aspect should not be passed to regular methods
           ($invoke @values 'push' 'before')
         )
+
+        # an aspect can be instantiated then applied to multiple targets
+        (init _
+          # callback for when the aspect instace is applied to a target
+          # payload varies depending on the event type. For aspect application it is like {target: target, options: {}}
+          # returns a handle that can be used to unsubscrbe
+          (.subscribe 'apply' payload
+          )
+        )
+
+        # This should be generated automatically, but how?
+        # when an aspect is applied to a target, advices are copied, target logic are invoked
+        (method apply [target options]
+          # trigger the callback
+          (.publish 'apply' {^target target ^options options})
+        )
+
         # method defined on AppliedAspect instance
         (method doX _
         )
-        # logic that runs with target as self
+
+        # Logic that runs with target as self
+        # This will be invoked when aspect A is applied
         (target
           (method doY _
           )
