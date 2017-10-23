@@ -1018,11 +1018,11 @@ describe Gene::Lang::Interpreter do
             ($invoke @values 'push' 'test')
           )
         )
-        #(assert (((new A) .test) == ['when before' 'test' ' when after']))
+        #(assert (((new A) .test) == ['when before' 'test' 'when after']))
         ((new A) .test)
       " do
         result = @application.parse_and_process(example.description)
-        result.should == ['when before', 'test', ' when after']
+        result.should == ['when before', 'test', 'when after']
       end
     end
   end

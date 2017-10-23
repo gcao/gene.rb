@@ -530,12 +530,13 @@ module Gene::Lang::Handlers
       method    = context.get_member('$method')
       args      = context.get_member('$arguments')
       hierarchy = context.get_member('$hierarchy')
-      # TODO: get and pass aspects
+      aspects   = context.get_member('$aspects')
       hierarchy.current.handle_method(
         context: context,
         method: method,
         hierarchy: hierarchy,
         arguments: args,
+        aspects: aspects,
         self: context.self
       )
     end

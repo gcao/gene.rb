@@ -270,31 +270,67 @@ module Gene::Lang
     end
 
     def handle_method options
-      if before_aspects and before_aspects.size > 0
-        before_aspects.each do |aspect|
-          if aspect.match_method? options[:method]
-            aspect.handle_method options
-          end
+      if options.keys.include?(:aspects)
+        aspect = options[:aspects].shift
+        if aspect and aspect.aspect_type == 'when'
+          # process when-aspects
+        else
+          handle_method_without_aspects options
         end
-      end
-
-      # TODO: check whether options[:when_aspects] is set
-      if when_aspects and when_aspects.size > 0
-        aspect = when_aspects[0]
-        aspect.handle_method options
       else
-        result = handle_method_without_aspects options
-      end
-
-      if after_aspects and after_aspects.size > 0
-        after_aspects.each do |aspect|
-          if aspect.match_method? options[:method]
-            aspect.handle_method options
+        # process before-aspects
+        if before_aspects and before_aspects.size > 0
+          before_aspects.each do |aspect|
+            if aspect.match_method? options[:method]
+              aspect.handle_method options
+            end
           end
         end
+
+        # process first when-aspect and pass other aspects thru options[:aspects]
+        if when_aspects and when_aspects.size > 0
+          aspect = when_aspects[0]
+          options[:aspects] = []
+          result = aspect.handle_method options
+        else
+          result = handle_method_without_aspects options
+        end
+
+        if after_aspects and after_aspects.size > 0
+          after_aspects.each do |aspect|
+            if aspect.match_method? options[:method]
+              aspect.handle_method options
+            end
+          end
+        end
+
+        result
       end
 
-      result
+      # if before_aspects and before_aspects.size > 0
+      #   before_aspects.each do |aspect|
+      #     if aspect.match_method? options[:method]
+      #       aspect.handle_method options
+      #     end
+      #   end
+      # end
+
+      # if when_aspects and when_aspects.size > 0
+      #   aspect = when_aspects[0]
+      #   aspect.handle_method options
+      # else
+      #   result = handle_method_without_aspects options
+      # end
+
+      # if after_aspects and after_aspects.size > 0
+      #   after_aspects.each do |aspect|
+      #     if aspect.match_method? options[:method]
+      #       aspect.handle_method options
+      #     end
+      #   end
+      # end
+
+      # result
     end
 
     def handle_method_without_aspects options
@@ -761,6 +797,7 @@ module Gene::Lang
       scope.set_member '$method', options[:method] if options[:method]
       scope.set_member '$arguments', options[:arguments]
       scope.set_member '$hierarchy', options[:hierarchy]
+      scope.set_member '$aspects', options[:aspects]
       scope.arguments = Gene::Lang::ArgumentsScope.new options[:arguments], self.args_matcher
 
       new_context = context.extend scope: scope, self: options[:self]
