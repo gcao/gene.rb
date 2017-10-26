@@ -755,7 +755,8 @@ module Gene::Lang
   class Hash < ::Hash
   end
 
-  class Aspect < Object
+  # A special type of classes that implicitly extend BaseAspect
+  class Aspect < Class
     attr_accessor :before_advices, :when_advices, :after_advices
 
     def initialize
@@ -780,33 +781,41 @@ module Gene::Lang
     def apply target
     end
 
-    # TODO: Return a new Aspect that includes only advices applicable or nil if none is applicable
-    def for_method method
-      self
-    end
+    # # TODO: Return a new Aspect that includes only advices applicable or nil if none is applicable
+    # def for_method method
+    #   self
+    # end
   end
 
-  class AppliedAspect < Object
-    attr_accessor :aspect, :target
+  # An internal object that is stored as part of the target.
+  # There should not be need to customize logic in this class and its instance
+  # because those logic can reside in either the aspect (instance of Aspect) or the target.
+  # Advices' matchers are computed with target and extra options when
+  # the aspect is applied to the target.
+  #
+  # When aspect is directly defined on a module/class, an AppliedAspect
+  # instance is created, and aspect is not set
+  #
+  # class AppliedAspect < Object
+  #   attr_accessor :aspect
 
-    def initialize aspect, target
-      super(AppliedAspect)
-      set 'aspect', aspect
-      set 'target', target
-    end
+  #   def initialize aspect
+  #     super(AppliedAspect)
+  #     set 'aspect', aspect
+  #   end
 
-    def before_advices
-      aspect.before_advices
-    end
+  #   def before_advices
+  #     aspect.before_advices
+  #   end
 
-    def when_advices
-      aspect.when_advices
-    end
+  #   def when_advices
+  #     aspect.when_advices
+  #   end
 
-    def after_advices
-      aspect.after_advices
-    end
-  end
+  #   def after_advices
+  #     aspect.after_advices
+  #   end
+  # end
 
   class Advice < Object
     attr_accessor :advice_type, :method_matcher, :args_matcher, :logic

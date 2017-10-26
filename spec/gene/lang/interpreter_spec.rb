@@ -1122,6 +1122,9 @@ describe Gene::Lang::Interpreter do
           ($invoke @values 'push' 'test')
         )
       )
+      # Creates a class which is an instance of Aspect class and a sub-class of
+      # BaseAspect which is also an instance of Aspect
+      # (method apply) is defined in BaseAspect
       (aspect A
         # a meta advice, will take effect after applied to a target
         (before test _
@@ -1139,12 +1142,12 @@ describe Gene::Lang::Interpreter do
           )
         )
 
-        # This should be generated automatically, but how?
+        # This should be generated automatically, but how? by inheritance (see above)
         # when an aspect is applied to a target, advices are copied, target logic are invoked
-        (method apply [target options]
-          # trigger the callback
-          (.publish 'apply' {^target target ^options options})
-        )
+        #(method apply [target options]
+        #  # trigger the callback
+        #  (.publish 'apply' {^target target ^options options})
+        #)
 
         # method defined on AppliedAspect instance
         (method doX _
