@@ -4,7 +4,7 @@ module Gene::Lang::Handlers
     CLASS PROP METHOD NEW INIT CAST
     MODULE INCLUDE
     EXTEND SUPER
-    SELF
+    SELF WITH
     FN FNX FNXX
     RETURN
     CALL DO
@@ -705,6 +705,22 @@ module Gene::Lang::Handlers
       data.data.each do |item|
         context.self.set_access_level item.to_s, data.type.to_s
       end
+    end
+  end
+
+  class WithHandler
+    def call context, data
+      return Gene::NOT_HANDLED unless WITH === data
+
+      _self = context.process data.data[0]
+      new_context = context.extend self: _self
+
+      result = Gene::UNDEFINED
+      data.data[1..-1].each do |item|
+        result = new_context.process item
+      end
+
+      result
     end
   end
 

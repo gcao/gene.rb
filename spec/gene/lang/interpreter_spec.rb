@@ -933,6 +933,17 @@ describe Gene::Lang::Interpreter do
     end
   end
 
+  describe "with - create a new context with a given self" do
+    it "# should work
+      (def o (new Object))
+      (with o
+        (assert ((.class) == Object))
+      )
+    " do
+      @application.parse_and_process(example.description)
+    end
+  end
+
   describe "Assert" do
     it "(assert true)" do
       @application.parse_and_process(example.description)

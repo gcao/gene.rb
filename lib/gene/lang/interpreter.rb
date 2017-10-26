@@ -32,6 +32,7 @@ class Gene::Lang::Interpreter
     @handlers.add 100, Gene::Lang::Handlers::CallHandler.new
     @handlers.add 100, Gene::Lang::Handlers::CastHandler.new
     @handlers.add 100, Gene::Lang::Handlers::InitHandler.new
+    @handlers.add 100, Gene::Lang::Handlers::WithHandler.new
     @handlers.add 100, Gene::Lang::Handlers::PrintHandler.new
     @handlers.add 100, Gene::Lang::Handlers::AssertHandler.new
     @handlers.add 100, Gene::Lang::Handlers::BinaryExprHandler.new
