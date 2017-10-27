@@ -202,9 +202,10 @@ describe Gene::Parser do
     '{a',
     '{a :',
     '{a : b',
+    '[',
+    '[a',
   ].each do |input|
     it "process #{input.inspect} should fail with PrematureEndError" do
-      pending
       lambda {
         Gene::Parser.parse(input)
       }.should raise_error(Gene::PrematureEndError)

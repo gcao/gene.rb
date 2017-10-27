@@ -1134,6 +1134,14 @@ describe Gene::Lang::Interpreter do
         (before test _
           ($invoke @values 'push' 'before')
         )
+        (when test _
+          ($invoke @values 'push' 'when before')
+          (continue)
+          ($invoke @values 'push' 'when after')
+        )
+        (after test _
+          ($invoke @values 'push' 'after')
+        )
       )
       (class C
         (init _
@@ -1145,7 +1153,7 @@ describe Gene::Lang::Interpreter do
       )
       (A .apply C)
       (def c (new C))
-      (assert ((c .test) == ['before' 'test']))
+      (assert ((c .test) == ['before' 'when before' 'test' 'when after' 'after']))
     " do
       @application.parse_and_process(example.description)
     end

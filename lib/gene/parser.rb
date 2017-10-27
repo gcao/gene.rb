@@ -216,8 +216,10 @@ module Gene
         value
       when (value = parse_symbol) != UNPARSED
         value
+      when eos?
+        raise PrematureEndError, "Incomplete content"
       else
-        UNPARSED
+        raise ParseError, "unexpected token at '#{peek(20)}'!"
       end
     end
 
@@ -366,20 +368,15 @@ module Gene
 
       open_char = self[0]
 
-      raise ParseError, "Incomplete content after '#{open_char}'" if eos?
+      in_comment = false
 
-      in_comment   = false
-      closed       = false
-
-      until eos?
+      while true
         case
         when skip(COMMENT_END)
          in_comment = false
         when open_char == '(' && scan(GROUP_CLOSE)
-          closed = true
           break
         when open_char == '[' && scan(ARRAY_CLOSE)
-          closed = true
           break
         when skip(COMMENT)
          in_comment = true
@@ -387,12 +384,12 @@ module Gene
           ;
         when (value = parse_value(attribute_for_group)) != UNPARSED
           result << value unless in_comment or value == IGNORABLE
+        when eos?
+          raise PrematureEndError, "unexpected end of input"
         else
           raise ParseError, "unexpected token at '#{peek(20)}'!"
         end
       end
-
-      raise ParseError, "unexpected end of input" unless closed
 
       return result if open_char == '[' # Array
 
@@ -418,11 +415,10 @@ module Gene
       return UNPARSED unless scan(HASH_OPEN)
 
       result = {}
+      closed = false
 
       expects = %w(key delimiter value)
       expect_index = 0
-
-      raise ParseError, "Incomplete content after '#{open_char}'" if eos?
 
       until eos?
         next if skip(IGNORE)
@@ -430,6 +426,7 @@ module Gene
         case expects[expect_index % expects.size]
         when 'key'
           if scan(HASH_CLOSE)
+            closed = true
             break
           elsif scan(COMMA)
             next
@@ -458,10 +455,12 @@ module Gene
             result[key] = value
           end
         else
-
+          raise ParseError, "unexpected token at '#{peek(20)}'!"
         end
         expect_index += 1
       end
+
+      raise PrematureEndError, "Incomplete content" unless closed
 
       result
     end
