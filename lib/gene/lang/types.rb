@@ -269,6 +269,15 @@ module Gene::Lang
       @ancestors
     end
 
+    # Advices for a method will be calculated when the method is called at the first time,
+    # and cached for performance purpose
+    #
+    # Following below logic, there will be no need to create additional classes for aspects/advices
+    #
+    # Unwrap aspects/advices first
+    # Unwrapped advices have this structure
+    # before11, before12, after11, after12, when11, when12, before21, before22, after21, after22, when21
+    # Then they are processed in a similar way as below
     def handle_method options
       if options.keys.include?(:aspects)
         aspect = options[:aspects].shift
@@ -755,6 +764,20 @@ module Gene::Lang
   class Hash < ::Hash
   end
 
+  class Aspect < Object
+    attr_accessor :before_advices, :after_advices, :when_advices
+
+    def initialize
+      super(Aspect)
+      set 'before_advices', []
+      set 'after_advices',  []
+      set 'when_advices',   []
+    end
+
+    def apply target
+    end
+  end
+
   class Advice < Object
     attr_accessor :advice_type, :method_matcher, :args_matcher, :logic
 
@@ -781,7 +804,6 @@ module Gene::Lang
       new_context.process_statements logic
     end
   end
-
 
   # === SELF HOSTING ===
   # FunctionClass = Class.new 'Function', Block.new(nil, nil)

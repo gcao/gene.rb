@@ -1124,4 +1124,30 @@ describe Gene::Lang::Interpreter do
       @application.parse_and_process(example.description)
     end
   end
+
+  describe "Aspect" do
+    it "# should work
+      (aspect A
+        (before test _
+          ($invoke @values 'push' 'before')
+        )
+      )
+      (class C
+        (init _
+          (@values = [])
+        )
+        (def test _
+          ($invoke @values 'push' 'test')
+        )
+      )
+      (A .apply C)
+      (def c (new C))
+      #(assert ((c .test) == ['before' 'test']))
+      (c .test)
+    " do
+      # @application.parse_and_process(example.description)
+      result = @application.parse_and_process(example.description)
+      result.should == ['before', 'test']
+    end
+  end
 end
