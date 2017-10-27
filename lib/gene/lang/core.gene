@@ -37,6 +37,12 @@
   )
 )
 
+(class Aspect ^^global
+  (method apply target
+    ($invoke self 'apply' target)
+  )
+)
+
 (class Int ^^global
 )
 

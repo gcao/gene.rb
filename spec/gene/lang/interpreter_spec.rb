@@ -1069,9 +1069,12 @@ describe Gene::Lang::Interpreter do
             ($invoke @values 'push' 'test')
           )
         )
-        (assert (((new A) .test) == ['when before' 'test' 'when after']))
+        #(assert (((new A) .test) == ['when before' 'test' 'when after']))
+        ((new A) .test)
       " do
-        @application.parse_and_process(example.description)
+        # @application.parse_and_process(example.description)
+        result = @application.parse_and_process(example.description)
+        result.should == ['when before', 'test', 'when after']
       end
 
       it "# multiple `when`
@@ -1136,18 +1139,15 @@ describe Gene::Lang::Interpreter do
         (init _
           (@values = [])
         )
-        (def test _
+        (method test _
           ($invoke @values 'push' 'test')
         )
       )
       (A .apply C)
       (def c (new C))
-      #(assert ((c .test) == ['before' 'test']))
-      (c .test)
+      (assert ((c .test) == ['before' 'test']))
     " do
-      # @application.parse_and_process(example.description)
-      result = @application.parse_and_process(example.description)
-      result.should == ['before', 'test']
+      @application.parse_and_process(example.description)
     end
   end
 end

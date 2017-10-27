@@ -241,17 +241,17 @@ module Gene::Lang
   # TODO: Support prepend like how Ruby does
   class Module < Object
     attr_accessor :name, :methods, :prop_descriptors, :modules
-    attr_accessor :before_aspects, :after_aspects, :when_aspects
+    attr_accessor :default_aspect, :applied_aspects
+    attr_accessor :advices_for_methods_cache
+
     def initialize name
       super(Class)
-
       set 'name', name
       set 'methods', {}
       set 'prop_descriptors', {}
       set 'modules', []
-      set 'before_aspects', []
-      set 'after_aspects', []
-      set 'when_aspects', []
+      set 'applied_aspects', []
+      set 'advices_for_methods_cache', {}
     end
 
     def method name
@@ -279,47 +279,51 @@ module Gene::Lang
     # before11, before12, after11, after12, when11, when12, before21, before22, after21, after22, when21
     # Then they are processed in a similar way as below
     def handle_method options
-      if options.keys.include?(:aspects)
-        aspect = options[:aspects].shift
-        if aspect
-          aspect.handle_method options
-        else
-          handle_method_without_aspects options
-        end
+      advices = options[:advices]
+      if not advices
+        advices = advices_for_method(options[:method])
+      end
+
+      if advices.empty?
+        handle_method_without_advices options
       else
-        # process before-aspects
-        if before_aspects and before_aspects.size > 0
-          before_aspects.each do |aspect|
-            if aspect.match_method? options[:method]
-              aspect.handle_method options
-            end
-          end
-        end
+        batch = extract_next_batch_of_advices advices
 
-        # process first when-aspect and pass other aspects thru options[:aspects]
-        if when_aspects and when_aspects.size > 0
-          my_when_aspects = when_aspects.clone
-          aspect = my_when_aspects.shift
-          options[:aspects] = my_when_aspects
-          result = aspect.handle_method options
+        if batch.empty?
+          handle_method_without_advices options
         else
-          result = handle_method_without_aspects options
+          options[:advices] = advices
+          handle_method_with_advices batch, options
         end
-
-        # process after-aspects
-        if after_aspects and after_aspects.size > 0
-          after_aspects.each do |aspect|
-            if aspect.match_method? options[:method]
-              aspect.handle_method options
-            end
-          end
-        end
-
-        result
       end
     end
 
-    def handle_method_without_aspects options
+    private
+
+    def handle_method_with_advices batch, options
+      before_advices = batch[:before_advices]
+      before_advices.each do |advice|
+        advice.handle_method options
+      end
+
+      # process first when-advice and pass other advices thru options[:advices]
+      when_advice = batch[:when_advice]
+      if when_advice
+        result = when_advice.handle_method options
+      else
+        result = handle_method options
+      end
+
+      # process after-advices
+      after_advices = batch[:after_advices]
+      after_advices.each do |advice|
+        advice.handle_method options
+      end
+
+      result
+    end
+
+    def handle_method_without_advices options
       method_name = options[:method]
       m = method(method_name)
       if m
@@ -331,8 +335,53 @@ module Gene::Lang
           next_class_or_module.handle_method options
         else
           #TODO: throw error or invoke method_missing
+          raise "Undefined method #{method} for #{options[:self]}"
         end
       end
+    end
+
+    # Return: a clone of cached advices for method
+    def advices_for_method method
+      advices = advices_for_methods_cache[method]
+
+      if not advices
+        advices_for_methods_cache[method] = advices = []
+
+        applied_aspects.each do |aspect|
+          advices.concat aspect.advices_for_method(method)
+        end
+
+        if default_aspect
+          advices.concat default_aspect.advices_for_method(method)
+        end
+      end
+
+      advices.clone
+    end
+
+    def extract_next_batch_of_advices advices
+      before_advices = []
+      after_advices  = []
+      when_advice    = nil
+
+      while not advices.empty?
+        advice = advices.shift
+        if advice.type_is_before?
+          before_advices << advice
+        elsif advice.type_is_after?
+          after_advices << advice
+        elsif advice.type_is_when?
+          when_advice = advice
+          break
+        else
+          raise "Unknown advice: #{advice}"
+        end
+      end
+      {
+        before_advices: before_advices,
+        after_advices:  after_advices,
+        when_advice:   when_advice,
+      }
     end
   end
 
@@ -764,17 +813,38 @@ module Gene::Lang
   class Hash < ::Hash
   end
 
-  class Aspect < Object
+  class Aspect < Class
+    attr_reader :name
     attr_accessor :before_advices, :after_advices, :when_advices
 
-    def initialize
+    def initialize name
       super(Aspect)
+      set 'name', name
       set 'before_advices', []
       set 'after_advices',  []
       set 'when_advices',   []
     end
 
     def apply target
+      target.applied_aspects << self
+    end
+
+    # Return a consolidated array that contains
+    # [before advices..., after advices..., when advices...]
+    def advices_for_method method
+      advices = []
+
+      before_advices.each do |advice|
+        advices << advice if advice.match_method? method
+      end
+      after_advices.each do |advice|
+        advices << advice if advice.match_method? method
+      end
+      when_advices.each do |advice|
+        advices << advice if advice.match_method? method
+      end
+
+      advices
     end
   end
 
@@ -797,11 +867,23 @@ module Gene::Lang
       scope.set_member '$method', options[:method] if options[:method]
       scope.set_member '$arguments', options[:arguments]
       scope.set_member '$hierarchy', options[:hierarchy]
-      scope.set_member '$aspects', options[:aspects]
+      scope.set_member '$advices', options[:advices]
       scope.arguments = Gene::Lang::ArgumentsScope.new options[:arguments], self.args_matcher
 
       new_context = context.extend scope: scope, self: options[:self]
       new_context.process_statements logic
+    end
+
+    def type_is_before?
+      advice_type == 'before'
+    end
+
+    def type_is_after?
+      advice_type == 'after'
+    end
+
+    def type_is_when?
+      advice_type == 'when'
     end
   end
 
