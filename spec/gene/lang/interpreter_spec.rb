@@ -1069,9 +1069,12 @@ describe Gene::Lang::Interpreter do
             ($invoke @values 'push' 'test')
           )
         )
-        (assert (((new A) .test) == ['when before' 'test' 'when after']))
+        #(assert (((new A) .test) == ['when before' 'test' 'when after']))
+        ((new A) .test)
       " do
-        @application.parse_and_process(example.description)
+        # @application.parse_and_process(example.description)
+        result = @application.parse_and_process(example.description)
+        result.should == ['when before', 'test', 'when after']
       end
 
       it "# multiple `when`
@@ -1120,6 +1123,29 @@ describe Gene::Lang::Interpreter do
         )
       )
       (assert (((new A) .test) == ['before' 'when before' 'test' 'when after' 'after']))
+    " do
+      @application.parse_and_process(example.description)
+    end
+  end
+
+  describe "Aspect" do
+    it "# should work
+      (aspect A
+        (before test _
+          ($invoke @values 'push' 'before')
+        )
+      )
+      (class C
+        (init _
+          (@values = [])
+        )
+        (method test _
+          ($invoke @values 'push' 'test')
+        )
+      )
+      (A .apply C)
+      (def c (new C))
+      (assert ((c .test) == ['before' 'test']))
     " do
       @application.parse_and_process(example.description)
     end
