@@ -16,6 +16,7 @@ class Gene::Lang::Repl
 
   def start
     puts "<<<   WELCOME TO GENE LANG   >>>"
+    saved_input = ""
     while input = Readline.readline("GL> ", true)
       begin
         if input.strip == 'exit'
@@ -34,11 +35,17 @@ class Gene::Lang::Repl
           p @context._
           puts
         else # treat input as glang code, parse and execute, store result in _
-          parsed = Gene::Parser.parse input
+          saved_input << input
+          parsed = Gene::Parser.parse saved_input
+
+          # Reset saved input
+          saved_input = ""
           @context._ = @context.process parsed
           p @context._
           puts
         end
+      rescue Gene::PrematureEndError
+        # Do not fail when input is not complete
       rescue
         puts "#{$!.class}: #{$!}"
         puts $!.backtrace.map{|line| "\t#{line}" }.join("\n")
