@@ -48,10 +48,12 @@ class Gene::Lang::Repl
       rescue Gene::PrematureEndError
         # Do not fail when input is not complete
       rescue
+        saved_input = ""
         puts "#{$!.class}: #{$!}"
         puts $!.backtrace.map{|line| "\t#{line}" }.join("\n")
         puts
       rescue RuntimeError
+        saved_input = ""
         puts "#{$!.class}: #{$!}"
         puts $!.backtrace.map{|line| "\t#{line}" }.join("\n")
         puts
