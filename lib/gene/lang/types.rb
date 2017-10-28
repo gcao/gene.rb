@@ -126,7 +126,6 @@ module Gene::Lang
 
     def initialize
       super(Application)
-
       set 'global_namespace', Gene::Lang::Namespace.new('global', nil)
     end
 
@@ -155,6 +154,7 @@ module Gene::Lang
 
   class Context < Object
     attr_accessor :global_namespace, :namespace, :scope, :self
+
     def initialize
       super(Context)
     end
@@ -389,6 +389,7 @@ module Gene::Lang
   # TODO: support meta programming - class_created, class_extended
   class Class < Module
     attr_accessor :parent_class
+
     def initialize name
       super(name)
     end
@@ -429,6 +430,7 @@ module Gene::Lang
 
   class HierarchySearch < Object
     attr_accessor :hierarchy, :index
+
     def initialize(hierarchy)
       super(HierarchySearch)
       set 'hierarchy', hierarchy
@@ -449,9 +451,9 @@ module Gene::Lang
     attr_reader :name
     attr_accessor :parent_scope, :args_matcher, :statements
     attr_accessor :inherit_scope, :eval_arguments
+
     def initialize name
       super(Function)
-
       set 'name', name
       self.inherit_scope  = true # Default inherit_scope to true
       self.eval_arguments = true # Default eval_arguments to true
@@ -480,18 +482,18 @@ module Gene::Lang
 
   class Property < Object
     attr_reader :name, :type, :getter, :setter
+
     def initialize name
       super(Property)
-
       set 'name', name
     end
   end
 
   class PropertyName < Object
     attr_reader :name
+
     def initialize name
       super(PropertyName)
-
       set 'name', name
     end
   end
@@ -546,9 +548,9 @@ module Gene::Lang
 
   class Namespace < Object
     attr_reader :name, :parent, :members, :public_members
+
     def initialize name, parent
       super(Namespace)
-
       set 'name', name
       set 'parent', parent
       set 'members', {}
@@ -772,9 +774,9 @@ module Gene::Lang
   class Variable < Object
     attr_reader :name
     attr_accessor :value
+
     def initialize name, value = nil
       super(Variable)
-
       set 'name', name
       set 'value', value
     end
@@ -782,27 +784,27 @@ module Gene::Lang
 
   class ReturnValue < Object
     attr_reader :value
+
     def initialize value = Gene::UNDEFINED
       super(ReturnValue)
-
       set 'value', value
     end
   end
 
   class BreakValue < Object
     attr_reader :value
+
     def initialize value = Gene::UNDEFINED
       super(BreakValue)
-
       set 'value', value
     end
   end
 
   class Expandable < Object
     attr_reader :value
+
     def initialize value = Gene::UNDEFINED
       super(Expandable)
-
       set 'value', value
     end
   end

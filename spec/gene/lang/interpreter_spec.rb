@@ -771,31 +771,54 @@ describe Gene::Lang::Interpreter do
       result.should be_true
     end
 
-    it "# Loop as a regular function
+    it "# Use `loop` to build `for` as a regular function
+      (fn for-test args...
+        ^!inherit-scope ^!eval-arguments
+        # Do not inherit scope from where it's defined in: equivalent to ^!inherit-scope
+        # Args are not evaluated before passed in: equivalent to ^!eval-arguments
+        #
+        # After evaluation, ReturnValue are returned as is, BreakValue are unwrapped and returned
+        #
+        # initialize
+        (loop
+          # check condition and break if false
+          # process statements
+          # increment
+        )
+      )
+      (def result 0)
+      (for-test (def i 0) (i <= 4) (i += 1)
+        (result += i)
+      )
+      (assert (result == 10))
+    " do
+      pending
+      @application.parse_and_process(example.description)
+    end
+
+    it "# Use `for` to build `loop` as a regular function
       (fn loop-test args...
         ^!inherit-scope ^!eval-arguments
         # Do not inherit scope from where it's defined in: equivalent to ^!inherit-scope
-        # args are not evaluated before passed in: equivalent to ^!eval-arguments
+        # Args are not evaluated before passed in: equivalent to ^!eval-arguments
         #
         # After evaluation, ReturnValue are returned as is, BreakValue are unwrapped and returned
-        (loop
+        (for _ _ _
           (def result ($invoke $caller-context 'process_statements' args))
-          (if (($invoke ($invoke result 'class') 'name') == 'BreakValue')
+          (if (($invoke ($invoke result 'class') 'name') == 'Gene::Lang::BreakValue')
             (return ($invoke result 'value'))
           )
         )
       )
       (def i 0)
-      (
-        (loop-test
+      (assert
+        ((loop-test
           (i += 1)
           (if (i >= 5) (break 100))
-        ) == 100
+        ) == 100)
       )
     " do
-      pending "TODO: fix infinite loop, might be related to variable scope"
-      result = @application.parse_and_process(example.description)
-      result.should be_true
+      @application.parse_and_process(example.description)
     end
   end
 
