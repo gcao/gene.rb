@@ -57,11 +57,28 @@ module Gene::Lang
       @properties.each do |name, value|
         next if name.to_s =~ /^\$/
         next if %W(#class #data).include? name.to_s
+        next if properties_to_hide.include? name.to_s
 
         if value == true
           parts << "^^#{name}"
         elsif value == false
           parts << "^!#{name}"
+        elsif value.is_a? Object
+          parts << "^#{name}" << value.to_s_short
+        elsif value.class.name == "Array"
+          parts << "^#{name}"
+          if value.empty?
+            parts << "[]"
+          else
+            parts << "[...]"
+          end
+        elsif value.class.name == "Hash"
+          parts << "^#{name}"
+          if value.empty?
+            parts << "{}"
+          else
+            parts << "{...}"
+          end
         else
           parts << "^#{name}" << value.inspect
         end
@@ -74,6 +91,16 @@ module Gene::Lang
       "(#{parts.join(' ')})"
     end
     alias inspect to_s
+
+    def to_s_short
+      type = self.class ? self.class.name : Object.name
+      type = type.sub(/^Gene::Lang::/, '')
+      "(#{type}...)"
+    end
+
+    def properties_to_hide
+      []
+    end
 
     def self.attr_reader *names
       names.each do |name|
@@ -252,6 +279,10 @@ module Gene::Lang
       set 'modules', []
       set 'applied_aspects', []
       set 'advices_for_methods_cache', {}
+    end
+
+    def properties_to_hide
+      %w(advices_for_methods_cache)
     end
 
     def method name
