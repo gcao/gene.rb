@@ -15,8 +15,9 @@ class Gene::Lang::Repl
   end
 
   def start
-    puts "<<<   WELCOME TO GENE LANG   >>>"
     saved_input = ""
+
+    puts "<<<   WELCOME TO GENE LANG   >>>"
     while input = Readline.readline("GL> ", true)
       begin
         if input.strip == 'exit'

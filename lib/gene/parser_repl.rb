@@ -4,6 +4,8 @@ class Gene::ParserRepl
   attr_accessor :_
 
   def start
+    saved_input = ""
+
     puts "<<<   WELCOME TO GENE PARSER   >>>"
     while input = Readline.readline("Gene> ", true)
       begin
@@ -23,10 +25,16 @@ class Gene::ParserRepl
           p @_
           puts
         else
-          @_ = Gene::Parser.parse input
+          saved_input << input
+          @_ = Gene::Parser.parse saved_input
+
+          # Reset saved input
+          saved_input = ""
           p @_
           puts
         end
+      rescue Gene::PrematureEndError
+        # Do not fail when input is not complete
       rescue
         puts "#{$!.class}: #{$!}"
         puts $!.backtrace.map{|line| "\t#{line}" }.join("\n")

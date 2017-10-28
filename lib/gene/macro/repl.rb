@@ -8,6 +8,8 @@ class Gene::Macro::Repl
   end
 
   def start
+    saved_input = ""
+
     puts "<<<   WELCOME TO GENE MACROS   >>>"
     while input = Readline.readline("GM> ", true)
       begin
@@ -27,10 +29,16 @@ class Gene::Macro::Repl
           p @interpreter._
           puts
         else
-          @interpreter._ = @interpreter.parse_and_process input
+          saved_input << input
+          @interpreter._ = @interpreter.parse_and_process saved_input
+
+          # Reset saved input
+          saved_input = ""
           p @interpreter._
           puts
         end
+      rescue Gene::PrematureEndError
+        # Do not fail when input is not complete
       rescue
         puts "#{$!.class}: #{$!}"
         puts $!.backtrace.map{|line| "\t#{line}" }.join("\n")
