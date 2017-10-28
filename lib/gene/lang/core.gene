@@ -1,4 +1,7 @@
 (class Object ^^global
+  (init _
+  )
+
   (method get prop-name
     ((@ prop-name))
   )

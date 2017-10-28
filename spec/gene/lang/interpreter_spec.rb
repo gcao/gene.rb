@@ -315,21 +315,18 @@ describe Gene::Lang::Interpreter do
 
     it "# `init` should be inherited
       (class A
+        (prop name)
         (init name
           (@name = name)
-        )
-        (method name _
-          @name
         )
       )
       (class B
         (extend A)
       )
-      (((new B 'test') .name) == 'test')
+      (def b (new B 'test'))
+      (assert ((b .name) == 'test'))
     " do
-      result = @application.parse_and_process(example.description)
-      pending
-      result.should be_true
+      @application.parse_and_process(example.description)
     end
   end
 

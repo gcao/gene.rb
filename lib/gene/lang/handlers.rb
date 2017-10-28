@@ -315,11 +315,19 @@ module Gene::Lang::Handlers
       return Gene::NOT_HANDLED unless NEW === data
       klass = context.process(data.data[0])
       instance = Gene::Lang::Object.new klass
-      if init = klass.methods[INIT.name]
-        args = data.data[1..-1]
-        args = Gene::Lang::Object.from_array(args)
-        init.call context: context, self: instance, arguments: args
-      end
+
+      hierarchy = Gene::Lang::HierarchySearch.new(klass.ancestors)
+      method = INIT.name
+      args = data.data[1..-1].map {|arg| context.process arg }
+      args = Gene::Lang::Object.from_array(args)
+      hierarchy.next.handle_method({
+        hierarchy: hierarchy,
+        method: method,
+        context: context,
+        arguments: args,
+        self: instance
+      })
+
       instance
     end
   end
