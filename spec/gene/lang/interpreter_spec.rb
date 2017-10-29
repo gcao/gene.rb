@@ -8,61 +8,54 @@ describe Gene::Lang::Interpreter do
 
   describe "special built-in variables and functions" do
     it "# $application: the application object which is like the start of the universe
-      (($invoke ($invoke $application 'class') 'name') == 'Gene::Lang::Application')
+      (assert (($invoke ($invoke $application 'class') 'name') == 'Gene::Lang::Application'))
     " do
-      result = @application.parse_and_process(example.description)
-      result.should be_true
+      @application.parse_and_process(example.description)
     end
 
     it "# $context: the current context
-      (($invoke ($invoke $context 'class') 'name') == 'Gene::Lang::Context')
+      (assert (($invoke ($invoke $context 'class') 'name') == 'Gene::Lang::Context'))
     " do
-      result = @application.parse_and_process(example.description)
-      result.should be_true
+      @application.parse_and_process(example.description)
     end
 
     it "# $global: the global namespace object
-      (($invoke ($invoke $global 'class') 'name') == 'Gene::Lang::Namespace')
+      (assert (($invoke ($invoke $global 'class') 'name') == 'Gene::Lang::Namespace'))
     " do
-      result = @application.parse_and_process(example.description)
-      result.should be_true
+      @application.parse_and_process(example.description)
     end
 
     it "# $scope: the current scope object which may or may not inherit from ancestor scopes
       (fn f _
         $scope
       )
-      (($invoke ($invoke (f) 'class') 'name') == 'Gene::Lang::Scope')
+      (assert (($invoke ($invoke (f) 'class') 'name') == 'Gene::Lang::Scope'))
     " do
-      result = @application.parse_and_process(example.description)
-      result.should be_true
+      @application.parse_and_process(example.description)
     end
 
     it "# $function: the current function/method that is being called
       (fn f []
         $function
       )
-      (($invoke ($invoke (f) 'class') 'name') == 'Gene::Lang::Function')
+      (assert (($invoke ($invoke (f) 'class') 'name') == 'Gene::Lang::Function'))
     " do
-      result = @application.parse_and_process(example.description)
-      result.should be_true
+      @application.parse_and_process(example.description)
     end
 
     it "# $arguments: arguments passed to current function
       (fn f []
         $arguments
       )
-      (((f 1 2) .data) == [1 2])
+      (assert (((f 1 2) .data) == [1 2]))
     " do
-      result = @application.parse_and_process(example.description)
-      result.should be_true
+      @application.parse_and_process(example.description)
     end
 
     it "# $invoke: a function that allows invocation of native methods on native objects (this should not be needed if whole interpreter is implemented in Gene Lang)
-      (($invoke 'a' 'length') == 1)
+      (assert (($invoke 'a' 'length') == 1))
     " do
-      result = @application.parse_and_process(example.description)
-      result.should be_true
+      @application.parse_and_process(example.description)
     end
   end
 
@@ -91,10 +84,9 @@ describe Gene::Lang::Interpreter do
         (method f _ self)
       )
       (def a (new A))
-      (((a .f) .class) == A)
+      (assert (((a .f) .class) == A))
     " do
-      result = @application.parse_and_process(example.description)
-      result.should be_true
+      @application.parse_and_process(example.description)
     end
 
     it "# @a: access property `a` directly
@@ -106,10 +98,9 @@ describe Gene::Lang::Interpreter do
           @a
         )
       )
-      (((new A 1) .test) == 1)
+      (assert (((new A 1) .test) == 1))
     " do
-      result = @application.parse_and_process(example.description)
-      result.should be_true
+      @application.parse_and_process(example.description)
     end
 
     it "# (@ a): access dynamic property
@@ -121,10 +112,9 @@ describe Gene::Lang::Interpreter do
           ((@ name))
         )
       )
-      (((new A 'a' 100) .test 'a') == 100)
+      (assert (((new A 'a' 100) .test 'a') == 100))
     " do
-      result = @application.parse_and_process(example.description)
-      result.should be_true
+      @application.parse_and_process(example.description)
     end
 
     it "# Typical usecase
@@ -152,10 +142,9 @@ describe Gene::Lang::Interpreter do
       (def a (new A 1))
 
       # Call method on an instance
-      ((a .test 2) == 4)
+      (assert ((a .test 2) == 4))
     " do
-      result = @application.parse_and_process(example.description)
-      result.should be_true
+      @application.parse_and_process(example.description)
     end
   end
 
@@ -172,20 +161,18 @@ describe Gene::Lang::Interpreter do
       (def a (new A))
       # Property x can be accessed like methods
       (a .x= 'value')
-      ((a .x) == 'value')
+      (assert ((a .x) == 'value'))
     " do
-      result = @application.parse_and_process(example.description)
-      result.should be_true
+      @application.parse_and_process(example.description)
     end
 
     it "# (prop x) will create default getter/setter methods
       (class A (prop x))
       (def a (new A))
       (a .x= 'value')
-      ((a .x) == 'value')
+      (assert ((a .x) == 'value'))
     " do
-      result = @application.parse_and_process(example.description)
-      result.should be_true
+      @application.parse_and_process(example.description)
     end
   end
 
@@ -214,10 +201,9 @@ describe Gene::Lang::Interpreter do
         )
       )
       (def b (new B))
-      ((b .test) == ['A.test' 'B.test'])
+      (assert ((b .test) == ['A.test' 'B.test']))
     " do
-      result = @application.parse_and_process(example.description)
-      result.should be_true
+      @application.parse_and_process(example.description)
     end
   end
 
@@ -226,10 +212,9 @@ describe Gene::Lang::Interpreter do
       (class A)
       (class B)
       (def a (new A))
-      (((cast a B) .class) == B)
+      (assert (((cast a B) .class) == B))
     " do
-      result = @application.parse_and_process(example.description)
-      result.should be_true
+      @application.parse_and_process(example.description)
     end
 
     it "# invoking method on the new class should work
@@ -238,10 +223,9 @@ describe Gene::Lang::Interpreter do
         (method test _ 'test in B')
       )
       (def a (new A))
-      (((cast a B) .test) == 'test in B')
+      (assert (((cast a B) .test) == 'test in B'))
     " do
-      result = @application.parse_and_process(example.description)
-      result.should be_true
+      @application.parse_and_process(example.description)
     end
 
     it "# Modification on casted object will not be lost
@@ -255,10 +239,9 @@ describe Gene::Lang::Interpreter do
       )
       (def a (new A))
       ((cast a B) .test)
-      ((a .name) == 'b')
+      (assert ((a .name) == 'b'))
     " do
-      result = @application.parse_and_process(example.description)
-      result.should be_true
+      @application.parse_and_process(example.description)
     end
   end
 
@@ -271,10 +254,9 @@ describe Gene::Lang::Interpreter do
         (extend A)
       )
       (def b (new B))
-      ((b .testA) == 'testA')
+      (assert ((b .testA) == 'testA'))
     " do
-      result = @application.parse_and_process(example.description)
-      result.should be_true
+      @application.parse_and_process(example.description)
     end
 
     it "# Search method up to the top of class hierarchy
@@ -288,10 +270,9 @@ describe Gene::Lang::Interpreter do
         (extend B)
       )
       (def c (new C))
-      ((c .test) == 'test in A')
+      (assert ((c .test) == 'test in A'))
     " do
-      result = @application.parse_and_process(example.description)
-      result.should be_true
+      @application.parse_and_process(example.description)
     end
 
     it "# `super` will invoke same method in parent class
@@ -307,10 +288,9 @@ describe Gene::Lang::Interpreter do
         )
       )
       (def b (new B))
-      ((b .test 1 2) == 3)
+      (assert ((b .test 1 2) == 3))
     " do
-      result = @application.parse_and_process(example.description)
-      result.should be_true
+      @application.parse_and_process(example.description)
     end
 
     it "# `init` should be inherited
@@ -353,10 +333,9 @@ describe Gene::Lang::Interpreter do
       )
       (def a [])
       (doSomething a)
-      (a == ['doSomething'])
+      (assert (a == ['doSomething']))
     " do
-      result = @application.parse_and_process(example.description)
-      result.should be_true
+      @application.parse_and_process(example.description)
     end
 
     it "# Function parameters are passed by reference: check {}
@@ -365,19 +344,17 @@ describe Gene::Lang::Interpreter do
       )
       (def a {})
       (doSomething a)
-      (($invoke a '[]' 'key') == 'value')
+      (assert (($invoke a '[]' 'key') == 'value'))
     " do
-      result = @application.parse_and_process(example.description)
-      result.should be_true
+      @application.parse_and_process(example.description)
     end
 
     describe "Variable length arguments" do
       it "# In function definition
         (fn doSomething args... args)
-        ((doSomething 1 2) == [1 2])
+        (assert ((doSomething 1 2) == [1 2]))
       " do
-        result = @application.parse_and_process(example.description)
-        result.should be_true
+        @application.parse_and_process(example.description)
       end
 
       it "# In function invocation
@@ -385,10 +362,9 @@ describe Gene::Lang::Interpreter do
           (a + b)
         )
         (def array [1 2])
-        ((doSomething array...) == 3)
+        (assert ((doSomething array...) == 3))
       " do
-        result = @application.parse_and_process(example.description)
-        result.should be_true
+        @application.parse_and_process(example.description)
       end
 
       it "# In both function definition and function invocation
@@ -396,19 +372,17 @@ describe Gene::Lang::Interpreter do
           args
         )
         (def array [1 2])
-        ((doSomething array...) == [1 2])
+        (assert ((doSomething array...) == [1 2]))
       " do
-        result = @application.parse_and_process(example.description)
-        result.should be_true
+        @application.parse_and_process(example.description)
       end
     end
 
     it "# Define and invoke function without arguments
       (fn doSomething _ 1)
-      ((doSomething) == 1)
+      (assert ((doSomething) == 1))
     " do
-      result = @application.parse_and_process(example.description)
-      result.should be_true
+      @application.parse_and_process(example.description)
     end
 
     it "# return nothing
@@ -416,10 +390,9 @@ describe Gene::Lang::Interpreter do
         return
         2
       )
-      ((doSomething) == undefined)
+      (assert ((doSomething) == undefined))
     " do
-      result = @application.parse_and_process(example.description)
-      result.should be_true
+      @application.parse_and_process(example.description)
     end
 
     it "
@@ -428,19 +401,15 @@ describe Gene::Lang::Interpreter do
         (return 1)
         2
       )
-      ((doSomething) == 1)
+      (assert ((doSomething) == 1))
     " do
-      result = @application.parse_and_process(example.description)
-      result.should be_true
+      @application.parse_and_process(example.description)
     end
 
     it "# Invoke function immediately, note the double '(' and ')'
-      (
-        ((fn doSomething _ 1)) == 1
-      )
+      (assert (((fn doSomething _ 1)) == 1))
     " do
-      result = @application.parse_and_process(example.description)
-      result.should be_true
+      @application.parse_and_process(example.description)
     end
 
     it "(fn doSomething a 1)" do
@@ -456,20 +425,18 @@ describe Gene::Lang::Interpreter do
 
     it "# Define and invoke function with one argument
       (fn doSomething a a)
-      ((doSomething 1) == 1)
+      (assert ((doSomething 1) == 1))
     " do
-      result = @application.parse_and_process(example.description)
-      result.should be_true
+      @application.parse_and_process(example.description)
     end
 
     it "# Define and invoke function with multiple arguments
       (fn doSomething [a b]
         (a + b)
       )
-      ((doSomething 1 2) == 3)
+      (assert ((doSomething 1 2) == 3))
     " do
-      result = @application.parse_and_process(example.description)
-      result.should be_true
+      @application.parse_and_process(example.description)
     end
 
     it "# `call` invokes a function with a self, therefore makes the function behave like a method
@@ -480,19 +447,17 @@ describe Gene::Lang::Interpreter do
         (method test arg arg)
       )
       (def a (new A))
-      ((call f a 'value') == 'value') # self: a, arguments: 'value'
+      (assert ((call f a 'value') == 'value')) # self: a, arguments: 'value'
     " do
-      result = @application.parse_and_process(example.description)
-      result.should be_true
+      @application.parse_and_process(example.description)
     end
 
     it "# By default, function will inherit the scope where it is defined (like in JavaScript)
       (def a 1)
       (fn f b (a + b)) # `a` is inherited, `b` is an argument
-      ((f 2) == 3)
+      (assert ((f 2) == 3))
     " do
-      result = @application.parse_and_process(example.description)
-      result.should be_true
+      @application.parse_and_process(example.description)
     end
   end
 
@@ -513,39 +478,33 @@ describe Gene::Lang::Interpreter do
     it "# Function   WILL   inherit the scope where it is defined in
       (def x 1)
       (fn doSomething _ x)
-      ((doSomething) == 1)
+      (assert ((doSomething) == 1))
     " do
-      result = @application.parse_and_process(example.description)
-      result.should be_true
+      @application.parse_and_process(example.description)
     end
   end
 
   describe "fnx - anonymous function" do
     it "# Define and invoke an anonymous function
-      (
-        ((fnx _ 1)) == 1
-      )
+      (assert (((fnx _ 1)) == 1))
     " do
-      result = @application.parse_and_process(example.description)
-      result.should be_true
+      @application.parse_and_process(example.description)
     end
 
     it "# Can be assigned to a variable and invoked later
       (def f (fnx _ 1))
-      ((f) == 1)
+      (assert ((f) == 1))
     " do
-      result = @application.parse_and_process(example.description)
-      result.should be_true
+      @application.parse_and_process(example.description)
     end
   end
 
   describe "fnxx - anonymous dummy function" do
     it "# Can be assigned to a variable and invoked later
       (def f (fnxx 1))
-      ((f) == 1)
+      (assert ((f) == 1))
     " do
-      result = @application.parse_and_process(example.description)
-      result.should be_true
+      @application.parse_and_process(example.description)
     end
   end
 
@@ -563,10 +522,9 @@ describe Gene::Lang::Interpreter do
     it "# `=` should work
       (def a)
       (a = 1)
-      (a == 1)
+      (assert (a == 1))
     " do
-      result = @application.parse_and_process(example.description)
-      result.should be_true
+      @application.parse_and_process(example.description)
     end
   end
 
@@ -599,9 +557,8 @@ describe Gene::Lang::Interpreter do
   end
 
   describe "Binary expression" do
-    it "((1 + 2) == 3)" do
-      result = @application.parse_and_process(example.description)
-      result.should be_true
+    it "(assert ((1 + 2) == 3))" do
+      @application.parse_and_process(example.description)
     end
   end
 
@@ -624,84 +581,74 @@ describe Gene::Lang::Interpreter do
 
     it "# Define and use variable
       (def a 1)
-      ((a + 2) == 3)
+      (assert ((a + 2) == 3))
     " do
-      result = @application.parse_and_process(example.description)
-      result.should be_true
+      @application.parse_and_process(example.description)
     end
 
     it "# Use multiple variables in one expression
       (def a 1)
       (def b 2)
-      ((a + b) == 3)
+      (assert ((a + b) == 3))
     " do
-      result = @application.parse_and_process(example.description)
-      result.should be_true
+      @application.parse_and_process(example.description)
     end
   end
 
   describe "do" do
     it "# returns result of last expression
-      (
-        (do (def i 1)(i + 2)) == 3
+      (assert
+        ((do (def i 1)(i + 2)) == 3)
       )
     " do
-      result = @application.parse_and_process(example.description)
-      result.should be_true
+      @application.parse_and_process(example.description)
     end
   end
 
   describe "if" do
     it "# condition evaluates to true
-      ((if true 1 2) == 1)
+      (assert ((if true 1 2) == 1))
     " do
-      result = @application.parse_and_process(example.description)
-      result.should be_true
+      @application.parse_and_process(example.description)
     end
 
     it "# condition evaluates to true
-      ((if true [1 2] 2) == [1 2])
+      (assert ((if true [1 2] 2) == [1 2]))
     " do
-      result = @application.parse_and_process(example.description)
-      result.should be_true
+      @application.parse_and_process(example.description)
     end
 
     it "# condition evaluates to true
-      (
-        (if true
+      (assert
+        ((if true
           (do (def a 1)(a + 2))
           2
-        ) == 3
+        ) == 3)
       )
     " do
-      result = @application.parse_and_process(example.description)
-      result.should be_true
+      @application.parse_and_process(example.description)
     end
 
     it "# condition evaluates to false
-      ((if false 1 2) == 2)
+      (assert ((if false 1 2) == 2))
     " do
-      result = @application.parse_and_process(example.description)
-      result.should be_true
+      @application.parse_and_process(example.description)
     end
 
     it "# condition evaluates to false
-      ((if false 1 [1 2]) == [1 2])
+      (assert ((if false 1 [1 2]) == [1 2]))
     " do
-      result = @application.parse_and_process(example.description)
-      result.should be_true
+      @application.parse_and_process(example.description)
     end
   end
 
   describe "if-not" do
-    it "((if-not true 1 2) == 2)" do
-      result = @application.parse_and_process(example.description)
-      result.should be_true
+    it "(assert ((if-not true 1 2) == 2))" do
+      @application.parse_and_process(example.description)
     end
 
-    it "((if-not false 1 2) == 1)" do
-      result = @application.parse_and_process(example.description)
-      result.should be_true
+    it "(assert ((if-not false 1 2) == 1))" do
+      @application.parse_and_process(example.description)
     end
   end
 
@@ -714,10 +661,9 @@ describe Gene::Lang::Interpreter do
       (for (def i 0)(i < 5)(i += 1)
         (result += i)
       )
-      (result == 10)
+      (assert (result == 10))
     " do
-      result = @application.parse_and_process(example.description)
-      result.should be_true
+      @application.parse_and_process(example.description)
     end
 
     it "# break from the for-loop
@@ -726,10 +672,9 @@ describe Gene::Lang::Interpreter do
         (if (i >= 5) break)
         (result += i)
       )
-      (result == 10)
+      (assert (result == 10))
     " do
-      result = @application.parse_and_process(example.description)
-      result.should be_true
+      @application.parse_and_process(example.description)
     end
 
     it "# return from for-loop ?!
@@ -738,10 +683,9 @@ describe Gene::Lang::Interpreter do
         (if (i >= 5) return)
         (result += i)
       )
-      (result == 10)
+      (assert (result == 10))
     " do
-      result = @application.parse_and_process(example.description)
-      result.should be_true
+      @application.parse_and_process(example.description)
     end
   end
 
@@ -752,38 +696,43 @@ describe Gene::Lang::Interpreter do
         (i += 1)
         (if (i >= 5) break)
       )
-      (i == 5)
+      (assert (i == 5))
     " do
-      result = @application.parse_and_process(example.description)
-      result.should be_true
+      @application.parse_and_process(example.description)
     end
 
     it "# return value passed to `break`
       (def i 0)
-      (
-        (loop
+      (assert
+        ((loop
           (i += 1)
           (if (i >= 5) (break 100))
-        ) == 100
+        ) == 100)
       )
     " do
-      result = @application.parse_and_process(example.description)
-      result.should be_true
+      @application.parse_and_process(example.description)
     end
 
     it "# Use `loop` to build `for` as a regular function
-      (fn for-test args...
+      (fn for-test [init cond update stmts...]
         ^!inherit-scope ^!eval-arguments
         # Do not inherit scope from where it's defined in: equivalent to ^!inherit-scope
         # Args are not evaluated before passed in: equivalent to ^!eval-arguments
         #
         # After evaluation, ReturnValue are returned as is, BreakValue are unwrapped and returned
-        #
-        # initialize
+        ($invoke $caller-context 'process_statements' init)
         (loop
           # check condition and break if false
-          # process statements
-          # increment
+          (def result ($invoke $caller-context 'process_statements' cond))
+          (if (($invoke ($invoke result 'class') 'name') == 'Gene::Lang::BreakValue')
+            (return ($invoke result 'value'))
+          )
+          (if-not result
+            return
+          )
+
+          ($invoke $caller-context 'process_statements' stmts)
+          ($invoke $caller-context 'process_statements' update)
         )
       )
       (def result 0)
@@ -792,7 +741,6 @@ describe Gene::Lang::Interpreter do
       )
       (assert (result == 10))
     " do
-      pending
       @application.parse_and_process(example.description)
     end
 
@@ -823,24 +771,21 @@ describe Gene::Lang::Interpreter do
   end
 
   describe "noop - no operation, do nothing and return undefined" do
-    it "(noop == undefined)" do
-      result = @application.parse_and_process(example.description)
-      result.should be_true
+    it "(assert (noop == undefined))" do
+      @application.parse_and_process(example.description)
     end
   end
 
   describe "_ is a placeholder, is equivalent to undefined" do
     it "# Putting _ at the place of arguments will not create an argument named `_`
       (fn f _ _)
-      ((f 1) == undefined)
+      (assert ((f 1) == undefined))
     " do
-      result = @application.parse_and_process(example.description)
-      result.should be_true
+      @application.parse_and_process(example.description)
     end
 
-    it "((if true _ 1) == undefined)" do
-      result = @application.parse_and_process(example.description)
-      result.should be_true
+    it "(assert ((if true _ 1) == undefined))" do
+      @application.parse_and_process(example.description)
     end
 
     it "# _ can be used in for-loop as placeholder
@@ -851,10 +796,9 @@ describe Gene::Lang::Interpreter do
         (sum += i)
         (i += 1)
       )
-      (sum == 10)
+      (assert (sum == 10))
     " do
-      result = @application.parse_and_process(example.description)
-      result.should be_true
+      @application.parse_and_process(example.description)
     end
   end
 
@@ -863,10 +807,9 @@ describe Gene::Lang::Interpreter do
       (ns a
         (class C)
       )
-      ((a/C .name) == 'C')
+      (assert ((a/C .name) == 'C'))
     " do
-      result = @application.parse_and_process(example.description)
-      result.should be_true
+      @application.parse_and_process(example.description)
     end
 
     it "# Namespace and members can be referenced from nested scope
@@ -878,10 +821,9 @@ describe Gene::Lang::Interpreter do
           (a/C .name)
         )
       )
-      (((new B) .test) == 'C')
+      (assert (((new B) .test) == 'C'))
     " do
-      result = @application.parse_and_process(example.description)
-      result.should be_true
+      @application.parse_and_process(example.description)
     end
   end
 
@@ -893,10 +835,9 @@ describe Gene::Lang::Interpreter do
       )
       +add_to_members
       (fn test)
-      (members == ['test'])
+      (assert (members == ['test']))
     " do
-      result = @application.parse_and_process(example.description)
-      result.should be_true
+      @application.parse_and_process(example.description)
     end
 
     it "# can be chained
@@ -908,10 +849,9 @@ describe Gene::Lang::Interpreter do
       +add_to_members
       +add_to_members
       (fn test)
-      (members == ['test' 'test'])
+      (assert (members == ['test' 'test']))
     " do
-      result = @application.parse_and_process(example.description)
-      result.should be_true
+      @application.parse_and_process(example.description)
     end
 
     it "# should work inside ()
@@ -923,10 +863,9 @@ describe Gene::Lang::Interpreter do
         +add_to_members
         (fn test)
       )
-      (a/members == ['test'])
+      (assert (a/members == ['test']))
     " do
-      result = @application.parse_and_process(example.description)
-      result.should be_true
+      @application.parse_and_process(example.description)
     end
 
     it "# should work inside []
@@ -934,10 +873,9 @@ describe Gene::Lang::Interpreter do
         (x + 1)
       )
       (def a [+increment 1])
-      (a == [2])
+      (assert (a == [2]))
     " do
-      result = @application.parse_and_process(example.description)
-      result.should be_true
+      @application.parse_and_process(example.description)
     end
 
     it "# decorator can be invoked with arguments
@@ -1089,12 +1027,9 @@ describe Gene::Lang::Interpreter do
             ($invoke @values 'push' 'test')
           )
         )
-        #(assert (((new A) .test) == ['when before' 'test' 'when after']))
-        ((new A) .test)
+        (assert (((new A) .test) == ['when before' 'test' 'when after']))
       " do
-        # @application.parse_and_process(example.description)
-        result = @application.parse_and_process(example.description)
-        result.should == ['when before', 'test', 'when after']
+        @application.parse_and_process(example.description)
       end
 
       it "# multiple `when`

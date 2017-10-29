@@ -250,11 +250,15 @@ module Gene::Lang
       result = Gene::UNDEFINED
       return result if statements.nil?
 
-      statements.each do |stmt|
-        result = process stmt
-        if result.is_a?(Gene::Lang::ReturnValue) or result.is_a?(Gene::Lang::BreakValue)
-          break
+      if statements.class.name == "Array"
+        statements.each do |stmt|
+          result = process stmt
+          if result.is_a?(Gene::Lang::ReturnValue) or result.is_a?(Gene::Lang::BreakValue)
+            break
+          end
         end
+      else
+        result = process statements
       end
 
       result
@@ -372,6 +376,9 @@ module Gene::Lang
     end
 
     # Return: a clone of cached advices for method
+    # TODO: there is a bug related to the order of advices
+    # Write a test with two aspects, each contains only before & after advices
+    # Make sure the output is in correct order
     def advices_for_method method
       advices = advices_for_methods_cache[method]
 
