@@ -159,6 +159,7 @@ module Gene::Lang
     def create_root_context
       context = Context.new
       context.application = self
+      context.global_namespace = global_namespace
       # Create an anonymous namespace
       context.self = context.namespace = Gene::Lang::Namespace.new(nil, global_namespace)
       context

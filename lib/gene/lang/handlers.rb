@@ -14,6 +14,7 @@ module Gene::Lang::Handlers
     PUBLIC PRIVATE
     IF IF_NOT
     FOR LOOP
+    THROW CATCH
     BREAK
     PRINT PRINTLN
     ASSERT DEBUG
@@ -787,6 +788,15 @@ module Gene::Lang::Handlers
         error << expr.to_s
         raise error
       end
+    end
+  end
+
+  class ExceptionHandler
+    def call context, data
+      return Gene::NOT_HANDLED unless THROW === data
+
+      error = context.process data.data[0]
+      raise error
     end
   end
 

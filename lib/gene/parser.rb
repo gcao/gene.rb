@@ -1,5 +1,7 @@
 require 'strscan'
 
+# This is copied and modified from the pure Ruby JSON parser that can be found on below page
+# https://github.com/flori/json/blob/master/lib/json/pure/parser.rb
 module Gene
   class Parser < StringScanner
     SEPARATOR             = /[\s()\[\]{},;]/

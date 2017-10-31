@@ -395,8 +395,7 @@ describe Gene::Lang::Interpreter do
       @application.parse_and_process(example.description)
     end
 
-    it "
-      # return something
+    it "# return something
       (fn doSomething _
         (return 1)
         2
@@ -898,6 +897,106 @@ describe Gene::Lang::Interpreter do
         (assert ((.class) == Object))
       )
     " do
+      @application.parse_and_process(example.description)
+    end
+  end
+
+  describe "Exception" do
+    it "(throw 'some error')" do
+      lambda {
+        @application.parse_and_process(example.description)
+      }.should raise_error('some error')
+    end
+
+    it "# catch (will inherit scope etc)
+      (catch
+        ^Exception (fnx e (result = 'Exception'))
+        ^default   (fnx e (result = 'default'))
+        (def result)
+        (throw 'some error')
+      )
+      (assert (result == 'Exception'))
+    " do
+      pending
+      @application.parse_and_process(example.description)
+    end
+
+    it "# catch default (won't catch runtime error)
+      (catch
+        ^default   (fnx e (result = 'default'))
+        (def result)
+        (throw 'some error')
+      )
+      (assert (result == 'default'))
+    " do
+      pending
+      @application.parse_and_process(example.description)
+    end
+
+    it "# catch default (won't catch runtime error)
+      (catch
+        ^default (fnx e (result = 'default'))
+        (def result)
+        (throw RuntimeError 'some error')
+      )
+    " do
+      pending
+      lambda {
+        @application.parse_and_process(example.description)
+      }.should raise_error('some error')
+    end
+
+    it "# ensure
+      (catch
+        ^default (fnx e (a = 'default'))
+        ^ensure ()
+        (def a)
+        (throw RuntimeError 'some error')
+      )
+    " do
+      pending
+      lambda {
+        @application.parse_and_process(example.description)
+      }.should raise_error('some error')
+    end
+
+    it "# do...catch
+      (def result)
+      (do
+        ^catch {
+          ^Exception (fnx e (result = 'Exception'))
+        }
+        (throw 'some error')
+      )
+      (assert (result == 'Exception'))
+    " do
+      pending
+      @application.parse_and_process(example.description)
+    end
+
+    it "# do...catch default
+      (def result)
+      (do
+        ^catch (fnx e (result = (e .message)))
+        (throw 'some error')
+      )
+      (assert (result == 'some error'))
+    " do
+      pending
+      @application.parse_and_process(example.description)
+    end
+
+    it "# fn...catch: the callback should run in the context of function
+      (fn
+        ^catch {
+          ^Exception (fnx e (result = 'Exception'))
+        }
+        (def result)
+        (throw 'some error')
+      )
+      (assert (result == 'Exception'))
+    " do
+      pending
       @application.parse_and_process(example.description)
     end
   end
