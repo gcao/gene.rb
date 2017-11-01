@@ -793,10 +793,31 @@ module Gene::Lang::Handlers
 
   class ExceptionHandler
     def call context, data
-      return Gene::NOT_HANDLED unless THROW === data
+      return Gene::NOT_HANDLED unless THROW === data or CATCH === data
 
-      error = context.process data.data[0]
-      raise error
+      if THROW === data
+        # TODO: translate exception between Gene and Ruby
+        error = context.process data.data[0]
+        raise Exception, error
+      else
+        begin
+          context.process data.data
+        rescue Exception => exception
+          handled = false
+
+          data.properties.each do |key, value|
+            p exception.class.name
+            if exception.class.name == key or (key == 'default' and exception.is_a?(Exception))
+              handled = true
+              handler = context.process value
+              handler.call context: context, args: [exception]
+              break
+            end
+          end
+
+          raise exception if not handled
+        end
+      end
     end
   end
 

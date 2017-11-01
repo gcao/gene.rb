@@ -917,13 +917,12 @@ describe Gene::Lang::Interpreter do
       )
       (assert (result == 'Exception'))
     " do
-      pending
       @application.parse_and_process(example.description)
     end
 
     it "# catch default (won't catch runtime error)
       (catch
-        ^default   (fnx e (result = 'default'))
+        ^default (fnx e (result = 'default'))
         (def result)
         (throw 'some error')
       )
