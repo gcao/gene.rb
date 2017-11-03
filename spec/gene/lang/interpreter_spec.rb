@@ -920,7 +920,7 @@ describe Gene::Lang::Interpreter do
       @application.parse_and_process(example.description)
     end
 
-    it "# catch default (won't catch runtime error)
+    it "# catch default
       (catch
         ^default (fnx e (result = 'default'))
         (def result)
@@ -928,15 +928,14 @@ describe Gene::Lang::Interpreter do
       )
       (assert (result == 'default'))
     " do
-      pending
       @application.parse_and_process(example.description)
     end
 
-    it "# catch default (won't catch runtime error)
+    it "# catch default - won't catch Error
       (catch
         ^default (fnx e (result = 'default'))
         (def result)
-        (throw RuntimeError 'some error')
+        (throw Error 'some error')
       )
     " do
       pending
@@ -946,17 +945,15 @@ describe Gene::Lang::Interpreter do
     end
 
     it "# ensure
+      (def a)
       (catch
-        ^default (fnx e (a = 'default'))
-        ^ensure ()
-        (def a)
-        (throw RuntimeError 'some error')
+        ^default (fnxx)
+        ^ensure  (fnxx (a = 'ensure'))
+        (throw 'some error')
       )
+      (assert (a == 'ensure'))
     " do
-      pending
-      lambda {
-        @application.parse_and_process(example.description)
-      }.should raise_error('some error')
+      @application.parse_and_process(example.description)
     end
 
     it "# do...catch

@@ -646,7 +646,7 @@ module Gene::Lang
     end
 
     def defined? name
-      matcher.defined? name
+      matcher and matcher.defined?(name)
     end
 
     def get_member name

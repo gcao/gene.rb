@@ -806,13 +806,20 @@ module Gene::Lang::Handlers
           handled = false
 
           data.properties.each do |key, value|
-            p exception.class.name
+            next if key == 'ensure'
+
             if exception.class.name == key or (key == 'default' and exception.is_a?(Exception))
               handled = true
               handler = context.process value
               handler.call context: context, args: [exception]
               break
             end
+          end
+
+          ensure_cb = data.properties['ensure']
+          if ensure_cb
+            function = context.process ensure_cb
+            function.call context: context, args: []
           end
 
           raise exception if not handled
