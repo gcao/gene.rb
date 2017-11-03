@@ -36,7 +36,7 @@ class Gene::Lang::Repl
           p @context._
           puts
         else # treat input as glang code, parse and execute, store result in _
-          saved_input << input
+          saved_input << input << " "
           parsed = Gene::Parser.parse saved_input
 
           # Reset saved input

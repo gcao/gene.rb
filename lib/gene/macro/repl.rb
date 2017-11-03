@@ -29,7 +29,7 @@ class Gene::Macro::Repl
           p @interpreter._
           puts
         else
-          saved_input << input
+          saved_input << input << " "
           @interpreter._ = @interpreter.parse_and_process saved_input
 
           # Reset saved input

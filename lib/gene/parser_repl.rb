@@ -25,7 +25,7 @@ class Gene::ParserRepl
           p @_
           puts
         else
-          saved_input << input
+          saved_input << input << " "
           @_ = Gene::Parser.parse saved_input
 
           # Reset saved input
