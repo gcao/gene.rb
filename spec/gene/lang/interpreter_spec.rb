@@ -250,8 +250,7 @@ describe Gene::Lang::Interpreter do
       (class A
         (method testA _ 'testA')
       )
-      (class B
-        (extend A)
+      (class B extend A
       )
       (def b (new B))
       (assert ((b .testA) == 'testA'))
@@ -938,7 +937,6 @@ describe Gene::Lang::Interpreter do
         (throw Error 'some error')
       )
     " do
-      pending
       lambda {
         @application.parse_and_process(example.description)
       }.should raise_error('some error')

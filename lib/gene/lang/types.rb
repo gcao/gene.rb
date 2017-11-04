@@ -148,6 +148,15 @@ module Gene::Lang
     end
   end
 
+  class ThrownException < Object
+    attr_accessor :exception
+
+    def initialize exception
+      super(ThrownException)
+      set 'exception', exception
+    end
+  end
+
   class Application < Object
     attr_accessor :global_namespace
 
@@ -254,7 +263,9 @@ module Gene::Lang
       if statements.class.name == "Array"
         statements.each do |stmt|
           result = process stmt
-          if result.is_a?(Gene::Lang::ReturnValue) or result.is_a?(Gene::Lang::BreakValue)
+          if (result.is_a?(Gene::Lang::ReturnValue) or
+              result.is_a?(Gene::Lang::BreakValue) or
+              result.is_a?(Gene::Lang::ThrownException))
             break
           end
         end

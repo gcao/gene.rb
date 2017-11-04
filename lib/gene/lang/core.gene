@@ -46,6 +46,19 @@
   )
 )
 
+(class Throwable ^^global
+  (prop message)
+)
+
+(class Exception ^^global
+  (extend Throwable)
+)
+
+# Fatal errors
+(class Error ^^global
+  (extend Throwable)
+)
+
 (class Int ^^global
 )
 

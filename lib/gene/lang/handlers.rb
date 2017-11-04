@@ -170,11 +170,17 @@ module Gene::Lang::Handlers
       name  = data.data[0].to_s
       klass = Gene::Lang::Class.new name
 
+      stmts_start_index = 1
+      if data.data[1] == EXTEND
+        stmts_start_index += 2
+        klass.parent_class = context.process data.data[2]
+      end
+
       scope = Gene::Lang::Scope.new nil, false
       new_context = context.extend scope: scope, self: klass
       # TODO: check whether Object class is defined.
       # If yes, and the newly defined class isn't Object and doesn't have a parent class, set Object as its parent class
-      new_context.process_statements data.data[1..-1] || []
+      new_context.process_statements data.data[stmts_start_index..-1] || []
       if data['global']
         context.set_global name, klass
       else
@@ -796,22 +802,32 @@ module Gene::Lang::Handlers
       return Gene::NOT_HANDLED unless THROW === data or CATCH === data
 
       if THROW === data
-        # TODO: translate exception between Gene and Ruby
-        error = context.process data.data[0]
-        raise Exception, error
+        klass = context.process data.data[0]
+        if klass.is_a?(Gene::Lang::Class) and klass.ancestors.include?(context.get_member('Throwable'))
+          if data.data.length > 1
+            message = context.process data.data[1]
+          end
+        else
+          message = klass
+          klass = context.get_member('Exception')
+        end
+
+        exception = Gene::Lang::Object.new klass
+        exception.set 'message', message
+        Gene::Lang::ThrownException.new exception
       else
-        begin
-          context.process data.data
-        rescue Exception => exception
+        result = context.process_statements data.data
+        if result.is_a? Gene::Lang::ThrownException
+          exception = result.get 'exception'
           handled = false
 
           data.properties.each do |key, value|
             next if key == 'ensure'
 
-            if exception.class.name == key or (key == 'default' and exception.is_a?(Exception))
+            if exception.class.name == key or (key == 'default' and exception.class.name == 'Exception')
               handled = true
               handler = context.process value
-              handler.call context: context, args: [exception]
+              result = handler.call context: context, args: [exception]
               break
             end
           end
@@ -821,9 +837,9 @@ module Gene::Lang::Handlers
             function = context.process ensure_cb
             function.call context: context, args: []
           end
-
-          raise exception if not handled
         end
+
+        result
       end
     end
   end
