@@ -27,7 +27,7 @@ class Gene::Lang::Interpreter
     @handlers.add 100, Gene::Lang::Handlers::DefHandler.new
     @handlers.add 100, Gene::Lang::Handlers::AssignmentHandler.new
     @handlers.add 100, Gene::Lang::Handlers::IfHandler.new
-    @handlers.add 100, Gene::Lang::Handlers::ForHandler.new
+    # @handlers.add 100, Gene::Lang::Handlers::ForHandler.new
     @handlers.add 100, Gene::Lang::Handlers::LoopHandler.new
     @handlers.add 100, Gene::Lang::Handlers::NewHandler.new
     @handlers.add 100, Gene::Lang::Handlers::CallHandler.new

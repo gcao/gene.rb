@@ -199,8 +199,11 @@ module Gene::Lang::Handlers
         name = data.data[next_index].to_s
         next_index += 1
         fn   = Gene::Lang::Function.new name
-        # context.scope.set_member name, fn
-        context.define name, fn
+        if data['global']
+          context.set_global name, fn
+        else
+          context.define name, fn
+        end
       else
         name = ''
         fn   = Gene::Lang::Function.new name
@@ -640,15 +643,18 @@ module Gene::Lang::Handlers
   # Same as (if cond true_logic (if cond2 true_logic else_logic))
   class IfHandler
     def call context, data
-      return Gene::NOT_HANDLED unless IF === data or IF_NOT === data
+      # return Gene::NOT_HANDLED unless IF === data or IF_NOT === data
+      return Gene::NOT_HANDLED unless IF === data
 
       condition   = data.data[0]
       true_logic  = data.data[1]
       false_logic = data.data[2]
       if context.process condition
-        logic = IF === data ? true_logic : false_logic
+        # logic = IF === data ? true_logic : false_logic
+        logic = true_logic
       else
-        logic = IF === data ? false_logic : true_logic
+        # logic = IF === data ? false_logic : true_logic
+        logic = false_logic
       end
       context.process logic
     end

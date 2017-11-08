@@ -1,3 +1,41 @@
+(fn if-not [cond stmt]
+  ^^global
+  (if ($invoke $caller-context 'process_statements' cond)
+    _
+    stmt
+  )
+)
+
+(fn for [init cond update stmts...]
+  ^^global
+  ^!inherit-scope ^!eval-arguments
+  # Do not inherit scope from where it's defined in: equivalent to ^!inherit-scope
+  # Args are not evaluated before passed in: equivalent to ^!eval-arguments
+  #
+  # After evaluation, ReturnValue are returned as is, BreakValue are unwrapped and returned
+  ($invoke $caller-context 'process_statements' init)
+  (loop
+    # check condition and break if false
+    (def cond-result ($invoke $caller-context 'process_statements' cond))
+    (if-not cond-result
+      return
+    )
+
+    # execuate statements
+    (def result ($invoke $caller-context 'process_statements' stmts))
+    # check result
+    (if (($invoke ($invoke result 'class') 'name') == 'Gene::Lang::BreakValue')
+      return
+    )
+    (if (($invoke ($invoke result 'class') 'name') == 'Gene::Lang::ReturnValue')
+      (return result)
+    )
+
+    # update
+    ($invoke $caller-context 'process_statements' update)
+  )
+)
+
 (class Object ^^global
   (init _
   )
