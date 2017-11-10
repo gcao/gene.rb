@@ -603,7 +603,21 @@ describe Gene::Lang::Interpreter do
     end
   end
 
-  describe "if" do
+  describe "if
+    # TODO:
+    # (if cond ...)
+    # (if cond then ... else ...)     -> then is optional
+    # (if cond ... else if cond ...)
+    # (if cond ... else if cond ... else ...)
+    # better formatted to something like
+    # (if cond
+    #   ...
+    # else if cond
+    #   ...
+    # else
+    #   ...
+    # )
+  " do
     it "# condition evaluates to true
       (assert ((if true 1 2) == 1))
     " do
@@ -641,11 +655,11 @@ describe Gene::Lang::Interpreter do
   end
 
   describe "if-not" do
-    it "(assert ((if-not true 1 2) == 2))" do
+    it "(assert ((if-not true 1 2) == undefined))" do
       @application.parse_and_process(example.description)
     end
 
-    it "(assert ((if-not false 1 2) == 1))" do
+    it "(assert ((if-not false 1 2) == 2))" do
       @application.parse_and_process(example.description)
     end
   end

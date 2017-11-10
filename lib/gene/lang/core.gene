@@ -1,8 +1,8 @@
-(fn if-not [cond stmt]
+(fn if-not [cond stmts...]
   ^^global
   (if ($invoke $caller-context 'process_statements' cond)
     _
-    stmt
+    (return ($invoke $caller-context 'process_statements' stmts))
   )
 )
 
