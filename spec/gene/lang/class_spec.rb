@@ -17,7 +17,7 @@ describe "Class" do
 
     it "
       (class A)
-      (class B (extend A))
+      (class B extend A)
       ((B .is_sub_class A) == true)
     " do
       result = @application.parse_and_process(example.description)
@@ -35,8 +35,8 @@ describe "Class" do
 
     it "
       (class A)
-      (class B (extend A))
-      (class C (extend B))
+      (class B extend A)
+      (class C extend B)
       ((C .is_sub_class A) == true)
     " do
       result = @application.parse_and_process(example.description)

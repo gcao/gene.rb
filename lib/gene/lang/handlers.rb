@@ -242,17 +242,6 @@ module Gene::Lang::Handlers
     end
   end
 
-  class ExtendHandler
-    def call context, data
-      return Gene::NOT_HANDLED unless EXTEND === data
-
-      klass = context.process data.data[0]
-      # TODO: if the parent class is Object, replace it with klass
-      context.self.parent_class = klass
-      Gene::UNDEFINED
-    end
-  end
-
   class IncludeHandler
     def call context, data
       return Gene::NOT_HANDLED unless INCLUDE === data

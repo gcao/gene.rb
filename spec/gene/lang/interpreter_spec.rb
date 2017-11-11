@@ -189,8 +189,7 @@ describe Gene::Lang::Interpreter do
         (include M)
       )
       (module O)
-      (class B
-        (extend A)
+      (class B extend A
         (include N)
         (include O)
         (init _ (@value = []))
@@ -262,11 +261,9 @@ describe Gene::Lang::Interpreter do
       (class A
         (method test _ 'test in A')
       )
-      (class B
-        (extend A)
+      (class B extend A
       )
-      (class C
-        (extend B)
+      (class C extend B
       )
       (def c (new C))
       (assert ((c .test) == 'test in A'))
@@ -280,8 +277,7 @@ describe Gene::Lang::Interpreter do
           (a + b)
         )
       )
-      (class B
-        (extend A)
+      (class B extend A
         (method test [a b]
           (super a b)
         )
@@ -299,8 +295,7 @@ describe Gene::Lang::Interpreter do
           (@name = name)
         )
       )
-      (class B
-        (extend A)
+      (class B extend A
       )
       (def b (new B 'test'))
       (assert ((b .name) == 'test'))

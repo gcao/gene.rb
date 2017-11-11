@@ -15,7 +15,6 @@ class Gene::Lang::Interpreter
     @handlers.add 100, Gene::Lang::Handlers::PropHandler.new
     @handlers.add 100, Gene::Lang::Handlers::ModuleHandler.new
     @handlers.add 100, Gene::Lang::Handlers::ClassHandler.new
-    @handlers.add 100, Gene::Lang::Handlers::ExtendHandler.new
     @handlers.add 100, Gene::Lang::Handlers::IncludeHandler.new
     @handlers.add 100, Gene::Lang::Handlers::PropHandler.new
     @handlers.add 100, Gene::Lang::Handlers::MethodHandler.new

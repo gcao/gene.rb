@@ -94,13 +94,13 @@
   (prop message)
 )
 
-(class Exception ^^global
-  (extend Throwable)
+(class Exception extend Throwable
+  ^^global
 )
 
 # Fatal errors
-(class Error ^^global
-  (extend Throwable)
+(class Error extend Throwable
+  ^^global
 )
 
 (class Int ^^global
