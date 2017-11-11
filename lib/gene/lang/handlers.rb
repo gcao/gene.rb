@@ -5,6 +5,7 @@ module Gene::Lang::Handlers
     MODULE INCLUDE
     EXTEND SUPER
     SELF WITH
+    SCOPE
     FN FNX FNXX
     RETURN
     CALL DO
@@ -28,7 +29,7 @@ module Gene::Lang::Handlers
   APPLICATION = Gene::Types::Symbol.new('$application')
   CONTEXT     = Gene::Types::Symbol.new('$context')
   GLOBAL      = Gene::Types::Symbol.new('$global')
-  SCOPE       = Gene::Types::Symbol.new('$scope')
+  CURRENT_SCOPE = Gene::Types::Symbol.new('$scope')
   INVOKE      = Gene::Types::Symbol.new('$invoke')
 
   REPL        = Gene::Types::Symbol.new('open-repl')
@@ -69,7 +70,9 @@ module Gene::Lang::Handlers
         elsif DO === data
           context.process_statements data.data
         elsif RETURN === data
-          Gene::Lang::ReturnValue.new context.process(data.data[0])
+          result = Gene::Lang::ReturnValue.new context.process(data.data[0])
+          result.context = context
+          result
         elsif BREAK === data
           Gene::Lang::BreakValue.new context.process(data.data[0])
         elsif REPL === data
@@ -100,14 +103,16 @@ module Gene::Lang::Handlers
       elsif data == BREAK
         Gene::Lang::BreakValue.new
       elsif data == RETURN
-        Gene::Lang::ReturnValue.new
+        result = Gene::Lang::ReturnValue.new
+        result.context = context
+        result
       elsif data == APPLICATION
         context.application
       elsif data == CONTEXT
         context
       elsif data == GLOBAL
         context.application.global_namespace
-      elsif data == SCOPE
+      elsif data == CURRENT_SCOPE
         context.scope
       elsif data == SELF
         context.self
@@ -458,6 +463,12 @@ module Gene::Lang::Handlers
         context.get_member("Class")
       elsif obj.class == Gene::Lang::Object
         context.get_member("Object")
+      elsif obj.class == Gene::Lang::Context
+        context.get_member("Context")
+      elsif obj.class == Gene::Lang::BreakValue
+        context.get_member("BreakValue")
+      elsif obj.class == Gene::Lang::ReturnValue
+        context.get_member("ReturnValue")
       else
         obj.class
       end
@@ -764,6 +775,26 @@ module Gene::Lang::Handlers
 
       result = Gene::UNDEFINED
       data.data[1..-1].each do |item|
+        result = new_context.process item
+      end
+
+      result
+    end
+  end
+
+  class ScopeHandler
+    def call context, data
+      return Gene::NOT_HANDLED unless SCOPE === data
+
+      if data.properties['inherit_scope'] == false
+        scope = Gene::Lang::Scope.new nil, false
+      else
+        scope = Gene::Lang::Scope.new context.scope, true
+      end
+      new_context = context.extend scope: scope
+
+      result = Gene::UNDEFINED
+      data.data.each do |item|
         result = new_context.process item
       end
 

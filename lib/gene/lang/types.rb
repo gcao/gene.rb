@@ -523,7 +523,7 @@ module Gene::Lang
 
       new_context = context.extend scope: scope, self: options[:self]
       result = new_context.process_statements statements
-      if result.is_a? ReturnValue
+      if result.is_a? ReturnValue and (result.context == nil or result.context == new_context)
         result = result.value
       end
       result
@@ -834,6 +834,7 @@ module Gene::Lang
 
   class ReturnValue < Object
     attr_reader :value
+    attr_accessor :context
 
     def initialize value = Gene::UNDEFINED
       super(ReturnValue)

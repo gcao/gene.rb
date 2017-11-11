@@ -699,6 +699,22 @@ describe Gene::Lang::Interpreter do
     " do
       @application.parse_and_process(example.description)
     end
+
+    it "# for-loop inside function
+      (def result 0)
+      (fn f _
+        (for (def i 0)(i < 100)(i += 1)
+          (if (i >= 5) return)
+          (result += i)
+        )
+        # should not reach here
+        (result = 0)
+      )
+      (f)
+      (assert (result == 10))
+    " do
+      @application.parse_and_process(example.description)
+    end
   end
 
   describe "loop - creates simplist loop" do
@@ -911,6 +927,44 @@ describe Gene::Lang::Interpreter do
       )
     " do
       @application.parse_and_process(example.description)
+    end
+
+    it "# inside function
+      (def o (new Object))
+      (fn f _
+        (with o (return (.class)))
+        _
+      )
+      (assert (f) == Object)
+    " do
+      @application.parse_and_process(example.description)
+    end
+  end
+
+  describe "scope - create a new context with a new scope" do
+    it "# should work
+      (def a 1)
+      (scope
+        (def a 2)
+        (assert (a == 2))
+      )
+      (assert (a == 1))
+    " do
+      @application.parse_and_process(example.description)
+    end
+
+    it "# inherit_scope = false
+      (fn f _
+        (def a 1)
+        (scope ^!inherit_scope
+          (a + 1)
+        )
+      )
+      (f)
+    " do
+      lambda {
+        @application.parse_and_process(example.description)
+      }.should raise_error
     end
   end
 
