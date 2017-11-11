@@ -13,7 +13,7 @@ module Gene::Lang::Handlers
     ASPECT BEFORE AFTER WHEN CONTINUE
     IMPORT EXPORT FROM
     PUBLIC PRIVATE
-    IF IF_NOT
+    IF IF_NOT ELSE
     FOR LOOP
     THROW CATCH
     BREAK
@@ -635,22 +635,44 @@ module Gene::Lang::Handlers
     end
   end
 
-  # If statement can look like any of below
-  # (if cond true_logic) - 3 elements
-  # (if cond true_logic false_logic) - 4 elements
-  # (if cond true_logic cond2 true_logic) - 5 elements
-  # (if cond true_logic cond2 true_logic else_logic) - 6 elements
-  # Same as (if cond true_logic (if cond2 true_logic else_logic))
   class IfHandler
     def call context, data
       # return Gene::NOT_HANDLED unless IF === data or IF_NOT === data
       return Gene::NOT_HANDLED unless IF === data
 
-      condition   = context.process data.data[0]
-      true_logic  = data.data[1]
-      false_logic = data.data[2]
-      logic       = condition ? true_logic : false_logic
-      context.process logic
+      handle context, IF, data.data[0], data.data[1..-1]
+    end
+
+    def handle context, type, condition, rest
+      # TODO: handle type == IF_NOT
+      result = nil
+      condition = context.process condition
+      index = 0
+      in_else = false
+      while index < rest.length
+        stmt   = rest[index]
+        index += 1
+
+        if stmt == ELSE
+          if condition
+            break
+          end
+          in_else = true
+          next
+        end
+
+        if condition
+          if not in_else
+            result = context.process stmt
+          end
+        else
+          if in_else
+            result = context.process stmt
+          end
+        end
+      end
+
+      result
     end
   end
 

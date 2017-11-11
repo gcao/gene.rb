@@ -1,7 +1,8 @@
 (fn if-not [cond stmts...]
   ^^global
-  (if ($invoke $caller-context 'process_statements' cond)
+  (if ($caller-context .process_statements cond)
     _
+  else
     ($caller-context .process_statements stmts)
   )
 )
@@ -13,16 +14,16 @@
   # Args are not evaluated before passed in: equivalent to ^!eval-arguments
   #
   # After evaluation, ReturnValue are returned as is, BreakValue are unwrapped and returned
-  ($invoke $caller-context 'process_statements' init)
+  ($caller-context .process_statements init)
   (loop
     # check condition and break if false
-    (def cond-result ($invoke $caller-context 'process_statements' cond))
+    (def cond-result ($caller-context .process_statements cond))
     (if-not cond-result
       return
     )
 
     # execuate statements
-    (def result ($invoke $caller-context 'process_statements' stmts))
+    (def result ($caller-context .process_statements stmts))
     # check result
     (if (($invoke ($invoke result 'class') 'name') == 'Gene::Lang::BreakValue')
       return
@@ -32,7 +33,7 @@
     )
 
     # update
-    ($invoke $caller-context 'process_statements' update)
+    ($caller-context .process_statements update)
   )
 )
 
@@ -76,8 +77,10 @@
   (method is_sub_class klass
     (if (self == klass)
       true
+    else
       (if (self == Object)
         false
+      else
         ((.parent_class) .is_sub_class klass)
       )
     )
@@ -150,12 +153,11 @@
     (.each
       (fnx item
         (if (($invoke ($invoke item 'class') 'name') == 'Gene::Lang::Array')
-          (do
-            (def child-array (item .flatten))
-            (child-array .each
-              (fnx item ($invoke result '<<' item))
-            )
+          (def child-array (item .flatten))
+          (child-array .each
+            (fnx item ($invoke result '<<' item))
           )
+        else
           ($invoke result '<<' item)
         )
       )

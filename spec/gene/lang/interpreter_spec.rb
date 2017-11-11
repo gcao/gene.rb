@@ -601,49 +601,55 @@ describe Gene::Lang::Interpreter do
   describe "if
     # TODO:
     # (if cond ...)
+    # (if-not cond ...)
     # (if cond then ... else ...)     -> then is optional
-    # (if cond ... else if cond ...)
-    # (if cond ... else if cond ... else ...)
+    # (if cond ... else-if cond ...)
+    # (if cond ... else-if cond ... else ...)
+    # (if cond ... else-if-not cond ...)
     # better formatted to something like
     # (if cond
     #   ...
-    # else if cond
+    # else-if cond
     #   ...
     # else
     #   ...
     # )
   " do
     it "# condition evaluates to true
-      (assert ((if true 1 2) == 1))
+      (assert ((if true 1 2) == 2))
     " do
       @application.parse_and_process(example.description)
     end
 
     it "# condition evaluates to true
-      (assert ((if true [1 2] 2) == [1 2]))
+      (assert ((if true 1 [1 2]) == [1 2]))
     " do
       @application.parse_and_process(example.description)
     end
 
     it "# condition evaluates to true
       (assert
-        ((if true
-          (do (def a 1)(a + 2))
-          2
-        ) == 3)
+        (
+          (if true
+            (def a 1)
+            (a + 2)
+          else
+            2
+          ) == 3
+        )
       )
     " do
       @application.parse_and_process(example.description)
     end
 
     it "# condition evaluates to false
-      (assert ((if false 1 2) == 2))
+      (assert ((if false 1 else 2) == 2))
     " do
       @application.parse_and_process(example.description)
     end
 
     it "# condition evaluates to false
-      (assert ((if false 1 [1 2]) == [1 2]))
+      (assert ((if false 1 else [1 2]) == [1 2]))
     " do
       @application.parse_and_process(example.description)
     end
@@ -804,10 +810,6 @@ describe Gene::Lang::Interpreter do
       (fn f _ _)
       (assert ((f 1) == undefined))
     " do
-      @application.parse_and_process(example.description)
-    end
-
-    it "(assert ((if true _ 1) == undefined))" do
       @application.parse_and_process(example.description)
     end
 
