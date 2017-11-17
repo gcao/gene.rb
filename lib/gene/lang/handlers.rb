@@ -71,7 +71,6 @@ module Gene::Lang::Handlers
           context.process_statements data.data
         elsif RETURN === data
           result = Gene::Lang::ReturnValue.new context.process(data.data[0])
-          result.context = context
           result
         elsif BREAK === data
           Gene::Lang::BreakValue.new context.process(data.data[0])
@@ -104,7 +103,6 @@ module Gene::Lang::Handlers
         Gene::Lang::BreakValue.new
       elsif data == RETURN
         result = Gene::Lang::ReturnValue.new
-        result.context = context
         result
       elsif data == APPLICATION
         context.application
