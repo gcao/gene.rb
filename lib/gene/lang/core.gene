@@ -3,7 +3,7 @@
   (if ($caller-context .process_statements cond)
     _
   else
-    ($caller-context .process_statements stmts)
+    (return ($caller-context .process_statements stmts))
   )
 )
 

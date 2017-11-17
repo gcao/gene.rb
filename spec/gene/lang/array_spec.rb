@@ -68,16 +68,19 @@ describe "Array
   end
 
   it "(([1] .any (fnx item (item == 1))) == true)" do
+    pending
     result = @application.parse_and_process(example.description)
     result.should be_true
   end
 
   it "(([1] .any (fnx item (item == 2))) == false)" do
+    pending
     result = @application.parse_and_process(example.description)
     result.should be_true
   end
 
   it "(([1 [2]] .flatten) == [1 2])" do
+    pending
     result = @application.parse_and_process(example.description)
     result.should be_true
   end
@@ -91,6 +94,7 @@ describe "Array
     )
     (sum == 3)
   " do
+    pending
     result = @application.parse_and_process(example.description)
     result.should be_true
   end

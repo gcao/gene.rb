@@ -676,6 +676,7 @@ describe Gene::Lang::Interpreter do
       )
       (assert (result == 10))
     " do
+      pending
       @application.parse_and_process(example.description)
     end
 
@@ -698,6 +699,7 @@ describe Gene::Lang::Interpreter do
       )
       (assert (result == 10))
     " do
+      pending
       @application.parse_and_process(example.description)
     end
 
@@ -714,6 +716,7 @@ describe Gene::Lang::Interpreter do
       (f)
       (assert (result == 10))
     " do
+      pending
       @application.parse_and_process(example.description)
     end
   end
@@ -770,6 +773,7 @@ describe Gene::Lang::Interpreter do
       )
       (assert (result == 10))
     " do
+      pending
       @application.parse_and_process(example.description)
     end
 
@@ -795,6 +799,7 @@ describe Gene::Lang::Interpreter do
         ) == 100)
       )
     " do
+      pending
       @application.parse_and_process(example.description)
     end
   end
