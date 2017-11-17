@@ -3,6 +3,7 @@
   (if ($caller-context .process_statements cond)
     _
   else
+    # Gotcha: `return` is needed here in order to return any value as is to the caller.
     (return ($caller-context .process_statements stmts))
   )
 )
@@ -64,7 +65,8 @@
 
 (class Context ^^global
   (method process_statements stmts
-    ($invoke self 'process_statements' stmts)
+    # Gotcha: `return` is needed here in order to return any value as is to the caller.
+    (return ($invoke self 'process_statements' stmts))
   )
 )
 
