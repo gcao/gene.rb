@@ -83,7 +83,7 @@ describe Gene::Lang::Interpreter do
       (class A
         (method f _ self)
       )
-      (def a (new A))
+      (var a (new A))
       (assert (((a .f) .class) == A))
     " do
       @application.parse_and_process(example.description)
@@ -139,7 +139,7 @@ describe Gene::Lang::Interpreter do
       )
 
       # Instantiate A
-      (def a (new A 1))
+      (var a (new A 1))
 
       # Call method on an instance
       (assert ((a .test 2) == 4))
@@ -158,7 +158,7 @@ describe Gene::Lang::Interpreter do
           ^set [value (@x = value)]
         )
       )
-      (def a (new A))
+      (var a (new A))
       # Property x can be accessed like methods
       (a .x= 'value')
       (assert ((a .x) == 'value'))
@@ -168,7 +168,7 @@ describe Gene::Lang::Interpreter do
 
     it "# (prop x) will create default getter/setter methods
       (class A (prop x))
-      (def a (new A))
+      (var a (new A))
       (a .x= 'value')
       (assert ((a .x) == 'value'))
     " do
@@ -199,7 +199,7 @@ describe Gene::Lang::Interpreter do
           @value
         )
       )
-      (def b (new B))
+      (var b (new B))
       (assert ((b .test) == ['A.test' 'B.test']))
     " do
       @application.parse_and_process(example.description)
@@ -210,7 +210,7 @@ describe Gene::Lang::Interpreter do
     it "# `class` should return the new class
       (class A)
       (class B)
-      (def a (new A))
+      (var a (new A))
       (assert (((cast a B) .class) == B))
     " do
       @application.parse_and_process(example.description)
@@ -221,7 +221,7 @@ describe Gene::Lang::Interpreter do
       (class B
         (method test _ 'test in B')
       )
-      (def a (new A))
+      (var a (new A))
       (assert (((cast a B) .test) == 'test in B'))
     " do
       @application.parse_and_process(example.description)
@@ -236,7 +236,7 @@ describe Gene::Lang::Interpreter do
           (@name = 'b')
         )
       )
-      (def a (new A))
+      (var a (new A))
       ((cast a B) .test)
       (assert ((a .name) == 'b'))
     " do
@@ -251,7 +251,7 @@ describe Gene::Lang::Interpreter do
       )
       (class B extend A
       )
-      (def b (new B))
+      (var b (new B))
       (assert ((b .testA) == 'testA'))
     " do
       @application.parse_and_process(example.description)
@@ -265,7 +265,7 @@ describe Gene::Lang::Interpreter do
       )
       (class C extend B
       )
-      (def c (new C))
+      (var c (new C))
       (assert ((c .test) == 'test in A'))
     " do
       @application.parse_and_process(example.description)
@@ -282,7 +282,7 @@ describe Gene::Lang::Interpreter do
           (super a b)
         )
       )
-      (def b (new B))
+      (var b (new B))
       (assert ((b .test 1 2) == 3))
     " do
       @application.parse_and_process(example.description)
@@ -297,7 +297,7 @@ describe Gene::Lang::Interpreter do
       )
       (class B extend A
       )
-      (def b (new B 'test'))
+      (var b (new B 'test'))
       (assert ((b .name) == 'test'))
     " do
       @application.parse_and_process(example.description)
@@ -325,7 +325,7 @@ describe Gene::Lang::Interpreter do
       (fn doSomething array
         ($invoke array 'push' 'doSomething')
       )
-      (def a [])
+      (var a [])
       (doSomething a)
       (assert (a == ['doSomething']))
     " do
@@ -336,7 +336,7 @@ describe Gene::Lang::Interpreter do
       (fn doSomething hash
         ($invoke hash '[]=' 'key' 'value')
       )
-      (def a {})
+      (var a {})
       (doSomething a)
       (assert (($invoke a '[]' 'key') == 'value'))
     " do
@@ -355,7 +355,7 @@ describe Gene::Lang::Interpreter do
         (fn doSomething [a b]
           (a + b)
         )
-        (def array [1 2])
+        (var array [1 2])
         (assert ((doSomething array...) == 3))
       " do
         @application.parse_and_process(example.description)
@@ -365,7 +365,7 @@ describe Gene::Lang::Interpreter do
         (fn doSomething args...
           args
         )
-        (def array [1 2])
+        (var array [1 2])
         (assert ((doSomething array...) == [1 2]))
       " do
         @application.parse_and_process(example.description)
@@ -439,14 +439,14 @@ describe Gene::Lang::Interpreter do
       (class A
         (method test arg arg)
       )
-      (def a (new A))
+      (var a (new A))
       (assert ((call f a 'value') == 'value')) # self: a, arguments: 'value'
     " do
       @application.parse_and_process(example.description)
     end
 
     it "# By default, function will inherit the scope where it is defined (like in JavaScript)
-      (def a 1)
+      (var a 1)
       (fn f b (a + b)) # `a` is inherited, `b` is an argument
       (assert ((f 2) == 3))
     " do
@@ -457,10 +457,10 @@ describe Gene::Lang::Interpreter do
   describe "Method vs function" do
     it "# Method   WILL NOT   inherit the scope where it is defined in
       (class A
-        (def x 1)
+        (var x 1)
         (method doSomething _ x)
       )
-      (def a (new A))
+      (var a (new A))
       (a .doSomething) # should throw error
     " do
       lambda {
@@ -469,7 +469,7 @@ describe Gene::Lang::Interpreter do
     end
 
     it "# Function   WILL   inherit the scope where it is defined in
-      (def x 1)
+      (var x 1)
       (fn doSomething _ x)
       (assert ((doSomething) == 1))
     " do
@@ -485,7 +485,7 @@ describe Gene::Lang::Interpreter do
     end
 
     it "# Can be assigned to a variable and invoked later
-      (def f (fnx _ 1))
+      (var f (fnx _ 1))
       (assert ((f) == 1))
     " do
       @application.parse_and_process(example.description)
@@ -494,7 +494,7 @@ describe Gene::Lang::Interpreter do
 
   describe "fnxx - anonymous dummy function" do
     it "# Can be assigned to a variable and invoked later
-      (def f (fnxx 1))
+      (var f (fnxx 1))
       (assert ((f) == 1))
     " do
       @application.parse_and_process(example.description)
@@ -513,7 +513,7 @@ describe Gene::Lang::Interpreter do
 
   describe "Assignment" do
     it "# `=` should work
-      (def a)
+      (var a)
       (a = 1)
       (assert (a == 1))
     " do
@@ -556,7 +556,7 @@ describe Gene::Lang::Interpreter do
   end
 
   describe "Variable definition" do
-    it "(def a 'value')" do
+    it "(var a 'value')" do
       result = @application.parse_and_process(example.description)
       result.class.should == Gene::Lang::Variable
       result.name.should  == 'a'
@@ -564,7 +564,7 @@ describe Gene::Lang::Interpreter do
     end
 
     it "# Define a variable and assign expression result as value
-      (def a (1 + 2))
+      (var a (1 + 2))
     " do
       result = @application.parse_and_process(example.description)
       result.class.should == Gene::Lang::Variable
@@ -573,15 +573,15 @@ describe Gene::Lang::Interpreter do
     end
 
     it "# Define and use variable
-      (def a 1)
+      (var a 1)
       (assert ((a + 2) == 3))
     " do
       @application.parse_and_process(example.description)
     end
 
     it "# Use multiple variables in one expression
-      (def a 1)
-      (def b 2)
+      (var a 1)
+      (var b 2)
       (assert ((a + b) == 3))
     " do
       @application.parse_and_process(example.description)
@@ -591,7 +591,7 @@ describe Gene::Lang::Interpreter do
   describe "do" do
     it "# returns result of last expression
       (assert
-        ((do (def i 1)(i + 2)) == 3)
+        ((do (var i 1)(i + 2)) == 3)
       )
     " do
       @application.parse_and_process(example.description)
@@ -631,7 +631,7 @@ describe Gene::Lang::Interpreter do
       (assert
         (
           (if true
-            (def a 1)
+            (var a 1)
             (a + 2)
           else
             2
@@ -670,8 +670,8 @@ describe Gene::Lang::Interpreter do
     # It can be used to create other type of loops, iterators etc
   " do
     it "# Basic usecase
-      (def result 0)
-      (for (def i 0)(i < 5)(i += 1)
+      (var result 0)
+      (for (var i 0)(i < 5)(i += 1)
         (result += i)
       )
       (assert (result == 10))
@@ -680,8 +680,8 @@ describe Gene::Lang::Interpreter do
     end
 
     it "# break from the for-loop
-      (def result 0)
-      (for (def i 0)(i < 100)(i += 1)
+      (var result 0)
+      (for (var i 0)(i < 100)(i += 1)
         (if (i >= 5) break)
         (result += i)
       )
@@ -691,8 +691,8 @@ describe Gene::Lang::Interpreter do
     end
 
     it "# return from for-loop ?!
-      (def result 0)
-      (for (def i 0)(i < 100)(i += 1)
+      (var result 0)
+      (for (var i 0)(i < 100)(i += 1)
         (if (i >= 5) return)
         (result += i)
       )
@@ -702,9 +702,9 @@ describe Gene::Lang::Interpreter do
     end
 
     it "# for-loop inside function
-      (def result 0)
+      (var result 0)
       (fn f _
-        (for (def i 0)(i < 100)(i += 1)
+        (for (var i 0)(i < 100)(i += 1)
           (if (i >= 5) return)
           (result += i)
         )
@@ -720,7 +720,7 @@ describe Gene::Lang::Interpreter do
 
   describe "loop - creates simplist loop" do
     it "# Basic usecase
-      (def i 0)
+      (var i 0)
       (loop
         (i += 1)
         (if (i >= 5) break)
@@ -731,7 +731,7 @@ describe Gene::Lang::Interpreter do
     end
 
     it "# return value passed to `break`
-      (def i 0)
+      (var i 0)
       (assert
         ((loop
           (i += 1)
@@ -752,7 +752,7 @@ describe Gene::Lang::Interpreter do
         ($invoke $caller-context 'process_statements' init)
         (loop
           # check condition and break if false
-          (def result ($invoke $caller-context 'process_statements' cond))
+          (var result ($invoke $caller-context 'process_statements' cond))
           (if (($invoke ($invoke result 'class') 'name') == 'Gene::Lang::BreakValue')
             (return ($invoke result 'value'))
           )
@@ -764,8 +764,8 @@ describe Gene::Lang::Interpreter do
           ($invoke $caller-context 'process_statements' update)
         )
       )
-      (def result 0)
-      (for-test (def i 0) (i <= 4) (i += 1)
+      (var result 0)
+      (for-test (var i 0) (i <= 4) (i += 1)
         (result += i)
       )
       (assert (result == 10))
@@ -781,13 +781,13 @@ describe Gene::Lang::Interpreter do
         #
         # After evaluation, ReturnValue are returned as is, BreakValue are unwrapped and returned
         (for _ _ _
-          (def result ($invoke $caller-context 'process_statements' args))
+          (var result ($invoke $caller-context 'process_statements' args))
           (if (($invoke ($invoke result 'class') 'name') == 'Gene::Lang::BreakValue')
             (return ($invoke result 'value'))
           )
         )
       )
-      (def i 0)
+      (var i 0)
       (assert
         ((loop-test
           (i += 1)
@@ -814,8 +814,8 @@ describe Gene::Lang::Interpreter do
     end
 
     it "# _ can be used in for-loop as placeholder
-      (def sum 0)
-      (def i 0)
+      (var sum 0)
+      (var i 0)
       (for _ _ _
         (if (i > 4) break)
         (sum += i)
@@ -854,7 +854,7 @@ describe Gene::Lang::Interpreter do
 
   describe "Decorators" do
     it "# should work on top level
-      (def members [])
+      (var members [])
       (fn add_to_members f
         ($invoke members 'push' (f .name))
       )
@@ -866,7 +866,7 @@ describe Gene::Lang::Interpreter do
     end
 
     it "# can be chained
-      (def members [])
+      (var members [])
       (fn add_to_members f
         ($invoke members 'push' (f .name))
         f
@@ -881,7 +881,7 @@ describe Gene::Lang::Interpreter do
 
     it "# should work inside ()
       (ns a
-        (def members [])
+        (var members [])
         (fn add_to_members f
           ($invoke members 'push' (f .name))
         )
@@ -897,14 +897,14 @@ describe Gene::Lang::Interpreter do
       (fn increment x
         (x + 1)
       )
-      (def a [+increment 1])
+      (var a [+increment 1])
       (assert (a == [2]))
     " do
       @application.parse_and_process(example.description)
     end
 
     it "# decorator can be invoked with arguments
-      (def members [])
+      (var members [])
       (fn add_to_members [array f]
         ($invoke array 'push' (f .name))
       )
@@ -918,7 +918,7 @@ describe Gene::Lang::Interpreter do
 
   describe "with - create a new context with a given self" do
     it "# should work
-      (def o (new Object))
+      (var o (new Object))
       (with o
         (assert ((.class) == Object))
       )
@@ -927,7 +927,7 @@ describe Gene::Lang::Interpreter do
     end
 
     it "# inside function
-      (def o (new Object))
+      (var o (new Object))
       (fn f _
         (with o (return (.class)))
         _
@@ -940,9 +940,9 @@ describe Gene::Lang::Interpreter do
 
   describe "scope - create a new context with a new scope" do
     it "# should work
-      (def a 1)
+      (var a 1)
       (scope
-        (def a 2)
+        (var a 2)
         (assert (a == 2))
       )
       (assert (a == 1))
@@ -952,7 +952,7 @@ describe Gene::Lang::Interpreter do
 
     it "# inherit_scope = false
       (fn f _
-        (def a 1)
+        (var a 1)
         (scope ^!inherit_scope
           (a + 1)
         )
@@ -976,7 +976,7 @@ describe Gene::Lang::Interpreter do
       (catch
         ^Exception (fnx e (result = 'Exception'))
         ^default   (fnx e (result = 'default'))
-        (def result)
+        (var result)
         (throw 'some error')
       )
       (assert (result == 'Exception'))
@@ -987,7 +987,7 @@ describe Gene::Lang::Interpreter do
     it "# catch default
       (catch
         ^default (fnx e (result = 'default'))
-        (def result)
+        (var result)
         (throw 'some error')
       )
       (assert (result == 'default'))
@@ -998,7 +998,7 @@ describe Gene::Lang::Interpreter do
     it "# catch default - won't catch Error
       (catch
         ^default (fnx e (result = 'default'))
-        (def result)
+        (var result)
         (throw Error 'some error')
       )
     " do
@@ -1008,7 +1008,7 @@ describe Gene::Lang::Interpreter do
     end
 
     it "# ensure
-      (def a)
+      (var a)
       (catch
         ^default (fnxx)
         ^ensure  (fnxx (a = 'ensure'))
@@ -1020,7 +1020,7 @@ describe Gene::Lang::Interpreter do
     end
 
     it "# do...catch
-      (def result)
+      (var result)
       (do
         ^catch {
           ^Exception (fnx e (result = 'Exception'))
@@ -1034,7 +1034,7 @@ describe Gene::Lang::Interpreter do
     end
 
     it "# do...catch default
-      (def result)
+      (var result)
       (do
         ^catch (fnx e (result = (e .message)))
         (throw 'some error')
@@ -1050,7 +1050,7 @@ describe Gene::Lang::Interpreter do
         ^catch {
           ^Exception (fnx e (result = 'Exception'))
         }
-        (def result)
+        (var result)
         (throw 'some error')
       )
       (assert (result == 'Exception'))
@@ -1265,7 +1265,7 @@ describe Gene::Lang::Interpreter do
         )
       )
       (A .apply C)
-      (def c (new C))
+      (var c (new C))
       (assert ((c .test) == ['before' 'when before' 'test' 'when after' 'after']))
     " do
       @application.parse_and_process(example.description)

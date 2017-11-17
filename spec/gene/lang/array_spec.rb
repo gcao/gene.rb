@@ -14,8 +14,8 @@ describe "Array
 
   it "# `[]` will always create a new Array object
     (fn f _ [])
-    (def a (f))
-    (def b (f))
+    (var a (f))
+    (var b (f))
     (($invoke a 'object_id') != ($invoke b 'object_id'))
   " do
     result = @application.parse_and_process(example.description)
@@ -44,8 +44,8 @@ describe "Array
 
   it "
     (fn f _ [])
-    (def a (f))
-    (def b (f))
+    (var a (f))
+    (var b (f))
     (($invoke a 'object_id') != ($invoke b 'object_id'))
   " do
     result = @application.parse_and_process(example.description)
@@ -83,7 +83,7 @@ describe "Array
   end
 
   it "# `each` should work
-    (def sum 0)
+    (var sum 0)
     ([1 2] .each
       (fnx item
         (sum += item)

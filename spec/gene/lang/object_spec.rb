@@ -7,7 +7,7 @@ describe "Object" do
   end
 
   it "# get/set should work
-    (def o (new Object))
+    (var o (new Object))
     (o .set 'x' 1)
     ((o .get 'x') == 1)
   " do
@@ -16,7 +16,7 @@ describe "Object" do
   end
 
   it "# is should work
-    (def o (new Object))
+    (var o (new Object))
     (o .is Object)
   " do
     result = @application.parse_and_process(example.description)
@@ -24,7 +24,7 @@ describe "Object" do
   end
 
   it "# call should work
-    (def o (new Object))
+    (var o (new Object))
     (o .set 'x' 1)
     ((o .call 'get' 'x') == 1)
   " do

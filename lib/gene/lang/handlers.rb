@@ -9,7 +9,7 @@ module Gene::Lang::Handlers
     FN FNX FNXX
     RETURN
     CALL DO
-    DEF
+    VAR
     ASPECT BEFORE AFTER WHEN CONTINUE
     IMPORT EXPORT FROM
     PUBLIC PRIVATE
@@ -367,9 +367,9 @@ module Gene::Lang::Handlers
     end
   end
 
-  class DefHandler
+  class DefinitionHandler
     def call context, data
-      return Gene::NOT_HANDLED unless DEF === data
+      return Gene::NOT_HANDLED unless VAR === data
       name  = data.data[0].to_s
       value = context.process data.data[1]
       if name[0] == '@'

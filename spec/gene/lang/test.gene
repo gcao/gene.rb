@@ -1,4 +1,4 @@
-(def private_x 100)
+(var private_x 100)
 (private private_x)
 
 (class Test
