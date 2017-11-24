@@ -530,6 +530,29 @@ module Gene::Lang
     end
   end
 
+  class BoundFunction < Object
+    attr_reader :function, :self
+
+    def initialize function, _self
+      super(BoundFunction)
+      set 'function', function
+      set 'self', _self
+    end
+
+    def inherit_scope
+      function.inherit_scope
+    end
+
+    def eval_arguments
+      function.eval_arguments
+    end
+
+    def call options = {}
+      options[:self] = self.self
+      function.call options
+    end
+  end
+
   class Property < Object
     attr_reader :name, :type, :getter, :setter
 

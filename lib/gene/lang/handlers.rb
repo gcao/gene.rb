@@ -6,7 +6,7 @@ module Gene::Lang::Handlers
     EXTEND SUPER
     SELF WITH
     SCOPE
-    FN FNX FNXX
+    FN FNX FNXX BIND
     RETURN
     CALL DO
     VAR
@@ -237,6 +237,16 @@ module Gene::Lang::Handlers
       fn.statements = data.data[next_index..-1] || []
 
       fn
+    end
+  end
+
+  class BindHandler
+    def call context, data
+      return Gene::NOT_HANDLED unless BIND === data
+
+      fn    = context.process data.data[0]
+      _self = context.process data.data[1]
+      Gene::Lang::BoundFunction.new fn, _self
     end
   end
 

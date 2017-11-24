@@ -454,6 +454,18 @@ describe Gene::Lang::Interpreter do
     end
   end
 
+  describe "Bounded function" do
+    it "# should work
+      (fn f _
+        (.class)
+      )
+      (var f2 (bind f (new Object)))
+      (assert ((f2) == Object))
+    " do
+      @application.parse_and_process(example.description)
+    end
+  end
+
   describe "Method vs function" do
     it "# Method   WILL NOT   inherit the scope where it is defined in
       (class A
@@ -805,7 +817,7 @@ describe Gene::Lang::Interpreter do
     end
   end
 
-  describe "_ is a placeholder, is equivalent to undefined" do
+  describe "_ is a placeholder, equivalent to undefined in most but not all places" do
     it "# Putting _ at the place of arguments will not create an argument named `_`
       (fn f _ _)
       (assert ((f 1) == undefined))
@@ -813,7 +825,7 @@ describe Gene::Lang::Interpreter do
       @application.parse_and_process(example.description)
     end
 
-    it "# _ can be used in for-loop as placeholder
+    it "# _ can be used in for-loop as placeholder, when it's used in place of the condition, it's treated as truth value
       (var sum 0)
       (var i 0)
       (for _ _ _
@@ -932,7 +944,7 @@ describe Gene::Lang::Interpreter do
         (with o (return (.class)))
         _
       )
-      (assert (f) == Object)
+      (assert ((f) == Object))
     " do
       @application.parse_and_process(example.description)
     end
