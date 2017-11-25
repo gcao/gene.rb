@@ -1,0 +1,42 @@
+{
+  "name": "gene.js",
+  "version": "0.0.1",
+  "description": "Gene.js",
+  "engineStrict": true,
+  "engines": {
+    "node": ">= 8.9.0"
+  },
+  "devDependencies": {
+    "@types/jest": "~21.1.5",
+    "@types/node": "~8.0.49",
+    "jest": "~21.2.1",
+    "rimraf": "~2.6.2",
+    "tslint": "~5.8.0",
+    "tslint-microsoft-contrib": "~5.0.1",
+    "tsutils": "~2.12.2",
+    "typescript": "~2.6.1"
+  },
+  "scripts": {
+    "clean": "rimraf coverage build tmp",
+    "build": "tsc -p tsconfig.release.json",
+    "watch": "tsc -w -p tsconfig.release.json",
+    "lint": "tslint -t stylish --project \"tsconfig.json\"",
+    "pretest": "npm run lint",
+    "test": "npm run test-only",
+    "test-only": "jest --coverage",
+    "test:watch": "jest --watch"
+  },
+  "author": "Guoliang Cao<gcao99@gmail.com>",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/gcao/gene.git"
+  },
+  "bugs": {
+    "url": "https://github.com/gcao/gene/issues"
+  },
+  "homepage": "https://github.com/gcao/gene#readme",
+  "dependencies": {
+    "tslib": "~1.8.0"
+  }
+}
