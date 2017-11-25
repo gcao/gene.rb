@@ -442,6 +442,7 @@ module Gene::Lang
 
     def initialize name
       super(name)
+      this.class = Class
     end
 
     def parent_class
