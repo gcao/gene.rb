@@ -1,4 +1,4 @@
-class Gene::Lang::Compiler
+  class Gene::Lang::Compiler
   def initialize
     init_handlers
   end
@@ -11,10 +11,11 @@ class Gene::Lang::Compiler
   def parse_and_process input
     parsed = Gene::Parser.parse input
     result = process parsed
+    "#{result}(new Gene.Context());"
   end
 
   def process data
-    result = nil
+    result = @handlers.call nil, data
   end
 
   %W(
@@ -45,6 +46,9 @@ class Gene::Lang::Compiler
   class DefaultHandler
     def call context, data
       if data.is_a? Gene::Types::Base
+        if VAR === data
+          "Gene.var_(\"#{data.data[0]}\")"
+        end
       elsif data.is_a?(::Array) and not data.is_a?(Gene::Lang::Array)
         result = Gene::Lang::Array.new
         data.each do |item|

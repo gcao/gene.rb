@@ -76,4 +76,13 @@ namespace Gene {
       this.class = Class;
     }
   }
+
+  export class Context extends Object {
+  }
+
+  export function var_(name: string, value: any) {
+    return (context: Gene.Context) => {
+      context.set(name, value(context));
+    };
+  }
 }

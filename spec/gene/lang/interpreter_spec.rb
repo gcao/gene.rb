@@ -454,7 +454,7 @@ describe Gene::Lang::Interpreter do
     end
   end
 
-  describe "Bounded function" do
+  describe "Bound function" do
     it "# should work
       (fn f _
         (.class)

@@ -26,6 +26,7 @@
     "no-reserved-keywords": false,
     "variable-name": false,
     // Gene customizations END
+    "max-classes-per-file": false,
     "typedef": [
       true,
       "parameter",
