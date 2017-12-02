@@ -1,4 +1,5 @@
 require File.expand_path(File.dirname(__FILE__) + '/../../spec_helper')
+require 'v8'
 
 # Remove leading/trailing spaces, new-lines
 def compress code
@@ -12,20 +13,22 @@ describe Gene::Lang::Compiler do
 
   {
     '
-      (var a)
+      (var a 1)
     ' => '
+      var $root_context = $application.create_root_context();
       (function($context){
-        $context.var_("a");
-      }(new Gene.Application().create_root_context()));
+        $context.var_("a", 1);
+      })($root_context);
     ',
     '
       (var a)
       (var b)
     ' => '
+      var $root_context = $application.create_root_context();
       (function($context){
         $context.var_("a");
         $context.var_("b");
-      }(new Gene.Application().create_root_context()));
+      })($root_context);
     ',
     '
       # pending
@@ -46,7 +49,7 @@ describe Gene::Lang::Compiler do
       )(context);
     ',
   }.each do |input, result|
-    it "compile #{input}should work" do
+    it "#{'-' * 50}#{input}" do
       pending if input =~ /^\s*# pending/
 
       output = @compiler.parse_and_process(input)
@@ -54,5 +57,24 @@ describe Gene::Lang::Compiler do
       s2 = compress(result)
       s1.should == s2
     end
+  end
+end
+
+describe Gene::Lang::Compiler do
+  before do
+    @compiler = Gene::Lang::Compiler.new
+    @ctx = V8::Context.new
+    @ctx.eval File.read "gene-js/build/src/index.js"
+  end
+
+  it '
+    (var a 1)
+    (var b 2)
+    (a + b)
+  ' do
+    output = @compiler.parse_and_process(example.description)
+    puts
+    puts output.gsub(/^\s*/, '')
+    @ctx.eval(output).should == 3
   end
 end

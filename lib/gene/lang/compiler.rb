@@ -12,9 +12,10 @@ class Gene::Lang::Compiler
     parsed = Gene::Parser.parse input
     result = process parsed
     <<-JAVASCRIPT
-    (function($context){
-      #{result}
-    }(new Gene.Application().create_root_context()));
+      var $root_context = $application.create_root_context();
+      (function($context){
+        #{result}
+      })($root_context);
     JAVASCRIPT
   end
 
@@ -22,6 +23,7 @@ class Gene::Lang::Compiler
     result = @handlers.call self, data
   end
 
+  PLACEHOLDER = Gene::Types::Symbol.new('_')
   %W(
     NS
     CLASS PROP METHOD NEW INIT CAST
@@ -47,11 +49,37 @@ class Gene::Lang::Compiler
     const_set name, Gene::Types::Symbol.new("#{name.downcase.gsub('_', '-')}")
   end
 
+  BINARY_OPERATORS = [
+    Gene::Types::Symbol.new('=='),
+    Gene::Types::Symbol.new('!='),
+    Gene::Types::Symbol.new('>'),
+    Gene::Types::Symbol.new('>='),
+    Gene::Types::Symbol.new('<'),
+    Gene::Types::Symbol.new('<='),
+
+    Gene::Types::Symbol.new('+'),
+    Gene::Types::Symbol.new('-'),
+    Gene::Types::Symbol.new('*'),
+    Gene::Types::Symbol.new('/'),
+
+    Gene::Types::Symbol.new('&&'),
+    Gene::Types::Symbol.new('||'),
+  ]
+
   class DefaultHandler
     def call context, data
       if data.is_a? Gene::Types::Base
         if VAR === data
-          "$context.var_(\"#{data.data[0]}\");"
+          if data.data.length == 1
+            "$context.var_(\"#{data.data[0]}\");"
+          else
+            "$context.var_(\"#{data.data[0]}\", #{context.process(data.data[1])});"
+          end
+        elsif BINARY_OPERATORS.include?(data.data[0])
+          op    = data.data[0].name
+          left  = context.process(data.type)
+          right = context.process(data.data[1])
+          "#{left} #{op} #{right}"
         end
       elsif data.is_a? Gene::Types::Stream
         data.map {|item|
@@ -76,21 +104,21 @@ class Gene::Lang::Compiler
       elsif data == RETURN
         result = Gene::Lang::ReturnValue.new
         result
-      elsif data == APPLICATION
-        context.application
-      elsif data == CONTEXT
-        context
-      elsif data == GLOBAL
-        context.application.global_namespace
-      elsif data == CURRENT_SCOPE
-        context.scope
+      # elsif data == APPLICATION
+      #   context.application
+      # elsif data == CONTEXT
+      #   context
+      # elsif data == GLOBAL
+      #   context.application.global_namespace
+      # elsif data == CURRENT_SCOPE
+      #   context.scope
       elsif data == SELF
         context.self
       elsif data.is_a? Gene::Types::Symbol
-        name = data.name
+        "$context.get('#{data}')"
       else
         # literals
-        data
+        data.inspect
       end
     end
   end

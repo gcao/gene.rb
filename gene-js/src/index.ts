@@ -97,6 +97,10 @@ namespace Gene {
     public get_member(name: string) {
       return this.members[name];
     }
+
+    public var_(name: string, value: any) {
+      this.members[name] = value;
+    }
   }
 
   export class Application extends Base {
@@ -108,19 +112,23 @@ namespace Gene {
     get global_namespace() {
       return this.get('global_namespace');
     }
+
+    public create_root_context(): Context {
+      const context = new Context(this);
+      context.self = context.namespace = new Namespace('root', this.global_namespace);
+
+      return context;
+    }
   }
 
   export class Context extends Base {
-    constructor() {
+    constructor(application: Application) {
       super(Context);
+      this.set('application', application);
     }
 
     get application() {
       return this.get('application');
-    }
-
-    set application(new_application: Application) {
-      this.set('application', new_application);
     }
 
     get global_namespace() {
@@ -152,18 +160,23 @@ namespace Gene {
     }
 
     public extend(options: any): Context {
-      const new_context = new Context();
-      new_context.application = this.application;
+      const new_context = new Context(this.application);
       if (options.namespace) {
         this.namespace = options.namespace;
       }
-      // TODO:
+      if (options.scope) {
+        this.scope = options.scope;
+      }
+      if (options.self) {
+        this.self = options.self;
+      }
 
       return new_context;
     }
 
-    // public var_(name: string, value: any) {
-    // }
+    public var_(name: string, value: any) {
+      this.namespace.var_(name, value);
+    }
   }
 
   export class Scope extends Base {
@@ -175,3 +188,5 @@ namespace Gene {
     };
   }
 }
+
+let $application = new Gene.Application();
