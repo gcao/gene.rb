@@ -14,8 +14,20 @@ describe Gene::Lang::Compiler do
     '
       (var a)
     ' => '
-      Gene.var_("a")(new Gene.Context());
-    ', '
+      (function($context){
+        $context.var_("a");
+      }(new Gene.Application().create_root_context()));
+    ',
+    '
+      (var a)
+      (var b)
+    ' => '
+      (function($context){
+        $context.var_("a");
+        $context.var_("b");
+      }(new Gene.Application().create_root_context()));
+    ',
+    '
       # pending
       (var result 0)
       (for (var i 0)(i < 5)(i += 1)
@@ -34,7 +46,7 @@ describe Gene::Lang::Compiler do
       )(context);
     ',
   }.each do |input, result|
-    it "compile #{input} should work" do
+    it "compile #{input}should work" do
       pending if input =~ /^\s*# pending/
 
       output = @compiler.parse_and_process(input)

@@ -25,6 +25,7 @@
     "no-any": false,
     "no-reserved-keywords": false,
     "variable-name": false,
+    "no-suspicious-comment": false,
     // Gene customizations END
     "max-classes-per-file": false,
     "typedef": [

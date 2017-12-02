@@ -1,5 +1,5 @@
 namespace Gene {
-  export class Object {
+  export class Base {
     public class: any;
     public properties: object;
 
@@ -24,14 +24,14 @@ namespace Gene {
     }
 
     public as(klass: any): any {
-      const obj = new Object(klass);
+      const obj = new Base(klass);
       obj.properties = this.properties;
 
       return obj;
     }
   }
 
-  export class Module extends Object {
+  export class Module extends Base {
     constructor(name: string) {
       super(Module);
       this.name = name;
@@ -77,7 +77,96 @@ namespace Gene {
     }
   }
 
-  export class Context extends Object {
+  export class Namespace extends Base {
+    constructor(name: string, parent: Namespace) {
+      super(Namespace);
+      this.set('name', name);
+      this.set('parent', parent);
+      this.set('members', {});
+      this.set('public_members', []);
+    }
+
+    get members() {
+      return this.get('members');
+    }
+
+    public is_defined(name: string): boolean {
+      return this.members.include(name);
+    }
+
+    public get_member(name: string) {
+      return this.members[name];
+    }
+  }
+
+  export class Application extends Base {
+    constructor() {
+      super(Application);
+      this.set('global_namespace', new Namespace('global', null));
+    }
+
+    get global_namespace() {
+      return this.get('global_namespace');
+    }
+  }
+
+  export class Context extends Base {
+    constructor() {
+      super(Context);
+    }
+
+    get application() {
+      return this.get('application');
+    }
+
+    set application(new_application: Application) {
+      this.set('application', new_application);
+    }
+
+    get global_namespace() {
+      return this.application.global_namespace;
+    }
+
+    get namespace() {
+      return this.get('namespace');
+    }
+
+    set namespace(new_namespace: Namespace) {
+      this.set('namespace', new_namespace);
+    }
+
+    get scope() {
+      return this.get('scope');
+    }
+
+    set scope(new_scope: Scope) {
+      this.set('scope', new_scope);
+    }
+
+    get self() {
+      return this.get('self');
+    }
+
+    set self(new_self: any) {
+      this.set('self', new_self);
+    }
+
+    public extend(options: any): Context {
+      const new_context = new Context();
+      new_context.application = this.application;
+      if (options.namespace) {
+        this.namespace = options.namespace;
+      }
+      // TODO:
+
+      return new_context;
+    }
+
+    // public var_(name: string, value: any) {
+    // }
+  }
+
+  export class Scope extends Base {
   }
 
   export function var_(name: string, value: any) {

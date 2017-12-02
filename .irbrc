@@ -1,5 +1,7 @@
 puts "Loading #{__FILE__}"
 
+require 'v8'
+
 $LOAD_PATH.unshift(File.join(File.dirname(__FILE__), 'lib'))
 
 begin
@@ -9,8 +11,11 @@ rescue LoadError
 end
 
 P = Parser           = Gene::Parser
-C = CoreInterpreter  = Gene::CoreInterpreter
-R = RubyInterpreter  = Gene::RubyInterpreter
-J = JavascriptInterpreter = Gene::JavascriptInterpreter
-F = FileSystem       = Gene::FileSystem
+# C = CoreInterpreter  = Gene::CoreInterpreter
+# R = RubyInterpreter  = Gene::RubyInterpreter
+# J = JavascriptInterpreter = Gene::JavascriptInterpreter
+# F = FileSystem       = Gene::FileSystem
+C = Compiler         = Gene::Lang::Compiler
 
+@ctx = V8::Context.new
+@ctx.eval File.read 'gene-js/build/src/index.js'

@@ -1,4 +1,4 @@
-  class Gene::Lang::Compiler
+class Gene::Lang::Compiler
   def initialize
     init_handlers
   end
@@ -11,11 +11,15 @@
   def parse_and_process input
     parsed = Gene::Parser.parse input
     result = process parsed
-    "#{result}(new Gene.Context());"
+    <<-JAVASCRIPT
+    (function($context){
+      #{result}
+    }(new Gene.Application().create_root_context()));
+    JAVASCRIPT
   end
 
   def process data
-    result = @handlers.call nil, data
+    result = @handlers.call self, data
   end
 
   %W(
@@ -47,8 +51,12 @@
     def call context, data
       if data.is_a? Gene::Types::Base
         if VAR === data
-          "Gene.var_(\"#{data.data[0]}\")"
+          "$context.var_(\"#{data.data[0]}\");"
         end
+      elsif data.is_a? Gene::Types::Stream
+        data.map {|item|
+          "#{context.process(item)}\n"
+        }.join
       elsif data.is_a?(::Array) and not data.is_a?(Gene::Lang::Array)
         result = Gene::Lang::Array.new
         data.each do |item|
