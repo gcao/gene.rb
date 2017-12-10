@@ -82,9 +82,12 @@ class Gene::Lang::Compiler
           "#{left} #{op} #{right}"
         end
       elsif data.is_a? Gene::Types::Stream
-        data.map {|item|
+        result = "var $result;\n"
+        result << data[0..-2].map {|item|
           "#{context.process(item)}\n"
         }.join
+        result << "$result = " << context.process(data.last)
+        result << "return $result;\n"
       elsif data.is_a?(::Array) and not data.is_a?(Gene::Lang::Array)
         result = Gene::Lang::Array.new
         data.each do |item|

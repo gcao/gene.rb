@@ -17,7 +17,9 @@ describe Gene::Lang::Compiler do
     ' => '
       var $root_context = $application.create_root_context();
       (function($context){
-        $context.var_("a", 1);
+        var $result;
+        $result = $context.var_("a", 1);
+        return $result;
       })($root_context);
     ',
     '
@@ -26,8 +28,10 @@ describe Gene::Lang::Compiler do
     ' => '
       var $root_context = $application.create_root_context();
       (function($context){
+        var $result;
         $context.var_("a");
-        $context.var_("b");
+        $result = $context.var_("b");
+        return $result;
       })($root_context);
     ',
     '
