@@ -27,8 +27,8 @@ class Gene::Lang::Compiler
         root.fnx(['$context']) { |fn|
           fn.stmts << fn.var('$result')
           if parsed.is_a? Gene::Types::Stream
-            if not parsed.data.empty?
-              parsed.data[0..-2].each do |item|
+            if not parsed.empty?
+              parsed[0..-2].each do |item|
                 # TODO: check whether item includes "(return <anything>)" in any descendants
                 fn.stmts << fn.process(item)
               end
@@ -152,8 +152,8 @@ class Gene::Lang::Compiler
       # elsif data == SELF
       #   context.self
       elsif data.is_a? Gene::Types::Symbol
-        # "$context.get('#{data}')"
-        context.chain(context.ref('$context'), context.invoke('get', context.process(data)))
+        # "$context.get_member('#{data}')"
+        context.chain(context.ref('$context'), context.invoke('get_member', data.to_s))
       else
         # literals
         data
@@ -394,6 +394,10 @@ class Gene::Lang::Compiler
       @left  = left
       @op    = op
       @right = right
+    end
+
+    def to_s
+      "#{left.inspect} #{op} #{right.inspect}"
     end
   end
 

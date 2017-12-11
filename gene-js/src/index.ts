@@ -177,6 +177,10 @@ namespace Gene {
     public var_(name: string, value: any) {
       this.namespace.var_(name, value);
     }
+
+    public get_member(name: string) {
+      return this.namespace.get_member(name);
+    }
   }
 
   export class Scope extends Base {
