@@ -24,5 +24,10 @@ def compare_code first, second
   compress(first.to_s).should == compress(second.to_s)
 end
 
+def print_code code
+  puts
+  puts code.to_s.gsub(/^\s*/, '')
+end
+
 Root = Gene::Lang::Compiler::Root
 Variable = Gene::Lang::Compiler::Variable

@@ -108,12 +108,39 @@ class Gene::Lang::Compiler
               context.invoke('var_', data.data[0].to_s, context.process(data.data[1]))
             )
           end
+        elsif Gene::Types::Symbol.new('+=') == data.data[0]
+          left  = data.type.to_s
+          right = data.data[1]
+          context.chain(
+            context.ref('$context'),
+            context.invoke(
+              'set_member',
+              left,
+              context.binary(context.chain(context.ref('$context'), context.invoke('get_member', left)), '+', context.process(right))
+            )
+          )
         elsif BINARY_OPERATORS.include?(data.data[0])
           op    = data.data[0].name
           left  = context.process(data.type)
           right = context.process(data.data[1])
           # "#{left} #{op} #{right}"
           context.binary(context.process(data.type), op, context.process(data.data[1]))
+        elsif FOR === data
+          init    = context.process(data.data[0])
+          cond    = context.process(data.data[1])
+          update  = context.process(data.data[2])
+          stmts   = data.data[3..-1].map do |item|
+            context.process(item)
+          end
+          context.for(init, cond, update, stmts)
+        elsif ASSERT === data
+          args = data.data[0..1].map do |arg|
+            context.process arg
+          end
+          context.chain(
+            context.ref('Gene'),
+            context.invoke(context.ref('assert'), *args)
+          )
         end
       elsif data.is_a? Gene::Types::Stream
         result = "var $result;\n"
@@ -219,6 +246,10 @@ class Gene::Lang::Compiler
       Function.new(self, '', [], &block)
     end
 
+    def for init, cond, update, stmts
+      For.new(self, init, cond, update, stmts)
+    end
+
     def chain *exprs
       ChainedInvocation.new(self, exprs)
     end
@@ -295,6 +326,26 @@ class Gene::Lang::Compiler
       @logic      = logic
       @else_ifs   = []
       @else_logic = else_logic
+    end
+  end
+
+  class For < Base
+    attr_accessor :init, :cond, :update, :stmts
+
+    def initialize parent, init, cond, update, stmts
+      super(parent)
+      @init   = init
+      @cond   = cond
+      @update = update
+      @stmts  = stmts
+    end
+
+    def to_s
+      s = ""
+      s << "for(#{init}; #{cond}; #{update}) {"
+      s << stmts_to_s
+      s << "}\n"
+      s
     end
   end
 
