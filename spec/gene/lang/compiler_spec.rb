@@ -66,13 +66,28 @@ describe Gene::Lang::Compiler do
       @ctx.eval File.read "gene-js/build/src/index.js"
     end
 
-    it '
-      (var a 1)
-      (var b 2)
-      (a + b)
-    ' do
-      output = @compiler.parse_and_process(example.description)
-      @ctx.eval(output).should == 3
+    [
+      '
+        (var a 1)
+        (var b 2)
+        ((a + b) == 3)
+      ',
+      '
+        # debug
+        (var result 0)
+        (for (var i 0)(i < 5)(i += 1)
+          (result += i)
+        )
+        (result == 10)
+      ',
+    ].each do |input|
+      it input do
+        pending if input =~ /^\s*# pending/
+
+        output = @compiler.parse_and_process(example.description)
+        print_code output if input =~ /# debug/
+        @ctx.eval(output).should be_true
+      end
     end
   end
 end

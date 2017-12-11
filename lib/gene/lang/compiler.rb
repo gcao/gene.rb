@@ -342,7 +342,7 @@ class Gene::Lang::Compiler
 
     def to_s
       s = ""
-      s << "for(#{init}; #{cond}; #{update}) {"
+      s << "for(#{init}; #{cond}; #{update}) {\n"
       s << stmts_to_s
       s << "}\n"
       s

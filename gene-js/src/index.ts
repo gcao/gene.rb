@@ -98,6 +98,10 @@ namespace Gene {
       return this.members[name];
     }
 
+    public set_member(name: string, value: any) {
+      this.members[name] = value;
+    }
+
     public var_(name: string, value: any) {
       this.members[name] = value;
     }
@@ -181,15 +185,19 @@ namespace Gene {
     public get_member(name: string) {
       return this.namespace.get_member(name);
     }
+
+    public set_member(name: string, value: any) {
+      this.namespace.set_member(name, value);
+    }
   }
 
   export class Scope extends Base {
   }
 
-  export function var_(name: string, value: any) {
-    return (context: Gene.Context) => {
-      context.set(name, value(context));
-    };
+  export function assert(expr: any, message: string) {
+    if (!expr) {
+      throw message || 'AssertionError';
+    }
   }
 }
 
