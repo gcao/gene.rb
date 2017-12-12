@@ -15,6 +15,8 @@ RSpec.configure do |config|
 
 end
 
+#################### HELPER METHODS ####################
+
 # Remove leading/trailing spaces, new-lines
 def compress code
   code.gsub(/(^\s*)|(\s*\n\s*)|(\s*$)/, '')
@@ -24,10 +26,13 @@ def compare_code first, second
   compress(first.to_s).should == compress(second.to_s)
 end
 
-def print_code code
-  puts
-  puts code.to_s.gsub(/^\s*/, '')
+def beautify code
+  File.write '/tmp/generated.js', code.to_s
+  `jsbeautifier /tmp/generated.js 2>&1 > /tmp/generated1.js`
+  File.read('/tmp/generated1.js')
 end
 
-Root = Gene::Lang::Compiler::Root
-Variable = Gene::Lang::Compiler::Variable
+def print_code code
+  puts
+  puts beautify code
+end

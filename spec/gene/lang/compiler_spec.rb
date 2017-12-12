@@ -3,22 +3,27 @@ require File.expand_path(File.dirname(__FILE__) + '/../../spec_helper')
 describe Gene::Lang::Compiler do
   before do
     @compiler = Gene::Lang::Compiler.new
+    @ctx = V8::Context.new
+    @ctx.eval File.read "gene-js/build/src/index.js"
   end
 
   {
     '
       (var a 1)
+      (a == 1)
     ' =>
     <<-JAVASCRIPT,
       var $root_context = $application.create_root_context();
       (function($context){
         var $result;
-        $result = $context.var_("a", 1);
+        $context.var_("a", 1);
+        $result = ($context.get_member("a") == 1);
         return $result;
       })($root_context);
     JAVASCRIPT
 
     '
+      # !eval
       (var a)
       (var b)
     ' =>
@@ -37,17 +42,45 @@ describe Gene::Lang::Compiler do
       (for (var i 0)(i < 5)(i += 1)
         (result += i)
       )
-      (assert (result == 10))
+      (result == 10)
     ' =>
     <<-JAVASCRIPT,
       var $root_context = $application.create_root_context();
       (function($context){
         var $result;
         $context.var_("result", 0);
-        for($context.var_("i", 0); $context.get_member("i") < 5; $context.set_member("i", $context.get_member("i") + 1)) {
-          $context.set_member("result", $context.get_member("result") + $context.get_member("i"));
+        for($context.var_("i", 0); ($context.get_member("i") < 5); $context.set_member("i", ($context.get_member("i") + 1))) {
+          $context.set_member("result", ($context.get_member("result") + $context.get_member("i")));
         };
-        $result = Gene.assert($context.get_member("result") == 10);
+        $result = ($context.get_member("result") == 10);
+        return $result;
+      })($root_context);
+    JAVASCRIPT
+
+    '
+      (var result 0)
+      (for (var i 0)(i < 100)(i += 1)
+        (if (result >= 100)
+          (break)
+        else
+          (result += i)
+        )
+      )
+      (result == 105)
+    ' =>
+    <<-JAVASCRIPT,
+      var $root_context = $application.create_root_context();
+      (function($context){
+        var $result;
+        $context.var_("result", 0);
+        for($context.var_("i", 0); ($context.get_member("i") < 100); $context.set_member("i", ($context.get_member("i") + 1))) {
+          if (($context.get_member("result") >= 100)) {
+            break;
+          } else {
+            $context.set_member("result", ($context.get_member("result") + $context.get_member("i")));
+          };
+        };
+        $result = ($context.get_member("result") == 105);
         return $result;
       })($root_context);
     JAVASCRIPT
@@ -57,36 +90,13 @@ describe Gene::Lang::Compiler do
 
       output = @compiler.parse_and_process(input)
       compare_code output, result
-    end
-  end
 
-  describe "eval in V8" do
-    before do
-      @ctx = V8::Context.new
-      @ctx.eval File.read "gene-js/build/src/index.js"
-    end
-
-    [
-      '
-        (var a 1)
-        (var b 2)
-        ((a + b) == 3)
-      ',
-      '
-        # debug
-        (var result 0)
-        (for (var i 0)(i < 5)(i += 1)
-          (result += i)
-        )
-        (result == 10)
-      ',
-    ].each do |input|
-      it input do
-        pending if input =~ /^\s*# pending/
-
-        output = @compiler.parse_and_process(example.description)
-        print_code output if input =~ /# debug/
-        @ctx.eval(output).should be_true
+      if not input.index('!eval')
+        result = @ctx.eval(output)
+        if not result
+          print_code output
+        end
+        result.should be_true
       end
     end
   end

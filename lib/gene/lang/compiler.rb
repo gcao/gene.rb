@@ -16,32 +16,29 @@ class Gene::Lang::Compiler
     #   $result = $context.var_("a", 1);
     #   return $result;
     # })($root_context);
-    Root.new(self) do |root|
-      root.stmts << root.var('$root_context',
-        root.chain(
-          root.ref('$application'),
-          root.invoke('create_root_context')
-        )
+    Root.new(self) {
+      stmts << var('$root_context',
+        chain(ref('$application'), invoke('create_root_context'))
       )
-      root.stmts << root.invoke(
-        root.fnx(['$context']) { |fn|
-          fn.stmts << fn.var('$result')
+      stmts << invoke(
+        fnx(['$context']) {
+          stmts << var('$result')
           if parsed.is_a? Gene::Types::Stream
             if not parsed.empty?
               parsed[0..-2].each do |item|
                 # TODO: check whether item includes "(return <anything>)" in any descendants
-                fn.stmts << fn.process(item)
+                stmts << process(item)
               end
-              fn.stmts << fn.assign(fn.ref('$result'), fn.process(parsed[-1]))
+              stmts << assign(ref('$result'), process(parsed[-1]))
             end
           else
-            fn.stmts << fn.assign(fn.ref('$result'), fn.process(parsed))
+            stmts << assign(ref('$result'), process(parsed))
           end
-          fn.stmts << fn.return(fn.ref('$result'))
+          stmts << ret(ref('$result'))
         },
-        root.ref('$root_context')
+        ref('$root_context')
       )
-    end
+    }
   end
 
   def process context, data
@@ -97,34 +94,27 @@ class Gene::Lang::Compiler
         if VAR === data
           if data.data.length == 1
             # "$context.var_(\"#{data.data[0]}\");"
-            context.chain(
-              context.ref('$context'),
-              context.invoke('var_', data.data[0].to_s)
-            )
+            context.eval { chain(ref('$context'), invoke('var_', data.data[0].to_s)) }
           else
             # "$context.var_(\"#{data.data[0]}\", #{context.process(data.data[1])});"
-            context.chain(
-              context.ref('$context'),
-              context.invoke('var_', data.data[0].to_s, context.process(data.data[1]))
-            )
+            context.eval { chain(ref('$context'), invoke('var_', data.data[0].to_s, process(data.data[1]))) }
           end
         elsif Gene::Types::Symbol.new('+=') == data.data[0]
           left  = data.type.to_s
           right = data.data[1]
-          context.chain(
-            context.ref('$context'),
-            context.invoke(
-              'set_member',
-              left,
-              context.binary(context.chain(context.ref('$context'), context.invoke('get_member', left)), '+', context.process(right))
+          # $context.set_member(<left>, $context.get_member(<left>) + process(<right>))
+          context.eval {
+            chain(
+              ref('$context'),
+              invoke('set_member', left, binary(chain(ref('$context'), invoke('get_member', left)), '+', process(right)))
             )
-          )
+          }
         elsif BINARY_OPERATORS.include?(data.data[0])
           op    = data.data[0].name
           left  = context.process(data.type)
           right = context.process(data.data[1])
           # "#{left} #{op} #{right}"
-          context.binary(context.process(data.type), op, context.process(data.data[1]))
+          context.eval { binary(process(data.type), op, process(data.data[1])) }
         elsif FOR === data
           init    = context.process(data.data[0])
           cond    = context.process(data.data[1])
@@ -133,22 +123,29 @@ class Gene::Lang::Compiler
             context.process(item)
           end
           context.for(init, cond, update, stmts)
+        elsif BREAK === data
+          context.break_()
+        elsif IF === data
+          cond = context.process(data.data[0])
+          else_index = data.data.index(ELSE)
+          if else_index
+            then_logic = data.data[1..else_index - 1]
+            else_logic = data.data[else_index + 1 .. -1]
+            context.eval {
+              if_(cond,
+                then_logic.map {|stmt| process(stmt) },
+                else_logic.map {|stmt| process(stmt) },
+              )
+            }
+          else
+            then_logic = data.data[1..-1]
+          end
         elsif ASSERT === data
           args = data.data[0..1].map do |arg|
             context.process arg
           end
-          context.chain(
-            context.ref('Gene'),
-            context.invoke(context.ref('assert'), *args)
-          )
+          context.eval { chain(ref('Gene'), invoke(context.ref('assert'), *args)) }
         end
-      elsif data.is_a? Gene::Types::Stream
-        result = "var $result;\n"
-        result << data[0..-2].map {|item|
-          "#{context.process(item)}\n"
-        }.join
-        result << "$result = " << context.process(data.last)
-        result << "return $result;\n"
       # elsif data.is_a?(::Array) and not data.is_a?(Gene::Lang::Array)
       #   result = Gene::Lang::Array.new
       #   data.each do |item|
@@ -180,7 +177,7 @@ class Gene::Lang::Compiler
       #   context.self
       elsif data.is_a? Gene::Types::Symbol
         # "$context.get_member('#{data}')"
-        context.chain(context.ref('$context'), context.invoke('get_member', data.to_s))
+        context.eval { chain(ref('$context'), invoke('get_member', data.to_s)) }
       else
         # literals
         data
@@ -266,20 +263,32 @@ class Gene::Lang::Compiler
       Assignment.new(self, target, value)
     end
 
-    def return value
+    def ret value
       Return.new(self, value)
+    end
+
+    def eval &block
+      instance_eval &block
+    end
+
+    def break_
+      Break.new(self)
+    end
+
+    def if_ cond, logic, else_logic
+      If.new(self, cond, logic, else_logic)
     end
   end
 
   class Root < Base
     attr_accessor :compiler, :stmts
 
-    def initialize compiler
+    def initialize compiler, &block
       @compiler = compiler
       @stmts    = []
 
       if block_given?
-        yield self
+        instance_eval &block
       end
     end
 
@@ -293,14 +302,14 @@ class Gene::Lang::Compiler
   class Function < Base
     attr_accessor :name, :args, :stmts
 
-    def initialize parent, name, args
+    def initialize parent, name, args, &block
       super(parent)
       @name       = name
       @args  = args
       @stmts = []
 
       if block_given?
-        yield self
+        instance_eval &block
       end
     end
 
@@ -326,6 +335,22 @@ class Gene::Lang::Compiler
       @logic      = logic
       @else_ifs   = []
       @else_logic = else_logic
+    end
+
+    def to_s
+      s = "if ("
+      s << cond.to_s << ") {\n"
+      logic.each do |stmt|
+        s << stmt.to_s << ";\n"
+      end
+      if else_logic and else_logic.size > 0
+        s << "} else {\n"
+        else_logic.each do |stmt|
+          s << stmt.to_s << ";\n"
+        end
+      end
+      s << "}"
+      s << "\n"
     end
   end
 
@@ -448,7 +473,7 @@ class Gene::Lang::Compiler
     end
 
     def to_s
-      "#{left.inspect} #{op} #{right.inspect}"
+      "(#{left.inspect} #{op} #{right.inspect})"
     end
   end
 
@@ -462,6 +487,16 @@ class Gene::Lang::Compiler
 
     def to_s
       "return #{value}"
+    end
+  end
+
+  class Break < Base
+    def initialize parent
+      super(parent)
+    end
+
+    def to_s
+      "break"
     end
   end
 end
