@@ -87,19 +87,34 @@ describe Gene::Lang::Compiler do
     JAVASCRIPT
 
     '
+      # !eval-to-true!
       (fn f [a b]
         (a + b)
       )
+      ((f 1 2) == 3)
     ' =>
     <<-JAVASCRIPT,
       var $root_context = $application.create_root_context();
       (function($context){
         var $result;
-        $result = new Gene.Func("f", ["a", "b"], function($context){
+        new Gene.Func("f", ["a", "b"], function($context){
           var $result;
           $result = ($context.get_member("a") + $context.get_member("b"));
           return $result;
         });
+        $result = ($context.get_member("f").invoke([1, 2]) == 3);
+        return $result;
+      })($root_context);
+    JAVASCRIPT
+
+    '
+      (f 1 2)
+    ' =>
+    <<-JAVASCRIPT,
+      var $root_context = $application.create_root_context();
+      (function($context){
+        var $result;
+        $result = $context.get_member("f").invoke([1, 2]);
         return $result;
       })($root_context);
     JAVASCRIPT
