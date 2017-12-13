@@ -613,11 +613,11 @@ describe Gene::Lang::Interpreter do
   describe "if
     # TODO:
     # (if cond ...)
-    # (if-not cond ...)
-    # (if cond then ... else ...)     -> then is optional
+    # (if-not cond ...)  # Do not allow 'else-if' or 'else' together with 'if-not'
+    # (if cond ... else ...)
     # (if cond ... else-if cond ...)
     # (if cond ... else-if cond ... else ...)
-    # (if cond ... else-if-not cond ...)
+    # (if cond ... else-if-not cond ...)  # This is not good!
     # better formatted to something like
     # (if cond
     #   ...

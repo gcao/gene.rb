@@ -9,6 +9,7 @@ describe Gene::Lang::Compiler do
 
   {
     '
+      # !eval-to-true!
       (var a 1)
       (a == 1)
     ' =>
@@ -23,7 +24,6 @@ describe Gene::Lang::Compiler do
     JAVASCRIPT
 
     '
-      # !eval
       (var a)
       (var b)
     ' =>
@@ -38,6 +38,7 @@ describe Gene::Lang::Compiler do
     JAVASCRIPT
 
     '
+      # !eval-to-true!
       (var result 0)
       (for (var i 0)(i < 5)(i += 1)
         (result += i)
@@ -84,14 +85,49 @@ describe Gene::Lang::Compiler do
         return $result;
       })($root_context);
     JAVASCRIPT
+
+    '
+      (fn f [a b]
+        (a + b)
+      )
+    ' =>
+    <<-JAVASCRIPT,
+      var $root_context = $application.create_root_context();
+      (function($context){
+        var $result;
+        $result = new Gene.Func("f", ["a", "b"], function($context){
+          var $result;
+          $result = ($context.get_member("a") + $context.get_member("b"));
+          return $result;
+        });
+        return $result;
+      })($root_context);
+    JAVASCRIPT
+
+    '
+      # !pending!
+      (class A
+        (method test [a b]
+          (a + b)
+        )
+      )
+    ' =>
+    <<-JAVASCRIPT,
+      var $root_context = $application.create_root_context();
+      (function($context){
+        var $result;
+        return $result;
+      })($root_context);
+    JAVASCRIPT
+
   }.each do |input, result|
     it input do
-      pending if input =~ /^\s*# pending/
+      pending if input.index('!pending!')
 
       output = @compiler.parse_and_process(input)
       compare_code output, result
 
-      if not input.index('!eval')
+      if input.index('!eval-to-true!')
         result = @ctx.eval(output)
         if not result
           print_code output

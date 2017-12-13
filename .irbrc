@@ -31,8 +31,9 @@ def compile input
   puts "|" * 80
   puts "V" * 80
   puts
-  puts output.gsub(/^\s{6}/, '')
+  puts output.to_s.gsub(/^\s{6}/, '')
   puts
+  puts "=" * 80
   puts
 end
 

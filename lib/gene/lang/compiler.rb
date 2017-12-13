@@ -5,6 +5,7 @@ class Gene::Lang::Compiler
 
   def init_handlers
     @handlers = Gene::Handlers::ComboHandler.new
+    @handlers.add 100, FunctionHandler.new
     @handlers.add 100, DefaultHandler.new
   end
 
@@ -24,13 +25,7 @@ class Gene::Lang::Compiler
         fnx(['$context']) {
           stmts << var('$result')
           if parsed.is_a? Gene::Types::Stream
-            if not parsed.empty?
-              parsed[0..-2].each do |item|
-                # TODO: check whether item includes "(return <anything>)" in any descendants
-                stmts << process(item)
-              end
-              stmts << assign(ref('$result'), process(parsed[-1]))
-            end
+            stmts.concat Gene::Lang::Compiler.compile_stmts(self, parsed)
           else
             stmts << assign(ref('$result'), process(parsed))
           end
@@ -87,6 +82,25 @@ class Gene::Lang::Compiler
     Gene::Types::Symbol.new('&&'),
     Gene::Types::Symbol.new('||'),
   ]
+
+  class FunctionHandler
+    def call context, data
+      if FN === data
+        name = data.data[0].to_s
+        args = data.data[1].map {|arg| arg.to_s }
+        body = data.data[2..-1]
+        context.eval {
+          new(chain(ref('Gene'), invoke(ref('Func'), name, args, fnx('$context') {
+            stmts << var('$result')
+            stmts.concat Gene::Lang::Compiler.compile_stmts(self, body)
+            stmts << ret(ref('$result'))
+          })))
+        }
+      else
+        Gene::NOT_HANDLED
+      end
+    end
+  end
 
   class DefaultHandler
     def call context, data
@@ -231,6 +245,10 @@ class Gene::Lang::Compiler
       Reference.new(self, name)
     end
 
+    def new rest
+      New.new(self, rest)
+    end
+
     def fn name, args, &block
       Function.new(self, name, args, &block)
     end
@@ -304,8 +322,8 @@ class Gene::Lang::Compiler
 
     def initialize parent, name, args, &block
       super(parent)
-      @name       = name
-      @args  = args
+      @name  = name
+      @args  = args.is_a?(Array) ? args : [args]
       @stmts = []
 
       if block_given?
@@ -498,5 +516,30 @@ class Gene::Lang::Compiler
     def to_s
       "break"
     end
+  end
+
+  class New < Base
+    attr_accessor :rest
+
+    def initialize parent, rest
+      super(parent)
+      self.rest = rest
+    end
+
+    def to_s
+      "new #{rest}"
+    end
+  end
+
+  def self.compile_stmts context, stmts, options = {}
+    result = []
+    if not stmts.empty?
+      stmts[0..-2].each do |stmt|
+        # TODO: check whether item includes "(return <anything>)" in any descendants
+        result << context.process(stmt)
+      end
+      result << context.assign(context.ref('$result'), context.process(stmts[-1]))
+    end
+    result
   end
 end

@@ -194,6 +194,31 @@ namespace Gene {
   export class Scope extends Base {
   }
 
+  export class Func extends Base {
+    constructor(name: string, args: [string], body: Function) {
+      super(Function);
+      this.set('name', name);
+      this.set('args', args);
+      this.set('body', body);
+    }
+
+    get name() {
+      return this.get('name');
+    }
+
+    get args() {
+      return this.get('args');
+    }
+
+    get body() {
+      return this.get('body');
+    }
+
+    public invoke(context: Context) {
+      return this.body.call(context);
+    }
+  }
+
   export function assert(expr: any, message: string) {
     if (!expr) {
       throw message || 'AssertionError';
