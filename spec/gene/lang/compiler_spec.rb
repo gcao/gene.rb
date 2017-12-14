@@ -97,12 +97,12 @@ describe Gene::Lang::Compiler do
       var $root_context = $application.create_root_context();
       (function($context){
         var $result;
-        new Gene.Func("f", ["a", "b"], function($context){
+        $context.set_member("f", new Gene.Func("f", ["a", "b"], function($context){
           var $result;
           $result = ($context.get_member("a") + $context.get_member("b"));
           return $result;
-        });
-        $result = ($context.get_member("f").invoke([1, 2]) == 3);
+        }));
+        $result = ($context.get_member("f").invoke({context: $context, arguments: [1, 2]}) == 3);
         return $result;
       })($root_context);
     JAVASCRIPT
@@ -114,7 +114,7 @@ describe Gene::Lang::Compiler do
       var $root_context = $application.create_root_context();
       (function($context){
         var $result;
-        $result = $context.get_member("f").invoke([1, 2]);
+        $result = $context.get_member("f").invoke({context: $context, arguments: [1, 2]});
         return $result;
       })($root_context);
     JAVASCRIPT

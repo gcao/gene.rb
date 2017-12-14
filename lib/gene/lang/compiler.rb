@@ -90,11 +90,18 @@ class Gene::Lang::Compiler
         args = data.data[1].map {|arg| arg.to_s }
         body = data.data[2..-1]
         context.eval {
-          new(chain(ref('Gene'), invoke(ref('Func'), name, args, fnx('$context') {
-            stmts << var('$result')
-            stmts.concat Gene::Lang::Compiler.compile_stmts(self, body)
-            stmts << ret(ref('$result'))
-          })))
+          chain(
+            ref('$context'),
+            invoke(
+              ref('set_member'),
+              name,
+              new(chain(ref('Gene'), invoke(ref('Func'), name, args, fnx('$context') {
+                stmts << var('$result')
+                stmts.concat Gene::Lang::Compiler.compile_stmts(self, body)
+                stmts << ret(ref('$result'))
+              })))
+            )
+          )
         }
       else
         Gene::NOT_HANDLED
@@ -166,7 +173,7 @@ class Gene::Lang::Compiler
               invoke(ref('get_member'), data.type.to_s),
               # TODO: support evaluating arguments in function context (if eval-arguments is set to false)
               # One way is to use invoke_with_callback(function($context){...}) if any argument has to be evaluated
-              invoke(ref('invoke'), data.data.map {|arg| context.process(arg) })
+              invoke(ref('invoke'), obj(context: ref('$context'), arguments: data.data.map {|arg| context.process(arg) }))
              )
           }
         end
@@ -202,6 +209,8 @@ class Gene::Lang::Compiler
       elsif data.is_a? Gene::Types::Symbol
         # "$context.get_member('#{data}')"
         context.eval { chain(ref('$context'), invoke('get_member', data.to_s)) }
+      elsif data.is_a? Hash
+        context.obj(data)
       else
         # literals
         data
@@ -305,6 +314,10 @@ class Gene::Lang::Compiler
 
     def if_ cond, logic, else_logic
       If.new(self, cond, logic, else_logic)
+    end
+
+    def obj data
+      Obj.new(self, data)
     end
   end
 
@@ -538,6 +551,21 @@ class Gene::Lang::Compiler
 
     def to_s
       "new #{rest}"
+    end
+  end
+
+  class Obj < Base
+    attr_accessor :data
+
+    def initialize parent, data
+      super(parent)
+      self.data = data
+    end
+
+    def to_s
+      s = "{"
+      s << data.map {|key, value| "#{key}: #{value}"}.join(', ')
+      s << "}"
     end
   end
 

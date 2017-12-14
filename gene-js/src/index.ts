@@ -192,6 +192,28 @@ namespace Gene {
   }
 
   export class Scope extends Base {
+    constructor(parent: Scope, inherit_variables: boolean) {
+      super(Scope);
+      this.set('parent', parent);
+      this.set('inherit_variables', inherit_variables);
+      this.set('variables', {});
+    }
+
+    get parent() {
+      return this.get('parent');
+    }
+
+    get inherit_variables() {
+      return this.get('inherit_variables');
+    }
+
+    get variables() {
+      return this.get('variables');
+    }
+
+    public is_defined(name: string): boolean {
+      return this.variables.hasOwnProperty(name);
+    }
   }
 
   export class Func extends Base {
@@ -214,7 +236,9 @@ namespace Gene {
       return this.get('body');
     }
 
-    public invoke(context: Context) {
+    public invoke(options: {context: Context}) {
+      const { context } = options;
+
       return this.body.call(context);
     }
   }
