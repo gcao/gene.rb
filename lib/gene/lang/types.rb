@@ -53,6 +53,11 @@ module Gene::Lang
       obj
     end
 
+    def == other
+      self.class      == other.class      and
+      self.properties == other.properties
+    end
+
     def to_s
       parts = []
       # TODO: check "#type" property

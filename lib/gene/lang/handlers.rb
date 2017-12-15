@@ -845,21 +845,46 @@ module Gene::Lang::Handlers
 
       pattern = data.data[0]
       target  = context.process data.data[1]
+      match pattern, target, context
+    end
 
+    def match pattern, target, context
       if pattern.is_a? Gene::Types::Base
         if pattern.type != PLACEHOLDER
           context.define pattern.type.name, target.gene_type
         end
         pattern.data.each_with_index do |name, i|
-          context.define name.to_s, target.data[i]
+          if name.is_a? Gene::Types::Symbol
+            context.define name.to_s, target.data[i]
+          else
+            match name, target.data[i], context
+          end
         end
-        pattern.properties.each do |key, _|
-          context.define key.to_s, target.get(key.to_s)
+        pattern.properties.each do |key, value|
+          if value == true
+            context.define key.to_s, target.get(key.to_s)
+          else
+            match value, target.get(key.to_s), context
+          end
         end
       elsif pattern.is_a? Array
+        pattern.each_with_index do |name, i|
+          if name.is_a? Gene::Types::Symbol
+            context.define name.to_s, target.data[i]
+          else
+            match name, target.data[i], context
+          end
+        end
       elsif pattern.is_a? Hash
-      elsif pattern.is_a? Symbol
-        # TODO: store the whole target in the variable with <pattern> as name
+        pattern.each do |key, value|
+          if value == true
+            context.define key.to_s, target.get(key.to_s)
+          else
+            match value, target.get(key.to_s), context
+          end
+        end
+      elsif pattern.is_a? Gene::Types::Symbol
+        context.define pattern.name, target
       end
     end
   end

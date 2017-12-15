@@ -997,6 +997,13 @@ describe Gene::Lang::Interpreter do
 
   describe "Destructure" do
     it "
+      (match obj (%a))
+      (assert (obj == (%a)))
+     " do
+      @application.parse_and_process(example.description)
+    end
+
+    it "
       (match (type) (%a))
       (assert (type == %a))
      " do
@@ -1012,9 +1019,57 @@ describe Gene::Lang::Interpreter do
     end
 
     it "
+      (match [first second] (_ 1 2))
+      (assert (first == 1))
+      (assert (second == 2))
+     " do
+      @application.parse_and_process(example.description)
+    end
+
+    it "
       (match (_ ^^a ^^b) (_ ^a 1 ^b 2))
       (assert (a == 1))
       (assert (b == 2))
+     " do
+      @application.parse_and_process(example.description)
+    end
+
+    it "
+      (match {^^a ^^b} (_ ^a 1 ^b 2))
+      (assert (a == 1))
+      (assert (b == 2))
+     " do
+      @application.parse_and_process(example.description)
+    end
+
+    it "
+      (match (_ (_ first second)) (_ (_ 1 2)))
+      (assert (first == 1))
+      (assert (second == 2))
+     " do
+      @application.parse_and_process(example.description)
+    end
+
+    it "
+      (match [[first second]] (_ (_ 1 2)))
+      (assert (first == 1))
+      (assert (second == 2))
+     " do
+      @application.parse_and_process(example.description)
+    end
+
+    it "
+      (match (_ ^a attr_a ^b (attr_b_type)) (_ ^a (%a) ^b (%b)))
+      (assert (attr_a == (%a)))
+      (assert (attr_b_type == %b))
+     " do
+      @application.parse_and_process(example.description)
+    end
+
+    it "
+      (match {^a attr_a ^b (attr_b_type)} (_ ^a (%a) ^b (%b)))
+      (assert (attr_a == (%a)))
+      (assert (attr_b_type == %b))
      " do
       @application.parse_and_process(example.description)
     end
