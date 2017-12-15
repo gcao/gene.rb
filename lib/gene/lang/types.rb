@@ -24,6 +24,10 @@ module Gene::Lang
       @klass = klass
     end
 
+    def gene_type
+      get('#type')
+    end
+
     def get name
       @properties[name]
     end

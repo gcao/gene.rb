@@ -42,6 +42,10 @@
   (init _
   )
 
+  (method gene_type _
+    ($invoke self 'get' '#type')
+  )
+
   (method get prop-name
     ((@ prop-name))
   )

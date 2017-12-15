@@ -978,7 +978,7 @@ describe Gene::Lang::Interpreter do
   end
 
   describe "Create / modify / access native Gene object" do
-    it "(assert (((%a 1) .get '#type') == %a))" do
+    it "(assert (((%a 1) .gene_type) == %a))" do
       @application.parse_and_process(example.description)
     end
 
@@ -996,8 +996,27 @@ describe Gene::Lang::Interpreter do
   end
 
   describe "Destructure" do
-    it "(assert ((match (%type) (%a)) == %a))" do
-      # @application.parse_and_process(example.description)
+    it "
+      (match (type) (%a))
+      (assert (type == %a))
+     " do
+      @application.parse_and_process(example.description)
+    end
+
+    it "
+      (match (_ first second) (_ 1 2))
+      (assert (first == 1))
+      (assert (second == 2))
+     " do
+      @application.parse_and_process(example.description)
+    end
+
+    it "
+      (match (_ ^^a ^^b) (_ ^a 1 ^b 2))
+      (assert (a == 1))
+      (assert (b == 2))
+     " do
+      @application.parse_and_process(example.description)
     end
   end
 

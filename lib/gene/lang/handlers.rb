@@ -8,6 +8,7 @@ module Gene::Lang::Handlers
     SCOPE
     FN FNX FNXX BIND
     RETURN
+    MATCH
     CALL DO
     VAR
     ASPECT BEFORE AFTER WHEN CONTINUE
@@ -59,7 +60,14 @@ module Gene::Lang::Handlers
 
     def call context, data
       if data.is_a? Gene::Types::Base
-        if data.type.is_a?(Gene::Types::Symbol) and data.type.to_s[0] == "%"
+        if data.type.is_a?(Gene::Types::Symbol) and data.type == PLACEHOLDER
+          obj = Gene::Lang::Object.new
+          obj.data = data.data.map { |item| context.process(item) }
+          data.properties.each do |key, value|
+            obj.set key, context.process(value)
+          end
+          obj
+        elsif data.type.is_a?(Gene::Types::Symbol) and data.type.to_s[0] == "%"
           obj = Gene::Lang::Object.new
           obj.set "#type", Gene::Types::Symbol.new(data.type.to_s[1..-1])
           obj.data = data.data.map { |item| context.process(item) }
@@ -828,6 +836,31 @@ module Gene::Lang::Handlers
       end
 
       result
+    end
+  end
+
+  class MatchHandler
+    def call context, data
+      return Gene::NOT_HANDLED unless MATCH === data
+
+      pattern = data.data[0]
+      target  = context.process data.data[1]
+
+      if pattern.is_a? Gene::Types::Base
+        if pattern.type != PLACEHOLDER
+          context.define pattern.type.name, target.gene_type
+        end
+        pattern.data.each_with_index do |name, i|
+          context.define name.to_s, target.data[i]
+        end
+        pattern.properties.each do |key, _|
+          context.define key.to_s, target.get(key.to_s)
+        end
+      elsif pattern.is_a? Array
+      elsif pattern.is_a? Hash
+      elsif pattern.is_a? Symbol
+        # TODO: store the whole target in the variable with <pattern> as name
+      end
     end
   end
 
