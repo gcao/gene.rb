@@ -51,6 +51,7 @@ module Gene::Lang
 
     def to_s
       parts = []
+      # TODO: check "#type" property
       type = self.class ? self.class.name : Object.name
       parts << type.sub(/^Gene::Lang::/, '')
 

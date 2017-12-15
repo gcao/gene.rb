@@ -59,7 +59,15 @@ module Gene::Lang::Handlers
 
     def call context, data
       if data.is_a? Gene::Types::Base
-        if INVOKE === data
+        if data.type.is_a?(Gene::Types::Symbol) and data.type.to_s[0] == "%"
+          obj = Gene::Lang::Object.new
+          obj.set "#type", Gene::Types::Symbol.new(data.type.to_s[1..-1])
+          obj.data = data.data.map { |item| context.process(item) }
+          data.properties.each do |key, value|
+            obj.set key, context.process(value)
+          end
+          obj
+        elsif INVOKE === data
           target = context.process data.data[0]
           method = context.process(data.data[1]).to_s
           args   = data.data[2..-1].to_a.map {|item| context.process(item) }
@@ -116,7 +124,9 @@ module Gene::Lang::Handlers
         context.self
       elsif data.is_a? Gene::Types::Symbol
         name = data.name
-        if name =~ /^(.*)\.\.\.$/
+        if name[0] == '%'
+          Gene::Types::Symbol.new name[1..-1]
+        elsif name =~ /^(.*)\.\.\.$/
           if $1[0] == '@'
             # property
             Gene::Lang::Expandable.new context.self[$1[1..-1]]

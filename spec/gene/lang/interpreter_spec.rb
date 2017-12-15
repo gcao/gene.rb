@@ -977,6 +977,30 @@ describe Gene::Lang::Interpreter do
     end
   end
 
+  describe "Create / modify / access native Gene object" do
+    it "(assert (((%a 1) .get '#type') == %a))" do
+      @application.parse_and_process(example.description)
+    end
+
+    it "(assert (((%a 1) .data) == [1]))" do
+      @application.parse_and_process(example.description)
+    end
+
+    it "(assert (((%a 1) .first) == 1))" do
+      @application.parse_and_process(example.description)
+    end
+
+    it "(assert (((%a ^key 'value') .get 'key') == 'value'))" do
+      @application.parse_and_process(example.description)
+    end
+  end
+
+  describe "Destructure" do
+    it "(assert ((match (%type) (%a)) == %a))" do
+      # @application.parse_and_process(example.description)
+    end
+  end
+
   describe "Exception" do
     it "(throw 'some error')" do
       lambda {

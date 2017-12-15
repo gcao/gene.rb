@@ -50,6 +50,14 @@
     ((@ prop-name) = value)
   )
 
+  (method data _
+    ($invoke self 'data')
+  )
+
+  (method first _
+    (($invoke self 'data') .get 0)
+  )
+
   (method call [name args...]
     ($invoke self name args...)
   )
