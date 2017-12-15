@@ -25,7 +25,7 @@ module Gene::Lang
     end
 
     def gene_type
-      get('#type')
+      get('#type') or self.class
     end
 
     def get name

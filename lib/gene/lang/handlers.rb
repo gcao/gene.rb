@@ -851,36 +851,78 @@ module Gene::Lang::Handlers
     def match pattern, target, context
       if pattern.is_a? Gene::Types::Base
         if pattern.type != PLACEHOLDER
-          context.define pattern.type.name, target.gene_type
+          if target.is_a? Array
+            value = Gene::Types::Symbol.new('Array')
+          elsif target.is_a? Hash
+            value = Gene::Types::Symbol.new('Hash')
+          elsif target.is_a? Gene::Lang::Object
+            value = Gene::Types::Symbol.new(target.gene_type.to_s)
+          else
+            value = Gene::Types::Symbol.new(target.class.to_s)
+          end
+
+          context.define pattern.type.name, value
         end
         pattern.data.each_with_index do |name, i|
-          if name.is_a? Gene::Types::Symbol
-            context.define name.to_s, target.data[i]
+          if target.is_a? Gene::Lang::Object
+            result = target.data[i]
+          elsif target.is_a? Array
+            result = target[i]
           else
-            match name, target.data[i], context
+            next
+          end
+
+          if name.is_a? Gene::Types::Symbol
+            context.define name.to_s, result
+          else
+            match name, result, context
           end
         end
         pattern.properties.each do |key, value|
-          if value == true
-            context.define key.to_s, target.get(key.to_s)
+          if target.is_a? Gene::Lang::Object
+            result = target.get(key.to_s)
+          elsif target.is_a? Hash
+            result = target[key.to_s]
           else
-            match value, target.get(key.to_s), context
+            next
+          end
+
+          if value == true
+            context.define key.to_s, result
+          else
+            match value, result, context
           end
         end
       elsif pattern.is_a? Array
         pattern.each_with_index do |name, i|
-          if name.is_a? Gene::Types::Symbol
-            context.define name.to_s, target.data[i]
+          if target.is_a? Gene::Lang::Object
+            result = target.data[i]
+          elsif target.is_a? Array
+            result = target[i]
           else
-            match name, target.data[i], context
+            next
+          end
+
+          if name.is_a? Gene::Types::Symbol
+            context.define name.to_s, result
+          else
+            match name, result, context
           end
         end
       elsif pattern.is_a? Hash
         pattern.each do |key, value|
-          if value == true
-            context.define key.to_s, target.get(key.to_s)
+          if target.is_a? Gene::Lang::Object
+            result = target.get(key.to_s)
+          elsif target.is_a? Hash
+            result = target[key.to_s]
           else
-            match value, target.get(key.to_s), context
+            next
+          end
+
+          if value == true
+            context.define key.to_s, result
+          else
+            match value, result, context
           end
         end
       elsif pattern.is_a? Gene::Types::Symbol
