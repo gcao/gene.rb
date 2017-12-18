@@ -1,0 +1,43 @@
+(class StringScanner ^^global
+  (init source
+    # TODO: create native StringScanner object
+    (@target = ($invoke (get_native_class 'StringScanner') 'new' source))
+  )
+
+  (method skip pattern
+    ($invoke @garget 'skip' pattern)
+  )
+
+  (var klass self)
+
+  # Use meta programming to define proxy methods
+  (['skip'] .each
+    (fnx name
+      (with klass
+        # TODO:
+      )
+    )
+  )
+)
+
+(var UNPARSED (new Object))
+
+(class Parser extend StringScanner
+  ^^global
+
+  (method parse _
+    (var result UNPARSED)
+    (var value)
+
+    (loop
+      (if (.eos?)
+        break
+      )
+      (if (.skip IGNORE)
+        # continue
+      else-if ((value = (.parse_string)) != UNPARSED)
+        (result = (.handle_top_level_results result value))
+      )
+    )
+  )
+)

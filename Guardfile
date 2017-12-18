@@ -5,6 +5,5 @@ guard 'bundler' do
 end
 
 guard 'rspec' do
-  watch(%r{^(lib|spec)/.+\.(rb|treetop)$})
+  watch(%r{^(lib|spec)/.+\.(rb|treetop|gene)$})
 end
-

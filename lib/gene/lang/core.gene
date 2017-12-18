@@ -200,3 +200,8 @@
 
 (class File ^^global
 )
+
+(fn get_native_class name
+  ^^global
+  ($invoke ($invoke '' 'class') 'const_get' name)
+)
