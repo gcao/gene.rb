@@ -92,6 +92,12 @@ describe Gene::Parser do
       result.values.first.should == true
     end
 
+    it '{^!a}' do
+      result = Gene::Parser.parse(example.description)
+      result.keys.first.should == 'a'
+      result.values.first.should == false
+    end
+
     ['{a : b c : d}', '{a : b, c : d}', '{,a : b, c : d,}'].each do |input|
       it input do
         result = Gene::Parser.parse(example.description)

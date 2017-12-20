@@ -14,6 +14,9 @@ describe "Parser" do
     (var result ((new Parser '1') .parse))
     (assert (result == 1))
   " do
-    @application.parse_and_process(example.description)
+    input = example.description
+    pending if input.index('!pending!')
+
+    @application.parse_and_process(input)
   end
 end

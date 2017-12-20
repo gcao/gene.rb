@@ -14,7 +14,7 @@ module Gene::Lang::Handlers
     ASPECT BEFORE AFTER WHEN CONTINUE
     IMPORT EXPORT FROM
     PUBLIC PRIVATE
-    IF IF_NOT ELSE
+    IF IF_NOT ELSE_IF ELSE
     FOR LOOP
     THROW CATCH
     BREAK
@@ -98,6 +98,8 @@ module Gene::Lang::Handlers
           Gene::UNDEFINED
         elsif data.type.is_a? Gene::Lang::PropertyName
           context.self[data.type.name]
+        elsif data.type.is_a? String
+          data.type + data.data.map {|item| context.process(item).to_s }.join
         else
           Gene::NOT_HANDLED
         end
@@ -684,6 +686,14 @@ module Gene::Lang::Handlers
             break
           end
           in_else = true
+          next
+        elsif stmt == ELSE_IF
+          if condition
+            break
+          end
+          new_condition = rest[index]
+          index += 1
+          condition = context.process new_condition
           next
         end
 

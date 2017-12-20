@@ -87,6 +87,7 @@ describe Gene::Lang::Compiler do
     JAVASCRIPT
 
     '
+      # !pending!
       # !eval-to-true!
       (fn f [a b]
         (a + b)

@@ -1,4 +1,6 @@
-(class StringScanner ^^global
+(class StringScanner
+  ^^global
+
   (init source
     # TODO: create native StringScanner object
     (@target = ($invoke (get_native_class 'StringScanner') 'new' source))

@@ -646,7 +646,56 @@ describe Gene::Lang::Interpreter do
             (var a 1)
             (a + 2)
           else
-            2
+            fail
+          ) == 3
+        )
+      )
+    " do
+      @application.parse_and_process(example.description)
+    end
+
+    it "# condition evaluates to false
+      (assert
+        (
+          (if false
+            fail
+          else
+            (var a 1)
+            (a + 2)
+          ) == 3
+        )
+      )
+    " do
+      @application.parse_and_process(example.description)
+    end
+
+    it "# if...else-if
+      (assert
+        (
+          (if false
+            fail
+          else-if false
+            fail
+          else-if true
+            (var a 1)
+            (a + 2)
+          ) == 3
+        )
+      )
+    " do
+      @application.parse_and_process(example.description)
+    end
+
+    it "# if...else-if...else
+      (assert
+        (
+          (if false
+            fail
+          else-if false
+            fail
+          else
+            (var a 1)
+            (a + 2)
           ) == 3
         )
       )
@@ -1429,6 +1478,14 @@ describe Gene::Lang::Interpreter do
       (A .apply C)
       (var c (new C))
       (assert ((c .test) == ['before' 'when before' 'test' 'when after' 'after']))
+    " do
+      @application.parse_and_process(example.description)
+    end
+  end
+
+  describe "String concatenation" do
+    it "
+      (assert (('{a: ' 1 ', b: ' 2 '}') == '{a: 1, b: 2}'))
     " do
       @application.parse_and_process(example.description)
     end
