@@ -181,7 +181,7 @@ module Gene::Lang::Handlers
       if data['global']
         context.set_global name, klass
       else
-        context.define name, klass
+        context.define name, klass, export: true
       end
       klass
     end
@@ -199,7 +199,7 @@ module Gene::Lang::Handlers
         klass.parent_class = context.process data.data[2]
       end
 
-      scope = Gene::Lang::Scope.new nil, false
+      scope = Gene::Lang::Scope.new context.scope, false
       new_context = context.extend scope: scope, self: klass
       # TODO: check whether Object class is defined.
       # If yes, and the newly defined class isn't Object and doesn't have a parent class, set Object as its parent class
@@ -237,8 +237,8 @@ module Gene::Lang::Handlers
         fn.inherit_scope = false
       else
         fn.inherit_scope = true
-        fn.parent_scope  = context.scope
       end
+      fn.parent_scope  = context.scope
 
       # eval-arguments defaults to true unless its value is set to false
       if data['eval-arguments'] == false
@@ -304,6 +304,8 @@ module Gene::Lang::Handlers
       return Gene::NOT_HANDLED unless METHOD === data
       name = data.data[0].to_s
       fn = Gene::Lang::Function.new name
+      fn.parent_scope = context.scope
+      fn.inherit_scope = false
       fn.args_matcher = Gene::Lang::Matcher.new
       fn.args_matcher.from_array data.data[1]
       fn.statements = data.data[2..-1]
@@ -320,6 +322,8 @@ module Gene::Lang::Handlers
       context.self.properties[name] = prop
 
       get = Gene::Lang::Function.new name
+      get.parent_scope = context.scope
+      get.inherit_scope = false
       # Default code: [@x]  assume x is the property name
       code = data['get'] || [Gene::Types::Symbol.new("@#{name}")]
       get.args_matcher = Gene::Lang::Matcher.new
@@ -328,6 +332,8 @@ module Gene::Lang::Handlers
       context.self.methods[get.name] = get
 
       set = Gene::Lang::Function.new "#{name}="
+      set.parent_scope = context.scope
+      set.inherit_scope = false
       # Default code: [value (@x = value)]  assume x is the property name
       code = data['set'] || [
         Gene::Types::Symbol.new("value"),
@@ -389,6 +395,8 @@ module Gene::Lang::Handlers
       return Gene::NOT_HANDLED unless INIT === data
       name = INIT.name
       fn = Gene::Lang::Function.new name
+      fn.parent_scope = context.scope
+      fn.inherit_scope = false
       fn.args_matcher = Gene::Lang::Matcher.new
       fn.args_matcher.from_array data.data[0]
       fn.statements = data.data[1..-1]
@@ -559,7 +567,7 @@ module Gene::Lang::Handlers
       name   = data.data[0].to_s
       aspect = Gene::Lang::Aspect.new name
 
-      scope = Gene::Lang::Scope.new nil, false
+      scope = Gene::Lang::Scope.new context.scope, false
       new_context = context.extend scope: scope, self: aspect
       new_context.process_statements data.data[1..-1] || []
       if data['global']
@@ -758,14 +766,16 @@ module Gene::Lang::Handlers
     def call context, data
       return Gene::NOT_HANDLED unless NS === data
 
-      name = data.data[0].to_s
-      ns   = Gene::Lang::Namespace.new name, context.scope
-      context.define name, ns
+      name  = data.data[0].to_s
+      scope = Gene::Lang::Scope.new context.scope, false
+      ns    = Gene::Lang::Namespace.new name, scope
+      context.define name, ns, export: true
 
-      new_context             = Gene::Lang::Context.new
-      new_context.application = context.application
-      new_context.self        = ns
-      new_context.namespace   = ns
+      # new_context             = Gene::Lang::Context.new
+      # new_context.application = context.application
+      # new_context.self        = ns
+      # new_context.namespace   = ns
+      new_context = context.extend self: ns, scope: ns.scope, namespace: ns
       new_context.process data.data[1..-1]
     end
   end
@@ -833,11 +843,7 @@ module Gene::Lang::Handlers
     def call context, data
       return Gene::NOT_HANDLED unless SCOPE === data
 
-      if data.properties['inherit_scope'] == false
-        scope = Gene::Lang::Scope.new nil, false
-      else
-        scope = Gene::Lang::Scope.new context.scope, true
-      end
+      scope = Gene::Lang::Scope.new context.scope, data.properties['inherit_scope']
       new_context = context.extend scope: scope
 
       result = Gene::UNDEFINED

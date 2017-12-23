@@ -19,8 +19,8 @@ describe Gene::Lang::Interpreter do
       @application.parse_and_process(example.description)
     end
 
-    it "# $global: the global namespace object
-      (assert (($invoke ($invoke $global 'class') 'name') == 'Gene::Lang::Namespace'))
+    it "# $global: the global scope object
+      (assert (($invoke ($invoke $global 'class') 'name') == 'Gene::Lang::Scope'))
     " do
       @application.parse_and_process(example.description)
     end
@@ -888,6 +888,22 @@ describe Gene::Lang::Interpreter do
     end
   end
 
+  describe "Scoping" do
+    it "
+      (var a)
+      (class A
+        (method doSomething _
+          a
+        )
+      )
+      ((new A) .doSomething)
+    " do
+      lambda {
+        @application.parse_and_process(example.description)
+      }.should raise_error
+    end
+  end
+
   describe "Namespace / module system" do
     it "# Namespace and members can be referenced from same scope
       (ns a
@@ -903,7 +919,10 @@ describe Gene::Lang::Interpreter do
         (class C)
       )
       (class B
+        (print a)
         (method test _
+          (debug)
+          (print a)
           (a/C .name)
         )
       )

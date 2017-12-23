@@ -172,7 +172,8 @@ module Gene::Lang
 
     def initialize
       super(Application)
-      set 'global_namespace', Gene::Lang::Namespace.new('global', nil)
+      # set 'global_namespace', Gene::Lang::Namespace.new('global', nil)
+      set 'global_namespace', Gene::Lang::Scope.new(nil, false)
     end
 
     def create_root_context
@@ -180,7 +181,9 @@ module Gene::Lang
       context.application = self
       context.global_namespace = global_namespace
       # Create an anonymous namespace
-      context.self = context.namespace = Gene::Lang::Namespace.new(nil, global_namespace)
+      # context.self = context.namespace = Gene::Lang::Namespace.new(nil, global_namespace)
+      context.self = context
+      context.scope = Gene::Lang::Scope.new(nil, false)
       context
     end
 
@@ -240,22 +243,23 @@ module Gene::Lang
       end
     end
 
-    def define name, value
-      if self.self.is_a? Namespace
-        self.self.def_member name, value
-      else
-        self.scope.set_member name, value
-      end
+    def define name, value, options = {}
+      # if self.self.is_a? Namespace
+      #   self.self.def_member name, value
+      # else
+        self.scope.set_member name, value, options
+      # end
     end
 
     def set_member name, value
-      if self.self.is_a? Namespace
-        self.self.set_member name, value
-      elsif self.scope.defined? name
-        self.scope.let name, value
-      else
-        self.namespace.set_member name, value
-      end
+      # if self.self.is_a? Namespace
+      #   self.self.set_member name, value
+      # elsif self.scope.defined? name
+      #   self.scope.let name, value
+      # else
+      #   self.namespace.set_member name, value
+      # end
+      self.scope.let name, value
     end
 
     def set_global name, value
@@ -583,18 +587,28 @@ module Gene::Lang
   end
 
   class Scope < Object
-    attr_accessor :parent, :variables, :arguments, :inherit_variables
+    attr_accessor :parent, :variables, :arguments, :inherit_variables, :ns_members, :exported_members
 
     def initialize parent, inherit_variables
       super(Scope)
       set 'parent', parent
+      set 'inherit_variables', inherit_variables
       set 'variables', {}
+      set 'ns_members', []
+      set 'exported_members', []
     end
 
     def defined? name
-      self.variables.keys.include?(name)                  or
-      (self.arguments and self.arguments.defined?(name))  or
-      (self.parent and self.parent.defined?(name))
+      if self.variables.keys.include?(name) or (self.arguments and self.arguments.defined?(name))
+        return true
+      end
+      if parent
+        if inherit_variables
+          parent.defined?(name)
+        else
+          parent.defined_in_ns?(name)
+        end
+      end
     end
 
     def get_member name
@@ -605,15 +619,31 @@ module Gene::Lang
       elsif self.arguments and self.arguments.defined?(name)
         self.arguments.get_member(name)
       elsif self.parent
-        self.parent.get_member name
+        if inherit_variables
+          self.parent.get_member name
+        else
+          self.parent.get_ns_member name
+        end
       else
         Gene::UNDEFINED
       end
     end
 
-    def set_member name, value
+    def set_member name, value, options = {}
       self.variables[name] = value
+      if options[:namespace] and not ns_members.include?(name)
+        ns_members << name
+      end
+      if options[:export]
+        if not ns_members.include?(name)
+          ns_members << name
+        end
+        if not exported_members.include?(name)
+          exported_members << name
+        end
+      end
     end
+    alias def_member set_member
 
     def let name, value
       raise "#{name} is not defined." unless self.defined? name
@@ -628,58 +658,102 @@ module Gene::Lang
         self.variables[name] = value
       end
     end
+
+    def defined_in_ns? name
+      ns_members.include?(name)
+    end
+
+    def get_ns_member name
+      name = name.to_s
+
+      if ns_members.include?(name) and self.variables.keys.include? name
+        self.variables[name]
+      else
+        self.parent.get_ns_member name
+      end
+    end
   end
 
   class Namespace < Object
-    attr_reader :name, :parent, :members, :public_members
+    attr_reader :name, :scope
 
-    def initialize name, parent
+    def initialize name, scope
       super(Namespace)
       set 'name', name
-      set 'parent', parent
-      set 'members', {}
-      set 'public_members', []
+      set 'scope', scope
     end
 
     def defined? name
-      members.include?(name) || (parent && parent.defined?(name))
+      scope.defined? name
     end
 
     def get_member name
-      if members.include? name
-        members[name]
-      elsif parent
-        parent.members[name]
-      end
+      scope.get_member name
     end
 
     def def_member name, value
-      members[name] = value
-      set_access_level name, 'public'
+      scope.def_member name, value
     end
 
-    def set_member name, value
-      if members.include? name
-        members[name] = value
-      elsif parent
-        parent.set_member name, value
-      else
-        raise "Unknown member '#{name}'"
-      end
+    def set_member name, value, options
+      scope.set_member name, value, options
     end
 
-    def set_access_level name, access_level
-      if access_level.to_s == 'public'
-        public_members.push name unless public_members.include? name
-      elsif access_level.to_s == 'private'
-        public_members.delete name
-      end
-    end
-
-    def get_access_level name
-      public_members.include?(name) ? 'public' : 'private'
+    def members
+      scope.variables
     end
   end
+
+  # class Namespace < Object
+  #   attr_reader :name, :parent, :members, :public_members
+
+  #   def initialize name, parent
+  #     super(Namespace)
+  #     set 'name', name
+  #     set 'parent', parent
+  #     set 'members', {}
+  #     set 'public_members', []
+  #   end
+
+  #   def defined? name
+  #     members.include?(name) || (parent && parent.defined?(name))
+  #   end
+
+  #   def get_member name
+  #     if members.include? name
+  #       members[name]
+  #     elsif parent
+  #       parent.members[name]
+  #     end
+  #   end
+
+  #   def def_member name, value
+  #     members[name] = value
+  #     set_access_level name, 'public'
+  #   end
+
+  #   def set_member name, value
+  #     if members.include? name
+  #       members[name] = value
+  #     elsif parent
+  #       parent.set_member name, value
+  #     else
+  #       raise "Unknown member '#{name}'"
+  #     end
+  #   end
+
+  #   def set_access_level name, access_level
+  #     if access_level.to_s == 'public'
+  #       public_members.push name unless public_members.include? name
+  #     elsif access_level.to_s == 'private'
+  #       public_members.delete name
+  #     end
+  #   end
+
+  #   def get_access_level name
+  #     public_members.include?(name) ? 'public' : 'private'
+  #   end
+  # end
 
   class ArgumentsScope < Object
     attr_accessor :arguments, :matcher
@@ -947,8 +1021,8 @@ module Gene::Lang
     end
 
     def handle_method options
-      scope = Scope.new nil, false
       context = options[:context]
+      scope = Scope.new context.scope, false
 
       scope.set_member '$method', options[:method] if options[:method]
       scope.set_member '$arguments', options[:arguments]
