@@ -919,10 +919,7 @@ describe Gene::Lang::Interpreter do
         (class C)
       )
       (class B
-        (print a)
         (method test _
-          (debug)
-          (print a)
           (a/C .name)
         )
       )

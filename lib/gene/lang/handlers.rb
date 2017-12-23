@@ -207,7 +207,7 @@ module Gene::Lang::Handlers
       if data['global']
         context.set_global name, klass
       else
-        context.define name, klass
+        context.define name, klass, export: true
       end
       klass
     end
@@ -225,7 +225,7 @@ module Gene::Lang::Handlers
         if data['global']
           context.set_global name, fn
         else
-          context.define name, fn
+          context.define name, fn, export: true
         end
       else
         name = ''
@@ -573,7 +573,7 @@ module Gene::Lang::Handlers
       if data['global']
         context.set_global name, aspect
       else
-        context.define name, aspect
+        context.define name, aspect, export: true
       end
       aspect
     end
@@ -797,12 +797,8 @@ module Gene::Lang::Handlers
 
       data.data[0..-3].each do |item|
         name = item.to_s
-        if ns.defined? name
-          if ns.get_access_level(name) == 'private'
-            raise "#{name} is not public."
-          end
-        else
-          raise "#{name} is not defined."
+        if not new_context.scope.defined_in_ns? name
+          raise "#{name} is neither defined nor exported."
         end
         context.define name, new_context.get_member(name)
       end

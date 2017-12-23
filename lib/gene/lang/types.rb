@@ -660,7 +660,8 @@ module Gene::Lang
     end
 
     def defined_in_ns? name
-      ns_members.include?(name)
+      ns_members.include?(name) or
+      (parent and parent.defined_in_ns?(name))
     end
 
     def get_ns_member name
