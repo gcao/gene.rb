@@ -51,7 +51,7 @@ module Gene
     PLACEHOLDER           = /#_#{SEP_OR_END}/
     IGNORE                = %r(
       (?:
-       \#([,\s\(\)\{\}\[\]]+[^\n\r]*([\n\r]|$))| # line comments
+       \#($ | [\n\r] | \s+[^\n\r]*($|[\n\r]))|   # line comments
        [\s]+             # whitespaces: space, horicontal tab, lf, cr
       )+
     )mx

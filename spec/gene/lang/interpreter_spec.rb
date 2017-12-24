@@ -66,6 +66,15 @@ describe Gene::Lang::Interpreter do
       result.name.should  == 'A'
     end
 
+    it " # Can run code inside class definition
+      (class A
+        (var a 1)
+        (assert (a == 1))
+      )
+     " do
+      @application.parse_and_process(example.description)
+    end
+
     it "(class A)(new A)" do
       result = @application.parse_and_process(example.description)
       result.class.class.should == Gene::Lang::Class

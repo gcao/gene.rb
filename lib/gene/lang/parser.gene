@@ -6,23 +6,21 @@
     (@target = ($invoke (get_native_class 'StringScanner') 'new' source))
   )
 
-  (method skip pattern
-    ($invoke @garget 'skip' pattern)
-  )
-
   (var klass self)
 
   # Use meta programming to define proxy methods
-  (['skip'] .each
+  (['eos?' 'skip'] .each
     (fnx name
       (with klass
-        # TODO:
+        (method (do name) [args...]
+          ($invoke @target name args...)
+        )
       )
     )
   )
 )
 
-(var UNPARSED (new Object))
+(^^export var UNPARSED (new Object))
 
 (class Parser extend StringScanner
   ^^global

@@ -68,6 +68,21 @@ describe Gene::Parser do
     end
   end
 
+  it " # Additional test for single line comments
+    (a
+      #
+      # (
+      # )
+      b
+    )
+  " do
+    result = Gene::Parser.parse(example.description)
+    result.should == Gene::Types::Base.new(
+      Gene::Types::Symbol.new('a'),
+      Gene::Types::Symbol.new('b')
+    )
+  end
+
   describe "Hash" do
     it '{}' do
       result = Gene::Parser.parse(example.description)
