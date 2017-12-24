@@ -302,7 +302,11 @@ module Gene::Lang::Handlers
   class MethodHandler
     def call context, data
       return Gene::NOT_HANDLED unless METHOD === data
-      name = data.data[0].to_s
+      name = data.data[0]
+      if name.is_a? Gene::Types::Base
+        name = context.process(name)
+      end
+      name = name.to_s
       fn = Gene::Lang::Function.new name
       fn.parent_scope = context.scope
       fn.inherit_scope = false

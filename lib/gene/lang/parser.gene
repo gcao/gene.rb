@@ -13,7 +13,8 @@
     (fnx name
       (with klass
         (method (do name) [args...]
-          ($invoke @target name args...)
+          # `name` is not in scope!
+          # ($invoke @target name args...)
         )
       )
     )
