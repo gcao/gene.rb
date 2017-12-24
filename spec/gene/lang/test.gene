@@ -1,7 +1,9 @@
 (var x 100)
 
-(class Test
-  (method test _
-    'test result'
-  )
-)
+(var ^^export y 200)
+
+(fn test_function)
+
+(module TestModule)
+
+(class TestClass)

@@ -413,7 +413,7 @@ module Gene::Lang::Handlers
       if name[0] == '@'
         context.self.set_member name[1..-1], value
       else
-        context.define name, value
+        context.define name, value, export: data['export']
       end
       Gene::Lang::Variable.new name, value
     end
