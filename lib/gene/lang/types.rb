@@ -428,8 +428,10 @@ module Gene::Lang
       after_advices  = []
       when_advice    = nil
 
-      while not advices.empty?
-        advice = advices.shift
+      index = 0
+      while index < advices.length
+        advice = advices[index]
+        index += 1
         if advice.type_is_before?
           before_advices << advice
         elsif advice.type_is_after?
@@ -833,12 +835,15 @@ module Gene::Lang
 
       data_matcher = nil
 
-      while not array.empty?
-        item = array.shift.to_s
+      index = 0
+      while index < array.length
+        item = array[index].to_s
+        index += 1
 
         if item == '='
           if data_matcher
-            data_matcher.default_value = array.shift
+            data_matcher.default_value = array[index]
+            index += 1
             data_matcher = nil
           else
             raise 'Syntax error: argument name is expected before `=`'
@@ -854,7 +859,8 @@ module Gene::Lang
           name = $1
           raise "Name conflict: #{name}" if self.defined? name
           prop_matcher = Gene::Lang::PropMatcher.new name
-          prop_matcher.default_value = array.shift
+          prop_matcher.default_value = array[index]
+          index += 1
           prop_matchers[name] = prop_matcher
           data_matcher = nil
 

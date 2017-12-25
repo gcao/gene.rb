@@ -14,6 +14,8 @@
       (with klass
         (method (do name) [args...]
           ^^inherit_scope    # to enable access to name
+          (print name)
+          (print args)
           ($invoke @target name args...)
         )
       )
