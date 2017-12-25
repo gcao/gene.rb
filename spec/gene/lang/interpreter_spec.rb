@@ -673,6 +673,20 @@ describe Gene::Lang::Interpreter do
       @application.parse_and_process(example.description)
     end
 
+    it "# allow optional 'then'
+      (assert ((if true then 1 2) == 2))
+    " do
+      @application.parse_and_process(example.description)
+    end
+
+    it "# allow optional 'then'
+      (assert ((if true 1 then 2) == 2))
+    " do
+      lambda {
+        @application.parse_and_process(example.description)
+      }.should raise_error
+    end
+
     it "# condition evaluates to true
       (assert ((if true 1 [1 2]) == [1 2]))
     " do
@@ -726,6 +740,37 @@ describe Gene::Lang::Interpreter do
       @application.parse_and_process(example.description)
     end
 
+    it "# if...else-if
+      (assert
+        (
+          (if false
+            fail
+          else-if false then
+            fail
+          else-if true then
+            (var a 1)
+            (a + 2)
+          ) == 3
+        )
+      )
+    " do
+      @application.parse_and_process(example.description)
+    end
+
+    it "# then in bad position
+      (if false
+        fail
+      else-if true
+        1
+        then
+        2
+      )
+    " do
+      lambda {
+        @application.parse_and_process(example.description)
+      }.should raise_error
+    end
+
     it "# if...else-if...else
       (assert
         (
@@ -747,6 +792,18 @@ describe Gene::Lang::Interpreter do
       (assert ((if false 1 else 2) == 2))
     " do
       @application.parse_and_process(example.description)
+    end
+
+    it "# then in bad position
+      (if false
+        1
+      else then
+        2
+      )
+    " do
+      lambda {
+        @application.parse_and_process(example.description)
+      }.should raise_error
     end
 
     it "# condition evaluates to false

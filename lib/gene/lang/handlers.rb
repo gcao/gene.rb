@@ -14,7 +14,7 @@ module Gene::Lang::Handlers
     ASPECT BEFORE AFTER WHEN CONTINUE
     IMPORT EXPORT FROM
     PUBLIC PRIVATE
-    IF IF_NOT ELSE_IF ELSE
+    IF IF_NOT ELSE_IF ELSE THEN
     FOR LOOP
     THROW CATCH
     BREAK
@@ -689,9 +689,19 @@ module Gene::Lang::Handlers
       condition = context.process condition
       index = 0
       in_else = false
+
+      allow_then = true
       while index < rest.length
         stmt   = rest[index]
         index += 1
+
+        if allow_then
+          allow_then = false
+          if stmt == THEN
+            stmt   = rest[index]
+            index += 1
+          end
+        end
 
         if stmt == ELSE
           if condition
@@ -706,6 +716,7 @@ module Gene::Lang::Handlers
           new_condition = rest[index]
           index += 1
           condition = context.process new_condition
+          allow_then = true
           next
         end
 
