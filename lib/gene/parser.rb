@@ -30,6 +30,7 @@ module Gene
                               )
                             )/x
     SYMBOL                 = /([^,\s\(\)\[\]\{\}]+)/
+    REGEXP                 = /#\/(([^\/]+|(\\.)+)*)\/([a-z]*)/
     # REF                   = /#(?=[a-z])/
     COMMENT               = /#<(?=[,\s\(\)\[\]\{\}]|$)/
     COMMENT_END           = />#(?=[,\s\(\)\[\]\{\}]|$)/
@@ -102,6 +103,8 @@ module Gene
         # Attribute should not appear on top level
         # when (value = parse_attribute) != UNPARSED
         #   obj = handle_top_level_results obj, value
+        when (value = parse_regexp) != UNPARSED
+          obj = handle_top_level_results obj, value
         when (value = parse_symbol) != UNPARSED
           obj = handle_top_level_results obj, value
         else
@@ -216,6 +219,8 @@ module Gene
       #   value
       when (value = parse_attribute(attribute_for_group)) != UNPARSED
         value
+      when (value = parse_regexp) != UNPARSED
+        value
       when (value = parse_symbol) != UNPARSED
         value
       when eos?
@@ -304,6 +309,20 @@ module Gene
       end
 
       Gene::Types::Symbol.new(value, escaped)
+    end
+
+    def parse_regexp
+      return UNPARSED unless scan(REGEXP)
+
+      value = self[1]
+      flags = self[4]
+      options = 0
+
+      if flags.include?('i')
+        options |= Regexp::IGNORECASE
+      end
+
+      Regexp.new(value, options)
     end
 
     # def parse_ref

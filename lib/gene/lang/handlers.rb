@@ -309,7 +309,7 @@ module Gene::Lang::Handlers
       name = name.to_s
       fn = Gene::Lang::Function.new name
       fn.parent_scope = context.scope
-      fn.inherit_scope = false
+      fn.inherit_scope = data.properties['inherit_scope']
       fn.args_matcher = Gene::Lang::Matcher.new
       fn.args_matcher.from_array data.data[1]
       fn.statements = data.data[2..-1]
@@ -417,7 +417,7 @@ module Gene::Lang::Handlers
       if name[0] == '@'
         context.self.set_member name[1..-1], value
       else
-        context.define name, value, export: data['export']
+        context.define name, value, namespace: data['namespace'], export: data['export']
       end
       Gene::Lang::Variable.new name, value
     end

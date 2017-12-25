@@ -13,15 +13,16 @@
     (fnx name
       (with klass
         (method (do name) [args...]
-          # `name` is not in scope!
-          # ($invoke @target name args...)
+          ^^inherit_scope    # to enable access to name
+          ($invoke @target name args...)
         )
       )
     )
   )
 )
 
-(^^export var UNPARSED (new Object))
+(var ^^namespace UNPARSED (new Object))
+(var ^^namespace IGNORE #//)
 
 (class Parser extend StringScanner
   ^^global

@@ -30,6 +30,7 @@ describe Gene::Parser do
     '\#'       => Gene::Types::Symbol.new('#', true),
     '\#a'      => Gene::Types::Symbol.new('#a', true),
     'a'        => Gene::Types::Symbol.new('a'),
+    '#//'      => //,
     # Quoted symbol, support escaping with "\"
     # '#""'      => Gene::Types::Symbol.new(''),
     # "#''"      => Gene::Types::Symbol.new(''),
@@ -71,15 +72,17 @@ describe Gene::Parser do
   it " # Additional test for single line comments
     (a
       #
+      b
       # (
       # )
-      b
+      c
     )
   " do
     result = Gene::Parser.parse(example.description)
     result.should == Gene::Types::Base.new(
       Gene::Types::Symbol.new('a'),
-      Gene::Types::Symbol.new('b')
+      Gene::Types::Symbol.new('b'),
+      Gene::Types::Symbol.new('c'),
     )
   end
 
