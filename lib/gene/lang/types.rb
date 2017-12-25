@@ -428,10 +428,8 @@ module Gene::Lang
       after_advices  = []
       when_advice    = nil
 
-      index = 0
-      while index < advices.length
-        advice = advices[index]
-        index += 1
+      while not advices.empty?
+        advice = advices.shift
         if advice.type_is_before?
           before_advices << advice
         elsif advice.type_is_after?

@@ -14,8 +14,6 @@
       (with klass
         (method (do name) [args...]
           ^^inherit_scope    # to enable access to name
-          (print name)
-          (print args)
           ($invoke @target name args...)
         )
       )
@@ -33,7 +31,10 @@
     (var result UNPARSED)
     (var value)
 
+    (var i 0)
     (loop
+      # Prevent infinite loop
+      (if (i < 100) (i += 1) else break)
       (if (.eos?)
         break
       )
