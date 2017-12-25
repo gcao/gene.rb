@@ -21,8 +21,8 @@
   )
 )
 
-(var ^^namespace UNPARSED (new Object))
-(var ^^namespace IGNORE #//)
+(nsvar UNPARSED (new Object))
+(nsvar IGNORE #//)
 
 (class Parser extend StringScanner
   ^^global

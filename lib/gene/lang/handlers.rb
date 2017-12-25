@@ -10,7 +10,7 @@ module Gene::Lang::Handlers
     RETURN
     MATCH
     CALL DO
-    VAR
+    VAR NSVAR
     ASPECT BEFORE AFTER WHEN CONTINUE
     IMPORT EXPORT FROM
     PUBLIC PRIVATE
@@ -411,13 +411,13 @@ module Gene::Lang::Handlers
 
   class DefinitionHandler
     def call context, data
-      return Gene::NOT_HANDLED unless VAR === data
+      return Gene::NOT_HANDLED unless VAR === data or NSVAR === data
       name  = data.data[0].to_s
       value = context.process data.data[1]
       if name[0] == '@'
         context.self.set_member name[1..-1], value
       else
-        context.define name, value, namespace: data['namespace'], export: data['export']
+        context.define name, value, namespace: data.type == NSVAR, export: data['export']
       end
       Gene::Lang::Variable.new name, value
     end

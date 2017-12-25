@@ -614,6 +614,30 @@ describe Gene::Lang::Interpreter do
     " do
       @application.parse_and_process(example.description)
     end
+
+    it "# Regular variable not accessible if scope is not inherited
+      (var a 1)
+      (fn f _
+        ^!inherit-scope
+        a
+      )
+      (f)
+    " do
+      lambda {
+        @application.parse_and_process(example.description)
+      }.should raise_error
+    end
+
+    it "# Define variable inside current namespace
+      (nsvar a 1)
+      (fn f _
+        ^!inherit_scope
+        a
+      )
+      (assert ((f) == 1))
+    " do
+      @application.parse_and_process(example.description)
+    end
   end
 
   describe "do" do
