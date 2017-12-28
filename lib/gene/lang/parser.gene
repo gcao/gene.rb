@@ -1,48 +1,56 @@
+(fn proxy name
+  (method (do name) [args...]
+    ^^inherit_scope    # to enable access to name
+    ($invoke @target name args...)
+  )
+)
+
 (class StringScanner
   ^^global
 
   (init source
-    # TODO: create native StringScanner object
+    # create native StringScanner object
     (@target = ($invoke (get_native_class 'StringScanner') 'new' source))
   )
 
-  (var klass self)
-
   # Use meta programming to define proxy methods
-  (['eos?' 'skip'] .each
-    (fnx name
-      (with klass
-        (method (do name) [args...]
-          ^^inherit_scope    # to enable access to name
-          ($invoke @target name args...)
-        )
-      )
-    )
-  )
+  (['eos?' 'skip' 'scan'] .each (proxy .bind self))
 )
 
 (nsvar UNPARSED (new Object))
-(nsvar IGNORE #//)
+
+(nsvar IGNORE #/\#($|[\n\r]|\s+[^\n\r]*($|[\n\r]))|[\s]/m)
+(nsvar INTEGER #/(-?0|-?[1-9]\d*)/)
 
 (class Parser extend StringScanner
   ^^global
 
   (method parse _
     (var result UNPARSED)
-    (var value)
 
+    (var value)
     (var i 0)
     (loop
       # Prevent infinite loop
       (if (i < 100) (i += 1) else break)
-      (if (.eos?)
-        break
-      )
+      (if (.eos?) break)
+
       (if (.skip IGNORE)
         # continue
-      else-if ((value = (.parse_string)) != UNPARSED)
-        (result = (.handle_top_level_results result value))
+      else-if ((value = (.parse_int)) != UNPARSED)
+        # (result = (.handle_top_level_results result value))
+        (result = value)
       )
+    )
+
+    result
+  )
+
+  (method parse_int _
+    (if (.scan INTEGER)
+      ($invoke ($invoke @target '[]' 1) 'to_i')
+    else
+      UNPARSED
     )
   )
 )

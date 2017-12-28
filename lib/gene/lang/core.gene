@@ -74,6 +74,9 @@
 )
 
 (class Function ^^global
+  (method bind target
+    ($invoke self 'bind' target)
+  )
 )
 
 (class Class ^^global

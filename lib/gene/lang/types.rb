@@ -543,6 +543,10 @@ module Gene::Lang
       end
       result
     end
+
+    def bind target
+      BoundFunction.new self, target
+    end
   end
 
   class BoundFunction < Object
