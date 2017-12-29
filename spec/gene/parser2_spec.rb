@@ -10,13 +10,24 @@ describe "Parser" do
     @application.parse_and_process File.read(file), dir: dir, file: file
   end
 
-  it "
+
+  %q~
     (var result ((new Parser '1') .parse))
     (assert (result == 1))
-  " do
-    input = example.description
-    pending if input.index('!pending!')
 
-    @application.parse_and_process(input)
+    # !pending!
+    (var result ((new Parser '"a"') .parse))
+    (assert (result == 'a'))
+
+    # !pending!
+    (var result ((new Parser 'true') .parse))
+    (assert (result == true))
+  ~.split("\n\n").each do |code|
+    it code do
+      input = example.description
+      pending if input.index('!pending!')
+
+      @application.parse_and_process(input)
+    end
   end
 end

@@ -196,6 +196,9 @@
 )
 
 (class File ^^global
+  (fn read file-name
+    ((get_native_class 'File') .read file-name)
+  )
 )
 
 (fn get_native_class name

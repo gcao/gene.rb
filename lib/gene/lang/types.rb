@@ -298,6 +298,7 @@ module Gene::Lang
   # TODO: Support prepend like how Ruby does
   class Module < Object
     attr_accessor :name, :methods, :prop_descriptors, :modules
+    attr_accessor :scope
     attr_accessor :default_aspect, :applied_aspects
     attr_accessor :advices_for_methods_cache
 
@@ -358,6 +359,28 @@ module Gene::Lang
         end
       end
     end
+
+    # BEGIN: Implement Namespace-like interface
+    def defined? name
+      scope.defined? name
+    end
+
+    def get_member name
+      scope.get_member name
+    end
+
+    def def_member name, value
+      scope.def_member name, value
+    end
+
+    def set_member name, value, options
+      scope.set_member name, value, options
+    end
+
+    def members
+      scope.variables
+    end
+    # END
 
     private
 

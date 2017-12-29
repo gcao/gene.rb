@@ -172,9 +172,9 @@ module Gene::Lang::Handlers
       return Gene::NOT_HANDLED unless MODULE === data
       name  = data.data[0].to_s
       klass = Gene::Lang::Module.new name
+      klass.scope = Gene::Lang::Scope.new context.scope, false
 
-      scope = Gene::Lang::Scope.new context.scope, false
-      new_context = context.extend scope: scope, self: klass
+      new_context = context.extend scope: klass.scope, self: klass
       # TODO: check whether Object class is defined.
       # If yes, and the newly defined class isn't Object and doesn't have a parent class, set Object as its parent class
       new_context.process_statements data.data[1..-1] || []
@@ -192,6 +192,7 @@ module Gene::Lang::Handlers
       return Gene::NOT_HANDLED unless CLASS === data
       name  = data.data[0].to_s
       klass = Gene::Lang::Class.new name
+      klass.scope = Gene::Lang::Scope.new context.scope, false
 
       stmts_start_index = 1
       if data.data[1] == EXTEND
@@ -199,8 +200,7 @@ module Gene::Lang::Handlers
         klass.parent_class = context.process data.data[2]
       end
 
-      scope = Gene::Lang::Scope.new context.scope, false
-      new_context = context.extend scope: scope, self: klass
+      new_context = context.extend scope: klass.scope, self: klass
       # TODO: check whether Object class is defined.
       # If yes, and the newly defined class isn't Object and doesn't have a parent class, set Object as its parent class
       new_context.process_statements data.data[stmts_start_index..-1] || []

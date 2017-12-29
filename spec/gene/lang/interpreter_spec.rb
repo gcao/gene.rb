@@ -155,6 +155,17 @@ describe Gene::Lang::Interpreter do
     " do
       @application.parse_and_process(example.description)
     end
+
+    it "# Class creates a namespace
+      (class A
+        (fn test _
+          1
+        )
+      )
+      (assert ((A/test) == 1))
+    " do
+      @application.parse_and_process(example.description)
+    end
   end
 
   describe "properties" do
