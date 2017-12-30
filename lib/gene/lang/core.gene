@@ -195,9 +195,11 @@
 (class ReturnValue ^^global
 )
 
-(class File ^^global
+(class File
+  ^^global
+
   (fn read file-name
-    ((get_native_class 'File') .read file-name)
+    ($invoke (get_native_class 'File') 'read' file-name)
   )
 )
 

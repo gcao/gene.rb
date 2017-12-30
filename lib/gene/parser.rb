@@ -7,6 +7,7 @@ module Gene
     SEPARATOR             = /[\s()\[\]{},;]/
     SEP_OR_END            = /(?=#{SEPARATOR}|$)/
     STRING                = /"((?:[^\x0-\x1f"\\] |
+                              [\n\r\t] |
                               # escaped special characters:
                               \\["\\\/bfnrt] |
                               \\u[0-9a-fA-F]{4} |
@@ -29,7 +30,7 @@ module Gene
                                 (?i:e[+-]?\d+)
                               )
                             )/x
-    SYMBOL                 = /([^,\s\(\)\[\]\{\}]+)/
+    SYMBOL                 = /([^"',\s\(\)\[\]\{\}][^,\s\(\)\[\]\{\}]*)/
     REGEXP                 = /#\/(([^\/]+|(\\.)+)*)\/([a-z]*)/
     # REF                   = /#(?=[a-z])/
     COMMENT               = /#<(?=[,\s\(\)\[\]\{\}]|$)/
@@ -108,7 +109,11 @@ module Gene
         when (value = parse_symbol) != UNPARSED
           obj = handle_top_level_results obj, value
         else
-          raise ParseError, "source '#{peek(20)}' is not valid GENE!"
+          if %w(' ").include? peek(1)
+            raise PrematureEndError, "Incomplete content"
+          else
+            raise ParseError, "source '#{peek(20)}' is not valid GENE!"
+          end
         end
       end
 
@@ -226,7 +231,11 @@ module Gene
       when eos?
         raise PrematureEndError, "Incomplete content"
       else
-        raise ParseError, "unexpected token at '#{peek(20)}'!"
+        if %w(' ").include? peek(1)
+          raise PrematureEndError, "Incomplete content"
+        else
+          raise ParseError, "unexpected token at '#{peek(20)}'!"
+        end
       end
     end
 

@@ -6,9 +6,9 @@ describe "File" do
     @application.load_core_libs
   end
 
-  it "(File .read 'spec/data/test.txt')" do
-    pending
-    result = @application.parse_and_process(example.description)
-    result.should == "Test\nTest 2"
+  it "
+    (assert ((File/read 'spec/data/test.txt') == \"Test\nTest 2\"))
+  " do
+    @application.parse_and_process(example.description)
   end
 end
