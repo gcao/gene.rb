@@ -31,6 +31,12 @@
 (nsvar SYMBOL     #/([^"',\s\(\)\[\]\{\}][^,\s\(\)\[\]\{\}]*)/)
 (nsvar STRING     #/"(([^"]|\\")*)"/)
 
+(nsvar GENE_OPEN  #/\(/)
+(nsvar GENE_CLOSE #/\)/)
+
+(nsvar ARRAY_OPEN  #/\[/)
+(nsvar ARRAY_CLOSE #/\]/)
+
 (class Parser extend StringScanner
   ^^global
 
@@ -54,6 +60,10 @@
       else-if ((value = (.parse_symbol)) != UNPARSED)
         (result = value)
       else-if ((value = (.parse_string)) != UNPARSED)
+        (result = value)
+      else-if ((value = (.parse_array)) != UNPARSED)
+        (result = value)
+      else-if ((value = (.parse_gene)) != UNPARSED)
         (result = value)
       )
     )
@@ -102,6 +112,45 @@
         )
       )
       ($invoke (get_native_class 'Gene::Types::Symbol') 'new' value)
+    else
+      UNPARSED
+    )
+  )
+
+  (method parse_array _
+    (if (.scan ARRAY_OPEN)
+      (var result [])
+      (loop
+        (if (.eos?)
+          (throw "unexpected end of input")
+        else-if (.scan ARRAY_CLOSE)
+          break
+        else
+          (throw "unexpected token at 'TODO'!")
+        )
+      )
+      result
+    else
+      UNPARSED
+    )
+  )
+
+  (method parse_gene _
+    (if (.scan GENE_OPEN)
+      (var result (new Object))
+      (var empty true)
+
+      (loop
+        (if (.eos?)
+          (throw "unexpected end of input")
+        else-if (.scan GENE_CLOSE)
+          break
+        else
+          (throw "unexpected token at 'TODO'!")
+        )
+      )
+
+      (if empty then noop else result)
     else
       UNPARSED
     )

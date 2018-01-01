@@ -31,6 +31,13 @@ describe "Parser" do
     (assert (result == []))
 
     # !pending!
+    (var result ((new Parser '[a]') .parse))
+    (assert (result == [a]))
+
+    (var result ((new Parser '()') .parse))
+    (assert (result == noop))
+
+    # !pending!
     (var result ((new Parser '"a"') .parse))
     (assert (result == 'a'))
   ~.split("\n\n").each do |code|
