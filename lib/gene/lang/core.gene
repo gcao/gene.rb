@@ -50,7 +50,9 @@
     # else
     #   obj.class
     # end
-    (if ($invoke self 'is_a?' (get_native_class 'Array'))
+    (if ($invoke self 'is_a?' (get_native_class 'Gene::Types::Stream'))
+      Stream
+    else-if ($invoke self 'is_a?' (get_native_class 'Array'))
       Array
     else-if ($invoke self 'is_a?' (get_native_class 'Hash'))
       Hash
@@ -65,6 +67,10 @@
 
   (method is klass
     ((.class) .is_sub_class klass)
+  )
+
+  (method to_s _
+    ($invoke self 'to_s')
   )
 )
 
@@ -137,9 +143,6 @@
 (class Array
   ^^global
 
-  (method class _
-    ($invoke $context "get_member" "Array")
-  )
   (method size _
     ($invoke self "size")
   )
@@ -165,6 +168,14 @@
       (var item (.get i))
       (f item i)
     )
+  )
+  (method map f
+    (var result [])
+    (for (var i 0) (i < (.size)) (i += 1)
+      (var item (.get i))
+      (result .push (f item i))
+    )
+    result
   )
   (method select f
     (var result [])
@@ -192,6 +203,10 @@
   )
 )
 
+(class Stream extend Array
+  ^^global
+)
+
 (class Hash
   ^^global
 
@@ -204,8 +219,12 @@
   ^^global
 
   (method + args...
-    ($invoke $self '<<' args)
+    ($invoke self '<<' args)
   )
+)
+
+(class Symbol
+  ^^global
 )
 
 (class BreakValue

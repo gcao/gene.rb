@@ -19,9 +19,9 @@
 
 (nsvar UNPARSED (new Object))
 
-(nsvar IGNORE #/\#($|[\n\r]|\s+[^\n\r]*($|[\n\r]))|[\s]/m)
-(nsvar INTEGER #/(-?0|-?[1-9]\d*)/)
-(nsvar TRUE #/true[\s()\[\]{},;]/)
+(nsvar IGNORE     #/\#($|[\n\r]|\s+[^\n\r]*($|[\n\r]))|[\s]/m)
+(nsvar INTEGER    #/(-?0|-?[1-9]\d*)/)
+(nsvar TRUE       #/true[\s()\[\]{},;]/)
 
 (class Parser extend StringScanner
   ^^global
@@ -44,7 +44,11 @@
       )
     )
 
-    result
+    (if (result == UNPARSED)
+      ($invoke (get_native_class 'Gene::Types::Stream') 'new')
+    else
+      result
+    )
   )
 
   (method parse_int _

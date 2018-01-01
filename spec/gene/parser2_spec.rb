@@ -12,6 +12,9 @@ describe "Parser" do
 
 
   %q~
+    (var result ((new Parser '') .parse))
+    (assert (result .is Stream))
+
     (var result ((new Parser '1') .parse))
     (assert (result == 1))
 

@@ -482,12 +482,16 @@ module Gene::Lang::Handlers
     private
 
     def get_class obj, context
-      if obj.is_a? Array
+      if obj.is_a? Gene::Types::Stream
+        context.get_member("Stream")
+      elsif obj.is_a? Array
         context.get_member("Array")
       elsif obj.is_a? Hash
         context.get_member("Hash")
       elsif obj.is_a? Fixnum
         context.get_member("Int")
+      elsif obj.is_a? Gene::Types::Symbol
+        context.get_member("Symbol")
       elsif obj.is_a? Gene::Lang::Aspect
         context.get_member("Aspect")
       elsif obj.is_a? Gene::Lang::Class
