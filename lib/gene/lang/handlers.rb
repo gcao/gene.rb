@@ -99,7 +99,8 @@ module Gene::Lang::Handlers
         elsif data.type.is_a? Gene::Lang::PropertyName
           context.self[data.type.name]
         elsif data.type.is_a? String
-          data.type + data.data.map {|item| context.process(item).to_s }.join
+          sub_strs = data.data.map {|item| context.process(item) }
+          data.type + expand(sub_strs).map(&:to_s).join
         else
           Gene::NOT_HANDLED
         end
@@ -361,7 +362,7 @@ module Gene::Lang::Handlers
       hierarchy = Gene::Lang::HierarchySearch.new(klass.ancestors)
       method = INIT.name
       args = data.data[1..-1].map {|arg| context.process arg }
-      args = Gene::Lang::Object.from_array(args)
+      args = Gene::Lang::Object.from_array_and_properties(args, data.properties)
       hierarchy.next.handle_method({
         hierarchy: hierarchy,
         method: method,
@@ -380,7 +381,7 @@ module Gene::Lang::Handlers
       function = context.process data.data[0]
       self_object = context.process data.data[1]
       args = data.data[2..-1] || []
-      args = Gene::Lang::Object.from_array(args)
+      args = Gene::Lang::Object.from_array_and_properties(args, data.properties)
       function.call context: context, self: self_object, arguments: args
     end
   end
@@ -433,7 +434,7 @@ module Gene::Lang::Handlers
         hierarchy = Gene::Lang::HierarchySearch.new(klass.ancestors)
         method = data.data[0].to_s[1..-1]
         args = data.data[1..-1].map {|arg| context.process arg }
-        args = Gene::Lang::Object.from_array(args)
+        args = Gene::Lang::Object.from_array_and_properties(args, data.properties)
         hierarchy.next.handle_method({
           hierarchy: hierarchy,
           method: method,
@@ -448,7 +449,7 @@ module Gene::Lang::Handlers
           args = args.map{|item| context.process item}
         end
         args = expand args
-        args = Gene::Lang::Object.from_array(args)
+        args = Gene::Lang::Object.from_array_and_properties(args, data.properties)
         value.call context: context, arguments: args
       elsif data.is_a? Gene::Types::Base and data.type.is_a? Gene::Types::Symbol and data.type.name =~ /^.(.*)$/
         method = $1
@@ -456,7 +457,8 @@ module Gene::Lang::Handlers
         hierarchy = Gene::Lang::HierarchySearch.new(klass.ancestors)
         args = data.data.map{|item| context.process item}
         args = expand args
-        args = Gene::Lang::Object.from_array(args)
+        args = Gene::Lang::Object.from_array_and_properties(args, data.properties)
+        # args.properties = data.properties
         hierarchy.next.handle_method(
           hierarchy: hierarchy,
           method: method,
@@ -470,7 +472,7 @@ module Gene::Lang::Handlers
       elsif data.is_a? Gene::Types::Base and data.type.is_a? Gene::Lang::Function
         args = data.data.map{|item| context.process item}
         args = expand args
-        args = Gene::Lang::Object.from_array(args)
+        args = Gene::Lang::Object.from_array_and_properties(args, data.properties)
         data.type.call context: context, arguments: args
       else
         Gene::NOT_HANDLED
@@ -641,10 +643,15 @@ module Gene::Lang::Handlers
       Gene::Types::Symbol.new('<'),
       Gene::Types::Symbol.new('<='),
 
+      Gene::Types::Symbol.new('=~'),
+      Gene::Types::Symbol.new('!~'),
+
       Gene::Types::Symbol.new('+'),
       Gene::Types::Symbol.new('-'),
       Gene::Types::Symbol.new('*'),
       Gene::Types::Symbol.new('/'),
+      Gene::Types::Symbol.new('|'),
+      Gene::Types::Symbol.new('&'),
 
       Gene::Types::Symbol.new('&&'),
       Gene::Types::Symbol.new('||'),
@@ -664,10 +671,15 @@ module Gene::Lang::Handlers
       when '>'  then left > right
       when '>=' then left >= right
 
+      when '=~' then left =~ right
+      when '!~' then left !~ right
+
       when '+' then left + right
       when '-' then left - right
       when '*' then left * right
       when '/' then left / right
+      when '|' then left | right
+      when '&' then left & right
 
       when '&&' then left && right
       when '||' then left || right
@@ -1014,7 +1026,8 @@ module Gene::Lang::Handlers
             if exception.class.name == key or (key == 'default' and exception.class.name == 'Exception')
               handled = true
               handler = context.process value
-              result = handler.call context: context, args: [exception]
+              args = Gene::Lang::Object.from_array_and_properties [exception]
+              result = handler.call context: context, args: args
               break
             end
           end
@@ -1022,7 +1035,8 @@ module Gene::Lang::Handlers
           ensure_cb = data.properties['ensure']
           if ensure_cb
             function = context.process ensure_cb
-            function.call context: context, args: []
+            args = Gene::Lang::Object.from_array_and_properties []
+            function.call context: context, args: args
           end
         end
 

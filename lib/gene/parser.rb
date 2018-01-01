@@ -200,7 +200,7 @@ module Gene
       end
     end
 
-    def parse_value attribute_for_group = nil
+    def parse_value options = {}
       skip(IGNORE)
 
       case
@@ -222,7 +222,7 @@ module Gene
         value
       # when (value = parse_ref) != UNPARSED
       #   value
-      when (value = parse_attribute(attribute_for_group)) != UNPARSED
+      when options[:attributes] && (value = parse_attribute(options[:attributes])) != UNPARSED
         value
       when (value = parse_regexp) != UNPARSED
         value
@@ -412,7 +412,9 @@ module Gene
          in_comment = true
         when skip(IGNORE)
           ;
-        when (value = parse_value(attribute_for_group)) != UNPARSED
+        when open_char == '(' && (value = parse_value(attributes: attribute_for_group)) != UNPARSED
+          result << value unless in_comment or value == IGNORABLE
+        when open_char == '[' && (value = parse_value) != UNPARSED
           result << value unless in_comment or value == IGNORABLE
         when eos?
           raise PrematureEndError, "unexpected end of input"

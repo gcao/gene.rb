@@ -151,9 +151,14 @@ module Gene::Lang
       end
     end
 
-    def self.from_array data
+    def self.from_array_and_properties data, properties = {}
       obj = new
-      obj.data = data
+      obj.data = data || []
+      properties.each do |key, value|
+        if not %w(#type #data).include? key
+          obj.set key, value
+        end
+      end
       obj
     end
   end

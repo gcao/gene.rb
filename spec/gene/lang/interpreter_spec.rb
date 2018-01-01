@@ -341,6 +341,14 @@ describe Gene::Lang::Interpreter do
       arg1.name.should == 'a'
     end
 
+    it "
+      (fn f [^^a]
+        a
+      )
+      (assert ((f ^a 1) == 1))
+    " do
+      @application.parse_and_process(example.description)
+    end
     it "# Function parameters are passed by reference: check []
       (fn doSomething array
         ($invoke array 'push' 'doSomething')

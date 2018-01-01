@@ -1,4 +1,6 @@
-(class Object ^^global
+(class Object
+  ^^global
+
   (init _
   )
 
@@ -66,20 +68,26 @@
   )
 )
 
-(class Context ^^global
+(class Context
+  ^^global
+
   (method process_statements stmts
     # Gotcha: `return` is needed here in order to return any value as is to the caller.
     (return ($invoke self 'process_statements' stmts))
   )
 )
 
-(class Function ^^global
+(class Function
+  ^^global
+
   (method bind target
     ($invoke self 'bind' target)
   )
 )
 
-(class Class ^^global
+(class Class
+  ^^global
+
   (method parent_class _
     (@parent_class || Object)
   )
@@ -98,13 +106,17 @@
   )
 )
 
-(class Aspect ^^global
+(class Aspect
+  ^^global
+
   (method apply target
     ($invoke self 'apply' target)
   )
 )
 
-(class Throwable ^^global
+(class Throwable
+  ^^global
+
   (prop message)
 )
 
@@ -117,11 +129,14 @@
   ^^global
 )
 
-(class Int ^^global
+(class Int
+  ^^global
 )
 
 # Wrapper class for native arrays
-(class Array ^^global
+(class Array
+  ^^global
+
   (method class _
     ($invoke $context "get_member" "Array")
   )
@@ -177,22 +192,28 @@
   )
 )
 
-(class Hash ^^global
+(class Hash
+  ^^global
+
   (method size _
     ($invoke self "size")
   )
 )
 
-(class String ^^global
+(class String
+  ^^global
+
   (method + args...
     ($invoke $self '<<' args)
   )
 )
 
-(class BreakValue ^^global
+(class BreakValue
+  ^^global
 )
 
-(class ReturnValue ^^global
+(class ReturnValue
+  ^^global
 )
 
 (class File
@@ -206,6 +227,16 @@
 (fn get_native_class name
   ^^global
   ($invoke ($invoke '' 'class') 'const_get' name)
+)
+
+(fn regexp [^^ignore-case args...]
+  ^^global
+  (var str ('' args...))
+
+  (var options 0)
+  (if ignore-case (options = (options | (get_native_class 'Regexp::IGNORECASE'))))
+
+  ($invoke (get_native_class 'Regexp') 'new' str options)
 )
 
 (fn if-not [cond stmts...]
