@@ -31,6 +31,8 @@ describe Gene::Parser do
     '\#a'      => Gene::Types::Symbol.new('#a', true),
     'a'        => Gene::Types::Symbol.new('a'),
     '#//'      => //,
+    '#//mxi'   => //mxi,
+    "#/\\n/"   => /\n/,
     # Quoted symbol, support escaping with "\"
     # '#""'      => Gene::Types::Symbol.new(''),
     # "#''"      => Gene::Types::Symbol.new(''),

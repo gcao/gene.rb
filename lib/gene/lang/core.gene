@@ -229,12 +229,14 @@
   ($invoke ($invoke '' 'class') 'const_get' name)
 )
 
-(fn regexp [^^ignore-case args...]
+(fn regexp [^^ignore-case ^^multi-line ^^extended args...]
   ^^global
   (var str ('' args...))
 
   (var options 0)
   (if ignore-case (options = (options | (get_native_class 'Regexp::IGNORECASE'))))
+  (if multi-line  (options = (options | (get_native_class 'Regexp::MULTILINE'))))
+  (if extended    (options = (options | (get_native_class 'Regexp::EXTENDED'))))
 
   ($invoke (get_native_class 'Regexp') 'new' str options)
 )

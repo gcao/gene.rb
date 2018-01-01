@@ -330,6 +330,12 @@ module Gene
       if flags.include?('i')
         options |= Regexp::IGNORECASE
       end
+      if flags.include?('m')
+        options |= Regexp::MULTILINE
+      end
+      if flags.include?('x')
+        options |= Regexp::EXTENDED
+      end
 
       Regexp.new(value, options)
     end

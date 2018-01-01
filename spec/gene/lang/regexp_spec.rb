@@ -13,13 +13,19 @@ describe "Regular Expressions" do
   end
 
   it "
-    (assert ((regexp 'a') =~ 'a'))
+    (assert (#/a/i =~ 'A'))
   " do
     @application.parse_and_process(example.description)
   end
 
   it "
-    (assert ((regexp ^^ignore-case 'a') =~ 'A'))
+    (assert (#/a/ == (regexp 'a')))
+  " do
+    @application.parse_and_process(example.description)
+  end
+
+  it "
+    (assert (#/a/imx == (regexp ^^ignore-case ^^multi-line ^^extended 'a')))
   " do
     @application.parse_and_process(example.description)
   end
