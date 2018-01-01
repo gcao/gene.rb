@@ -14,14 +14,22 @@
   )
 
   # Use meta programming to define proxy methods
-  (['eos?' 'skip' 'scan'] .each (proxy .bind self))
+  (['eos?' 'skip' 'check' 'scan'] .each (proxy .bind self))
 )
 
 (nsvar UNPARSED (new Object))
 
+(nsvar SEPARATOR  #/[\s()\[\]{},;]/)
+(nsvar SEP_OR_END (regexp "(?=" SEPARATOR "|$)"))
 (nsvar IGNORE     #/\#($|[\n\r]|\s+[^\n\r]*($|[\n\r]))|[\s]/m)
+
 (nsvar INTEGER    #/(-?0|-?[1-9]\d*)/)
-(nsvar TRUE       #/true[\s()\[\]{},;]/)
+
+# Keywords
+(nsvar TRUE       (regexp 'true' SEP_OR_END))
+
+(nsvar SYMBOL     #/([^"',\s\(\)\[\]\{\}][^,\s\(\)\[\]\{\}]*)/)
+(nsvar STRING     #/"(([^"]|\\")*)"/)
 
 (class Parser extend StringScanner
   ^^global
@@ -41,6 +49,12 @@
       else-if ((value = (.parse_int)) != UNPARSED)
         # (result = (.handle_top_level_results result value))
         (result = value)
+      else-if ((value = (.parse_keywords)) != UNPARSED)
+        (result = value)
+      else-if ((value = (.parse_symbol)) != UNPARSED)
+        (result = value)
+      else-if ((value = (.parse_string)) != UNPARSED)
+        (result = value)
       )
     )
 
@@ -54,6 +68,40 @@
   (method parse_int _
     (if (.scan INTEGER)
       ($invoke ($invoke @target '[]' 1) 'to_i')
+    else
+      UNPARSED
+    )
+  )
+
+  (method parse_keywords _
+    (if (.scan TRUE)
+      true
+    else
+      UNPARSED
+    )
+  )
+
+  (method parse_string _
+    (if (.scan STRING)
+      ($invoke @target '[]' 1)
+    else
+      UNPARSED
+    )
+  )
+
+  (method parse_symbol _
+    (if (.check SYMBOL)
+      (var value '')
+      (loop
+        (if (.eos?)
+          break
+        else-if (.check SEPARATOR)
+          break
+        else
+          (value = (value + ($invoke @target 'getch')))
+        )
+      )
+      ($invoke (get_native_class 'Gene::Types::Symbol') 'new' value)
     else
       UNPARSED
     )

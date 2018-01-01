@@ -18,13 +18,21 @@ describe "Parser" do
     (var result ((new Parser '1') .parse))
     (assert (result == 1))
 
-    # !pending!
+    (var result ((new Parser 'true') .parse))
+    (assert (result == true))
+
+    (var result ((new Parser 'a') .parse))
+    (assert (result == %a))
+
     (var result ((new Parser '"a"') .parse))
     (assert (result == 'a'))
 
+    (var result ((new Parser '[]') .parse))
+    (assert (result == []))
+
     # !pending!
-    (var result ((new Parser 'true') .parse))
-    (assert (result == true))
+    (var result ((new Parser '"a"') .parse))
+    (assert (result == 'a'))
   ~.split("\n\n").each do |code|
     it code do
       input = example.description
