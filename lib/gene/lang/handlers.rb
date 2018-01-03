@@ -768,7 +768,9 @@ module Gene::Lang::Handlers
         if result.is_a? Gene::Lang::ReturnValue
           return result
         elsif result.is_a? Gene::Lang::BreakValue
-          break
+          break result.value
+        elsif result.is_a? Gene::Lang::ThrownException
+          break result
         end
         context.process update
       end
@@ -787,6 +789,8 @@ module Gene::Lang::Handlers
         if result.is_a? Gene::Lang::BreakValue
           break result.value
         elsif result.is_a? Gene::Lang::ReturnValue
+          break result
+        elsif result.is_a? Gene::Lang::ThrownException
           break result
         end
       end

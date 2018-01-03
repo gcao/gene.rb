@@ -30,9 +30,8 @@ describe "Parser" do
     (var result ((new Parser '[]') .parse))
     (assert (result == []))
 
-    # !pending!
-    (var result ((new Parser '[a]') .parse))
-    (assert (result == [a]))
+    (var result ((new Parser '[1]') .parse))
+    (assert (result == [1]))
 
     (var result ((new Parser '()') .parse))
     (assert (result == noop))

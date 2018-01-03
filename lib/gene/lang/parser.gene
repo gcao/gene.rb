@@ -122,11 +122,11 @@
       (var result [])
       (loop
         (if (.eos?)
-          (throw "unexpected end of input")
+          (throw PrematureEndError "unexpected end of input")
         else-if (.scan ARRAY_CLOSE)
           break
         else
-          (throw "unexpected token at 'TODO'!")
+          (throw ParseError "unexpected token at 'TODO'!")
         )
       )
       result
@@ -142,11 +142,11 @@
 
       (loop
         (if (.eos?)
-          (throw "unexpected end of input")
+          (throw PrematureEndError "unexpected end of input")
         else-if (.scan GENE_CLOSE)
           break
         else
-          (throw "unexpected token at 'TODO'!")
+          (throw ParseError "unexpected token at 'TODO'!")
         )
       )
 
@@ -155,4 +155,12 @@
       UNPARSED
     )
   )
+)
+
+(class ParseError
+  ^^global
+)
+
+(class PrematureEndError extend ParseError
+  ^^global
 )

@@ -66,6 +66,13 @@ class Gene::Lang::Interpreter
     if data.is_a? Gene::Types::Stream
       data.each do |item|
         result = @handlers.call @context, item
+
+        # TODO: should we allow break / return on the top level?
+        if (result.is_a?(Gene::Lang::ReturnValue) or
+            result.is_a?(Gene::Lang::BreakValue) or
+            result.is_a?(Gene::Lang::ThrownException))
+          break
+        end
       end
     else
       result = @handlers.call @context, data

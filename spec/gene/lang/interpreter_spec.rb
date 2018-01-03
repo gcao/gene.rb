@@ -1315,6 +1315,15 @@ describe Gene::Lang::Interpreter do
       }.should raise_error('some error')
     end
 
+    it "
+      (throw 'some error')
+      1 # should not reach here
+    " do
+      lambda {
+        @application.parse_and_process(example.description)
+      }.should raise_error('some error')
+    end
+
     it "# catch (will inherit scope etc)
       (catch
         ^Exception (fnx e (result = 'Exception'))
@@ -1389,7 +1398,7 @@ describe Gene::Lang::Interpreter do
     end
 
     it "# fn...catch: the callback should run in the context of function
-      (fn
+      (fn f
         ^catch {
           ^Exception (fnx e (result = 'Exception'))
         }
