@@ -253,9 +253,9 @@
   (var str ('' args...))
 
   (var options 0)
-  (if ignore-case (options = (options | (get_native_class 'Regexp::IGNORECASE'))))
-  (if multi-line  (options = (options | (get_native_class 'Regexp::MULTILINE'))))
-  (if extended    (options = (options | (get_native_class 'Regexp::EXTENDED'))))
+  (if ignore-case (options |= (get_native_class 'Regexp::IGNORECASE')))
+  (if multi-line  (options |= (get_native_class 'Regexp::MULTILINE' )))
+  (if extended    (options |= (get_native_class 'Regexp::EXTENDED'  )))
 
   ($invoke (get_native_class 'Regexp') 'new' str options)
 )

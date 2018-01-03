@@ -517,6 +517,8 @@ module Gene::Lang::Handlers
       Gene::Types::Symbol.new('-='),
       Gene::Types::Symbol.new('*='),
       Gene::Types::Symbol.new('/='),
+      Gene::Types::Symbol.new('&='),
+      Gene::Types::Symbol.new('|='),
       Gene::Types::Symbol.new('&&='),
       Gene::Types::Symbol.new('||='),
     ]
@@ -563,6 +565,8 @@ module Gene::Lang::Handlers
       when '-='  then old_value -  change_value
       when '*='  then old_value *  change_value
       when '/='  then old_value /  change_value
+      when '&='  then old_value &  change_value
+      when '|='  then old_value |  change_value
       when '&&=' then old_value && change_value
       when '||=' then old_value || value
       else raise "Invalid operator #{op.inspect}"
