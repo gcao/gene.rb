@@ -1,7 +1,8 @@
 (class Object
   ^^global
 
-  (init _
+  (init data
+    (@#data = data)
   )
 
   (method gene_type _
@@ -212,6 +213,25 @@
 
   (method size _
     ($invoke self "size")
+  )
+
+  (method get key
+    ($invoke self 'get' key)
+  )
+
+  (method keys _
+    ($invoke self 'keys')
+  )
+
+  (method each f
+    ((.keys) .each
+      (bind self
+        (fnx key
+          (var value (.get key))
+          (f key value)
+        )
+      )
+    )
   )
 )
 

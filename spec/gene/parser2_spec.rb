@@ -36,9 +36,10 @@ describe "Parser" do
     (var result ((new Parser '()') .parse))
     (assert (result == noop))
 
-    # !pending!
-    (var result ((new Parser '"a"') .parse))
-    (assert (result == 'a'))
+    (var result ((new Parser '(a 1)') .parse))
+    (assert ((result .gene_type) == %a))
+    (assert ((result .data) == [1]))
+
   ~.split("\n\n").each do |code|
     it code do
       input = example.description

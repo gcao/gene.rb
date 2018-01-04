@@ -14,10 +14,11 @@
   )
 
   # Use meta programming to define proxy methods
-  (['eos?' 'skip' 'check' 'scan'] .each (proxy .bind self))
+  (['eos?' 'skip' 'check' 'scan' 'peek'] .each (proxy .bind self))
 )
 
-(nsvar UNPARSED (new Object))
+# TODO: "this is a random_object" is required so it doesn't equal to other objects
+(nsvar UNPARSED (new Object "this is a random_object"))
 
 (nsvar SEPARATOR  #/[\s()\[\]{},;]/)
 (nsvar SEP_OR_END (regexp "(?=" SEPARATOR "|$)"))
@@ -142,20 +143,37 @@
 
   (method parse_gene _
     (if (.scan GENE_OPEN)
-      (var result (new Object))
+      (var type)
+      (var properties {})
+      (var data [])
+
       (var empty true)
+      (var value)
 
       (loop
         (if (.eos?)
           (throw PrematureEndError "unexpected end of input")
         else-if (.scan GENE_CLOSE)
           break
+        else-if ((value = (.parse_child)) != UNPARSED)
+          (if empty
+            (type = value)
+          else
+            (data .push value)
+          )
+          (empty = false)
         else
           (throw ParseError "unexpected token at 'TODO'!")
         )
       )
 
-      (if empty then noop else result)
+      (if empty
+        noop
+      else
+        (var result (new Object data))
+        (result .set '#type' type)
+        result
+      )
     else
       UNPARSED
     )
@@ -171,8 +189,9 @@
     else-if ((result = (.parse_string))   != UNPARSED)
     else-if ((result = (.parse_int))      != UNPARSED)
     else-if ((result = (.parse_keywords)) != UNPARSED)
+    else-if ((result = (.parse_symbol))   != UNPARSED)
     else
-      (if (['"' "'"] .include (.peek 1))
+      (if (['"' "'"] .include? (.peek 1))
         (throw PrematureEndError "unexpected end of input")
       else
         (throw ParseError "unexpected token at 'TODO'!")
@@ -189,4 +208,10 @@
 
 (class PrematureEndError extend ParseError
   ^^global
+)
+
+(fn gene_base [type properties data]
+  (var o ($invoke (get_native_class 'Gene::Types::Base') 'new' type data))
+  # TODO: copy properties
+  o
 )
