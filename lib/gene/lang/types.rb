@@ -200,10 +200,13 @@ module Gene::Lang
       interpreter.parse_and_process code
     end
 
-    def load_core_libs
-      dir  = File.dirname(__FILE__)
-      file = "#{dir}/core.gene"
+    def load file
+      dir = File.dirname(file)
       parse_and_process File.read(file), dir: dir, file: file
+    end
+
+    def load_core_libs
+      load File.dirname(__FILE__) + '/core.gene'
     end
   end
 

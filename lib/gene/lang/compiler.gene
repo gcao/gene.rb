@@ -1,0 +1,7 @@
+(class Compiler
+  ^^global
+
+  (method compile code
+    code
+  )
+)
