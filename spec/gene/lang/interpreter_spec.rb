@@ -1439,6 +1439,7 @@ describe Gene::Lang::Interpreter do
       )
       (assert (((f 1 2).data) == [2 20]))
     " do
+      pending ""
       @application.parse_and_process(example.description)
     end
   end

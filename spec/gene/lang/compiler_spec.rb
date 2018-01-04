@@ -98,9 +98,11 @@ describe Gene::Lang::Compiler do
       var $root_context = $application.create_root_context();
       (function($context){
         var $result;
-        $context.set_member("f", new Gene.Func("f", ["a", "b"], function($context){
+        $context.set_member("f", new Gene.Func("f", ["a", "b"], function(options){
           var $result;
-          $result = ($context.get_member("a") + $context.get_member("b"));
+          var scope = new Gene.Scope(this.parent_scope, this.inherit_scope);
+          var new_context = options.context.extend({scope: scope});
+          $result = (new_context.get_member("a") + new_context.get_member("b"));
           return $result;
         }));
         $result = ($context.get_member("f").invoke({context: $context, arguments: [1, 2]}) == 3);

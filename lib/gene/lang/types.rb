@@ -562,7 +562,8 @@ module Gene::Lang
       scope.set_member '$function', self
       scope.set_member '$caller-context', context
       scope.set_member '$arguments', options[:arguments]
-      scope.arguments = Gene::Lang::ArgumentsScope.new options[:arguments], self.args_matcher
+      # scope.arguments = Gene::Lang::ArgumentsScope.new options[:arguments], self.args_matcher
+      args_matcher.match(scope, options[:arguments]) if args_matcher
 
       new_context = context.extend scope: scope, self: options[:self]
       result = new_context.process_statements statements
@@ -912,6 +913,20 @@ module Gene::Lang
       calc_indexes
     end
 
+    def match scope, arguments
+      data_matchers.each do |matcher|
+        if matcher.expandable
+          value = arguments && arguments.data[matcher.index .. matcher.end_index]
+        else
+          value = arguments && arguments.data[matcher.index]
+        end
+        scope.set_member matcher.name, value
+      end
+      prop_matchers.each do |name, _|
+        scope.set_member name, arguments && arguments.get(name)
+      end
+    end
+
     private
 
     def calc_indexes
@@ -1066,6 +1081,7 @@ module Gene::Lang
       scope.set_member '$hierarchy', options[:hierarchy]
       scope.set_member '$advices', options[:advices]
       scope.arguments = Gene::Lang::ArgumentsScope.new options[:arguments], self.args_matcher
+      # args_matcher.match(scope, options[:arguments])
 
       new_context = context.extend scope: scope, self: options[:self]
       new_context.process_statements logic

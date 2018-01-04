@@ -100,4 +100,21 @@ describe Gene::Lang::Matcher do
     }.should raise_error
   end
 
+  describe "Resolving arguments" do
+    before do
+      @scope = Gene::Lang::Scope.new nil, false
+    end
+
+    it "positional arguments" do
+      @matcher.from_array [
+        Gene::Types::Symbol.new('a'),
+        Gene::Types::Symbol.new('b'),
+      ]
+      o = Gene::Lang::Object.new
+      o.data = [1, 2]
+      @matcher.match(@scope, o)
+      @scope.get_member('a').should == 1
+      @scope.get_member('b').should == 2
+    end
+  end
 end
