@@ -5,12 +5,25 @@ describe Gene::Lang::Compiler do
     @application = Gene::Lang::Application.new
     @application.load_core_libs
     @application.load File.expand_path(File.dirname(__FILE__) + '/../../../lib/gene/lang/compiler.gene')
+
     @ctx = V8::Context.new
     @ctx.eval File.read "gene-js/build/src/index.js"
   end
 
   {
     '
+      # Compiles empty code to below output
+    ' =>
+    <<-JAVASCRIPT,
+      var $root_context = $application.create_root_context();
+      (function($context){
+        var $result;
+        return $result;
+      })($root_context);
+    JAVASCRIPT
+
+    '
+      # !pending!
       # !eval-to-true!
       (var a 1)
       (a == 1)
@@ -32,7 +45,7 @@ describe Gene::Lang::Compiler do
       parsed = Gene::Parser.parse(input)
       @application.global_namespace.set_member('$parsed_code', parsed)
 
-      output = @application.parse_and_process('((new Compiler) .compile $parsed_code)')
+      output = @application.parse_and_process('(compile $parsed_code)')
       compare_code output, result
 
       if input.index('!eval-to-true!')

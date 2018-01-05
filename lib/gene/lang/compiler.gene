@@ -1,7 +1,58 @@
-(class Compiler
+(fn compile code
   ^^global
+  (var translated (translate code))
+  (println translated)
 
-  (method compile code
-    code
+  (var result
+    (new Root (fnxx
+      (println 'Root callback')
+      (@stmts .push (.var '$root_context'))
+    ))
+  )
+  (println (result .to_s))
+  (result .to_s)
+)
+
+# Translate native Ruby objects to Gene objects before compilation
+(fn translate code
+  code
+)
+
+(class Base
+  (method var [name value]
+    (new Variable name value)
+  )
+
+  (method to_s _
+    "// Base: should not reach here"
+  )
+)
+
+(class Root extend Base
+  (init callback
+    (@stmts = [])
+    (call callback self)
+  )
+
+  (method to_s _
+    (var result '')
+    (@stmts .each (fnx stmt
+      (result += ((stmt .to_s) + '\n'))
+    ))
+    result
+  )
+)
+
+(class Variable extend Base
+  (prop name)
+  (prop value)
+
+  (init [name value]
+    (@name  = name)
+    (@value = value)
+  )
+
+  (method to_s _
+    ("var " @name (if @value (" = " @value)) ";")
   )
 )
