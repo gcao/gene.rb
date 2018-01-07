@@ -31,7 +31,7 @@
 (class Root extend Base
   (init callback
     (@stmts = [])
-    (call callback self)
+    (if callback (call callback self))
   )
 
   (method to_s _
@@ -54,5 +54,128 @@
 
   (method to_s _
     ("var " @name (if @value (" = " @value)) ";")
+  )
+)
+
+(class Function extend Base
+  (prop name)
+  (prop args)
+  (prop stmts)
+
+  (init [name args callback]
+    (@name = name)
+    (@args = args)
+    (@stmts = [])
+    (if callback (call callback self))
+  )
+
+  (method to_s _
+    ('function '
+      (if name then (name .to_s) else '')
+      "(" (args .map (fnx arg (arg .to_s))) "){\n"
+      "}\n"
+    )
+  )
+)
+
+(class If extend Base
+  (prop cond)
+  (prop logic)
+  (prop else_ifs)
+  (prop else_logic)
+
+  (init [cond logic else_logic]
+    (@cond       = cond)
+    (@logic      = logic)
+    (@else_ifs   = [])
+    (@else_logic = else_logic)
+  )
+
+  (method to_s _
+    (var result "if (")
+    (result += ") {\n")
+    (result += "}\n")
+    result
+  )
+)
+
+(class For extend Base
+  (prop init)
+  (prop cond)
+  (prop update)
+  (prop stmts)
+
+  (init [init cond update stmts]
+    (@init   = init)
+    (@cond   = cond)
+    (@update = update)
+    (@stmts  = stmts)
+  )
+
+  (method to_s _
+    (var result "for (")
+    (result += ") {\n")
+    (result += "}\n")
+    result
+  )
+)
+
+(class Reference extend Base
+  (prop name)
+
+  (init name
+    (@name = name)
+  )
+
+  (method to_s _
+    (name .to_s)
+  )
+)
+
+(class Assignment extend Base
+  (prop target)
+  (prop value)
+
+  (init [target value]
+    (@target = target)
+    (@value  = value)
+  )
+
+  (method to_s _
+    ('' (target .to_s) ' = ' (value .to_s))
+  )
+)
+
+(class Invocation extend Base
+  (prop target)
+  (prop args)
+
+  (init [target args]
+    (@target = target)
+    (@args   = args)
+  )
+
+  (method to_s _
+    (var result "")
+    (if (target .is Function)
+      (result += ("(" (target .to_s) ")"))
+    else
+      (result += (target .to_s))
+    )
+    (result += "(")
+    (result += ")")
+    result
+  )
+)
+
+(class ChainedInvocation extend Base
+  (prop invocations)
+
+  (init invocations
+    (@invocations = invocations)
+  )
+
+  (method to_s _
+    ("" (... (@invocations .map (fnx item (item .to_s)))))
   )
 )
