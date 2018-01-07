@@ -1624,6 +1624,27 @@ describe Gene::Lang::Interpreter do
     end
   end
 
+  describe "Easy build and access" do
+    it "
+      (assert ([(expand [1 2])] == [1 2]))
+    " do
+      @application.parse_and_process(example.description)
+    end
+
+    it "
+      (assert ({^x (expand {^a 1 ^b 2})} == {^a 1 ^b 2}))
+    " do
+      @application.parse_and_process(example.description)
+    end
+
+    it "
+      (assert ((%o ^x (expand {^a 1 ^b 2}) (expand [100 200])) == (%o ^a 1 ^b 2 100 200)))
+    " do
+      pending
+      @application.parse_and_process(example.description)
+    end
+  end
+
   describe "String concatenation" do
     it "
       (assert (('{a: ' 1 ', b: ' 2 '}') == '{a: 1, b: 2}'))

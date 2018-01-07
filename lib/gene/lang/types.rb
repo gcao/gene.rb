@@ -1086,24 +1086,4 @@ module Gene::Lang
       advice_type == 'when'
     end
   end
-
-  # === SELF HOSTING ===
-  # FunctionClass = Class.new 'Function', Block.new(nil, nil)
-  # FunctionClass.prop 'name'
-  # FunctionClass.prop 'arguments'
-  # FunctionClass.prop 'block'
-  # init = FunctionClass.new
-  # init.name       = 'init'
-  # init.arguments  = ['name']
-  # init.statements = [
-  #   (let @name name)
-  #   Gene::Types::Base.new(Gene::Types::Symbol.new('let'), Gene::Types::Symbol.new('@name'), Gene::Types::Symbol.new('name'))
-  # ]
-  # FunctionClass.method 'init', call
-  # call = FunctionClass.new
-  # call.name       = 'call'
-  # call.arguments  = []
-  # call.statements = []
-  # FunctionClass.method 'call', call
-
 end

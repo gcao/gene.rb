@@ -12,6 +12,7 @@ describe Gene::Lang::Compiler do
 
   {
     '
+      # !pending!
       # Compiles empty code to below output
     ' =>
     <<-JAVASCRIPT,

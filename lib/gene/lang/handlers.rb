@@ -11,6 +11,7 @@ module Gene::Lang::Handlers
     MATCH
     CALL DO
     VAR NSVAR
+    EXPAND
     ASPECT BEFORE AFTER WHEN CONTINUE
     IMPORT EXPORT FROM
     PUBLIC PRIVATE
@@ -107,13 +108,32 @@ module Gene::Lang::Handlers
       elsif data.is_a?(::Array) and not data.is_a?(Gene::Lang::Array)
         result = Gene::Lang::Array.new
         data.each do |item|
-          result.push context.process(item)
+          value = context.process(item)
+          if value.is_a? Gene::Lang::Expandable
+            value = value.value
+            if value.is_a? Array
+              value.each do |x|
+                result.push x
+              end
+            else
+              result.push value
+            end
+          else
+            result.push value
+          end
         end
         result
       elsif data.is_a?(Hash) and not data.is_a?(Gene::Lang::Hash)
         result = Gene::Lang::Hash.new
         data.each do |key, value|
-          result[key] = context.process value
+          processed = context.process value
+          if processed.is_a? Gene::Lang::Expandable
+            processed.value.each do |k, v|
+              result[k] = v
+            end
+          else
+            result[key] = processed
+          end
         end
         result
       elsif data == PLACEHOLDER or data == NOOP
@@ -979,6 +999,14 @@ module Gene::Lang::Handlers
       elsif pattern.is_a? Gene::Types::Symbol
         context.define pattern.name, target
       end
+    end
+  end
+
+  class ExpandHandler
+    def call context, data
+      return Gene::NOT_HANDLED unless EXPAND === data
+
+      Gene::Lang::Expandable.new context.process(data.data[0])
     end
   end
 
