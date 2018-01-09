@@ -64,7 +64,7 @@ describe "Array
 
   it "([1] .get 1)" do
     result = @application.parse_and_process(example.description)
-    result.should == nil
+    result.should == Gene::UNDEFINED
   end
 
   it "(([1] .any (fnx item (item == 1))) == true)" do

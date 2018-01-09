@@ -136,7 +136,9 @@ module Gene::Lang::Handlers
           end
         end
         result
-      elsif data == PLACEHOLDER or data == NOOP
+      elsif data == PLACEHOLDER
+        PLACEHOLDER
+      elsif data == NOOP
         Gene::UNDEFINED
       elsif data == BREAK
         Gene::Lang::BreakValue.new
@@ -717,16 +719,18 @@ module Gene::Lang::Handlers
 
   class IfHandler
     def call context, data
-      # return Gene::NOT_HANDLED unless IF === data or IF_NOT === data
-      return Gene::NOT_HANDLED unless IF === data
+      return Gene::NOT_HANDLED unless IF === data or IF_NOT === data
+      # return Gene::NOT_HANDLED unless IF === data
 
-      handle context, IF, data.data[0], data.data[1..-1]
+      handle context, data.type, data.data[0], data.data[1..-1]
     end
 
     def handle context, type, condition, rest
-      # TODO: handle type == IF_NOT
-      result = nil
+      result = Gene::UNDEFINED
       condition = context.process condition
+      if condition == Gene::UNDEFINED
+        condition = false
+      end
       index = 0
       in_else = false
 
@@ -744,28 +748,37 @@ module Gene::Lang::Handlers
         end
 
         if stmt == ELSE
+          if type == IF_NOT
+            raise '"else" is not supported in "if-not"'
+          end
           if condition
             break
           end
           in_else = true
           next
         elsif stmt == ELSE_IF
+          if type == IF_NOT
+            raise '"else-if" is not supported in "if-not"'
+          end
           if condition
             break
           end
           new_condition = rest[index]
           index += 1
           condition = context.process new_condition
+          if condition == Gene::UNDEFINED
+            condition = false
+          end
           allow_then = true
           next
         end
 
         if condition
-          if not in_else
+          if type != IF_NOT and not in_else
             result = context.process stmt
           end
         else
-          if in_else
+          if type == IF_NOT or in_else
             result = context.process stmt
           end
         end
@@ -775,34 +788,34 @@ module Gene::Lang::Handlers
     end
   end
 
-  class ForHandler
-    def call context, data
-      return Gene::NOT_HANDLED unless FOR === data
-      # initialize
-      context.process data.data[0]
+  # class ForHandler
+  #   def call context, data
+  #     return Gene::NOT_HANDLED unless FOR === data
+  #     # initialize
+  #     context.process data.data[0]
 
-      condition = data.data[1]
-      update    = data.data[2]
-      # (for _ _ _ ...) is same as (loop ...)
-      # _ is treated as true in place of condition
-      while condition == PLACEHOLDER ||
-            ((value = context.process(condition)) && value != Gene::UNDEFINED)
-        # TODO: add tests for next, break and return
-        result = context.process_statements data.data[3..-1] || []
-        if result.is_a? Gene::Lang::ReturnValue
-          return result
-        elsif result.is_a? Gene::Lang::BreakValue
-          break result.value
-        elsif result.is_a? Gene::Lang::ThrownException
-          break result
-        end
-        context.process update
-      end
+  #     condition = data.data[1]
+  #     update    = data.data[2]
+  #     # (for _ _ _ ...) is same as (loop ...)
+  #     # _ is treated as true in place of condition
+  #     while condition == PLACEHOLDER ||
+  #           ((value = context.process(condition)) && value != Gene::UNDEFINED)
+  #       # TODO: add tests for next, break and return
+  #       result = context.process_statements data.data[3..-1] || []
+  #       if result.is_a? Gene::Lang::ReturnValue
+  #         return result
+  #       elsif result.is_a? Gene::Lang::BreakValue
+  #         break result.value
+  #       elsif result.is_a? Gene::Lang::ThrownException
+  #         break result
+  #       end
+  #       context.process update
+  #     end
 
-      # TODO: for loop should return last value from the inside, NOT what the condition evaluates to
-      Gene::UNDEFINED
-    end
-  end
+  #     # TODO: for loop should return last value from the inside, NOT what the condition evaluates to
+  #     Gene::UNDEFINED
+  #   end
+  # end
 
   class LoopHandler
     def call context, data

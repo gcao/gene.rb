@@ -698,12 +698,30 @@ describe Gene::Lang::Interpreter do
       @application.parse_and_process(example.description)
     end
 
-    it "# allow optional 'then'
+    it "# 'then' should follow condition immediately
       (assert ((if true 1 then 2) == 2))
     " do
       lambda {
         @application.parse_and_process(example.description)
       }.should raise_error
+    end
+
+    it "# 0 evaluates to true
+      (assert ((if 0 then 1 else 2) == 1))
+    " do
+      @application.parse_and_process(example.description)
+    end
+
+    it "# null evaluates to false
+      (assert ((if null then 1 else 2) == 2))
+    " do
+      @application.parse_and_process(example.description)
+    end
+
+    it "# undefined evaluates to false
+      (assert ((if undefined then 1 else 2) == 2))
+    " do
+      @application.parse_and_process(example.description)
     end
 
     it "# condition evaluates to true
@@ -985,7 +1003,7 @@ describe Gene::Lang::Interpreter do
   describe "_ is a placeholder, equivalent to undefined in most but not all places" do
     it "# Putting _ at the place of arguments will not create an argument named `_`
       (fn f _ _)
-      (assert ((f 1) == undefined))
+      (assert ((f 1) == _))
     " do
       @application.parse_and_process(example.description)
     end

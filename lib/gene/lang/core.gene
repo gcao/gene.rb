@@ -292,15 +292,15 @@
   ($invoke (get_native_class 'Regexp') 'new' str options)
 )
 
-(fn if-not [cond stmts...]
-  ^^global
-  (if ($caller-context .process_statements cond)
-    _
-  else
-    # Gotcha: `return` is needed here in order to return any value as is to the caller.
-    (return ($caller-context .process_statements stmts))
-  )
-)
+# (fn if-not [cond stmts...]
+#   ^^global
+#   (if ($caller-context .process_statements cond)
+#     _
+#   else
+#     # Gotcha: `return` is needed here in order to return any value as is to the caller.
+#     (return ($caller-context .process_statements stmts))
+#   )
+# )
 
 (fn for [init cond update stmts...]
   ^^global
@@ -312,7 +312,7 @@
   ($caller-context .process_statements init)
   (loop
     # check condition and break if false
-    (var cond-result ($caller-context .process_statements cond))
+    (var cond-result ((cond == _) || ($caller-context .process_statements cond)))
     (if-not cond-result
       return
     )
