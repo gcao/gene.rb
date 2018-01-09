@@ -1008,6 +1008,9 @@ module Gene::Lang
   end
 
   class Array < ::Array
+    def to_s
+      "[" + map(&:to_s).join(" ") + "]"
+    end
   end
 
   class Hash < ::Hash

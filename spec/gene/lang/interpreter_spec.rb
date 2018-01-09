@@ -1651,5 +1651,17 @@ describe Gene::Lang::Interpreter do
     " do
       @application.parse_and_process(example.description)
     end
+
+    it "
+      (assert (('' [1 2]) == '[1 2]'))
+    " do
+      @application.parse_and_process(example.description)
+    end
+
+    it "
+      (assert (('' (expand [1 2])) == '12'))
+    " do
+      @application.parse_and_process(example.description)
+    end
   end
 end

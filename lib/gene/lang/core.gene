@@ -202,6 +202,18 @@
     )
     result
   )
+  (method join seperator
+    (var size (.size))
+    (""
+      (expand (.map (fnx [item i]
+        ("" item (if (i < (size - 1)) seperator))
+      )))
+    )
+  )
+  (method to_s _
+    (println 'here')
+    ("[" (.join " ") "]")
+  )
 )
 
 (class Stream extend Array
