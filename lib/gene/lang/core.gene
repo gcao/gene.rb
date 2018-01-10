@@ -182,7 +182,9 @@
     (var result [])
     (for (var i 0) (i < (.size)) (i += 1)
       (var item (.get i))
-      # TODO:
+      (if (f item i)
+        (result .push item)
+      )
     )
     result
   )
@@ -277,7 +279,10 @@
 
 (fn get_native_class name
   ^^global
-  ($invoke ($invoke '' 'class') 'const_get' name)
+  ($invoke
+    ($invoke '' 'class') # get native String class. `const_get' can be called on any class
+    'const_get' name
+  )
 )
 
 (fn regexp [^^ignore-case ^^multi-line ^^extended args...]

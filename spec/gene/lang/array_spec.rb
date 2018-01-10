@@ -16,70 +16,58 @@ describe "Array
     (fn f _ [])
     (var a (f))
     (var b (f))
-    (($invoke a 'object_id') != ($invoke b 'object_id'))
+    +assert (($invoke a 'object_id') != ($invoke b 'object_id'))
   " do
-    result = @application.parse_and_process(example.description)
-    result.should be_true
+    @application.parse_and_process(example.description)
   end
 
-  it "((Array .parent_class) == Object)" do
-    result = @application.parse_and_process(example.description)
-    result.should be_true
+  it "+assert ((Array .parent_class) == Object)" do
+    @application.parse_and_process(example.description)
   end
 
-  it "(([] .is Object) == true)" do
-    result = @application.parse_and_process(example.description)
-    result.should be_true
+  it "+assert (([] .is Object) == true)" do
+    @application.parse_and_process(example.description)
   end
 
-  it "(([] .is Array) == true)" do
-    result = @application.parse_and_process(example.description)
-    result.should be_true
+  it "+assert (([] .is Array) == true)" do
+    @application.parse_and_process(example.description)
   end
 
-  it "(([] .is Hash) == false)" do
-    result = @application.parse_and_process(example.description)
-    result.should be_true
+  it "+assert (([] .is Hash) == false)" do
+    @application.parse_and_process(example.description)
   end
 
   it "
     (fn f _ [])
     (var a (f))
     (var b (f))
-    (($invoke a 'object_id') != ($invoke b 'object_id'))
+    +assert (($invoke a 'object_id') != ($invoke b 'object_id'))
   " do
-    result = @application.parse_and_process(example.description)
-    result.should be_true
+    @application.parse_and_process(example.description)
   end
 
-  it "(([1] .size) == 1)" do
-    result = @application.parse_and_process(example.description)
-    result.should be_true
+  it "+assert (([1] .size) == 1)" do
+    @application.parse_and_process(example.description)
   end
 
-  it "(([1] .get 0) == 1)" do
-    result = @application.parse_and_process(example.description)
-    result.should be_true
+  it "+assert (([1] .get 0) == 1)" do
+    @application.parse_and_process(example.description)
   end
 
-  it "([1] .get 1)" do
-    result = @application.parse_and_process(example.description)
-    result.should == Gene::UNDEFINED
+  it "+assert (([1] .get 1) == undefined)" do
+    @application.parse_and_process(example.description)
   end
 
-  it "(([1] .any (fnx item (item == 1))) == true)" do
-    result = @application.parse_and_process(example.description)
-    result.should be_true
+  it "+assert (([1] .any (fnx item (item == 1))) == true)" do
+    @application.parse_and_process(example.description)
   end
 
-  it "(([1] .any (fnx item (item == 2))) == false)" do
-    result = @application.parse_and_process(example.description)
-    result.should be_true
+  it "+assert (([1 2] .select (fnx item (item > 1))) == [2])" do
+    @application.parse_and_process(example.description)
   end
 
-  it "(([1 [2]] .flatten) == [1 2])" do
-    result = @application.parse_and_process(example.description)
-    result.should be_true
+  it "+assert (([1 [2]] .flatten) == [1 2])" do
+    @application.parse_and_process(example.description)
   end
 
   it "# `each` should work
@@ -89,9 +77,8 @@ describe "Array
         (sum += item)
       )
     )
-    (sum == 3)
+    +assert (sum == 3)
   " do
-    result = @application.parse_and_process(example.description)
-    result.should be_true
+    @application.parse_and_process(example.description)
   end
 end
