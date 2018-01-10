@@ -53,6 +53,58 @@ module Gene::Lang::Handlers
       end
       array
     end
+
+    def to_str obj, context
+      klass     = get_class obj, context
+      hierarchy = Gene::Lang::HierarchySearch.new(klass.ancestors)
+      method    = 'to_s'
+      args      = []
+      return hierarchy.next.handle_method({
+        hierarchy: hierarchy,
+        method: method,
+        context: context,
+        arguments: args,
+        self: obj
+      })
+    end
+
+    def get_class obj, context
+      if obj.is_a? Gene::Types::Stream
+        context.get_member("Stream")
+      elsif obj.is_a? Array
+        context.get_member("Array")
+      elsif obj.is_a? Hash
+        context.get_member("Hash")
+      elsif obj.is_a? String
+        context.get_member("String")
+      elsif obj.is_a? Fixnum
+        context.get_member("Int")
+      elsif obj.is_a? Regexp
+        context.get_member("Regexp")
+      elsif obj.is_a? TrueClass or obj.is_a? FalseClass
+        context.get_member("Boolean")
+      elsif obj == Gene::UNDEFINED
+        context.get_member("Undefined")
+      elsif obj == nil
+        context.get_member("Null")
+      elsif obj.is_a? Gene::Types::Symbol
+        context.get_member("Symbol")
+      elsif obj.is_a? Gene::Lang::Aspect
+        context.get_member("Aspect")
+      elsif obj.is_a? Gene::Lang::Class
+        context.get_member("Class")
+      elsif obj.class == Gene::Lang::Object
+        context.get_member("Object")
+      elsif obj.class == Gene::Lang::Context
+        context.get_member("Context")
+      elsif obj.class == Gene::Lang::BreakValue
+        context.get_member("BreakValue")
+      elsif obj.class == Gene::Lang::ReturnValue
+        context.get_member("ReturnValue")
+      else
+        obj.class
+      end
+    end
   end
 
   # Handle scope variables, instance variables like @var and literals
@@ -100,8 +152,8 @@ module Gene::Lang::Handlers
         elsif data.type.is_a? Gene::Lang::PropertyName
           context.self[data.type.name]
         elsif data.type.is_a? String
-          sub_strs = data.data.map {|item| context.process(item) }
-          data.type + expand(sub_strs).map(&:to_s).join
+          children = data.data.map {|item| context.process(item) }
+          data.type + expand(children).map{ |item| to_str(item, context) }.join
         else
           Gene::NOT_HANDLED
         end
@@ -498,36 +550,6 @@ module Gene::Lang::Handlers
         data.type.call context: context, arguments: args
       else
         Gene::NOT_HANDLED
-      end
-    end
-
-    private
-
-    def get_class obj, context
-      if obj.is_a? Gene::Types::Stream
-        context.get_member("Stream")
-      elsif obj.is_a? Array
-        context.get_member("Array")
-      elsif obj.is_a? Hash
-        context.get_member("Hash")
-      elsif obj.is_a? Fixnum
-        context.get_member("Int")
-      elsif obj.is_a? Gene::Types::Symbol
-        context.get_member("Symbol")
-      elsif obj.is_a? Gene::Lang::Aspect
-        context.get_member("Aspect")
-      elsif obj.is_a? Gene::Lang::Class
-        context.get_member("Class")
-      elsif obj.class == Gene::Lang::Object
-        context.get_member("Object")
-      elsif obj.class == Gene::Lang::Context
-        context.get_member("Context")
-      elsif obj.class == Gene::Lang::BreakValue
-        context.get_member("BreakValue")
-      elsif obj.class == Gene::Lang::ReturnValue
-        context.get_member("ReturnValue")
-      else
-        obj.class
       end
     end
   end
@@ -1029,8 +1051,8 @@ module Gene::Lang::Handlers
 
       data.data.each do |item|
         print context.process item
-        print "\n" if PRINTLN === data
       end
+      print "\n" if PRINTLN === data
     end
   end
 

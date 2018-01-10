@@ -6,7 +6,11 @@
   (var result
     (new Root (fnxx
       (println 'Root callback')
-      (@stmts .push (.var '$root_context'))
+      (@stmts .push
+        (.var '$root_context'
+          (.chain (.ref '$application') (.invoke 'create_root_context'))
+        )
+      )
     ))
   )
   (println (result .to_s))
@@ -21,6 +25,62 @@
 (class Base
   (method var [name value]
     (new Variable name value)
+  )
+
+  (method ref name
+    (new Reference name)
+  )
+
+  (method new expr
+    (new New expr)
+  )
+
+  (method fn [name args... callback]
+    (new Function name args callback)
+  )
+
+  (method fnx [args... callback]
+    (new Function '' args callback)
+  )
+
+  (method fnxx callback
+    (new Function '' _ callback)
+  )
+
+  (method for [init cond update stmts]
+    (new For init cond update stmts)
+  )
+
+  (method chain exprs...
+    (new ChainedInvocation exprs)
+  )
+
+  (method invoke [target args...]
+    (new Invocation target args)
+  )
+
+  (method binary [left op right]
+    (new BinaryExpr left op right)
+  )
+
+  (method assign [target value]
+    (new Assignment target value)
+  )
+
+  (method if_ [cond logic else_logic]
+    (new If cond logic else_logic)
+  )
+
+  (method ret value
+    (new Return value)
+  )
+
+  (method break_ _
+    (new Break)
+  )
+
+  (method obj data
+    (new Obj data)
   )
 
   (method to_s _
@@ -71,8 +131,8 @@
 
   (method to_s _
     ('function '
-      (if name then (name .to_s) else '')
-      "(" (args .map (fnx arg (arg .to_s))) "){\n"
+      (if @name then (@name .to_s) else '')
+      "(" (@args .map (fnx arg (arg .to_s))) "){\n"
       "}\n"
     )
   )
@@ -128,7 +188,7 @@
   )
 
   (method to_s _
-    (name .to_s)
+    ("" @name)
   )
 )
 
@@ -142,7 +202,7 @@
   )
 
   (method to_s _
-    ('' (target .to_s) ' = ' (value .to_s))
+    ('' (@target .to_s) ' = ' (@value .to_s))
   )
 )
 
@@ -157,10 +217,10 @@
 
   (method to_s _
     (var result "")
-    (if (target .is Function)
-      (result += ("(" (target .to_s) ")"))
+    (if (@target .is Function)
+      (result += ("(" (@target .to_s) ")"))
     else
-      (result += (target .to_s))
+      (result += (@target .to_s))
     )
     (result += "(")
     (result += ")")
@@ -176,6 +236,6 @@
   )
 
   (method to_s _
-    ("" (... (@invocations .map (fnx item (item .to_s)))))
+    (@invocations .join '.')
   )
 )

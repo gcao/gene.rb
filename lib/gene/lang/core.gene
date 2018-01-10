@@ -57,6 +57,8 @@
       Array
     else-if ($invoke self 'is_a?' (get_native_class 'Hash'))
       Hash
+    else-if ($invoke self 'is_a?' (get_native_class 'String'))
+      String
     else-if ($invoke self 'is_a?' (get_native_class 'Gene::Lang::Class'))
       Class
     else-if ($invoke self 'is_a?' (get_native_class 'Gene::Lang::Function'))
@@ -140,6 +142,10 @@
   ^^global
 )
 
+(class Null
+  ^^global
+)
+
 # Wrapper class for native arrays
 (class Array
   ^^global
@@ -152,8 +158,8 @@
       ($invoke self '[]' i)
     )
   )
-  (method push item
-    ($invoke self 'push' item)
+  (method push item...
+    ($invoke self 'push' item...)
   )
   (method any f
     (for (var i 0) (i < (.size)) (i += 1)
@@ -213,7 +219,6 @@
     )
   )
   (method to_s _
-    (println 'here')
     ("[" (.join " ") "]")
   )
 )
@@ -251,13 +256,21 @@
 
 (class String
   ^^global
+)
 
-  (method + args...
-    ($invoke self '<<' args)
-  )
+(class Boolean
+  ^^global
 )
 
 (class Symbol
+  ^^global
+)
+
+(class Regexp
+  ^^global
+)
+
+(class Undefined
   ^^global
 )
 

@@ -9,38 +9,41 @@ describe "Class" do
   describe "`is_sub_class`" do
     it "
       (class A)
-      ((A .is_sub_class A) == true)
+      +assert (A .is_sub_class A)
     " do
-      result = @application.parse_and_process(example.description)
-      result.should be_true
+      @application.parse_and_process(example.description)
+    end
+
+    it "
+      (class A)
+      +assert (A .is_sub_class Object)
+    " do
+      @application.parse_and_process(example.description)
     end
 
     it "
       (class A)
       (class B extend A)
-      ((B .is_sub_class A) == true)
+      +assert (B .is_sub_class A)
     " do
-      result = @application.parse_and_process(example.description)
-      result.should be_true
+      @application.parse_and_process(example.description)
     end
 
     it "
       (class A)
       (class B)
-      ((A .is_sub_class B) == false)
+      +assert ((A .is_sub_class B) == false)
     " do
-      result = @application.parse_and_process(example.description)
-      result.should be_true
+      @application.parse_and_process(example.description)
     end
 
     it "
       (class A)
       (class B extend A)
       (class C extend B)
-      ((C .is_sub_class A) == true)
+      +assert (C .is_sub_class A)
     " do
-      result = @application.parse_and_process(example.description)
-      result.should be_true
+      @application.parse_and_process(example.description)
     end
   end
 end
