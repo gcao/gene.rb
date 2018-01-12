@@ -10,6 +10,17 @@
         (.var '$root_context'
           (.chain (.ref '$application') (.invoke 'create_root_context'))
         )
+        (.invoke
+          (.fnx '$context' (fnxx
+            (@stmts .push (.var '$result'))
+            (if (parsed .is Stream)
+              (@stmts .push (compile translated))
+            else
+              ((.ref '$result') = 'TODO')
+            )
+          ))
+          (.ref '$root_context')
+        )
       )
     ))
   )
@@ -35,12 +46,12 @@
     (new New expr)
   )
 
-  (method fn [name args... callback]
+  (method fn [name args callback]
     (new Function name args callback)
   )
 
-  (method fnx [args... callback]
-    (new Function '' args callback)
+  (method fnx [args callback]
+    # (new Function '' args callback)
   )
 
   (method fnxx callback

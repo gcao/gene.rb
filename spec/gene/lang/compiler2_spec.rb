@@ -11,9 +11,8 @@ describe Gene::Lang::Compiler do
   end
 
   {
-    '
+    ' # Compiles empty code to below output
       # !pending!
-      # Compiles empty code to below output
     ' =>
     <<-JAVASCRIPT,
       var $root_context = $application.create_root_context();
@@ -23,7 +22,21 @@ describe Gene::Lang::Compiler do
       })($root_context);
     JAVASCRIPT
 
-    '
+    ' # assert
+      # !pending!
+      # !throw-error!
+      (assert false)
+    ' =>
+    <<-JAVASCRIPT,
+      var $root_context = $application.create_root_context();
+      (function($context){
+        var $result;
+        $result = Gene.assert(false);
+        return $result;
+      })($root_context);
+    JAVASCRIPT
+
+    ' # Variables
       # !pending!
       # !eval-to-true!
       (var a 1)
@@ -49,7 +62,11 @@ describe Gene::Lang::Compiler do
       output = @application.parse_and_process('(compile $parsed_code)')
       compare_code output, result
 
-      if input.index('!eval-to-true!')
+      if input.index('!throw-error!')
+        lambda {
+          @ctx.eval(output)
+        }.should raise_error
+      elsif input.index('!eval-to-true!')
         result = @ctx.eval(output)
         if not result
           print_code output

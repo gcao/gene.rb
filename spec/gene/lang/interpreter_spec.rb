@@ -386,6 +386,14 @@ describe Gene::Lang::Interpreter do
         @application.parse_and_process(example.description)
       end
 
+      it "# can have arguments following it
+        (fn doSomething [args... last] args)
+        (assert ((doSomething 1 2) == [1]))
+      " do
+        pending
+        @application.parse_and_process(example.description)
+      end
+
       it "# In function invocation
         (fn doSomething [a b]
           (a + b)
