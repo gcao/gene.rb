@@ -2,35 +2,101 @@ require File.expand_path(File.dirname(__FILE__) + '/../../spec_helper')
 
 describe "JavaScript representation in Gene" do
   before do
+    @application = Gene::Lang::Application.new
+    @application.load_core_libs
   end
 
   {
-    ' # Create new instance
+    # Atomic operations
+    ' # var
       # !pending!
-      (js-new A)
-    ' =>
-    <<-JAVASCRIPT,
-      new A()
-    JAVASCRIPT
-
-    ' # Define variable
-      # !pending!
-      (js-var a 1)
+      (jvar a 1)
     ' =>
     <<-JAVASCRIPT,
       var a = 1;
     JAVASCRIPT
 
-    ' # Define function
+    ' # function
       # !pending!
+      (jfn f [a b] 1)
     ' =>
     <<-JAVASCRIPT,
       function f(a, b) {
+        1;
       }
+    JAVASCRIPT
+
+    ' # anonymous function
+      # !pending!
+      (jfnx [a b] 1)
+    ' =>
+    <<-JAVASCRIPT,
+      function(a, b) {
+        1;
+      }
+    JAVASCRIPT
+
+    ' # dummy function
+      # !pending!
+      (jfnxx 1)
+    ' =>
+    <<-JAVASCRIPT,
+      function() {
+        1;
+      }
+    JAVASCRIPT
+
+    ' # dot access
+      # !pending!
+      (jdot a b c)
+    ' =>
+    <<-JAVASCRIPT,
+      a.b.c
+    JAVASCRIPT
+
+    ' # new
+      # !pending!
+      (jnew A 1 2)
+    ' =>
+    <<-JAVASCRIPT,
+      new A(1, 2)
+    JAVASCRIPT
+
+    ' # binary expressions
+      # !pending!
+      (jbin a + b)
+    ' =>
+    <<-JAVASCRIPT,
+      a + b
+    JAVASCRIPT
+
+    ' # unary expressions
+      # !pending!
+      (jpre ! a)
+    ' =>
+    <<-JAVASCRIPT,
+      !a
+    JAVASCRIPT
+
+    ' # return
+      # !pending!
+      (jret 1)
+    ' =>
+    <<-JAVASCRIPT,
+      return 1;
+    JAVASCRIPT
+
+    ' # ()
+      # !pending!
+      (jgrp a b)
+    ' =>
+    <<-JAVASCRIPT,
+      (a, b)
     JAVASCRIPT
 
     ' # if
       # !pending!
+      (jif true 1)
     ' =>
     <<-JAVASCRIPT,
       if (true) {
@@ -40,6 +106,7 @@ describe "JavaScript representation in Gene" do
 
     ' # if...else
       # !pending!
+      (jif true 1 else 2)
     ' =>
     <<-JAVASCRIPT,
       if (true) {
@@ -51,6 +118,7 @@ describe "JavaScript representation in Gene" do
 
     ' # if...else if...else
       # !pending!
+      (jif true 1 else-if true 2 else 3)
     ' =>
     <<-JAVASCRIPT,
       if (true) {
@@ -64,6 +132,7 @@ describe "JavaScript representation in Gene" do
 
     ' # for
       # !pending!
+      (jfor (jvar a 0) (jbin a < 100) (jbin a ++) 1)
     ' =>
     <<-JAVASCRIPT,
       for (var a = 0; a < 100; a ++) {
@@ -71,29 +140,30 @@ describe "JavaScript representation in Gene" do
       }
     JAVASCRIPT
 
-    ' # binary expressions
+    ' # for...in
       # !pending!
+      (jfor a in b [])
     ' =>
     <<-JAVASCRIPT,
-      a + b
+      for (var a in b) {
+        1;
+      }
     JAVASCRIPT
 
-    ' # unary expressions
+    ' # Ternary expression:  a ? b : c
       # !pending!
+      (jtern true ? 1 2)
     ' =>
     <<-JAVASCRIPT,
-      !a
-    JAVASCRIPT
-
-    ' # return
-      # !pending!
-    ' =>
-    <<-JAVASCRIPT,
-      return 1;
+      true ? 1 : 2
     JAVASCRIPT
 
     ' # Object
       # !pending!
+      {
+        ^a 1
+        ^b 2
+      }
     ' =>
     <<-JAVASCRIPT,
       {
@@ -104,6 +174,7 @@ describe "JavaScript representation in Gene" do
 
     ' # Object access
       # !pending!
+      (jget a 1)
     ' =>
     <<-JAVASCRIPT,
       a[1]
@@ -111,13 +182,18 @@ describe "JavaScript representation in Gene" do
 
     ' # Invoke function
       # !pending!
+      (jcall f a b)
     ' =>
     <<-JAVASCRIPT,
       f(a, b)
     JAVASCRIPT
 
-    ' # Complex expression
+    # Building blocks built on top of atomic components, that are commonly used
+
+    # Programs
+    '
       # !pending!
+      (jvar a (jcall (jget (jnew A) 0) 1 2))
     ' =>
     <<-JAVASCRIPT,
       var a = new A()[0](1, 2);
