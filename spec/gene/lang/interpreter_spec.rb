@@ -1706,6 +1706,34 @@ describe Gene::Lang::Interpreter do
     end
 
     it "
+      (var a 100)
+      +assert ((render (a [%a])) == (%a [100]))
+    " do
+      @application.parse_and_process(example.description)
+    end
+
+    it "
+      (var a 100)
+      +assert ((render {^value %a}) == {^value 100})
+    " do
+      @application.parse_and_process(example.description)
+    end
+
+    it "
+      (var a 100)
+      +assert ((render (a ^prop %a)) == (%a ^prop 100))
+    " do
+      @application.parse_and_process(example.description)
+    end
+
+    it "
+      (var a 100)
+      +assert ((render (a (b ^prop %a))) == (%a (%b ^prop 100)))
+    " do
+      @application.parse_and_process(example.description)
+    end
+
+    it "
       +assert ((render (% 1 < 2)) == true)
     " do
       @application.parse_and_process(example.description)

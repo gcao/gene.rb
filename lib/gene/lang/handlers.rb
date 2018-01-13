@@ -1143,6 +1143,9 @@ module Gene::Lang::Handlers
           context.process_statements obj
         else
           result = Gene::Lang::Object.from_gene_base template
+          result.properties.each do |name, value|
+            result.set name, render(context, value)
+          end
           result.data.each_with_index do |item, index|
             rendered_item = render context, item
             handle_result result, index, rendered_item
@@ -1151,6 +1154,14 @@ module Gene::Lang::Handlers
         end
       elsif template.is_a? Gene::Types::Symbol and template.name[0] == '%'
         context.process_statements Gene::Types::Symbol.new(template.name[1..-1])
+      elsif template.is_a? Array
+        result = template.map {|item| render context, item }
+      elsif template.is_a? Hash
+        result = {}
+        template.each do |name, value|
+          result[name] = render context, value
+        end
+        result
       else
         template
       end
