@@ -1706,6 +1706,19 @@ describe Gene::Lang::Interpreter do
     end
 
     it "
+      +assert ((render (% 1 < 2)) == true)
+    " do
+      @application.parse_and_process(example.description)
+    end
+
+    it "
+      (var a [1 2])
+      +assert ((render (a (%expand a))) == (%a 1 2))
+    " do
+      @application.parse_and_process(example.description)
+    end
+
+    it "
       (var a 100)
       (fn f [b c] (b + c))
       +assert ((render (%f a 200)) == 300)

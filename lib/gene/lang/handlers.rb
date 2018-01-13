@@ -1131,7 +1131,12 @@ module Gene::Lang::Handlers
 
     def render context, template
       if template.is_a? Gene::Types::Base
-        if template.type.name[0] == '%'
+        if template.type == Gene::Types::Symbol.new('%')
+          new_type = template.data[0]
+          obj = Gene::Types::Base.new new_type, *template.data[1..-1]
+          obj.properties = template.properties
+          context.process_statements obj
+        elsif template.type.name[0] == '%'
           new_type = Gene::Types::Symbol.new(template.type.name[1..-1])
           obj = Gene::Types::Base.new new_type, *template.data
           obj.properties = template.properties
@@ -1140,7 +1145,7 @@ module Gene::Lang::Handlers
           result = Gene::Lang::Object.from_gene_base template
           result.data.each_with_index do |item, index|
             rendered_item = render context, item
-            result.data[index] = rendered_item
+            handle_result result, index, rendered_item
           end
           result
         end
@@ -1148,6 +1153,18 @@ module Gene::Lang::Handlers
         context.process_statements Gene::Types::Symbol.new(template.name[1..-1])
       else
         template
+      end
+    end
+
+    def handle_result parent, index, child
+      if child.is_a? Gene::Lang::Expandable
+        parent.data.delete_at index
+        child.value.each do |item|
+          parent.data.insert index, item
+          index += 1
+        end
+      else
+        parent.data[index] = child
       end
     end
   end
