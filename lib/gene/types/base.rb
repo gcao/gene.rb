@@ -1,6 +1,6 @@
 class Gene::Types::Base
   attr_accessor :type, :data
-  attr_reader :properties
+  attr_accessor :properties
 
   def initialize type, *data
     @type = type

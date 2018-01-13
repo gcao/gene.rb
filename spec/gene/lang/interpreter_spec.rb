@@ -1690,4 +1690,27 @@ describe Gene::Lang::Interpreter do
       @application.parse_and_process(example.description)
     end
   end
+
+  describe "Templates" do
+    it "
+      +assert ((render (a 100)) == (%a 100))
+    " do
+      @application.parse_and_process(example.description)
+    end
+
+    it "
+      (var a 100)
+      +assert ((render (a %a)) == (%a 100))
+    " do
+      @application.parse_and_process(example.description)
+    end
+
+    it "
+      (var a 100)
+      (fn f [b c] (b + c))
+      +assert ((render (%f a 200)) == 300)
+    " do
+      @application.parse_and_process(example.description)
+    end
+  end
 end

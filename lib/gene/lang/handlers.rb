@@ -19,6 +19,7 @@ module Gene::Lang::Handlers
     FOR LOOP
     THROW CATCH
     BREAK
+    RENDER
     PRINT PRINTLN
     ASSERT DEBUG
     NOOP
@@ -1116,6 +1117,37 @@ module Gene::Lang::Handlers
         end
 
         result
+      end
+    end
+  end
+
+  class RenderHandler
+    def call context, data
+      return Gene::NOT_HANDLED unless RENDER === data
+
+      template = data.data[0]
+      render context, template
+    end
+
+    def render context, template
+      if template.is_a? Gene::Types::Base
+        if template.type.name[0] == '%'
+          new_type = Gene::Types::Symbol.new(template.type.name[1..-1])
+          obj = Gene::Types::Base.new new_type, *template.data
+          obj.properties = template.properties
+          context.process_statements obj
+        else
+          result = Gene::Lang::Object.from_gene_base template
+          result.data.each_with_index do |item, index|
+            rendered_item = render context, item
+            result.data[index] = rendered_item
+          end
+          result
+        end
+      elsif template.is_a? Gene::Types::Symbol and template.name[0] == '%'
+        context.process_statements Gene::Types::Symbol.new(template.name[1..-1])
+      else
+        template
       end
     end
   end

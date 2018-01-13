@@ -151,6 +151,14 @@ module Gene::Lang
       end
     end
 
+    def self.from_gene_base base_object
+      obj = new
+      obj.properties = base_object.properties
+      obj.set '#type', base_object.type
+      obj.data = base_object.data
+      obj
+    end
+
     def self.from_array_and_properties data, properties = {}
       obj = new
       obj.data = data || []
