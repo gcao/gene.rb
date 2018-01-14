@@ -4,6 +4,38 @@ describe "JavaScript representation in Gene" do
   before do
     @application = Gene::Lang::Application.new
     @application.load_core_libs
+    @application.load File.expand_path(File.dirname(__FILE__) + '/../../../lib/gene/lang/compiler.gene')
+    @application.parse_and_process <<-GENE
+      (fn compress code
+        ^^global
+        ($invoke (code .to_s) 'gsub' #/(^\\s*)|(\\s*\\n\\s*)|(\\s*$)/ '')
+      )
+      (fn compare [first second]
+        ^^global
+        (assert ((compress first) == (compress second)))
+      )
+    GENE
+  end
+
+  %q~
+    (compare
+      (compile
+        (var a 1)
+      )
+      '
+        var a = 1;
+      '
+    )
+
+  ~.split("\n\n").each do |code|
+    next if code =~ /^\s+$/
+
+    it code do
+      input = example.description
+      pending if input.index('!pending!')
+
+      @application.parse_and_process(input)
+    end
   end
 
   {

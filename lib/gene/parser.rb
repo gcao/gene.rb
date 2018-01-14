@@ -15,6 +15,7 @@ module Gene
                               \\[\x20-\x21\x23-\x2e\x30-\x5b\x5d-\x61\x63-\x65\x67-\x6d\x6f-\x71\x73\x75-\xff])*)
                             "/nx
     SINGLE_QUOTED_STRING  = /'((?:[^\x0-\x1f'\\] |
+                              [\n\r\t] |
                               # escaped special characters:
                               \\['\\\/bfnrt] |
                               \\u[0-9a-fA-F]{4} |

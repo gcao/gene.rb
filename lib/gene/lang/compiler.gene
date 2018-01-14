@@ -1,6 +1,6 @@
 (fn compile data
   ^^global
-  (if ((code .gene_type) == %var)
+  (if ((data .gene_type) == %var)
     (compile_var data)
   )
 )
