@@ -18,6 +18,7 @@ describe "JavaScript representation in Gene" do
   end
 
   %q~
+    # !pending!
     (compare
       (compile
         (var a 1)

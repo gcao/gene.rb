@@ -8,6 +8,7 @@ module Gene::Lang::Handlers
     SCOPE
     FN FNX FNXX BIND
     RETURN
+    MACRO
     MATCH
     CALL DO
     VAR NSVAR
@@ -346,6 +347,26 @@ module Gene::Lang::Handlers
     end
   end
 
+  class MacroHandler
+    def call context, data
+      return Gene::NOT_HANDLED unless MACRO === data
+
+      name  = data.data[0].to_s
+      macro = Gene::Lang::Macro.new name
+      macro.args_matcher = Gene::Lang::Matcher.from_array data.data[1]
+      macro.parent_scope = context.scope
+      macro.statements   = data.data[2..-1] || []
+
+      if data['global']
+        context.set_global name, macro
+      else
+        context.define name, macro, export: true
+      end
+
+      macro
+    end
+  end
+
   class IncludeHandler
     def call context, data
       return Gene::NOT_HANDLED unless INCLUDE === data
@@ -520,12 +541,19 @@ module Gene::Lang::Handlers
       elsif data.is_a? Gene::Types::Base and data.type.is_a? Gene::Types::Symbol and data.type.name =~ /^[a-zA-Z_]/
         value = context.process(data.type)
         args = data.data
-        if value.eval_arguments
-          args = args.map{|item| context.process item}
+        if value.is_a? Gene::Lang::Macro
+          args = Gene::Lang::Object.from_array_and_properties(args, data.properties)
+          value.call context: context, arguments: args
+        elsif value.is_a?(Gene::Lang::Function) or value.is_a?(Gene::Lang::BoundFunction)
+          if value.eval_arguments
+            args = args.map{|item| context.process item}
+          end
+          args = expand args
+          args = Gene::Lang::Object.from_array_and_properties(args, data.properties)
+          value.call context: context, arguments: args
+        else
+          raise "Invacation is not supported for #{data.inspect}"
         end
-        args = expand args
-        args = Gene::Lang::Object.from_array_and_properties(args, data.properties)
-        value.call context: context, arguments: args
       elsif data.is_a? Gene::Types::Base and data.type.is_a? Gene::Types::Symbol and data.type.name =~ /^.(.*)$/
         method = $1
         klass = get_class(context.self, context)
@@ -545,6 +573,7 @@ module Gene::Lang::Handlers
         data.type = context.process data.type
         context.process data
       elsif data.is_a? Gene::Types::Base and data.type.is_a? Gene::Lang::Function
+        # TODO: check eval_arguments
         args = data.data.map{|item| context.process item}
         args = expand args
         args = Gene::Lang::Object.from_array_and_properties(args, data.properties)
