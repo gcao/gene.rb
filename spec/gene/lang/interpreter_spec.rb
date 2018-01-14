@@ -134,15 +134,15 @@ describe Gene::Lang::Interpreter do
           (@a = a)
         )
 
-        # Define method incr-a
-        (method incr-a _
+        # Define method incr_a
+        (method incr_a _
           (@a += 1)
         )
 
         # Define method test
         (method test num
           # Here is how you call method from same class
-          (.incr-a)
+          (.incr_a)
           (@a + num)
         )
       )
@@ -645,7 +645,7 @@ describe Gene::Lang::Interpreter do
     it "# Regular variable not accessible if scope is not inherited
       (var a 1)
       (fn f _
-        ^!inherit-scope
+        ^!inherit_scope
         a
       )
       (f)
@@ -680,15 +680,15 @@ describe Gene::Lang::Interpreter do
   describe "if
     # TODO:
     # (if cond ...)
-    # (if-not cond ...)  # Do not allow 'else-if' or 'else' together with 'if-not'
+    # (if_not cond ...)  # Do not allow 'else_if' or 'else' together with 'if_not'
     # (if cond ... else ...)
-    # (if cond ... else-if cond ...)
-    # (if cond ... else-if cond ... else ...)
-    # (if cond ... else-if-not cond ...)  # This is not good!
+    # (if cond ... else_if cond ...)
+    # (if cond ... else_if cond ... else ...)
+    # (if cond ... else_if_not cond ...)  # This is not good!
     # better formatted to something like
     # (if cond
     #   ...
-    # else-if cond
+    # else_if cond
     #   ...
     # else
     #   ...
@@ -768,14 +768,14 @@ describe Gene::Lang::Interpreter do
       @application.parse_and_process(example.description)
     end
 
-    it "# if...else-if
+    it "# if...else_if
       (assert
         (
           (if false
             fail
-          else-if false
+          else_if false
             fail
-          else-if true
+          else_if true
             (var a 1)
             (a + 2)
           ) == 3
@@ -785,14 +785,14 @@ describe Gene::Lang::Interpreter do
       @application.parse_and_process(example.description)
     end
 
-    it "# if...else-if
+    it "# if...else_if
       (assert
         (
           (if false
             fail
-          else-if false then
+          else_if false then
             fail
-          else-if true then
+          else_if true then
             (var a 1)
             (a + 2)
           ) == 3
@@ -805,7 +805,7 @@ describe Gene::Lang::Interpreter do
     it "# then in bad position
       (if false
         fail
-      else-if true
+      else_if true
         1
         then
         2
@@ -816,12 +816,12 @@ describe Gene::Lang::Interpreter do
       }.should raise_error
     end
 
-    it "# if...else-if...else
+    it "# if...else_if...else
       (assert
         (
           (if false
             fail
-          else-if false
+          else_if false
             fail
           else
             (var a 1)
@@ -858,12 +858,12 @@ describe Gene::Lang::Interpreter do
     end
   end
 
-  describe "if-not" do
-    it "(assert ((if-not true 1 2) == undefined))" do
+  describe "if_not" do
+    it "(assert ((if_not true 1 2) == undefined))" do
       @application.parse_and_process(example.description)
     end
 
-    it "(assert ((if-not false 1 2) == 2))" do
+    it "(assert ((if_not false 1 2) == 2))" do
       @application.parse_and_process(example.description)
     end
   end
@@ -946,29 +946,29 @@ describe Gene::Lang::Interpreter do
     end
 
     it "# Use `loop` to build `for` as a regular function
-      (fn for-test [init cond update stmts...]
-        ^!inherit-scope ^!eval-arguments
-        # Do not inherit scope from where it's defined in: equivalent to ^!inherit-scope
-        # Args are not evaluated before passed in: equivalent to ^!eval-arguments
+      (fn for_test [init cond update stmts...]
+        ^!inherit_scope ^!eval_arguments
+        # Do not inherit scope from where it's defined in: equivalent to ^!inherit_scope
+        # Args are not evaluated before passed in: equivalent to ^!eval_arguments
         #
         # After evaluation, ReturnValue are returned as is, BreakValue are unwrapped and returned
-        ($invoke $caller-context 'process_statements' init)
+        ($invoke $caller_context 'process_statements' init)
         (loop
           # check condition and break if false
-          (var result ($invoke $caller-context 'process_statements' cond))
+          (var result ($invoke $caller_context 'process_statements' cond))
           (if (($invoke ($invoke result 'class') 'name') == 'Gene::Lang::BreakValue')
             (return ($invoke result 'value'))
           )
-          (if-not result
+          (if_not result
             return
           )
 
-          ($invoke $caller-context 'process_statements' stmts)
-          ($invoke $caller-context 'process_statements' update)
+          ($invoke $caller_context 'process_statements' stmts)
+          ($invoke $caller_context 'process_statements' update)
         )
       )
       (var result 0)
-      (for-test (var i 0) (i <= 4) (i += 1)
+      (for_test (var i 0) (i <= 4) (i += 1)
         (result += i)
       )
       (assert (result == 10))
@@ -977,14 +977,14 @@ describe Gene::Lang::Interpreter do
     end
 
     it "# Use `for` to build `loop` as a regular function
-      (fn loop-test args...
-        ^!inherit-scope ^!eval-arguments
-        # Do not inherit scope from where it's defined in: equivalent to ^!inherit-scope
-        # Args are not evaluated before passed in: equivalent to ^!eval-arguments
+      (fn loop_test args...
+        ^!inherit_scope ^!eval_arguments
+        # Do not inherit scope from where it's defined in: equivalent to ^!inherit_scope
+        # Args are not evaluated before passed in: equivalent to ^!eval_arguments
         #
         # After evaluation, ReturnValue are returned as is, BreakValue are unwrapped and returned
         (for _ _ _
-          (var result ($invoke $caller-context 'process_statements' args))
+          (var result ($invoke $caller_context 'process_statements' args))
           (if (($invoke ($invoke result 'class') 'name') == 'Gene::Lang::BreakValue')
             (return ($invoke result 'value'))
           )
@@ -992,7 +992,7 @@ describe Gene::Lang::Interpreter do
       )
       (var i 0)
       (assert
-        ((loop-test
+        ((loop_test
           (i += 1)
           (if (i >= 5) (break 100))
         ) == 100)

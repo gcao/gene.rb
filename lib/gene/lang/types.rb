@@ -406,7 +406,7 @@ module Gene::Lang
         advice.handle_method options
       end
 
-      # process first when-advice and pass other advices thru options[:advices]
+      # process first when_advice and pass other advices thru options[:advices]
       when_advice = batch[:when_advice]
       if when_advice
         result = when_advice.handle_method options
@@ -414,7 +414,7 @@ module Gene::Lang
         result = handle_method options
       end
 
-      # process after-advices
+      # process after_advices
       after_advices = batch[:after_advices]
       after_advices.each do |advice|
         advice.handle_method options
@@ -571,7 +571,7 @@ module Gene::Lang
       scope.set_member '$hierarchy', options[:hierarchy] if options[:hierarchy]
 
       scope.set_member '$function', self
-      scope.set_member '$caller-context', context
+      scope.set_member '$caller_context', context
       scope.set_member '$arguments', options[:arguments]
       scope.arguments = Gene::Lang::ArgumentsScope.new options[:arguments], self.args_matcher
 

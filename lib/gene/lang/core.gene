@@ -9,12 +9,12 @@
     ($invoke self 'get' '#type')
   )
 
-  (method get prop-name
-    ((@ prop-name))
+  (method get prop_name
+    ((@ prop_name))
   )
 
-  (method set [prop-name value]
-    ((@ prop-name) = value)
+  (method set [prop_name value]
+    ((@ prop_name) = value)
   )
 
   (method data _
@@ -53,15 +53,15 @@
     # end
     (if ($invoke self 'is_a?' (get_native_class 'Gene::Types::Stream'))
       Stream
-    else-if ($invoke self 'is_a?' (get_native_class 'Array'))
+    else_if ($invoke self 'is_a?' (get_native_class 'Array'))
       Array
-    else-if ($invoke self 'is_a?' (get_native_class 'Hash'))
+    else_if ($invoke self 'is_a?' (get_native_class 'Hash'))
       Hash
-    else-if ($invoke self 'is_a?' (get_native_class 'String'))
+    else_if ($invoke self 'is_a?' (get_native_class 'String'))
       String
-    else-if ($invoke self 'is_a?' (get_native_class 'Gene::Lang::Class'))
+    else_if ($invoke self 'is_a?' (get_native_class 'Gene::Lang::Class'))
       Class
-    else-if ($invoke self 'is_a?' (get_native_class 'Gene::Lang::Function'))
+    else_if ($invoke self 'is_a?' (get_native_class 'Gene::Lang::Function'))
       Function
     else
       ($invoke self 'instance_variable_get' '@klass')
@@ -199,8 +199,8 @@
     (.each
       (fnx item
         (if (($invoke ($invoke item 'class') 'name') == 'Gene::Lang::Array')
-          (var child-array (item .flatten))
-          (child-array .each
+          (var child_array (item .flatten))
+          (child_array .each
             (fnx item ($invoke result '<<' item))
           )
         else
@@ -285,8 +285,8 @@
 (class File
   ^^global
 
-  (fn read file-name
-    ($invoke (get_native_class 'File') 'read' file-name)
+  (fn read file_name
+    ($invoke (get_native_class 'File') 'read' file_name)
   )
 )
 
@@ -298,45 +298,45 @@
   )
 )
 
-(fn regexp [^^ignore-case ^^multi-line ^^extended args...]
+(fn regexp [^^ignore_case ^^multi_line ^^extended args...]
   ^^global
   (var str ('' args...))
 
   (var options 0)
-  (if ignore-case (options |= (get_native_class 'Regexp::IGNORECASE')))
-  (if multi-line  (options |= (get_native_class 'Regexp::MULTILINE' )))
+  (if ignore_case (options |= (get_native_class 'Regexp::IGNORECASE')))
+  (if multi_line  (options |= (get_native_class 'Regexp::MULTILINE' )))
   (if extended    (options |= (get_native_class 'Regexp::EXTENDED'  )))
 
   ($invoke (get_native_class 'Regexp') 'new' str options)
 )
 
-# (fn if-not [cond stmts...]
+# (fn if_not [cond stmts...]
 #   ^^global
-#   (if ($caller-context .process_statements cond)
+#   (if ($caller_context .process_statements cond)
 #     _
 #   else
 #     # Gotcha: `return` is needed here in order to return any value as is to the caller.
-#     (return ($caller-context .process_statements stmts))
+#     (return ($caller_context .process_statements stmts))
 #   )
 # )
 
 (fn for [init cond update stmts...]
   ^^global
-  ^!inherit-scope ^!eval-arguments
-  # Do not inherit scope from where it's defined in: equivalent to ^!inherit-scope
-  # Args are not evaluated before passed in: equivalent to ^!eval-arguments
+  ^!inherit_scope ^!eval_arguments
+  # Do not inherit scope from where it's defined in: equivalent to ^!inherit_scope
+  # Args are not evaluated before passed in: equivalent to ^!eval_arguments
   #
   # After evaluation, ReturnValue are returned as is, BreakValue are unwrapped and returned
-  ($caller-context .process_statements init)
+  ($caller_context .process_statements init)
   (loop
     # check condition and break if false
-    (var cond-result ((cond == _) || ($caller-context .process_statements cond)))
-    (if-not cond-result
+    (var cond_result ((cond == _) || ($caller_context .process_statements cond)))
+    (if_not cond_result
       return
     )
 
     # execuate statements
-    (var result ($caller-context .process_statements stmts))
+    (var result ($caller_context .process_statements stmts))
     # check result
     (if (($invoke ($invoke result 'class') 'name') == 'Gene::Lang::BreakValue')
       return
@@ -346,6 +346,6 @@
     )
 
     # update
-    ($caller-context .process_statements update)
+    ($caller_context .process_statements update)
   )
 )

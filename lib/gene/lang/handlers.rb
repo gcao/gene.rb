@@ -24,7 +24,7 @@ module Gene::Lang::Handlers
     ASSERT DEBUG
     NOOP
   ).each do |name|
-    const_set name, Gene::Types::Symbol.new("#{name.downcase.gsub('_', '-')}")
+    const_set name, Gene::Types::Symbol.new("#{name.downcase}")
   end
 
   PLACEHOLDER = Gene::Types::Symbol.new('_')
@@ -35,7 +35,7 @@ module Gene::Lang::Handlers
   CURRENT_SCOPE = Gene::Types::Symbol.new('$scope')
   INVOKE      = Gene::Types::Symbol.new('$invoke')
 
-  REPL        = Gene::Types::Symbol.new('open-repl')
+  REPL        = Gene::Types::Symbol.new('open_repl')
 
   module Utilities
     def expand array
@@ -308,16 +308,16 @@ module Gene::Lang::Handlers
         fn   = Gene::Lang::Function.new name
       end
 
-      # inherit-scope defaults to true unless its value is set to false
-      if data['inherit-scope'] == false
+      # inherit_scope defaults to true unless its value is set to false
+      if data['inherit_scope'] == false
         fn.inherit_scope = false
       else
         fn.inherit_scope = true
       end
       fn.parent_scope  = context.scope
 
-      # eval-arguments defaults to true unless its value is set to false
-      if data['eval-arguments'] == false
+      # eval_arguments defaults to true unless its value is set to false
+      if data['eval_arguments'] == false
         fn.eval_arguments = false
       else
         fn.eval_arguments = true
@@ -772,7 +772,7 @@ module Gene::Lang::Handlers
 
         if stmt == ELSE
           if type == IF_NOT
-            raise '"else" is not supported in "if-not"'
+            raise '"else" is not supported in "if_not"'
           end
           if condition
             break
@@ -781,7 +781,7 @@ module Gene::Lang::Handlers
           next
         elsif stmt == ELSE_IF
           if type == IF_NOT
-            raise '"else-if" is not supported in "if-not"'
+            raise '"else_if" is not supported in "if_not"'
           end
           if condition
             break

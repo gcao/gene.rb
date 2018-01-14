@@ -22,12 +22,12 @@
     # TODO: copy logic in MethodHandler
   )
 
-  # singleton-class returns a pseudo class object. It is created on demand
+  # singleton_class returns a pseudo class object. It is created on demand
   # depending on whether custom behaviors are defined
-  # (singleton-class) returns singleton-class of self
-  # (singleton-class obj) returns singleton-class of obj
-  # ((singleton-class obj) ...) runs code with the singleton-class as self, e.g.
-  #   ((singleton-class "s") (method haha)) defines "haha" method on "s" only
+  # (singleton_class) returns singleton_class of self
+  # (singleton_class obj) returns singleton_class of obj
+  # ((singleton_class obj) ...) runs code with the singleton_class as self, e.g.
+  #   ((singleton_class "s") (method haha)) defines "haha" method on "s" only
 )
 
 (let $Object (new $Class))

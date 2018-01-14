@@ -25,7 +25,7 @@ describe "Regular Expressions" do
   end
 
   it "
-    (assert (#/a/imx == (regexp ^^ignore-case ^^multi-line ^^extended 'a')))
+    (assert (#/a/imx == (regexp ^^ignore_case ^^multi_line ^^extended 'a')))
   " do
     @application.parse_and_process(example.description)
   end

@@ -1,38 +1,22 @@
-(fn compile code
+(fn compile data
   ^^global
-  (var translated (translate code))
-  (println translated)
-
-  (var result
-    (new Root (fnxx
-      (println 'Root callback')
-      (@stmts .push
-        (.var '$root_context'
-          (.chain (.ref '$application') (.invoke 'create_root_context'))
-        )
-        (.invoke
-          (.fnx '$context' (fnxx
-            (@stmts .push (.var '$result'))
-            (if (parsed .is Stream)
-              (@stmts .push (compile translated))
-            else
-              ((.ref '$result') = 'TODO')
-            )
-          ))
-          (.ref '$root_context')
-        )
-      )
-    ))
+  (if ((code .gene_type) == %var)
+    (compile_var data)
   )
-  (println (result .to_s))
-  (result .to_s)
 )
 
-# Translate native Ruby objects to Gene objects before compilation
-(fn translate code
-  code
+(fn compile_var data
+  ("var " (data .get 0)
+    (do
+      (var value (data .get 1))
+      (if (value != undefined)
+        ("= " (compile value))
+      )
+    )
+  )
 )
 
+# DEPRECATED
 (class Base
   (method var [name value]
     (new Variable name value)

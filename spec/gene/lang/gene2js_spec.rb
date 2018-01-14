@@ -118,7 +118,7 @@ describe "JavaScript representation in Gene" do
 
     ' # if...else if...else
       # !pending!
-      (jif true 1 else-if true 2 else 3)
+      (jif true 1 else_if true 2 else 3)
     ' =>
     <<-JAVASCRIPT,
       if (true) {

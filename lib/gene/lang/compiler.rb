@@ -171,7 +171,7 @@ class Gene::Lang::Compiler
             chain(
               ref('$context'),
               invoke(ref('get_member'), data.type.to_s),
-              # TODO: support evaluating arguments in function context (if eval-arguments is set to false)
+              # TODO: support evaluating arguments in function context (if eval_arguments is set to false)
               # One way is to use invoke_with_callback(function($context){...}) if any argument has to be evaluated
               invoke(ref('invoke'), obj(context: ref('$context'), arguments: data.data.map {|arg| context.process(arg) }))
              )

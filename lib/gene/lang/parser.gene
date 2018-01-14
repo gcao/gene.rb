@@ -53,18 +53,18 @@
 
       (if (.skip IGNORE)
         # continue
-      else-if ((value = (.parse_int)) != UNPARSED)
+      else_if ((value = (.parse_int)) != UNPARSED)
         # (result = (.handle_top_level_results result value))
         (result = value)
-      else-if ((value = (.parse_keywords)) != UNPARSED)
+      else_if ((value = (.parse_keywords)) != UNPARSED)
         (result = value)
-      else-if ((value = (.parse_symbol)) != UNPARSED)
+      else_if ((value = (.parse_symbol)) != UNPARSED)
         (result = value)
-      else-if ((value = (.parse_string)) != UNPARSED)
+      else_if ((value = (.parse_string)) != UNPARSED)
         (result = value)
-      else-if ((value = (.parse_array)) != UNPARSED)
+      else_if ((value = (.parse_array)) != UNPARSED)
         (result = value)
-      else-if ((value = (.parse_gene)) != UNPARSED)
+      else_if ((value = (.parse_gene)) != UNPARSED)
         (result = value)
       )
     )
@@ -106,7 +106,7 @@
       (loop
         (if (.eos?)
           break
-        else-if (.check SEPARATOR)
+        else_if (.check SEPARATOR)
           break
         else
           (value += ($invoke @target 'getch'))
@@ -125,11 +125,11 @@
       (loop
         (if (.eos?)
           (throw PrematureEndError "unexpected end of input")
-        else-if (.scan ARRAY_CLOSE)
+        else_if (.scan ARRAY_CLOSE)
           break
-        else-if (.skip IGNORE)
+        else_if (.skip IGNORE)
           # continue
-        else-if ((value = (.parse_child)) != UNPARSED)
+        else_if ((value = (.parse_child)) != UNPARSED)
           (result .push value)
         else
           (throw ParseError "unexpected token at 'TODO'!")
@@ -153,9 +153,9 @@
       (loop
         (if (.eos?)
           (throw PrematureEndError "unexpected end of input")
-        else-if (.scan GENE_CLOSE)
+        else_if (.scan GENE_CLOSE)
           break
-        else-if ((value = (.parse_child)) != UNPARSED)
+        else_if ((value = (.parse_child)) != UNPARSED)
           (if empty
             (type = value)
           else
@@ -186,10 +186,10 @@
 
     (if (.eos?)
       (throw PrematureEndError "unexpected end of input")
-    else-if ((result = (.parse_string))   != UNPARSED)
-    else-if ((result = (.parse_int))      != UNPARSED)
-    else-if ((result = (.parse_keywords)) != UNPARSED)
-    else-if ((result = (.parse_symbol))   != UNPARSED)
+    else_if ((result = (.parse_string))   != UNPARSED)
+    else_if ((result = (.parse_int))      != UNPARSED)
+    else_if ((result = (.parse_keywords)) != UNPARSED)
+    else_if ((result = (.parse_symbol))   != UNPARSED)
     else
       (if (['"' "'"] .include? (.peek 1))
         (throw PrematureEndError "unexpected end of input")
