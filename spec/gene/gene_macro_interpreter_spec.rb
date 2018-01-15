@@ -11,7 +11,7 @@ describe Gene::Macro::Interpreter do
       result.should == Gene::UNDEFINED
     end
 
-    it "(#def a 'value'){'a' : [1 ##a]}" do
+    it "(#def a 'value'){^a [1 ##a]}" do
       result = @interpreter.parse_and_process(example.description)
       result['a'][1].should == 'value'
     end
@@ -43,7 +43,7 @@ describe Gene::Macro::Interpreter do
       result.should == Gene::UNDEFINED
     end
 
-    it "(#let a 'value'){'a' : [1 ##a]}" do
+    it "(#let a 'value'){^a [1 ##a]}" do
       result = @interpreter.parse_and_process(example.description)
       result['a'][1].should == 'value'
     end
@@ -191,17 +191,17 @@ describe Gene::Macro::Interpreter do
       result.should == 2
     end
 
-    it "(#get {a : 'va', b : 'vb'} b)" do
+    it "(#get {^a 'va', ^b 'vb'} b)" do
       result = @interpreter.parse_and_process(example.description)
       result.should == 'vb'
     end
 
-    it "(#get [1 {a : 'value'} 3] 1 a)" do
+    it "(#get [1 {^a 'value'} 3] 1 a)" do
       result = @interpreter.parse_and_process(example.description)
       result.should == 'value'
     end
 
-    it "(#get {a : 'value', b : [1 2 3]} b 1)" do
+    it "(#get {^a 'value', ^b [1 2 3]} b 1)" do
       result = @interpreter.parse_and_process(example.description)
       result.should == 2
     end
@@ -397,13 +397,13 @@ describe Gene::Macro::Interpreter do
 
   describe "inputs" do
     it "(#get #input a)" do
-      input = Gene::Parser.parse "{a : 'va'}"
+      input = Gene::Parser.parse "{^a 'va'}"
       result = @interpreter.parse_and_process(example.description, input)
       result.should == 'va'
     end
 
     it "(#get #input b)" do
-      input = Gene::Parser.parse "{a : 'va'}"
+      input = Gene::Parser.parse "{^a 'va'}"
       result = @interpreter.parse_and_process(example.description, input)
       pending
       result.should == nil

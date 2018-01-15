@@ -42,7 +42,6 @@ module Gene
     HASH_OPEN             = /\{/
     HASH_CLOSE            = /\}/
     ATTRIBUTE             = /\^(?=[+\-]?)/
-    PAIR_DELIMITER        = /:/
     COMMA                 = /,/
     ARRAY_OPEN            = /\[/
     ARRAY_CLOSE           = /\]/
@@ -456,7 +455,7 @@ module Gene
       result = {}
       closed = false
 
-      expects = %w(key delimiter value)
+      expects = %w(key value)
       expect_index = 0
 
       until eos?
@@ -473,13 +472,7 @@ module Gene
             raise ParseError, "unexpected token at '#{peek(20)}'!"
           elsif (parsed = parse_attribute(result)) != UNPARSED
             next
-          elsif (parsed = parse_value) == UNPARSED
-            raise ParseError, "unexpected token at '#{peek(20)}'!"
           else
-            key = parsed.to_s
-          end
-        when 'delimiter'
-          if !scan(PAIR_DELIMITER)
             raise ParseError, "unexpected token at '#{peek(20)}'!"
           end
         when 'value'
