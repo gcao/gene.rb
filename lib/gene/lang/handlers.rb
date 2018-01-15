@@ -77,6 +77,8 @@ module Gene::Lang::Handlers
         context.get_member("Array")
       elsif obj.is_a? Hash
         context.get_member("Hash")
+      elsif obj.is_a? Gene::Types::Base
+        context.get_member("Object")
       elsif obj.is_a? String
         context.get_member("String")
       elsif obj.is_a? Fixnum

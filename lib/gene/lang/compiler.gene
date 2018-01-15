@@ -1,11 +1,19 @@
 (fn compile data
   ^^global
-  (if ((data .gene_type) == %var)
-    (compile_var data)
+  ^!eval_arguments
+
+  (println "compile: " data)
+  (if (data .is Object)
+    (if ((data .gene_type) == %var)
+      (compile_var data)
+    )
+  else
+    data
   )
 )
 
 (fn compile_var data
+  (println 'compile_var' data)
   ("var " (data .get 0)
     (do
       (var value (data .get 1))

@@ -5,20 +5,40 @@
     (@#data = data)
   )
 
+  (method is_base_type _
+    ($invoke self 'is_a?' (get_native_class 'Gene::Types::Base'))
+  )
+
   (method gene_type _
-    ($invoke self 'get' '#type')
+    (if (.is_base_type)
+      ($invoke self 'type')
+    else
+      ($invoke self 'get' '#type')
+    )
   )
 
   (method get prop_name
-    ((@ prop_name))
+    (if (.is_base_type)
+      ($invoke self '[]' prop_name)
+    else
+      ((@ prop_name))
+    )
   )
 
   (method set [prop_name value]
-    ((@ prop_name) = value)
+    (if (.is_base_type)
+      ($invoke self '[]=' prop_name value)
+    else
+      ((@ prop_name) = value)
+    )
   )
 
   (method data _
-    ($invoke self 'data')
+    (if (.is_base_type)
+      ($invoke self 'data')
+    else
+      ($invoke self 'data')
+    )
   )
 
   (method first _
@@ -57,8 +77,14 @@
       Array
     else_if ($invoke self 'is_a?' (get_native_class 'Hash'))
       Hash
+    else_if ($invoke self 'is_a?' (get_native_class 'Gene::Types::Base'))
+      Object
     else_if ($invoke self 'is_a?' (get_native_class 'String'))
       String
+    else_if ($invoke self 'is_a?' (get_native_class 'Gene::Types::Symbol'))
+      Symbol
+    else_if ($invoke self 'is_a?' (get_native_class 'Fixnum'))
+      Int
     else_if ($invoke self 'is_a?' (get_native_class 'Gene::Lang::Class'))
       Class
     else_if ($invoke self 'is_a?' (get_native_class 'Gene::Lang::Function'))
@@ -264,6 +290,10 @@
 
 (class Symbol
   ^^global
+
+  (method data _
+    [self]
+  )
 )
 
 (class Regexp
