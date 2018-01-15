@@ -315,8 +315,6 @@ module Gene::Lang
   class Module < Object
     attr_accessor :name, :methods, :prop_descriptors, :modules
     attr_accessor :scope
-    attr_accessor :default_aspect, :applied_aspects
-    attr_accessor :advices_for_methods_cache
 
     def initialize name
       super(Class)
@@ -324,12 +322,10 @@ module Gene::Lang
       set 'methods', {}
       set 'prop_descriptors', {}
       set 'modules', []
-      set 'applied_aspects', []
-      set 'advices_for_methods_cache', {}
     end
 
     def properties_to_hide
-      %w(advices_for_methods_cache)
+      %w()
     end
 
     def method name
@@ -345,35 +341,6 @@ module Gene::Lang
         @ancestors += mod.ancestors
       end
       @ancestors
-    end
-
-    # Advices for a method will be calculated when the method is called at the first time,
-    # and cached for performance purpose
-    #
-    # Following below logic, there will be no need to create additional classes for aspects/advices
-    #
-    # Unwrap aspects/advices first
-    # Unwrapped advices have this structure
-    # before11, before12, after11, after12, when11, when12, before21, before22, after21, after22, when21
-    # Then they are processed in a similar way as below
-    def handle_method options
-      advices = options[:advices]
-      if not advices
-        advices = advices_for_method(options[:method])
-      end
-
-      if advices.empty?
-        handle_method_without_advices options
-      else
-        batch = extract_next_batch_of_advices advices
-
-        if batch.empty?
-          handle_method_without_advices options
-        else
-          options[:advices] = advices
-          handle_method_with_advices batch, options
-        end
-      end
     end
 
     # BEGIN: Implement Namespace-like interface
@@ -398,32 +365,7 @@ module Gene::Lang
     end
     # END
 
-    private
-
-    def handle_method_with_advices batch, options
-      before_advices = batch[:before_advices]
-      before_advices.each do |advice|
-        advice.handle_method options
-      end
-
-      # process first when_advice and pass other advices thru options[:advices]
-      when_advice = batch[:when_advice]
-      if when_advice
-        result = when_advice.handle_method options
-      else
-        result = handle_method options
-      end
-
-      # process after_advices
-      after_advices = batch[:after_advices]
-      after_advices.each do |advice|
-        advice.handle_method options
-      end
-
-      result
-    end
-
-    def handle_method_without_advices options
+    def handle_method options
       method_name = options[:method]
       m = method(method_name)
       if m
@@ -438,53 +380,6 @@ module Gene::Lang
           raise "Undefined method #{method} for #{options[:self]}"
         end
       end
-    end
-
-    # Return: a clone of cached advices for method
-    # TODO: there is a bug related to the order of advices
-    # Write a test with two aspects, each contains only before & after advices
-    # Make sure the output is in correct order
-    def advices_for_method method
-      advices = advices_for_methods_cache[method]
-
-      if not advices
-        advices_for_methods_cache[method] = advices = []
-
-        applied_aspects.each do |aspect|
-          advices.concat aspect.advices_for_method(method)
-        end
-
-        if default_aspect
-          advices.concat default_aspect.advices_for_method(method)
-        end
-      end
-
-      advices.clone
-    end
-
-    def extract_next_batch_of_advices advices
-      before_advices = []
-      after_advices  = []
-      when_advice    = nil
-
-      while not advices.empty?
-        advice = advices.shift
-        if advice.type_is_before?
-          before_advices << advice
-        elsif advice.type_is_after?
-          after_advices << advice
-        elsif advice.type_is_when?
-          when_advice = advice
-          break
-        else
-          raise "Unknown advice: #{advice}"
-        end
-      end
-      {
-        before_advices: before_advices,
-        after_advices:  after_advices,
-        when_advice:   when_advice,
-      }
     end
   end
 
@@ -1064,77 +959,4 @@ module Gene::Lang
   class Hash < ::Hash
   end
 
-  class Aspect < Class
-    attr_reader :name
-    attr_accessor :before_advices, :after_advices, :when_advices
-
-    def initialize name
-      super(Aspect)
-      set 'name', name
-      set 'before_advices', []
-      set 'after_advices',  []
-      set 'when_advices',   []
-    end
-
-    def apply target
-      target.applied_aspects << self
-    end
-
-    # Return a consolidated array that contains
-    # [before advices..., after advices..., when advices...]
-    def advices_for_method method
-      advices = []
-
-      before_advices.each do |advice|
-        advices << advice if advice.match_method? method
-      end
-      after_advices.each do |advice|
-        advices << advice if advice.match_method? method
-      end
-      when_advices.each do |advice|
-        advices << advice if advice.match_method? method
-      end
-
-      advices
-    end
-  end
-
-  class Advice < Object
-    attr_accessor :advice_type, :method_matcher, :args_matcher, :logic
-
-    def initialize advice_type
-      super(Advice)
-      set 'advice_type', advice_type
-    end
-
-    def match_method? name
-      method_matcher.to_s == name.to_s
-    end
-
-    def handle_method options
-      context = options[:context]
-      scope = Scope.new context.scope, false
-
-      scope.set_member '$method', options[:method] if options[:method]
-      scope.set_member '$arguments', options[:arguments]
-      scope.set_member '$hierarchy', options[:hierarchy]
-      scope.set_member '$advices', options[:advices]
-      scope.arguments = Gene::Lang::ArgumentsScope.new options[:arguments], self.args_matcher
-
-      new_context = context.extend scope: scope, self: options[:self]
-      new_context.process_statements logic
-    end
-
-    def type_is_before?
-      advice_type == 'before'
-    end
-
-    def type_is_after?
-      advice_type == 'after'
-    end
-
-    def type_is_when?
-      advice_type == 'when'
-    end
-  end
 end

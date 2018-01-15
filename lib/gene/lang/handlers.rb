@@ -13,7 +13,6 @@ module Gene::Lang::Handlers
     CALL DO
     VAR NSVAR
     EXPAND
-    ASPECT BEFORE AFTER WHEN CONTINUE
     IMPORT EXPORT FROM
     PUBLIC PRIVATE
     IF IF_NOT ELSE_IF ELSE THEN
@@ -93,8 +92,6 @@ module Gene::Lang::Handlers
         context.get_member("Null")
       elsif obj.is_a? Gene::Types::Symbol
         context.get_member("Symbol")
-      elsif obj.is_a? Gene::Lang::Aspect
-        context.get_member("Aspect")
       elsif obj.is_a? Gene::Lang::Class
         context.get_member("Class")
       elsif obj.class == Gene::Lang::Object
@@ -655,74 +652,6 @@ module Gene::Lang::Handlers
       when '||=' then old_value || value
       else raise "Invalid operator #{op.inspect}"
       end
-    end
-  end
-
-  class AspectHandler
-    def call context, data
-      return Gene::NOT_HANDLED unless ASPECT === data
-
-      name   = data.data[0].to_s
-      aspect = Gene::Lang::Aspect.new name
-
-      scope = Gene::Lang::Scope.new context.scope, false
-      new_context = context.extend scope: scope, self: aspect
-      new_context.process_statements data.data[1..-1] || []
-      if data['global']
-        context.set_global name, aspect
-      else
-        context.define name, aspect, export: true
-      end
-      aspect
-    end
-  end
-
-  class AdviceHandler
-    def call context, data
-      return Gene::NOT_HANDLED unless BEFORE === data or AFTER === data or WHEN === data
-
-      advice = Gene::Lang::Advice.new data.type.to_s
-      advice.method_matcher = data.data[0]
-      advice.args_matcher = data.data[1]
-      advice.logic = data.data[2..-1]
-
-      if context.self.is_a? Gene::Lang::Aspect
-        aspect = context.self
-      elsif context.self.is_a? Gene::Lang::Module
-        if not context.self.default_aspect
-          context.self.default_aspect = Gene::Lang::Aspect.new 'default'
-        end
-        aspect = context.self.default_aspect
-      end
-
-      if BEFORE === data
-        aspect.before_advices << advice
-      elsif AFTER === data
-        aspect.after_advices << advice
-      else
-        aspect.when_advices << advice
-      end
-
-      advice
-    end
-  end
-
-  class ContinueHandler
-    def call context, data
-      return Gene::NOT_HANDLED unless CONTINUE === data
-
-      method    = context.get_member('$method')
-      args      = context.get_member('$arguments')
-      hierarchy = context.get_member('$hierarchy')
-      advices   = context.get_member('$advices')
-      hierarchy.current.handle_method(
-        context: context,
-        method: method,
-        hierarchy: hierarchy,
-        arguments: args,
-        advices: advices,
-        self: context.self
-      )
     end
   end
 
