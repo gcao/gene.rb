@@ -342,6 +342,30 @@ describe Gene::Lang::Interpreter do
     end
 
     it "
+      (fn f a
+        ^!eval_arguments
+        a
+      )
+      (var a 1)
+      (assert ((f a) == :a))
+    " do
+      @application.parse_and_process(example.description)
+    end
+
+    it "
+      (fn f a
+        ^!eval_arguments
+        a
+      )
+      (var a 1)
+      (var result (f (:a + 1)))
+      (assert ((result .gene_type) == 1))
+    " do
+      pending
+      @application.parse_and_process(example.description)
+    end
+
+    it "
       (fn f [^^a]
         a
       )
@@ -1196,19 +1220,19 @@ describe Gene::Lang::Interpreter do
   end
 
   describe "Create / modify / access native Gene object" do
-    it "(assert (((%a 1) .gene_type) == %a))" do
+    it "(assert (((:a 1) .gene_type) == :a))" do
       @application.parse_and_process(example.description)
     end
 
-    it "(assert (((%a 1) .data) == [1]))" do
+    it "(assert (((:a 1) .data) == [1]))" do
       @application.parse_and_process(example.description)
     end
 
-    it "(assert (((%a 1) .first) == 1))" do
+    it "(assert (((:a 1) .first) == 1))" do
       @application.parse_and_process(example.description)
     end
 
-    it "(assert (((%a ^key 'value') .get 'key') == 'value'))" do
+    it "(assert (((:a ^key 'value') .get 'key') == 'value'))" do
       @application.parse_and_process(example.description)
     end
   end
@@ -1216,8 +1240,8 @@ describe Gene::Lang::Interpreter do
   describe "Pattern match / destructure" do
     describe "Gene Object" do
       it "
-        (match obj (%a))
-        (assert (obj == (%a)))
+        (match obj (:a))
+        (assert (obj == (:a)))
       " do
         @application.parse_and_process(example.description)
       end
@@ -1230,8 +1254,8 @@ describe Gene::Lang::Interpreter do
       end
 
       it "
-        (match (type) (%a))
-        (assert (type == %a))
+        (match (type) (:a))
+        (assert (type == :a))
       " do
         @application.parse_and_process(example.description)
       end
@@ -1285,17 +1309,17 @@ describe Gene::Lang::Interpreter do
       end
 
       it "
-        (match (_ ^a attr_a ^b (attr_b_type)) (_ ^a (%a) ^b (%b)))
-        (assert (attr_a == (%a)))
-        (assert (attr_b_type == %b))
+        (match (_ ^a attr_a ^b (attr_b_type)) (_ ^a (:a) ^b (:b)))
+        (assert (attr_a == (:a)))
+        (assert (attr_b_type == :b))
       " do
         @application.parse_and_process(example.description)
       end
 
       it "
-        (match {^a attr_a ^b (attr_b_type)} (_ ^a (%a) ^b (%b)))
-        (assert (attr_a == (%a)))
-        (assert (attr_b_type == %b))
+        (match {^a attr_a ^b (attr_b_type)} (_ ^a (:a) ^b (:b)))
+        (assert (attr_a == (:a)))
+        (assert (attr_b_type == :b))
       " do
         @application.parse_and_process(example.description)
       end
@@ -1304,7 +1328,7 @@ describe Gene::Lang::Interpreter do
     describe "Array" do
       it "
         (match (type) [])
-        (assert (type == %Array))
+        (assert (type == :Array))
       " do
         @application.parse_and_process(example.description)
       end
@@ -1321,7 +1345,7 @@ describe Gene::Lang::Interpreter do
     describe "Hash" do
       it "
         (match (type) {})
-        (assert (type == %Hash))
+        (assert (type == :Hash))
       " do
         @application.parse_and_process(example.description)
       end
@@ -1338,7 +1362,7 @@ describe Gene::Lang::Interpreter do
     describe "String" do
       it "
         (match (type) '')
-        (assert (type == %String))
+        (assert (type == :String))
       " do
         @application.parse_and_process(example.description)
       end
@@ -1675,7 +1699,7 @@ describe Gene::Lang::Interpreter do
     end
 
     it "
-      (assert ((%o ^x (expand {^a 1 ^b 2}) (expand [100 200])) == (%o ^a 1 ^b 2 100 200)))
+      (assert ((:o ^x (expand {^a 1 ^b 2}) (expand [100 200])) == (:o ^a 1 ^b 2 100 200)))
     " do
       pending
       @application.parse_and_process(example.description)
@@ -1704,21 +1728,21 @@ describe Gene::Lang::Interpreter do
 
   describe "Templates" do
     it "
-      +assert ((render (a 100)) == (%a 100))
+      +assert ((render (a 100)) == (:a 100))
     " do
       @application.parse_and_process(example.description)
     end
 
     it "
       (var a 100)
-      +assert ((render (a %a)) == (%a 100))
+      +assert ((render (a %a)) == (:a 100))
     " do
       @application.parse_and_process(example.description)
     end
 
     it "
       (var a 100)
-      +assert ((render (a [%a])) == (%a [100]))
+      +assert ((render (a [%a])) == (:a [100]))
     " do
       @application.parse_and_process(example.description)
     end
@@ -1732,14 +1756,14 @@ describe Gene::Lang::Interpreter do
 
     it "
       (var a 100)
-      +assert ((render (a ^prop %a)) == (%a ^prop 100))
+      +assert ((render (a ^prop %a)) == (:a ^prop 100))
     " do
       @application.parse_and_process(example.description)
     end
 
     it "
       (var a 100)
-      +assert ((render (a (b ^prop %a))) == (%a (%b ^prop 100)))
+      +assert ((render (a (b ^prop %a))) == (:a (:b ^prop 100)))
     " do
       @application.parse_and_process(example.description)
     end
@@ -1752,7 +1776,7 @@ describe Gene::Lang::Interpreter do
 
     it "
       (var a [1 2])
-      +assert ((render (a (%expand a))) == (%a 1 2))
+      +assert ((render (a (%expand a))) == (:a 1 2))
     " do
       @application.parse_and_process(example.description)
     end

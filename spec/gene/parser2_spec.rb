@@ -22,7 +22,7 @@ describe "Parser" do
     (assert (result == true))
 
     (var result ((new Parser 'a') .parse))
-    (assert (result == %a))
+    (assert (result == :a))
 
     (var result ((new Parser '"a"') .parse))
     (assert (result == 'a'))
@@ -37,7 +37,7 @@ describe "Parser" do
     (assert (result == noop))
 
     (var result ((new Parser '(a 1)') .parse))
-    (assert ((result .gene_type) == %a))
+    (assert ((result .gene_type) == :a))
     (assert ((result .data) == [1]))
 
   ~.split("\n\n").each do |code|

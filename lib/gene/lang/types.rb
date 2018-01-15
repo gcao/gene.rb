@@ -556,6 +556,12 @@ module Gene::Lang
     attr_accessor :parent_scope, :args_matcher, :statements
     attr_accessor :inherit_scope, :eval_arguments
 
+    # TODO: when eval_arguments is true, call render on the arguments against caller context
+    # Otherwise it won't be possible to pass any dynamic data to the function
+    # E.g. (fn f a ^!eval_arguments a)
+    # (var a 1) (f a)  => returns a
+    # (var a 1) (f %a) => returns 1
+
     def initialize name
       super(Function)
       set 'name', name

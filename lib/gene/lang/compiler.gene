@@ -4,7 +4,7 @@
 
   (println "compile: " data)
   (if (data .is Object)
-    (if ((data .gene_type) == %var)
+    (if ((data .gene_type) == :var)
       (compile_var data)
     )
   else
@@ -18,7 +18,7 @@
     (do
       (var value (data .get 1))
       (if (value != undefined)
-        ("= " (compile value))
+        ("= " (compile %value))
       )
     )
   )

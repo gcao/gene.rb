@@ -124,7 +124,15 @@ module Gene::Lang::Handlers
             obj.set key, context.process(value)
           end
           obj
-        elsif data.type.is_a?(Gene::Types::Symbol) and data.type.to_s[0] == "%"
+        elsif data.type.is_a?(Gene::Types::Symbol) and data.type.to_s == ":"
+          obj = Gene::Lang::Object.new
+          obj.set "#type", context.process(data.data[0])
+          obj.data = data.data[1..-1].map { |item| context.process(item) }
+          data.properties.each do |key, value|
+            obj.set key, context.process(value)
+          end
+          obj
+        elsif data.type.is_a?(Gene::Types::Symbol) and data.type.to_s[0] == ":"
           obj = Gene::Lang::Object.new
           obj.set "#type", Gene::Types::Symbol.new(data.type.to_s[1..-1])
           obj.data = data.data.map { |item| context.process(item) }
@@ -213,7 +221,7 @@ module Gene::Lang::Handlers
         context.self
       elsif data.is_a? Gene::Types::Symbol
         name = data.name
-        if name[0] == '%'
+        if name[0] == ':'
           Gene::Types::Symbol.new name[1..-1]
         elsif name =~ /^(.*)\.\.\.$/
           if $1[0] == '@'
@@ -1167,7 +1175,7 @@ module Gene::Lang::Handlers
           obj = Gene::Types::Base.new new_type, *template.data[1..-1]
           obj.properties = template.properties
           context.process_statements obj
-        elsif template.type.name[0] == '%'
+        elsif template.type.is_a?(Gene::Types::Symbol) and template.type.name[0] == '%'
           new_type = Gene::Types::Symbol.new(template.type.name[1..-1])
           obj = Gene::Types::Base.new new_type, *template.data
           obj.properties = template.properties

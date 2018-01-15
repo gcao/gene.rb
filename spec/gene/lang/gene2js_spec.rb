@@ -24,7 +24,7 @@ describe "JavaScript representation in Gene" do
   %q~
     (compare
       (compile
-        (var a 1)
+        (render (var a 1))
       )
       '
         var a = 1;
