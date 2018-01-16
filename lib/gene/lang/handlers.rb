@@ -109,6 +109,60 @@ module Gene::Lang::Handlers
         obj.class
       end
     end
+
+    def render context, template
+      if template.is_a? Gene::Types::Base
+        if template.type == Gene::Types::Symbol.new('%')
+          raise 'If you want to construct an expression, you should use "%%" instead.'
+        elsif template.type == Gene::Types::Symbol.new('%%')
+          new_type = template.data[0]
+          obj = Gene::Types::Base.new new_type, *template.data[1..-1]
+          obj.properties = template.properties
+          context.process_statements obj
+        elsif template.type.is_a?(Gene::Types::Symbol) and template.type.name[0] == '%'
+          new_type = Gene::Types::Symbol.new(template.type.name[1..-1])
+          obj = Gene::Types::Base.new new_type, *template.data
+          obj.properties = template.properties
+          context.process_statements obj
+        else
+          result = Gene::Lang::Object.from_gene_base template
+          result.properties.each do |name, value|
+            result.set name, render(context, value)
+          end
+          result.data.each_with_index do |item, index|
+            rendered_item = render context, item
+            handle_render_result result, index, rendered_item
+          end
+          result
+        end
+      elsif template.is_a? Gene::Types::Symbol and template.name[0] == '%'
+        context.process_statements Gene::Types::Symbol.new(template.name[1..-1])
+      elsif template.is_a? Array
+        result = template.map {|item| render context, item }
+      elsif template.is_a? Hash
+        result = {}
+        template.each do |name, value|
+          result[name] = render context, value
+        end
+        result
+      else
+        template
+      end
+    end
+
+    private
+
+    def handle_render_result parent, index, child
+      if child.is_a? Gene::Lang::Expandable
+        parent.data.delete_at index
+        child.value.each do |item|
+          parent.data.insert index, item
+          index += 1
+        end
+      else
+        parent.data[index] = child
+      end
+    end
   end
 
   # Handle scope variables, instance variables like @var and literals
@@ -125,21 +179,19 @@ module Gene::Lang::Handlers
           end
           obj
         elsif data.type.is_a?(Gene::Types::Symbol) and data.type.to_s == ":"
-          obj = Gene::Lang::Object.new
-          obj.set "#type", context.process(data.data[0])
-          obj.data = data.data[1..-1].map { |item| context.process(item) }
+          raise 'If you want to construct a Gene data, you should use "::" instead.'
+        elsif data.type.is_a?(Gene::Types::Symbol) and data.type.to_s == "::"
+          obj = Gene::Types::Base.new data.data[0], *data.data[1..-1]
           data.properties.each do |key, value|
-            obj.set key, context.process(value)
+            obj[key] = value
           end
-          obj
+          render context, obj
         elsif data.type.is_a?(Gene::Types::Symbol) and data.type.to_s[0] == ":"
-          obj = Gene::Lang::Object.new
-          obj.set "#type", Gene::Types::Symbol.new(data.type.to_s[1..-1])
-          obj.data = data.data.map { |item| context.process(item) }
+          obj = Gene::Types::Base.new Gene::Types::Symbol.new(data.type.to_s[1..-1]), *data.data
           data.properties.each do |key, value|
-            obj.set key, context.process(value)
+            obj[key] = value
           end
-          obj
+          render context, obj
         elsif INVOKE === data
           target = context.process data.data[0]
           method = context.process(data.data[1]).to_s
@@ -1161,61 +1213,13 @@ module Gene::Lang::Handlers
   end
 
   class RenderHandler
+    include Utilities
+
     def call context, data
       return Gene::NOT_HANDLED unless RENDER === data
 
       template = data.data[0]
       render context, template
-    end
-
-    def render context, template
-      if template.is_a? Gene::Types::Base
-        if template.type == Gene::Types::Symbol.new('%')
-          new_type = template.data[0]
-          obj = Gene::Types::Base.new new_type, *template.data[1..-1]
-          obj.properties = template.properties
-          context.process_statements obj
-        elsif template.type.is_a?(Gene::Types::Symbol) and template.type.name[0] == '%'
-          new_type = Gene::Types::Symbol.new(template.type.name[1..-1])
-          obj = Gene::Types::Base.new new_type, *template.data
-          obj.properties = template.properties
-          context.process_statements obj
-        else
-          result = Gene::Lang::Object.from_gene_base template
-          result.properties.each do |name, value|
-            result.set name, render(context, value)
-          end
-          result.data.each_with_index do |item, index|
-            rendered_item = render context, item
-            handle_result result, index, rendered_item
-          end
-          result
-        end
-      elsif template.is_a? Gene::Types::Symbol and template.name[0] == '%'
-        context.process_statements Gene::Types::Symbol.new(template.name[1..-1])
-      elsif template.is_a? Array
-        result = template.map {|item| render context, item }
-      elsif template.is_a? Hash
-        result = {}
-        template.each do |name, value|
-          result[name] = render context, value
-        end
-        result
-      else
-        template
-      end
-    end
-
-    def handle_result parent, index, child
-      if child.is_a? Gene::Lang::Expandable
-        parent.data.delete_at index
-        child.value.each do |item|
-          parent.data.insert index, item
-          index += 1
-        end
-      else
-        parent.data[index] = child
-      end
     end
   end
 
