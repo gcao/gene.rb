@@ -22,9 +22,10 @@ describe "JavaScript representation in Gene" do
   end
 
   %q~
+    # !pending!
     (compare
       (compile
-        (render (var a 1))
+        (:var a 1)
       )
       '
         var a = 1;

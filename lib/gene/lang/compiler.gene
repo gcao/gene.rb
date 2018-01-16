@@ -1,6 +1,5 @@
 (fn compile data
   ^^global
-  ^!eval_arguments
 
   (println "compile: " data)
   (if (data .is Object)
@@ -18,7 +17,7 @@
     (do
       (var value (data .get 1))
       (if (value != undefined)
-        ("= " (compile %value))
+        ("= " (compile value))
       )
     )
   )
