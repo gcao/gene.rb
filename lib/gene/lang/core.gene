@@ -18,10 +18,14 @@
   )
 
   (method get prop_name
-    (if (.is_base_type)
-      ($invoke self '[]' prop_name)
+    (if (prop_name .is Int)
+      ($invoke (.data) '[]' prop_name)
     else
-      ((@ prop_name))
+      (if (.is_base_type)
+        ($invoke self '[]' prop_name)
+      else
+        ((@ prop_name))
+      )
     )
   )
 
@@ -89,8 +93,15 @@
       Class
     else_if ($invoke self 'is_a?' (get_native_class 'Gene::Lang::Function'))
       Function
+    else_if ($invoke self 'is_a?' (get_native_class 'Gene::Lang::Object'))
+      (var cls ($invoke self 'class'))
+      (if (($invoke cls 'name') == 'Gene::Lang::Object')
+        Object
+      else
+        cls
+      )
     else
-      ($invoke self 'instance_variable_get' '@klass')
+      (throw ('TODO: ' self))
     )
   )
 
@@ -183,6 +194,9 @@
     (if (i < (.size))
       ($invoke self '[]' i)
     )
+  )
+  (method include item
+    (.any (fnx x (x == item)))
   )
   (method push item...
     ($invoke self 'push' item...)
@@ -377,5 +391,22 @@
 
     # update
     ($caller_context .process_statements update)
+  )
+)
+
+(fn case [data rest...]
+  ^^global
+  ^!eval_arguments
+  (var result)
+
+  (data = ($context .process data))
+
+  (var state) # undefined, :when, :condition, :matched, :else, :else_matched
+  (for (var i 0) (i < (rest .size)) (i ++)
+    (var item (rest .get i))
+    # TODO: see how we can implement a state machine easily here
+    # undefined => when blocks => else => statements
+    # when block: when => condition => (optional)then => statements
+    # Should throw error on invalid transitions
   )
 )

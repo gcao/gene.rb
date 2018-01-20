@@ -1821,4 +1821,12 @@ describe Gene::Lang::Interpreter do
       @application.parse_and_process(example.description)
     end
   end
+
+  describe "Range" do
+    it "
+      +assert ($invoke (1 .. 2) 'include?' 1)
+    " do
+      @application.parse_and_process(example.description)
+    end
+  end
 end

@@ -801,6 +801,8 @@ module Gene::Lang::Handlers
 
       Gene::Types::Symbol.new('&&'),
       Gene::Types::Symbol.new('||'),
+
+      Gene::Types::Symbol.new('..'),
     ]
 
     def call context, data
@@ -829,6 +831,7 @@ module Gene::Lang::Handlers
 
       when '&&' then left && right
       when '||' then left || right
+      when '..' then Range.new(left, right)
       end
     end
   end

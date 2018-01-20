@@ -1,25 +1,51 @@
-(fn compile data
+(fn compile data...
   ^^global
+  (compile_stmts data)
+)
 
-  (println "compile: " data)
-  (if (data .is Object)
+(fn compile_ data
+  (if (data .is Int)
+    data
+  else_if (data .is Object)
     (if ((data .gene_type) == :var)
       (compile_var data)
+    else_if ((data .gene_type) == :fn)
+      (compile_fn data)
+    else
+      "TODO"
     )
   else
     data
   )
 )
 
+(fn compile_stmts data
+  ((data .map
+    (fnx item
+      (var s (compile_ item))
+      ('' s (if (s !~ #/}\s*$/) ';') "\n")
+    )
+  ) .join)
+)
+
 (fn compile_var data
-  (println 'compile_var' data)
   ("var " (data .get 0)
     (do
       (var value (data .get 1))
       (if (value != undefined)
-        ("= " (compile value))
+        (" = " (compile_ value))
       )
     )
+  )
+)
+
+(fn compile_fn data
+  (var args  (data .get 2))
+  (var stmts (data .get 2))
+  ("fn " (data .get 0)
+    "("
+    ") {\n"
+    "}"
   )
 )
 

@@ -22,13 +22,23 @@ describe "JavaScript representation in Gene" do
   end
 
   %q~
-    # !pending!
     (compare
       (compile
         (:var a 1)
       )
       '
         var a = 1;
+      '
+    )
+
+    (compare
+      (compile
+        (:fn f [a b] 1)
+      )
+      '
+        function f(a, b) {
+          1;
+        }
       '
     )
 
