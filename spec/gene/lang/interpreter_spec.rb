@@ -359,7 +359,7 @@ describe Gene::Lang::Interpreter do
       )
       (var a 1)
       (var result (f (:a + 1)))
-      (assert ((result .gene_type) == 1))
+      (assert ((result .type) == 1))
     " do
       pending
       @application.parse_and_process(example.description)
@@ -1220,7 +1220,7 @@ describe Gene::Lang::Interpreter do
   end
 
   describe "Create / modify / access native Gene object" do
-    it "(assert (((:a 1) .gene_type) == :a))" do
+    it "(assert (((:a 1) .type) == :a))" do
       @application.parse_and_process(example.description)
     end
 

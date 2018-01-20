@@ -24,7 +24,7 @@ module Gene::Lang
       @klass = klass
     end
 
-    def gene_type
+    def type
       get('#type') or self.class
     end
 

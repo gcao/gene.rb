@@ -1060,8 +1060,8 @@ module Gene::Lang::Handlers
             value = Gene::Types::Symbol.new('Array')
           elsif target.is_a? Hash
             value = Gene::Types::Symbol.new('Hash')
-          elsif target.is_a? Gene::Lang::Object
-            value = Gene::Types::Symbol.new(target.gene_type.to_s)
+          elsif target.is_a?(Gene::Lang::Object) or target.is_a?(Gene::Types::Base)
+            value = Gene::Types::Symbol.new(target.type.to_s)
           else
             value = Gene::Types::Symbol.new(target.class.to_s)
           end
@@ -1069,7 +1069,7 @@ module Gene::Lang::Handlers
           context.define pattern.type.name, value
         end
         pattern.data.each_with_index do |name, i|
-          if target.is_a? Gene::Lang::Object
+          if target.is_a?(Gene::Lang::Object) or target.is_a?(Gene::Types::Base)
             result = target.data[i]
           elsif target.is_a? Array
             result = target[i]
@@ -1084,7 +1084,7 @@ module Gene::Lang::Handlers
           end
         end
         pattern.properties.each do |key, value|
-          if target.is_a? Gene::Lang::Object
+          if target.is_a?(Gene::Lang::Object) or target.is_a?(Gene::Types::Base)
             result = target.get(key.to_s)
           elsif target.is_a? Hash
             result = target[key.to_s]
@@ -1100,7 +1100,7 @@ module Gene::Lang::Handlers
         end
       elsif pattern.is_a? Array
         pattern.each_with_index do |name, i|
-          if target.is_a? Gene::Lang::Object
+          if target.is_a?(Gene::Lang::Object) or target.is_a?(Gene::Types::Base)
             result = target.data[i]
           elsif target.is_a? Array
             result = target[i]
@@ -1116,7 +1116,7 @@ module Gene::Lang::Handlers
         end
       elsif pattern.is_a? Hash
         pattern.each do |key, value|
-          if target.is_a? Gene::Lang::Object
+          if target.is_a?(Gene::Lang::Object) or target.is_a?(Gene::Types::Base)
             result = target.get(key.to_s)
           elsif target.is_a? Hash
             result = target[key.to_s]
