@@ -18,7 +18,7 @@
   )
 
   (method get prop_name
-    (if (prop_name .is Int)
+    (if (prop_name .is Int Range)
       ($invoke (.data) '[]' prop_name)
     else
       (if (.is_base_type)
@@ -89,6 +89,10 @@
       Symbol
     else_if ($invoke self 'is_a?' (get_native_class 'Fixnum'))
       Int
+    else_if ($invoke self 'is_a?' (get_native_class 'Range'))
+      Range
+    else_if ($invoke self 'is_a?' (get_native_class 'Regexp'))
+      Regexp
     else_if ($invoke self 'is_a?' (get_native_class 'Gene::Lang::Class'))
       Class
     else_if ($invoke self 'is_a?' (get_native_class 'Gene::Lang::Function'))
@@ -101,12 +105,16 @@
         cls
       )
     else
-      (throw ('TODO: ' self))
+      (println "(" ($invoke self 'inspect') " .class)")
+      Object
     )
   )
 
-  (method is klass
-    ((.class) .is_sub_class klass)
+  (method is klass...
+    (var my_class (.class))
+    (klass .any
+      (fnx _klass (my_class .is_sub_class _klass))
+    )
   )
 
   (method to_s _
@@ -311,6 +319,10 @@
 )
 
 (class Regexp
+  ^^global
+)
+
+(class Range
   ^^global
 )
 

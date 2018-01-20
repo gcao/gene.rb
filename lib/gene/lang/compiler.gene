@@ -4,18 +4,24 @@
 )
 
 (fn compile_ data
-  (if (data .is Int)
+  (if (data .is Int Symbol)
     data
   else_if (data .is Object)
     (if ((data .gene_type) == :var)
       (compile_var data)
     else_if ((data .gene_type) == :fn)
       (compile_fn data)
+    else_if ((data .gene_type) == :fnx)
+      (compile_fnx data)
+    else_if ((data .gene_type) == :new)
+      (compile_new data)
+    else_if ([:+] .include (data .get 0))
+      (compile_binary data)
     else
       "TODO"
     )
   else
-    data
+    ("TODO: (compile_ " ($inspect self 'inspect') ")")
   )
 )
 
@@ -40,13 +46,34 @@
 )
 
 (fn compile_fn data
-  (var args  (data .get 2))
-  (var stmts (data .get 2))
-  ("fn " (data .get 0)
-    "("
-    ") {\n"
+  (var name  (data .get 0))
+  (var args  (data .get 1))
+  (var stmts (data .get (2 .. -1)))
+  ("function " name
+    "(" (args .join ", ") ") {\n"
+      (compile_stmts stmts)
     "}"
   )
+)
+
+(fn compile_fnx data
+  (var args  (data .get 0))
+  (var stmts (data .get (1 .. -1)))
+  ("function(" (args .join ", ") ") {\n"
+    (compile_stmts stmts)
+    "}"
+  )
+)
+
+(fn compile_new data
+  (var type (data .get 0))
+  (var args (data .get (1 .. -1)))
+  ("new " (compile_ type) "(" (args .join ", ") ")")
+)
+
+(fn compile_binary data
+  (match (left op right) data)
+  ("" (compile_ left) " " op " " (compile_ right))
 )
 
 # DEPRECATED

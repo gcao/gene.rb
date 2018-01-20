@@ -1301,6 +1301,14 @@ describe Gene::Lang::Interpreter do
       end
 
       it "
+        (match (_ (_ first second)))
+        (assert (first  == undefined))
+        (assert (second == undefined))
+      " do
+        @application.parse_and_process(example.description)
+      end
+
+      it "
         (match [[first second]] (_ (_ 1 2)))
         (assert (first == 1))
         (assert (second == 2))
@@ -1370,15 +1378,47 @@ describe Gene::Lang::Interpreter do
   end
 
   describe "Exception" do
-    it "(throw 'some error')" do
+    it "
+      (throw 'some error')
+      1 # should not reach here
+    " do
       lambda {
         @application.parse_and_process(example.description)
       }.should raise_error('some error')
     end
 
     it "
-      (throw 'some error')
-      1 # should not reach here
+      (fn f _
+        (throw 'some error')
+      )
+      (f)
+      (println 'Should not reach here')
+    " do
+      lambda {
+        @application.parse_and_process(example.description)
+      }.should raise_error('some error')
+    end
+
+    it "
+      (var a (throw 'some error'))
+      (println 'Should not reach here')
+    " do
+      pending
+      lambda {
+        @application.parse_and_process(example.description)
+      }.should raise_error('some error')
+    end
+
+    it "
+      (fn f1 f
+        (f)
+      )
+      (fn f2 _
+        (throw 'some error')
+        (println 'f2: Should not reach here')
+      )
+      (f1 f2)
+      (println 'Should not reach here')
     " do
       lambda {
         @application.parse_and_process(example.description)

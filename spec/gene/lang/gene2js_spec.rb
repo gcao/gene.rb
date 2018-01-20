@@ -6,6 +6,11 @@ describe "JavaScript representation in Gene" do
     @application.load_core_libs
     @application.load File.expand_path(File.dirname(__FILE__) + '/../../../lib/gene/lang/compiler.gene')
     @application.parse_and_process <<-GENE
+      (fn js code
+        ^^global
+        ^!eval_arguments
+        (compile code)
+      )
       (fn compress code
         ^^global
         ($invoke ('' code) 'gsub' #/(^\\s*)|(\\s*\\n\\s*)|(\\s*$)/ '')
@@ -42,6 +47,35 @@ describe "JavaScript representation in Gene" do
       '
     )
 
+    (compare
+      (compile
+        (:fnx [a b] 1)
+      )
+      '
+        function(a, b) {
+          1;
+        }
+      '
+    )
+
+    (compare
+      (compile
+        (:new A a b)
+      )
+      '
+        new A(a, b);
+      '
+    )
+
+    (compare
+      (js
+        (a + b)
+      )
+      '
+        a + b;
+      '
+    )
+
   ~.split("\n\n").each do |code|
     next if code =~ /^\s+$/
 
@@ -55,34 +89,6 @@ describe "JavaScript representation in Gene" do
 
   # {
   #   # Atomic operations
-  #   ' # var
-  #     # !pending!
-  #     (jvar a 1)
-  #   ' =>
-  #   <<-JAVASCRIPT,
-  #     var a = 1;
-  #   JAVASCRIPT
-
-  #   ' # function
-  #     # !pending!
-  #     (jfn f [a b] 1)
-  #   ' =>
-  #   <<-JAVASCRIPT,
-  #     function f(a, b) {
-  #       1;
-  #     }
-  #   JAVASCRIPT
-
-  #   ' # anonymous function
-  #     # !pending!
-  #     (jfnx [a b] 1)
-  #   ' =>
-  #   <<-JAVASCRIPT,
-  #     function(a, b) {
-  #       1;
-  #     }
-  #   JAVASCRIPT
-
   #   ' # dummy function
   #     # !pending!
   #     (jfnxx 1)
@@ -99,14 +105,6 @@ describe "JavaScript representation in Gene" do
   #   ' =>
   #   <<-JAVASCRIPT,
   #     a.b.c
-  #   JAVASCRIPT
-
-  #   ' # new
-  #     # !pending!
-  #     (jnew A 1 2)
-  #   ' =>
-  #   <<-JAVASCRIPT,
-  #     new A(1, 2)
   #   JAVASCRIPT
 
   #   ' # binary expressions

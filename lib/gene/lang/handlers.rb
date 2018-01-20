@@ -85,6 +85,8 @@ module Gene::Lang::Handlers
         context.get_member("Int")
       elsif obj.is_a? Regexp
         context.get_member("Regexp")
+      elsif obj.is_a? Range
+        context.get_member("Range")
       elsif obj.is_a? TrueClass or obj.is_a? FalseClass
         context.get_member("Boolean")
       elsif obj == Gene::UNDEFINED
@@ -1072,7 +1074,7 @@ module Gene::Lang::Handlers
           elsif target.is_a? Array
             result = target[i]
           else
-            next
+            result = Gene::UNDEFINED
           end
 
           if name.is_a? Gene::Types::Symbol
@@ -1087,7 +1089,7 @@ module Gene::Lang::Handlers
           elsif target.is_a? Hash
             result = target[key.to_s]
           else
-            next
+            result = Gene::UNDEFINED
           end
 
           if value == true
@@ -1103,7 +1105,7 @@ module Gene::Lang::Handlers
           elsif target.is_a? Array
             result = target[i]
           else
-            next
+            result = Gene::UNDEFINED
           end
 
           if name.is_a? Gene::Types::Symbol
@@ -1119,7 +1121,7 @@ module Gene::Lang::Handlers
           elsif target.is_a? Hash
             result = target[key.to_s]
           else
-            next
+            result = Gene::UNDEFINED
           end
 
           if value == true
