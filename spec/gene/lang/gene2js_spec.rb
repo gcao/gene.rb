@@ -18,6 +18,7 @@ describe "JavaScript representation in Gene" do
       (fn compare [first second]
         ^^global
         (if_not ((compress first) == (compress second))
+          (println first)
           (throw
             ('' first " does not equal " second)
           )
@@ -69,10 +70,37 @@ describe "JavaScript representation in Gene" do
 
     (compare
       (js
+        (a @ 1)
+      )
+      '
+        a[1];
+      '
+    )
+
+    (compare
+      (js
         (a + b)
       )
       '
-        a + b;
+        (a + b);
+      '
+    )
+
+    (compare
+      (js
+        (! a)
+      )
+      '
+        ! a;
+      '
+    )
+
+    (compare
+      (js
+        (return a)
+      )
+      '
+        return a;
       '
     )
 
@@ -215,14 +243,6 @@ describe "JavaScript representation in Gene" do
   #       "a" : 1,
   #       "b" : 2
   #     }
-  #   JAVASCRIPT
-
-  #   ' # Object access
-  #     # !pending!
-  #     (jget a 1)
-  #   ' =>
-  #   <<-JAVASCRIPT,
-  #     a[1]
   #   JAVASCRIPT
 
   #   ' # Invoke function

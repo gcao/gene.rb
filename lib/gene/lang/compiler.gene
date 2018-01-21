@@ -17,6 +17,11 @@
       (compile_new data)
     else_if ([:+] .include (data .get 0))
       (compile_binary data)
+    else_if ([:@] .include (data .get 0))
+      (match (first _ second) data)
+      ("" first "[" second "]")
+    else_if ([:! :return] .include (data .type))
+      ("" (data .type) " " (compile_ (data .get 0)))
     else
       "TODO"
     )
@@ -73,73 +78,13 @@
 
 (fn compile_binary data
   (match (left op right) data)
-  ("" (compile_ left) " " op " " (compile_ right))
+  ("(" (compile_ left) " " op " " (compile_ right) ")")
 )
 
 # DEPRECATED
 (class Base
-  (method var [name value]
-    (new Variable name value)
-  )
-
-  (method ref name
-    (new Reference name)
-  )
-
-  (method new expr
-    (new New expr)
-  )
-
-  (method fn [name args callback]
-    (new Function name args callback)
-  )
-
-  (method fnx [args callback]
-    # (new Function '' args callback)
-  )
-
-  (method fnxx callback
-    (new Function '' _ callback)
-  )
-
-  (method for [init cond update stmts]
-    (new For init cond update stmts)
-  )
-
-  (method chain exprs...
-    (new ChainedInvocation exprs)
-  )
-
-  (method invoke [target args...]
-    (new Invocation target args)
-  )
-
-  (method binary [left op right]
-    (new BinaryExpr left op right)
-  )
-
-  (method assign [target value]
-    (new Assignment target value)
-  )
-
-  (method if_ [cond logic else_logic]
-    (new If cond logic else_logic)
-  )
-
-  (method ret value
-    (new Return value)
-  )
-
-  (method break_ _
-    (new Break)
-  )
-
-  (method obj data
-    (new Obj data)
-  )
-
   (method to_s _
-    "// Base: should not reach here"
+    "Base.to_s: should not reach here"
   )
 )
 
@@ -150,11 +95,16 @@
   )
 
   (method to_s _
-    (var result '')
-    (@stmts .each (fnx stmt
-      (result += ((stmt .to_s) + '\n'))
-    ))
-    result
+    ("" @stmts)
+  )
+)
+
+(class Stmts extend Base
+  (init stmts
+  )
+
+  (method to_s _
+    ((@stmts .map (fnx stmt ("" stmt ";\n"))) .join)
   )
 )
 
