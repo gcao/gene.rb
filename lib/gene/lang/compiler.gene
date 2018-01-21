@@ -51,9 +51,7 @@
 )
 
 (fn compile_fn data
-  (var name  (data .get 0))
-  (var args  (data .get 1))
-  (var stmts (data .get (2 .. -1)))
+  (match (_ name args stmts...) data)
   ("function " name
     "(" (args .join ", ") ") {\n"
       (compile_stmts stmts)
@@ -62,8 +60,7 @@
 )
 
 (fn compile_fnx data
-  (var args  (data .get 0))
-  (var stmts (data .get (1 .. -1)))
+  (match (_ args stmts...) data)
   ("function(" (args .join ", ") ") {\n"
     (compile_stmts stmts)
     "}"
@@ -71,8 +68,7 @@
 )
 
 (fn compile_new data
-  (var type (data .get 0))
-  (var args (data .get (1 .. -1)))
+  (match (_ type args...) data)
   ("new " (compile_ type) "(" (args .join ", ") ")")
 )
 
