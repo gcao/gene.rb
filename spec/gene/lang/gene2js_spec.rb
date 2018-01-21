@@ -135,30 +135,6 @@ describe "JavaScript representation in Gene" do
   #     a.b.c
   #   JAVASCRIPT
 
-  #   ' # binary expressions
-  #     # !pending!
-  #     (jbin a + b)
-  #   ' =>
-  #   <<-JAVASCRIPT,
-  #     a + b
-  #   JAVASCRIPT
-
-  #   ' # unary expressions
-  #     # !pending!
-  #     (jpre ! a)
-  #   ' =>
-  #   <<-JAVASCRIPT,
-  #     !a
-  #   JAVASCRIPT
-
-  #   ' # return
-  #     # !pending!
-  #     (jret 1)
-  #   ' =>
-  #   <<-JAVASCRIPT,
-  #     return 1;
-  #   JAVASCRIPT
-
   #   ' # ()
   #     # !pending!
   #     (jgrp a b)

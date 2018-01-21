@@ -1068,17 +1068,32 @@ module Gene::Lang::Handlers
 
           context.define pattern.type.name, value
         end
+
+        triple_dot_seen = false # name... or ... is seen
         pattern.data.each_with_index do |name, i|
+          mapped_index = i
+          if triple_dot_seen
+            mapped_index = i - pattern.data.length
+          elsif name.is_a? Gene::Types::Symbol
+            if name.to_s == '...'
+              triple_dot_seen = true
+              next
+            elsif name.to_s =~ /\.\.\.$/
+              triple_dot_seen = true
+              mapped_index = i..(i - pattern.data.length)
+            end
+          end
+
           if target.is_a?(Gene::Lang::Object) or target.is_a?(Gene::Types::Base)
-            result = target.data[i]
+            result = target.data[mapped_index]
           elsif target.is_a? Array
-            result = target[i]
+            result = target[mapped_index]
           else
             result = Gene::UNDEFINED
           end
 
           if name.is_a? Gene::Types::Symbol
-            context.define name.to_s, result
+            context.define name.to_s.gsub(/\.\.\.$/, ''), result
           else
             match name, result, context
           end
@@ -1099,17 +1114,31 @@ module Gene::Lang::Handlers
           end
         end
       elsif pattern.is_a? Array
+        triple_dot_seen = false # name... or ... is seen
         pattern.each_with_index do |name, i|
+          mapped_index = i
+          if triple_dot_seen
+            mapped_index = i - pattern.length
+          elsif name.is_a? Gene::Types::Symbol
+            if name.to_s == '...'
+              triple_dot_seen = true
+              next
+            elsif name.to_s =~ /\.\.\.$/
+              triple_dot_seen = true
+              mapped_index = i..(i - pattern.length)
+            end
+          end
+
           if target.is_a?(Gene::Lang::Object) or target.is_a?(Gene::Types::Base)
-            result = target.data[i]
+            result = target.data[mapped_index]
           elsif target.is_a? Array
-            result = target[i]
+            result = target[mapped_index]
           else
             result = Gene::UNDEFINED
           end
 
           if name.is_a? Gene::Types::Symbol
-            context.define name.to_s, result
+            context.define name.to_s.gsub(/\.\.\.$/, ''), result
           else
             match name, result, context
           end

@@ -1262,16 +1262,46 @@ describe Gene::Lang::Interpreter do
 
       it "
         (match (_ first second) (_ 1 2))
-        (assert (first == 1))
+        (assert (first  == 1))
         (assert (second == 2))
       " do
         @application.parse_and_process(example.description)
       end
 
       it "
+        (match (_ first second...) (_ 1 2 3))
+        (assert (first  == 1))
+        (assert (second == [2 3]))
+      " do
+        @application.parse_and_process(example.description)
+      end
+
+      it "
+        (match (_ ... last) (_ 1 2 3))
+        (assert (last == 3))
+      " do
+        @application.parse_and_process(example.description)
+      end
+
+      it "
         (match [first second] (_ 1 2))
-        (assert (first == 1))
+        (assert (first  == 1))
         (assert (second == 2))
+      " do
+        @application.parse_and_process(example.description)
+      end
+
+      it "
+        (match [first second...] (_ 1 2 3))
+        (assert (first  == 1))
+        (assert (second == [2 3]))
+      " do
+        @application.parse_and_process(example.description)
+      end
+
+      it "
+        (match [... last] (_ 1 2 3))
+        (assert (last == 3))
       " do
         @application.parse_and_process(example.description)
       end
@@ -1294,7 +1324,7 @@ describe Gene::Lang::Interpreter do
 
       it "
         (match (_ (_ first second)) (_ (_ 1 2)))
-        (assert (first == 1))
+        (assert (first  == 1))
         (assert (second == 2))
       " do
         @application.parse_and_process(example.description)
