@@ -37,6 +37,8 @@
       (compile_dot data)
     else_if ((data .get 0) == :~)
       (compile_group data)
+    else_if ((data .get 0) == :<-)
+      (compile_invocation data)
     else_if ([:@] .include (data .get 0))
       (match (first _ second) data)
       ("" first "[" second "]")
@@ -112,6 +114,14 @@
         )
       )
      ) .join)
+    ")"
+  )
+)
+
+(fn compile_invocation data
+  (match (target _ args...) data)
+  ("" (compile_ target) "("
+    ((args .map (fnx arg (compile_ arg))) .join ", ")
     ")"
   )
 )

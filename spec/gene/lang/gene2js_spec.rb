@@ -81,6 +81,15 @@ describe "JavaScript representation in Gene" do
 
     (compare
       (js
+        (a <- b c)
+      )
+      '
+        a(b, c);
+      '
+    )
+
+    (compare
+      (js
         (a \~ b \~ c)
       )
       '
