@@ -8,6 +8,8 @@
 (fn compile_ data
   (if (data .is Int Symbol)
     data
+  else_if (data .is String)
+    ($invoke data 'inspect')
   else_if (data .is Array)
     (compile_array data)
   else_if (data .is Hash)
@@ -21,6 +23,8 @@
       (compile_fn data)
     else_if ((data .type) == :fnx)
       (compile_fnx data)
+    else_if ((data .type) == :fnxx)
+      (compile_fnxx data)
     else_if ((data .type) == :new)
       (compile_new data)
     else_if ((data .type) == :for)
@@ -29,6 +33,10 @@
       (compile_binary data)
     else_if ((data .get 0) == :?)
       (compile_ternary data)
+    else_if ((data .get 0) == :.)
+      (compile_dot data)
+    else_if ((data .get 0) == :~)
+      (compile_group data)
     else_if ([:@] .include (data .get 0))
       (match (first _ second) data)
       ("" first "[" second "]")
@@ -79,6 +87,35 @@
   )
 )
 
+(fn compile_dot data
+  (for (var i 0) (i < (data .size)) ( i += 2)
+    (if ((data .get i) != :.) (throw ('"." must be used between elements: ' data)))
+  )
+
+  (""
+    (compile_ (data .type))
+    (((data .data) .map (fnx item (compile_ item))) .join)
+  )
+)
+
+(fn compile_group data
+  (for (var i 0) (i < (data .size)) ( i += 2)
+    (if ((data .get i) != :~) (throw ('"~" must be used between elements: ' data)))
+  )
+
+  ("("
+    (compile_ (data .type))
+    ((
+      (data .data) .map
+        (fnx item
+          (if (item == :~) ", " else (compile_ item)
+        )
+      )
+     ) .join)
+    ")"
+  )
+)
+
 (fn compile_fn data
   (match [name args stmts...] data)
   ("function " name
@@ -92,6 +129,13 @@
   (match [args stmts...] data)
   ("function(" (args .join ", ") ") {\n"
     (compile_stmts stmts)
+    "}"
+  )
+)
+
+(fn compile_fnxx data
+  ("function() {\n"
+    (compile_stmts (data .data))
     "}"
   )
 )

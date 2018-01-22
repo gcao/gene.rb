@@ -30,6 +30,15 @@ describe "JavaScript representation in Gene" do
   %q~
     (compare
       (js
+        "abc"
+      )
+      '
+        "abc";
+      '
+    )
+
+    (compare
+      (js
         [a b]
       )
       '
@@ -63,6 +72,24 @@ describe "JavaScript representation in Gene" do
 
     (compare
       (js
+        (a . b . c)
+      )
+      '
+        a.b.c;
+      '
+    )
+
+    (compare
+      (js
+        (a \~ b \~ c)
+      )
+      '
+        (a, b, c);
+      '
+    )
+
+    (compare
+      (js
         (fn f [a b] 1)
       )
       '
@@ -79,6 +106,18 @@ describe "JavaScript representation in Gene" do
       '
         function(a, b) {
           1;
+        }
+      '
+    )
+
+    (compare
+      (js
+        (fnxx 1 2)
+      )
+      '
+        function() {
+          1;
+          2;
         }
       '
     )
@@ -204,59 +243,10 @@ describe "JavaScript representation in Gene" do
 
   # {
   #   # Atomic operations
-  #   ' # dummy function
-  #     # !pending!
-  #     (jfnxx 1)
-  #   ' =>
-  #   <<-JAVASCRIPT,
-  #     function() {
-  #       1;
-  #     }
-  #   JAVASCRIPT
-
-  #   ' # dot access
-  #     # !pending!
-  #     (jdot a b c)
-  #   ' =>
-  #   <<-JAVASCRIPT,
-  #     a.b.c
-  #   JAVASCRIPT
-
-  #   ' # ()
-  #     # !pending!
-  #     (jgrp a b)
-  #   ' =>
-  #   <<-JAVASCRIPT,
-  #     (a, b)
-  #   JAVASCRIPT
-
-  #   ' # for
-  #     # !pending!
-  #     (jfor (jvar a 0) (jbin a < 100) (jbin a += 1) 1)
-  #   ' =>
-  #   <<-JAVASCRIPT,
-  #     for (var a = 0; a < 100; a += 1) {
-  #       1;
-  #     }
-  #   JAVASCRIPT
-
-  #   ' # Object
-  #     # !pending!
-  #     {
-  #       ^a 1
-  #       ^b 2
-  #     }
-  #   ' =>
-  #   <<-JAVASCRIPT,
-  #     {
-  #       "a" : 1,
-  #       "b" : 2
-  #     }
-  #   JAVASCRIPT
 
   #   ' # Invoke function
   #     # !pending!
-  #     (jcall f a b)
+  #     (f <- a b)
   #   ' =>
   #   <<-JAVASCRIPT,
   #     f(a, b)
@@ -267,7 +257,7 @@ describe "JavaScript representation in Gene" do
   #   # Programs
   #   '
   #     # !pending!
-  #     (jvar a (jcall (jget (jnew A) 0) 1 2))
+  #     (var a (((new A) @ 0) <- 1 2))
   #   ' =>
   #   <<-JAVASCRIPT,
   #     var a = new A()[0](1, 2);
