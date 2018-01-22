@@ -1,11 +1,11 @@
-(fn compile data...
+(fn gene2js data...
   ^^global
   (compile_stmts data)
 )
 
 (var BINARY_IDS (:: [+ - * / < <= > >= == != ++ --]))
 
-(fn compile_ data
+(fn compile data
   (if (data .is Int Symbol)
     data
   else_if (data .is String)
@@ -43,19 +43,19 @@
       (match (first _ second) data)
       ("" first "[" second "]")
     else_if ([:! :return] .include (data .type))
-      ("" (data .type) " " (compile_ (data .get 0)))
+      ("" (data .type) " " (compile (data .get 0)))
     else
       "TODO"
     )
   else
-    ("TODO: (compile_ " ($inspect self 'inspect') ")")
+    ("TODO: (compile " ($inspect self 'inspect') ")")
   )
 )
 
 (fn compile_stmts data
   ((data .map
     (fnx item
-      (var s (compile_ item))
+      (var s (compile item))
       ('' s (if (s !~ #/}\s*$/) ';') "\n")
     )
   ) .join)
@@ -63,7 +63,7 @@
 
 (fn compile_array data
   ("["
-    ((data .map (fnx item (compile_ item))) .join ", ")
+    ((data .map (fnx item (compile item))) .join ", ")
   "]")
 )
 
@@ -71,7 +71,7 @@
   ("{\n"
     ((data .map
       (fnx [key value]
-        ('"' key '": ' (compile_ value))
+        ('"' key '": ' (compile value))
       )
     ) .join ",\n")
     "\n}"
@@ -83,7 +83,7 @@
     (do
       (var value (data .get 1))
       (if (value != undefined)
-        (" = " (compile_ value))
+        (" = " (compile value))
       )
     )
   )
@@ -95,8 +95,8 @@
   )
 
   (""
-    (compile_ (data .type))
-    (((data .data) .map (fnx item (compile_ item))) .join)
+    (compile (data .type))
+    (((data .data) .map (fnx item (compile item))) .join)
   )
 )
 
@@ -106,11 +106,11 @@
   )
 
   ("("
-    (compile_ (data .type))
+    (compile (data .type))
     ((
       (data .data) .map
         (fnx item
-          (if (item == :~) ", " else (compile_ item)
+          (if (item == :~) ", " else (compile item)
         )
       )
      ) .join)
@@ -120,8 +120,8 @@
 
 (fn compile_invocation data
   (match (target _ args...) data)
-  ("" (compile_ target) "("
-    ((args .map (fnx arg (compile_ arg))) .join ", ")
+  ("" (compile target) "("
+    ((args .map (fnx arg (compile arg))) .join ", ")
     ")"
   )
 )
@@ -152,21 +152,21 @@
 
 (fn compile_new data
   (match [type args...] data)
-  ("new " (compile_ type) "(" (args .join ", ") ")")
+  ("new " (compile type) "(" (args .join ", ") ")")
 )
 
 (fn compile_binary data
   (match (left op right) data)
-  ("(" (compile_ left) " " op
+  ("(" (compile left) " " op
     (if right
-      (" " (compile_ right))
+      (" " (compile right))
     )
   ")")
 )
 
 (fn compile_ternary data
   (match (cond _ first second) data)
-  ("(" (compile_ cond) " ? " (compile_ first) " : " (compile_ second) ")")
+  ("(" (compile cond) " ? " (compile first) " : " (compile second) ")")
 )
 
 (fn compile_if data
@@ -207,13 +207,13 @@
     )
   )
 
-  ("if (" (compile_ if_cond) ") {\n"
+  ("if (" (compile if_cond) ") {\n"
     (compile_stmts if_stmts)
     (if ((else_ifs .size) > 0)
       ((else_ifs .map
         (fnx pair
           (match [cond stmts] pair)
-          ("} else if (" (compile_ cond) ") {\n"
+          ("} else if (" (compile cond) ") {\n"
             (compile_stmts stmts)
           )
         )
@@ -231,174 +231,10 @@
 (fn compile_for data
   (match [init cond update stmts...] data)
   ("for ("
-    (compile_ init) "; "
-    (compile_ cond) "; "
-    (compile_ update) ") {\n"
+    (compile init) "; "
+    (compile cond) "; "
+    (compile update) ") {\n"
       (compile_stmts stmts)
     "}"
-  )
-)
-
-# DEPRECATED
-(class Base
-  (method to_s _
-    "Base.to_s: should not reach here"
-  )
-)
-
-(class Root extend Base
-  (init callback
-    (@stmts = [])
-    (if callback (call callback self))
-  )
-
-  (method to_s _
-    ("" @stmts)
-  )
-)
-
-(class Stmts extend Base
-  (init stmts
-  )
-
-  (method to_s _
-    ((@stmts .map (fnx stmt ("" stmt ";\n"))) .join)
-  )
-)
-
-(class Variable extend Base
-  (prop name)
-  (prop value)
-
-  (init [name value]
-    (@name  = name)
-    (@value = value)
-  )
-
-  (method to_s _
-    ("var " @name (if @value (" = " @value)) ";")
-  )
-)
-
-(class Function extend Base
-  (prop name)
-  (prop args)
-  (prop stmts)
-
-  (init [name args callback]
-    (@name = name)
-    (@args = args)
-    (@stmts = [])
-    (if callback (call callback self))
-  )
-
-  (method to_s _
-    ('function '
-      (if @name then (@name .to_s) else '')
-      "(" (@args .map (fnx arg (arg .to_s))) "){\n"
-      "}\n"
-    )
-  )
-)
-
-(class If extend Base
-  (prop cond)
-  (prop logic)
-  (prop else_ifs)
-  (prop else_logic)
-
-  (init [cond logic else_logic]
-    (@cond       = cond)
-    (@logic      = logic)
-    (@else_ifs   = [])
-    (@else_logic = else_logic)
-  )
-
-  (method to_s _
-    (var result "if (")
-    (result += ") {\n")
-    (result += "}\n")
-    result
-  )
-)
-
-(class For extend Base
-  (prop init)
-  (prop cond)
-  (prop update)
-  (prop stmts)
-
-  (init [init cond update stmts]
-    (@init   = init)
-    (@cond   = cond)
-    (@update = update)
-    (@stmts  = stmts)
-  )
-
-  (method to_s _
-    (var result "for (")
-    (result += ") {\n")
-    (result += "}\n")
-    result
-  )
-)
-
-(class Reference extend Base
-  (prop name)
-
-  (init name
-    (@name = name)
-  )
-
-  (method to_s _
-    ("" @name)
-  )
-)
-
-(class Assignment extend Base
-  (prop target)
-  (prop value)
-
-  (init [target value]
-    (@target = target)
-    (@value  = value)
-  )
-
-  (method to_s _
-    ('' (@target .to_s) ' = ' (@value .to_s))
-  )
-)
-
-(class Invocation extend Base
-  (prop target)
-  (prop args)
-
-  (init [target args]
-    (@target = target)
-    (@args   = args)
-  )
-
-  (method to_s _
-    (var result "")
-    (if (@target .is Function)
-      (result += ("(" (@target .to_s) ")"))
-    else
-      (result += (@target .to_s))
-    )
-    (result += "(")
-    (result += ")")
-    result
-  )
-)
-
-(class ChainedInvocation extend Base
-  (prop invocations)
-
-  (init invocations
-    (@invocations = invocations)
-  )
-
-  (method to_s _
-    (@invocations .join '.')
   )
 )
