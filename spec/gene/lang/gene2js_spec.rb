@@ -118,6 +118,15 @@ describe "JavaScript representation in Gene" do
 
     (compare
       (js
+        (a ? 1 2)
+      )
+      '
+        (a ? 1 : 2);
+      '
+    )
+
+    (compare
+      (js
         (if a
           1
           2
@@ -139,6 +148,21 @@ describe "JavaScript representation in Gene" do
         } else {
           5;
           6;
+        }
+      '
+    )
+
+    (compare
+      (js
+        (for (var i 0) (i < 5) (i ++)
+          1
+          2
+        )
+      )
+      '
+        for (var i = 0; (i < 5); (i ++)) {
+          1;
+          2;
         }
       '
     )
@@ -182,42 +206,6 @@ describe "JavaScript representation in Gene" do
   #     (a, b)
   #   JAVASCRIPT
 
-  #   ' # if
-  #     # !pending!
-  #     (jif true 1)
-  #   ' =>
-  #   <<-JAVASCRIPT,
-  #     if (true) {
-  #       1;
-  #     }
-  #   JAVASCRIPT
-
-  #   ' # if...else
-  #     # !pending!
-  #     (jif true 1 else 2)
-  #   ' =>
-  #   <<-JAVASCRIPT,
-  #     if (true) {
-  #       1;
-  #     } else {
-  #       2;
-  #     }
-  #   JAVASCRIPT
-
-  #   ' # if...else if...else
-  #     # !pending!
-  #     (jif true 1 else_if true 2 else 3)
-  #   ' =>
-  #   <<-JAVASCRIPT,
-  #     if (true) {
-  #       1;
-  #     } else if (true) {
-  #       2;
-  #     } else {
-  #       3;
-  #     }
-  #   JAVASCRIPT
-
   #   ' # for
   #     # !pending!
   #     (jfor (jvar a 0) (jbin a < 100) (jbin a += 1) 1)
@@ -226,24 +214,6 @@ describe "JavaScript representation in Gene" do
   #     for (var a = 0; a < 100; a += 1) {
   #       1;
   #     }
-  #   JAVASCRIPT
-
-  #   ' # for...in
-  #     # !pending!
-  #     (jfor a in b [])
-  #   ' =>
-  #   <<-JAVASCRIPT,
-  #     for (var a in b) {
-  #       1;
-  #     }
-  #   JAVASCRIPT
-
-  #   ' # Ternary expression:  a ? b : c
-  #     # !pending!
-  #     (jtern true ? 1 2)
-  #   ' =>
-  #   <<-JAVASCRIPT,
-  #     true ? 1 : 2
   #   JAVASCRIPT
 
   #   ' # Object
