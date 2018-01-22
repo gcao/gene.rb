@@ -618,7 +618,7 @@ module Gene::Lang::Handlers
           args = Gene::Lang::Object.from_array_and_properties(args, data.properties)
           value.call context: context, arguments: args
         else
-          raise "Invacation is not supported for #{data.inspect}"
+          raise "Invocation is not supported for #{data.inspect}"
         end
       elsif data.is_a? Gene::Types::Base and data.type.is_a? Gene::Types::Symbol and data.type.name =~ /^.(.*)$/
         method = $1

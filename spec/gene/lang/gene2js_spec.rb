@@ -29,8 +29,8 @@ describe "JavaScript representation in Gene" do
 
   %q~
     (compare
-      (compile
-        (:var a 1)
+      (js
+        (var a 1)
       )
       '
         var a = 1;
@@ -38,8 +38,8 @@ describe "JavaScript representation in Gene" do
     )
 
     (compare
-      (compile
-        (:fn f [a b] 1)
+      (js
+        (fn f [a b] 1)
       )
       '
         function f(a, b) {
@@ -49,8 +49,8 @@ describe "JavaScript representation in Gene" do
     )
 
     (compare
-      (compile
-        (:fnx [a b] 1)
+      (js
+        (fnx [a b] 1)
       )
       '
         function(a, b) {
@@ -60,8 +60,8 @@ describe "JavaScript representation in Gene" do
     )
 
     (compare
-      (compile
-        (:new A a b)
+      (js
+        (new A a b)
       )
       '
         new A(a, b);
@@ -101,6 +101,45 @@ describe "JavaScript representation in Gene" do
       )
       '
         return a;
+      '
+    )
+
+    (compare
+      (js
+        (if a 1 2)
+      )
+      '
+        if (a) {
+          1;
+          2;
+        }
+      '
+    )
+
+    (compare
+      (js
+        (if a
+          1
+          2
+        else_if b
+          3
+          4
+        else
+          5
+          6
+        )
+      )
+      '
+        if (a) {
+          1;
+          2;
+        } else if (b) {
+          3;
+          4;
+        } else {
+          5;
+          6;
+        }
       '
     )
 
@@ -181,10 +220,10 @@ describe "JavaScript representation in Gene" do
 
   #   ' # for
   #     # !pending!
-  #     (jfor (jvar a 0) (jbin a < 100) (jbin a ++) 1)
+  #     (jfor (jvar a 0) (jbin a < 100) (jbin a += 1) 1)
   #   ' =>
   #   <<-JAVASCRIPT,
-  #     for (var a = 0; a < 100; a ++) {
+  #     for (var a = 0; a < 100; a += 1) {
   #       1;
   #     }
   #   JAVASCRIPT

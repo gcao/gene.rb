@@ -9,6 +9,8 @@
   else_if (data .is Object)
     (if ((data .type) == :var)
       (compile_var data)
+    else_if ((data .type) == :if)
+      (compile_if data)
     else_if ((data .type) == :fn)
       (compile_fn data)
     else_if ((data .type) == :fnx)
@@ -75,6 +77,65 @@
 (fn compile_binary data
   (match (left op right) data)
   ("(" (compile_ left) " " op " " (compile_ right) ")")
+)
+
+(fn compile_if data
+  (var if_cond (data .get 0))
+  (var if_stmts [])
+  (var else_ifs [])
+  (var else_stmts [])
+
+  (var state :if)
+  (var cond)
+  (var stmts [])
+  (for (var i 1) (i < (data .size)) (i += 1)
+    (var item (data .get i))
+
+    (if (item == :else_if)
+      (if (state == :else_if)
+        (else_ifs .push [cond stmts])
+      )
+      (state = :else_if)
+      (i += 1)
+      (cond  = (data .get i))
+      (stmts = [])
+
+    else_if (item == :else)
+      (if (state == :else_if)
+        (else_ifs .push [cond stmts])
+      )
+      (state = :else)
+
+    else
+      (if (state == :if)
+        (if_stmts .push item)
+      else_if (state == :else_if)
+        (stmts .push item)
+      else_if (state == :else)
+        (else_stmts .push item)
+      )
+    )
+  )
+
+  ("if (" (compile_ if_cond) ") {\n"
+    (compile_stmts if_stmts)
+    (if ((else_ifs .size) > 0)
+      ((else_ifs .map
+        (fnx pair
+          (match [cond stmts] pair)
+          ("} else if (" (compile_ cond) ") {\n"
+            (compile_stmts stmts)
+          )
+        )
+      ) .join)
+    )
+    (if ((else_stmts .size) > 0)
+      ("} else {\n"
+        (compile_stmts else_stmts)
+      )
+    )
+   "}"
+  )
 )
 
 # DEPRECATED
