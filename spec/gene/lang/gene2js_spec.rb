@@ -30,6 +30,30 @@ describe "JavaScript representation in Gene" do
   %q~
     (compare
       (js
+        [a b]
+      )
+      '
+        [a, b];
+      '
+    )
+
+    (compare
+      (js
+        {
+          ^a 1
+          ^b test
+        }
+      )
+      '
+        {
+          "a": 1,
+          "b": test
+        }
+      '
+    )
+
+    (compare
+      (js
         (var a 1)
       )
       '

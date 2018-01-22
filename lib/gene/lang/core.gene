@@ -287,21 +287,32 @@
   )
 
   (method get key
-    ($invoke self 'get' key)
+    ($invoke self '[]' key)
+  )
+
+  (method set [key value]
+    ($invoke self '[]=' key value)
   )
 
   (method keys _
     ($invoke self 'keys')
   )
 
+  (method map f
+    ((.keys) .map
+      ((fnx key
+        (var value (.get key))
+        (f key value)
+      ) .bind self)
+    )
+  )
+
   (method each f
     ((.keys) .each
-      (bind self
-        (fnx key
-          (var value (.get key))
-          (f key value)
-        )
-      )
+      ((fnx key
+        (var value (.get key))
+        (f key value)
+      ) .bind self)
     )
   )
 )

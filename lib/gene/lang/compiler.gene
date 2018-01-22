@@ -8,6 +8,10 @@
 (fn compile_ data
   (if (data .is Int Symbol)
     data
+  else_if (data .is Array)
+    (compile_array data)
+  else_if (data .is Hash)
+    (compile_hash data)
   else_if (data .is Object)
     (if ((data .type) == :var)
       (compile_var data)
@@ -45,6 +49,23 @@
       ('' s (if (s !~ #/}\s*$/) ';') "\n")
     )
   ) .join)
+)
+
+(fn compile_array data
+  ("["
+    ((data .map (fnx item (compile_ item))) .join ", ")
+  "]")
+)
+
+(fn compile_hash data
+  ("{\n"
+    ((data .map
+      (fnx [key value]
+        ('"' key '": ' (compile_ value))
+      )
+    ) .join ",\n")
+    "\n}"
+  )
 )
 
 (fn compile_var data
