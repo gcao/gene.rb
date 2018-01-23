@@ -1790,14 +1790,14 @@ describe Gene::Lang::Interpreter do
 
   describe "Templates" do
     it "
-      +assert ((render (a 100)) == (:a 100))
+      +assert ((:: (a 100)) == (:a 100))
     " do
       @application.parse_and_process(example.description)
     end
 
     it "
       (var a 100)
-      +assert ((render (a %a)) == (:a 100))
+      +assert ((:: (a %a)) == (:a 100))
     " do
       @application.parse_and_process(example.description)
     end
@@ -1830,47 +1830,47 @@ describe Gene::Lang::Interpreter do
 
     it "
       (var a 100)
-      +assert ((render (a [%a])) == (:a [100]))
+      +assert ((:: (a [%a])) == (:a [100]))
     " do
       @application.parse_and_process(example.description)
     end
 
     it "
       (var a 100)
-      +assert ((render {^value %a}) == {^value 100})
+      +assert ((:: {^value %a}) == {^value 100})
     " do
       @application.parse_and_process(example.description)
     end
 
     it "
       (var a 100)
-      +assert ((render (a ^prop %a)) == (:a ^prop 100))
+      +assert ((:: (a ^prop %a)) == (:a ^prop 100))
     " do
       @application.parse_and_process(example.description)
     end
 
     it "
       (var a 100)
-      +assert ((render (a (b ^prop %a))) == (:a (b ^prop 100)))
+      +assert ((:: (a (b ^prop %a))) == (:a (b ^prop 100)))
     " do
       @application.parse_and_process(example.description)
     end
 
     it "
-      +assert ((render (%% (var a 100) a)) == 100)
+      +assert ((:: (%% (var a 100) a)) == 100)
     " do
       @application.parse_and_process(example.description)
     end
 
     it "
-      +assert ((render (%% (1 < 2))) == true)
+      +assert ((:: (%% (1 < 2))) == true)
     " do
       @application.parse_and_process(example.description)
     end
 
     it "
       (var a [1 2])
-      +assert ((render (a (%expand a))) == (:a 1 2))
+      +assert ((:: (a (%expand a))) == (:a 1 2))
     " do
       @application.parse_and_process(example.description)
     end
@@ -1878,7 +1878,7 @@ describe Gene::Lang::Interpreter do
     it "
       (var a 100)
       (fn f [b c] (b + c))
-      +assert ((render (%f a 200)) == 300)
+      +assert ((:: (%f a 200)) == 300)
     " do
       @application.parse_and_process(example.description)
     end
@@ -1891,6 +1891,7 @@ describe Gene::Lang::Interpreter do
       (var a 100)
       +assert ((f %a 200) == 300)
     " do
+      pending
       @application.parse_and_process(example.description)
     end
   end
