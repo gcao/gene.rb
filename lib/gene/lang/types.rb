@@ -617,34 +617,6 @@ module Gene::Lang
     end
   end
 
-  class Macro < Object
-    attr_reader :name
-    attr_accessor :parent_scope, :args_matcher, :statements
-
-    def initialize name
-      super(Macro)
-      set 'name', name
-    end
-
-    def call options = {}
-      scope   = Scope.new parent_scope, false
-      context = options[:context]
-
-      scope.set_member '$caller_context', context
-      scope.set_member '$arguments', options[:arguments]
-      scope.arguments = Gene::Lang::ArgumentsScope.new options[:arguments], self.args_matcher
-
-      new_context = context.extend scope: scope
-      result = new_context.process_statements statements
-      if result.is_a? ReturnValue
-        result = result.value
-      end
-
-      # Treat result as new AST and evaluate
-      context.process_statements result
-    end
-  end
-
   class Property < Object
     attr_reader :name, :type, :getter, :setter
 

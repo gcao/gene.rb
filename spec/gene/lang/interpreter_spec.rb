@@ -1162,17 +1162,6 @@ describe Gene::Lang::Interpreter do
     end
   end
 
-  describe "Macros" do
-    it "
-      (macro add [a b]
-        (a + b)
-      )
-      (assert ((add 1 2) == 3))
-    " do
-      @application.parse_and_process(example.description)
-    end
-  end
-
   describe "with - create a new context with a given self" do
     it "# should work
       (var o (new Object))
