@@ -28,7 +28,11 @@
     else_if ((data .type) == :new)
       (compile_new data)
     else_if ((data .type) == :for)
-      (compile_for data)
+      (if ((data .get 1) == :in)
+        (compile_for_in data)
+      else
+        (compile_for data)
+      )
     else_if (BINARY_IDS .include (data .get 0))
       (compile_binary data)
     else_if ((data .get 0) == :?)
@@ -224,8 +228,7 @@
         (compile_stmts else_stmts)
       )
     )
-   "}"
-  )
+  "}")
 )
 
 (fn compile_for data
@@ -235,6 +238,14 @@
     (compile cond) "; "
     (compile update) ") {\n"
       (compile_stmts stmts)
+    "}"
+  )
+)
+
+(fn compile_for_in data
+  (match [name _ list stmts...] data)
+  ("for (var " name " in " (compile list) ") {\n"
+    (compile_stmts stmts)
     "}"
   )
 )

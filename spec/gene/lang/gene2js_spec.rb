@@ -198,6 +198,19 @@ describe "JavaScript representation in Gene" do
       '
     )
 
+    (compile_and_verify
+      (for i in list
+        1
+        2
+      )
+      '
+        for (var i in list) {
+          1;
+          2;
+        }
+      '
+    )
+
   ~.split("\n\n").each do |code|
     next if code =~ /^\s+$/
 
