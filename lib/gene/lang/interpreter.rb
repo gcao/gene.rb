@@ -111,6 +111,7 @@ class Gene::Lang::Interpreter
         i += 1
       else
         data[i] = apply_decorators decorators, item
+        decorators = []
         i += 1
       end
     end
@@ -127,15 +128,13 @@ class Gene::Lang::Interpreter
     while not decorators.empty?
       decorator = decorators.pop
 
-      if decorator.is_a? Gene::Types::Symbol
-        decorator = Gene::Types::Base.new decorator, item
-      else
-        decorator.data.push item
-      end
-
-      decorator.type = Gene::Types::Symbol.new decorator.type.to_s[1..-1]
-
-      item = decorator
+      item =
+        if decorator.is_a? Gene::Types::Symbol
+          Gene::Types::Base.new Gene::Types::Symbol.new(decorator.to_s[1..-1]), item
+        else
+          decorator.type = Gene::Types::Symbol.new(decorator.type.to_s[1..-1])
+          Gene::Types::Base.new decorator, item
+        end
     end
 
     item

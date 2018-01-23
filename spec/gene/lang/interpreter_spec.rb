@@ -1148,8 +1148,11 @@ describe Gene::Lang::Interpreter do
 
     it "# decorator can be invoked with arguments
       (var members [])
-      (fn add_to_members [array f]
-        ($invoke array 'push' (f .name))
+      (fn add_to_members [array]
+        (fnx target
+          ($invoke array 'push' (target .name))
+          target
+        )
       )
       (+add_to_members members)
       (fn test)
@@ -1887,6 +1890,17 @@ describe Gene::Lang::Interpreter do
       (var a 100)
       (fn f [b c] (b + c))
       +assert ((render (%f a 200)) == 300)
+    " do
+      @application.parse_and_process(example.description)
+    end
+
+    it "
+      (fn f [b c]
+        ^!eval_arguments
+        (b + c)
+      )
+      (var a 100)
+      +assert ((f %a 200) == 300)
     " do
       @application.parse_and_process(example.description)
     end
