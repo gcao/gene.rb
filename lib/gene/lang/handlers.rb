@@ -126,9 +126,18 @@ module Gene::Lang::Handlers
           obj = Gene::Types::Base.new new_type, *template.data
           obj.properties = template.properties
           context.process_statements obj
+        elsif template.type == Gene::Types::Symbol.new('::')
+          template.get(0)
+        elsif template.type.is_a?(Gene::Types::Symbol) and template.type.name[0] == ':'
+          new_type = Gene::Types::Symbol.new(template.type.name[1..-1])
+          obj = Gene::Types::Base.new new_type, *template.data
+          obj.properties = template.properties
+          obj
         else
           result = Gene::Lang::Object.from_gene_base template
           result.properties.each do |name, value|
+            # "#data" property is special and handled below
+            next if ['#type', '#data'].include? name
             result.set name, render(context, value)
           end
           result.data.each_with_index do |item, index|
@@ -589,6 +598,10 @@ module Gene::Lang::Handlers
         if value.is_a?(Gene::Lang::Function) or value.is_a?(Gene::Lang::BoundFunction)
           if value.eval_arguments
             args = args.map{|item| context.process item}
+          end
+          if data.get('render_args')
+            data.properties.delete 'render_args'
+            args = render context, args
           end
           args = expand args
           args = Gene::Lang::Object.from_array_and_properties(args, data.properties)

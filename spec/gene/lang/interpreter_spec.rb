@@ -1889,9 +1889,27 @@ describe Gene::Lang::Interpreter do
         (b + c)
       )
       (var a 100)
-      +assert ((f %a 200) == 300)
+      +assert ((f ^^render_args %a 200) == 300)
     " do
-      pending
+      @application.parse_and_process(example.description)
+    end
+
+    it "
+      (fn f [b c]
+        ^!eval_arguments
+        [b c]
+      )
+      (var a 100)
+      (var result (f ^^render_args %a (:b %c)))
+      +assert (((result .get 1) .type) == :b)
+      +assert (((result .get 1) .get 0) == :%c)
+    " do
+      @application.parse_and_process(example.description)
+    end
+
+    it "
+    " do
+      pending "Need a way to escape : and % (maybe prefix with \\ and check escaped)"
       @application.parse_and_process(example.description)
     end
   end
