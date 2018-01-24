@@ -4,7 +4,7 @@ describe "JavaScript representation in Gene" do
   before do
     @application = Gene::Lang::Application.new
     @application.load_core_libs
-    @application.load File.expand_path(File.dirname(__FILE__) + '/../../../lib/gene/lang/compiler.gene')
+    @application.load File.expand_path(File.dirname(__FILE__) + '/../../../lib/gene/lang/gene2js.gene')
     @application.parse_and_process <<-GENE
       (fn compress code
         ^^global
