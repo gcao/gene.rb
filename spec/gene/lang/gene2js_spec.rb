@@ -25,6 +25,7 @@ describe "JavaScript representation in Gene" do
   end
 
   %q~
+    # Atomic expression / statements
     (compile_and_verify
       "abc"
       '
@@ -211,6 +212,14 @@ describe "JavaScript representation in Gene" do
       '
     )
 
+    # More complex code
+    (compile_and_verify
+      (var a (((new A) @ 0) <- 1 2))
+      '
+        var a = new A()[0](1, 2);
+      '
+    )
+
   ~.split("\n\n").each do |code|
     next if code =~ /^\s+$/
 
@@ -221,26 +230,4 @@ describe "JavaScript representation in Gene" do
       @application.parse_and_process(input)
     end
   end
-
-  # {
-  #   # Programs
-  #   '
-  #     # !pending!
-  #     (var a (((new A) @ 0) <- 1 2))
-  #   ' =>
-  #   <<-JAVASCRIPT,
-  #     var a = new A()[0](1, 2);
-  #   JAVASCRIPT
-
-  # }.each do |input, result|
-  #   it input do
-  #     pending if input.index('!pending!')
-
-  #     parsed = Gene::Parser.parse(input)
-  #     @application.global_namespace.set_member('$parsed_code', parsed)
-
-  #     output = @application.parse_and_process('(compile $parsed_code)')
-  #     compile_and_verify_code output, result
-  #   end
-  # end
 end

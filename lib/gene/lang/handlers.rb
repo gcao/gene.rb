@@ -1050,7 +1050,7 @@ module Gene::Lang::Handlers
           elsif target.is_a? Hash
             value = Gene::Types::Symbol.new('Hash')
           elsif target.is_a?(Gene::Lang::Object) or target.is_a?(Gene::Types::Base)
-            value = Gene::Types::Symbol.new(target.type.to_s)
+            value = target.type
           else
             value = Gene::Types::Symbol.new(target.class.to_s)
           end

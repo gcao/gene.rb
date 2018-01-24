@@ -45,7 +45,7 @@
       (compile_invocation data)
     else_if ([:@] .include (data .get 0))
       (match (first _ second) data)
-      ("" first "[" second "]")
+      ("" (compile first) "[" (compile second) "]")
     else_if ([:! :return] .include (data .type))
       ("" (data .type) " " (compile (data .get 0)))
     else

@@ -1253,6 +1253,13 @@ describe Gene::Lang::Interpreter do
       end
 
       it "
+        (match (type) (:: ((a) 1)))
+        (assert ((type .type) == :a))
+      " do
+        @application.parse_and_process(example.description)
+      end
+
+      it "
         (match (_ first second) (_ 1 2))
         (assert (first  == 1))
         (assert (second == 2))
