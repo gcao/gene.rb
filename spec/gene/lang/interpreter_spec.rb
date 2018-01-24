@@ -1889,7 +1889,7 @@ describe Gene::Lang::Interpreter do
         (b + c)
       )
       (var a 100)
-      +assert ((f ^^render_args %a 200) == 300)
+      +assert ((f ^^#render_args %a 200) == 300)
     " do
       @application.parse_and_process(example.description)
     end
@@ -1900,7 +1900,7 @@ describe Gene::Lang::Interpreter do
         [b c]
       )
       (var a 100)
-      (var result (f ^^render_args %a (:b %c)))
+      (var result (f ^^#render_args %a (:b %c)))
       +assert (((result .get 1) .type) == :b)
       +assert (((result .get 1) .get 0) == :%c)
     " do

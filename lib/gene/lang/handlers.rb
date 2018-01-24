@@ -599,8 +599,8 @@ module Gene::Lang::Handlers
           if value.eval_arguments
             args = args.map{|item| context.process item}
           end
-          if data.get('render_args')
-            data.properties.delete 'render_args'
+          if data.get('#render_args')
+            data.properties.delete '#render_args'
             args = render context, args
           end
           args = expand args
