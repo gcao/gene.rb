@@ -85,9 +85,8 @@
 (fn compile_var data
   ("var " (data .get 0)
     (do
-      (var value (data .get 1))
-      (if (value != undefined)
-        (" = " (compile value))
+      (if ((data .size) > 1)
+        (" = " (compile (data .get 1)))
       )
     )
   )
@@ -124,7 +123,14 @@
 
 (fn compile_invocation data
   (match (target _ args...) data)
-  ("" (compile target) "("
+  (var compiled_target (compile target))
+  (""
+    (if (compiled_target =~ #/}\s*$/)
+      ("(" compiled_target ")")
+    else
+      compiled_target
+    )
+    "("
     ((args .map (fnx arg (compile arg))) .join ", ")
     ")"
   )
@@ -141,7 +147,13 @@
 
 (fn compile_fnx data
   (match [args stmts...] data)
-  ("function(" (args .join ", ") ") {\n"
+  ("function("
+    (if (args .is Array)
+      (args .join ", ")
+    else
+      args
+    )
+    ") {\n"
     (compile_stmts stmts)
     "}"
   )

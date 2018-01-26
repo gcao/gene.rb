@@ -4,6 +4,7 @@ describe Gene::Lang::Compiler do
   before do
     @application = Gene::Lang::Application.new
     @application.load_core_libs
+    @application.load File.expand_path(File.dirname(__FILE__) + '/../../../lib/gene/lang/gene2js.gene')
     @application.load File.expand_path(File.dirname(__FILE__) + '/../../../lib/gene/lang/compiler.gene')
 
     @ctx = V8::Context.new
@@ -12,7 +13,6 @@ describe Gene::Lang::Compiler do
 
   {
     ' # Compiles empty code to below output
-      # !pending!
     ' =>
     <<-JAVASCRIPT,
       var $root_context = $application.create_root_context();

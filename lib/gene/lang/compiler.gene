@@ -1,0 +1,20 @@
+(fn compile code...
+  ^^global
+
+  (compile_
+    ^^#render_args
+    (var $root_context ($application . (create_root_context <-)))
+    ((fnx $context
+      (var $result)
+      (return $result)
+    ) <- $root_context)
+  )
+)
+
+(fn compile_ code...
+  ^!eval_arguments
+
+  (gene2js
+    code...
+  )
+)

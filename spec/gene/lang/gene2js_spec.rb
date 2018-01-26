@@ -54,6 +54,13 @@ describe "JavaScript representation in Gene" do
     )
 
     (compile_and_verify
+      (var a)
+      '
+        var a;
+      '
+    )
+
+    (compile_and_verify
       (var a 1)
       '
         var a = 1;
