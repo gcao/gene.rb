@@ -16,7 +16,7 @@ describe Gene::Lang::Compiler do
     ' =>
     <<-JAVASCRIPT,
       var $root_context = $application.create_root_context();
-      (function($context){
+      (function($context) {
         var $result;
         return $result;
       })($root_context);

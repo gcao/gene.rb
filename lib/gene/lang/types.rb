@@ -60,13 +60,19 @@ module Gene::Lang
 
     def to_s
       parts = []
-      # TODO: check "#type" property
-      type = self.class ? self.class.name : Object.name
+      type =
+        if self.type
+          self.type.to_s
+        elsif self.class
+          self.class.to_s
+        else
+          "Object"
+        end
       parts << type.sub(/^Gene::Lang::/, '')
 
       @properties.each do |name, value|
         next if name.to_s =~ /^\$/
-        next if %W(#class #data).include? name.to_s
+        next if %W(#type #class #data).include? name.to_s
         next if properties_to_hide.include? name.to_s
 
         if value == true
@@ -95,7 +101,7 @@ module Gene::Lang
       end
 
       if @properties.include? "#data"
-        parts << @properties["#data"].inspect
+        parts += @properties["#data"].map(&:to_s)
       end
 
       "(#{parts.join(' ')})"
