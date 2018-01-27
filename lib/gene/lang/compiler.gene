@@ -1,20 +1,29 @@
 (fn compile code...
   ^^global
 
-  (compile_
+  (gene2js_
     ^^#render_args
     (var $root_context ($application . (create_root_context <-)))
     ((fnx $context
       (var $result)
+      (%expand
+        (code .map (fnx item
+          (:$result = (%compile_item item))
+        ))
+      )
       (return $result)
     ) <- $root_context)
   )
 )
 
-(fn compile_ code...
+(fn gene2js_ code...
   ^!eval_arguments
 
   (gene2js
     code...
   )
+)
+
+(fn compile_item item
+  "TODO: compile_item"
 )

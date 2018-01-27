@@ -49,7 +49,7 @@
     else_if ([:! :return] .include (data .type))
       ("" (data .type) " " (compile (data .get 0)))
     else
-      "TODO"
+      ("TODO: " data)
     )
   else
     ("TODO: (compile " ($inspect self 'inspect') ")")

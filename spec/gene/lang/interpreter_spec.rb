@@ -1897,6 +1897,17 @@ describe Gene::Lang::Interpreter do
       )
       (var a 100)
       +assert ((f ^^#render_args %a 200) == 300)
+      +assert ((f ^^#render_args 200 %a) == 300)
+    " do
+      @application.parse_and_process(example.description)
+    end
+
+    it "
+      (fn f [b c]
+        ^!eval_arguments
+        (b + c)
+      )
+      +assert ((f ^^#render_args (%expand [100]) 200) == 300)
     " do
       @application.parse_and_process(example.description)
     end
@@ -1910,6 +1921,16 @@ describe Gene::Lang::Interpreter do
       (var result (f ^^#render_args %a (:b %c)))
       +assert (((result .get 1) .type) == :b)
       +assert (((result .get 1) .get 0) == :%c)
+    " do
+      @application.parse_and_process(example.description)
+    end
+
+    it "
+      (fn f a
+        ^!eval_arguments
+        a
+      )
+      +assert ((f ^^#render_args ((%expand [1]))) == :+)
     " do
       @application.parse_and_process(example.description)
     end
