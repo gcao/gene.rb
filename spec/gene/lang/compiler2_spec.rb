@@ -29,7 +29,7 @@ describe Gene::Lang::Compiler do
     ' =>
     <<-JAVASCRIPT,
       var $root_context = $application.create_root_context();
-      (function($context){
+      (function($context) {
         var $result;
         $result = Gene.assert(false);
         return $result;
@@ -37,6 +37,19 @@ describe Gene::Lang::Compiler do
     JAVASCRIPT
 
     ' # Variables
+      (var a 1)
+    ' =>
+    <<-JAVASCRIPT,
+      var $root_context = $application.create_root_context();
+      (function($context) {
+        var $result;
+        ($result = $context.var_("a", 1));
+        return $result;
+      })($root_context);
+    JAVASCRIPT
+
+    ' # Variables
+      # !pending!
       # !eval-to-true!
       (var a 1)
       (a == 1)

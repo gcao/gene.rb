@@ -1,6 +1,7 @@
 (fn compile code...
   ^^global
 
+  # Empty code becomes [Stream] for some reason
   (if ((code .get 0) .is Stream)
     (code = (code .get 0))
   )
@@ -37,8 +38,8 @@
 
 (fn compile_var data
   (::
-    (($context . var) <-
-      (%data .get 0)
+    (($context . var_) <-
+      (%% ((data .get 0) .to_s))
       (%data .get 1)
     )
   )
