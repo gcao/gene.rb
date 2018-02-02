@@ -28,6 +28,10 @@ module Gene::Lang
       get('#type') or self.class
     end
 
+    def type= type
+      set('#type', type)
+    end
+
     def get name
       @properties[name]
     end

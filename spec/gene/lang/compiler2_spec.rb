@@ -37,7 +37,6 @@ describe Gene::Lang::Compiler do
     JAVASCRIPT
 
     ' # Variables
-      # !pending!
       # !eval-to-true!
       (var a 1)
       (a == 1)

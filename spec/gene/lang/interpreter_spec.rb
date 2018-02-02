@@ -1913,14 +1913,22 @@ describe Gene::Lang::Interpreter do
     end
 
     it "
-      (fn f [b c]
+      (fn f [b c d]
         ^!eval_arguments
-        [b c]
+        [b c d]
       )
       (var a 100)
-      (var result (f ^^#render_args %a (:b %c)))
+      (fn d x (x * 100))
+      (var result
+        (f ^^#render_args
+          %a
+          (:b %c)
+          (%d 1)
+        )
+       )
       +assert (((result .get 1) .type) == :b)
       +assert (((result .get 1) .get 0) == :%c)
+      +assert ((result .get 2) == 100)
     " do
       @application.parse_and_process(example.description)
     end
@@ -1930,7 +1938,7 @@ describe Gene::Lang::Interpreter do
         ^!eval_arguments
         a
       )
-      +assert ((f ^^#render_args ((%expand [1]))) == :+)
+      +assert (((f ^^#render_args ((%% :a))) .type) == :a)
     " do
       @application.parse_and_process(example.description)
     end

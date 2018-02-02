@@ -135,6 +135,7 @@ module Gene::Lang::Handlers
           obj
         else
           result = Gene::Lang::Object.from_gene_base template
+          result.type = render context, result.type
           result.properties.each do |name, value|
             # "#data" property is special and handled below
             next if ['#type', '#data'].include? name

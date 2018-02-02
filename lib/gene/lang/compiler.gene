@@ -1,6 +1,9 @@
 (fn compile code...
   ^^global
 
+  (if ((code .get 0) .is Stream)
+    (code = (code .get 0))
+  )
   (gene2js_
     ^^#render_args
     (var $root_context ($application . (create_root_context <-)))
@@ -8,7 +11,7 @@
       (var $result)
       (%expand
         (code .map (fnx item
-          (:$result = (%compile_item item))
+          (:$result = (%compile_ item))
         ))
       )
       (return $result)
@@ -24,6 +27,19 @@
   )
 )
 
-(fn compile_item item
-  "TODO: compile_item"
+(fn compile_ data
+  (if (data .is Object)
+    (if ((data .type) == :var)
+      (compile_var data)
+    )
+  )
+)
+
+(fn compile_var data
+  (::
+    (($context . var) <-
+      (%data .get 0)
+      (%data .get 1)
+    )
+  )
 )
