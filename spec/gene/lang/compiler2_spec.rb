@@ -23,7 +23,7 @@ describe Gene::Lang::Compiler do
     JAVASCRIPT
 
     ' # assert
-      # !pending!
+      # !focus!
       # !throw-error!
       (assert false)
     ' =>
@@ -31,7 +31,7 @@ describe Gene::Lang::Compiler do
       var $root_context = $application.create_root_context();
       (function($context) {
         var $result;
-        $result = Gene.assert(false);
+        ($result = Gene.assert(false));
         return $result;
       })($root_context);
     JAVASCRIPT
@@ -65,8 +65,10 @@ describe Gene::Lang::Compiler do
     JAVASCRIPT
 
   }.each do |input, result|
+    next if ENV['focus'] and not input.include? '!focus!'
+
     it input do
-      pending if input.index('!pending!')
+      pending if input.index('!pending!') and not input.include? '!focus!'
 
       parsed = Gene::Parser.parse(input)
       @application.global_namespace.set_member('$parsed_code', parsed)

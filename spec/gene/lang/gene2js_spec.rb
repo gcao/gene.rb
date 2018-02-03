@@ -34,6 +34,34 @@ describe "JavaScript representation in Gene" do
     )
 
     (compile_and_verify
+      null
+      '
+        null;
+      '
+    )
+
+    (compile_and_verify
+      \undefined
+      '
+        undefined;
+      '
+    )
+
+    (compile_and_verify
+      true
+      '
+        true;
+      '
+    )
+
+    (compile_and_verify
+      1
+      '
+        1;
+      '
+    )
+
+    (compile_and_verify
       [a b]
       '
         [a, b];
@@ -68,9 +96,16 @@ describe "JavaScript representation in Gene" do
     )
 
     (compile_and_verify
-      (a . b . c)
+      (a . b)
       '
-        a.b.c;
+        a.b;
+      '
+    )
+
+    (compile_and_verify
+      (a .b)
+      '
+        a.b;
       '
     )
 
@@ -78,6 +113,13 @@ describe "JavaScript representation in Gene" do
       (a <- b c)
       '
         a(b, c);
+      '
+    )
+
+    (compile_and_verify
+      (a <- false)
+      '
+        a(false);
       '
     )
 
@@ -224,6 +266,27 @@ describe "JavaScript representation in Gene" do
       (var a (((new A) @ 0) <- 1 2))
       '
         var a = new A()[0](1, 2);
+      '
+    )
+
+    (compile_and_verify
+      ((Gene .assert) <- false )
+      '
+        Gene.assert(false);
+      '
+    )
+
+    (compile_and_verify
+      (fnxx (var $root_context ($application . (create_root_context <-))) ((fnx $context (var $result) ($result = ((Gene .assert) <- false)) (return $result)) <- $root_context))
+      '
+        function() {
+          var $root_context = $application.create_root_context();
+          (function($context) {
+            var $result;
+            ($result = Gene.assert(false));
+            return $result;
+          })($root_context);
+        }
       '
     )
 

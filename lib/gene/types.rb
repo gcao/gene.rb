@@ -3,6 +3,8 @@ module Gene
   end
 end
 
+require 'gene/types/array'
+require 'gene/types/hash'
 require 'gene/types/stream'
 require 'gene/types/noop'
 require 'gene/types/undefined'

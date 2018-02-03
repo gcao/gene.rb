@@ -1824,13 +1824,13 @@ describe Gene::Lang::Interpreter do
     end
 
     it "
-      +assert ((:a (%% true)) == (:a true))
+      +assert ((:a (%= true)) == (:a true))
     " do
       @application.parse_and_process(example.description)
     end
 
     it "
-      +assert ((:a (%% (100 < 200))) == (:a true))
+      +assert ((:a (%= (100 < 200))) == (:a true))
     " do
       @application.parse_and_process(example.description)
     end
@@ -1864,13 +1864,13 @@ describe Gene::Lang::Interpreter do
     end
 
     it "
-      +assert ((:: (%% (var a 100) a)) == 100)
+      +assert ((:: (%= (var a 100) a)) == 100)
     " do
       @application.parse_and_process(example.description)
     end
 
     it "
-      +assert ((:: (%% (1 < 2))) == true)
+      +assert ((:: (%= (1 < 2))) == true)
     " do
       @application.parse_and_process(example.description)
     end
@@ -1938,7 +1938,7 @@ describe Gene::Lang::Interpreter do
         ^!eval_arguments
         a
       )
-      +assert (((f ^^#render_args ((%% :a))) .type) == :a)
+      +assert (((f ^^#render_args ((%= :a))) .type) == :a)
     " do
       @application.parse_and_process(example.description)
     end

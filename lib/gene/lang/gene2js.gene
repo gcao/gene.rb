@@ -10,6 +10,10 @@
     data
   else_if (data .is String)
     ($invoke data 'inspect')
+  else_if (data .is Null)
+    "null"
+  else_if (data .is Boolean)
+    ($invoke data 'inspect')
   else_if (data .is Array)
     (compile_array data)
   else_if (data .is Hash)
@@ -37,7 +41,7 @@
       (compile_binary data)
     else_if ((data .get 0) == :?)
       (compile_ternary data)
-    else_if ((data .get 0) == :.)
+    else_if (((data .get 0) .is Symbol) && (((data .get 0) .to_s) =~ #/^\./))
       (compile_dot data)
     else_if ((data .get 0) == :~)
       (compile_group data)
@@ -93,10 +97,6 @@
 )
 
 (fn compile_dot data
-  (for (var i 0) (i < (data .size)) ( i += 2)
-    (if ((data .get i) != :.) (throw ('"." must be used between elements: ' data)))
-  )
-
   (""
     (compile (data .type))
     (((data .data) .map (fnx item (compile item))) .join)

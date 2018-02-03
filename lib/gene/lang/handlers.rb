@@ -114,8 +114,8 @@ module Gene::Lang::Handlers
     def render context, template
       if template.is_a? Gene::Types::Base
         if template.type == Gene::Types::Symbol.new('%')
-          raise 'If you want to construct an expression, you should use "%%" instead.'
-        elsif template.type == Gene::Types::Symbol.new('%%')
+          raise 'If you want to construct an expression, you should use "%%" or "%=" instead.'
+        elsif template.type == Gene::Types::Symbol.new('%=')
           # new_type = template.data[0]
           # obj = Gene::Types::Base.new new_type, *template.data[1..-1]
           # obj.properties = template.properties

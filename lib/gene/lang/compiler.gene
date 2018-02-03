@@ -23,24 +23,43 @@
 (fn gene2js_ code...
   ^!eval_arguments
 
-  (gene2js
-    code...
+  (var result
+    (gene2js
+      code...
+    )
   )
+  result
 )
 
 (fn compile_ data
   (if (data .is Object)
     (if ((data .type) == :var)
       (compile_var data)
+    else_if ((data .type) == :assert)
+      (compile_assert data)
     )
   )
 )
 
+# Maybe we can create a function 'macro' that works like this
+# (macro compile_var data
+#   (($context . var_) <-
+#     (%= ((data .get 0) .to_s))
+#     (%data .get 1)
+#   )
+# )
 (fn compile_var data
   (::
     (($context . var_) <-
-      (%% ((data .get 0) .to_s))
+      (%= ((data .get 0) .to_s))
       (%data .get 1)
     )
+  )
+)
+
+(fn compile_assert data
+  (match [cond mesg] data)
+  (::
+    ((Gene .assert) <- %cond %mesg)
   )
 )

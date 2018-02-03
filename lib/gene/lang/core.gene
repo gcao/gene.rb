@@ -13,7 +13,7 @@
     ($invoke self 'is_a?' (get_native_class 'Gene::Types::Base'))
   )
 
-  (method gene_type _
+  (method type _
     (if (.is_base_type)
       ($invoke self 'type')
     else
@@ -93,6 +93,10 @@
       Symbol
     else_if ($invoke self 'is_a?' (get_native_class 'Fixnum'))
       Int
+    else_if ([true false] .include self)
+      Boolean
+    else_if (self == null)
+      Null
     else_if ($invoke self 'is_a?' (get_native_class 'Range'))
       Range
     else_if ($invoke self 'is_a?' (get_native_class 'Regexp'))
@@ -319,30 +323,46 @@
 
 (class String
   ^^global
+
+  (method type _ "String")
+  (method data _ [self])
 )
 
 (class Boolean
   ^^global
+
+  (method type _ "Boolean")
+  (method data _ [self])
 )
 
 (class Symbol
   ^^global
 
-  (method data _
-    [self]
-  )
+  (method type _ "Symbol")
+  (method data _ [self])
 )
 
 (class Regexp
   ^^global
+
+  (method type _ "Regexp")
+  (method data _ [self])
 )
 
 (class Range
   ^^global
+
+  (method type _ "Range")
+  (method data _
+    [($invoke self 'begin') ($invoke self 'end')]
+  )
 )
 
 (class Undefined
   ^^global
+
+  (method type _ "Range")
+  (method data _ [])
 )
 
 (class BreakValue
