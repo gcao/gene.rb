@@ -53,7 +53,7 @@
   )
 )
 
-# Maybe we can create a function 'macro' that works like this
+# TODO: Maybe we can create a function 'macro' that works like this
 # (macro compile_var data
 #   (($context . var) <-
 #     (%= ((data .get 0) .to_s))

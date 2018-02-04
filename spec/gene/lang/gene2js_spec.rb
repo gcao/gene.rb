@@ -180,6 +180,13 @@ describe "JavaScript representation in Gene" do
     )
 
     (compile_and_verify
+      (a @ 'name')
+      '
+        a["name"];
+      '
+    )
+
+    (compile_and_verify
       (a + b)
       '
         (a + b);

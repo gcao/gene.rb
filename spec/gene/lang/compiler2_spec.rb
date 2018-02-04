@@ -63,6 +63,67 @@ describe Gene::Lang::Compiler do
       })($root_context);
     JAVASCRIPT
 
+    ' # Function
+      # !pending!
+      (fn f [a b]
+        (a + b)
+      )
+    ' =>
+    <<-JAVASCRIPT,
+      var $root_context = $application.create_root_context();
+      (function($context) {
+        var $result;
+        ($result = $context.fn("f", ["a", "b"], function($context) {
+          var $result;
+          ($result = $context.get_member("a") + $context.get_member("b"));
+          return $result;
+        });
+        return $result;
+      })($root_context);
+    JAVASCRIPT
+
+    ' # Function call
+      # !pending!
+      (f 1 2)
+    ' =>
+    <<-JAVASCRIPT,
+      var $root_context = $application.create_root_context();
+      (function($context) {
+        var $result;
+        ($result = $context.get_member("f").invoke(1, 2));
+        return $result;
+      })($root_context);
+    JAVASCRIPT
+
+    ' # If
+      # !pending!
+      (if true 1 2 else 3 4)
+    ' =>
+    <<-JAVASCRIPT,
+      var $root_context = $application.create_root_context();
+      (function($context) {
+        var $result;
+        ($result = true ? a() : b());
+        return $result;
+      })($root_context);
+    JAVASCRIPT
+
+    ' # For
+      # !pending!
+      (for (var i 0) (i < 10) (i ++)
+        1
+        2
+      )
+    ' =>
+    <<-JAVASCRIPT,
+      var $root_context = $application.create_root_context();
+      (function($context) {
+        var $result;
+        ($result = true ? a() : b());
+        return $result;
+      })($root_context);
+    JAVASCRIPT
+
   }.each do |input, result|
     next if ENV['focus'] and not input.include? '!focus!'
 
