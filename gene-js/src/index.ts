@@ -102,7 +102,7 @@ namespace Gene {
       this.members[name] = value;
     }
 
-    public var_(name: string, value: any) {
+    public ["var"](name: string, value: any) {
       this.members[name] = value;
     }
   }
@@ -178,8 +178,8 @@ namespace Gene {
       return new_context;
     }
 
-    public var_(name: string, value: any) {
-      this.namespace.var_(name, value);
+    public ["var"](name: string, value: any) {
+      this.namespace.var(name, value);
     }
 
     public get_member(name: string) {
