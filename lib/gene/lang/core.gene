@@ -97,6 +97,8 @@
       Boolean
     else_if (self == null)
       Null
+    else_if (self == undefined)
+      Undefined
     else_if ($invoke self 'is_a?' (get_native_class 'Range'))
       Range
     else_if ($invoke self 'is_a?' (get_native_class 'Regexp'))
@@ -361,7 +363,7 @@
 (class Undefined
   ^^global
 
-  (method type _ "Range")
+  (method type _ "Undefined")
   (method data _ [])
 )
 

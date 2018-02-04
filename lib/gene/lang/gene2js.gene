@@ -12,6 +12,8 @@
     ($invoke data 'inspect')
   else_if (data .is Null)
     "null"
+  else_if (data .is Undefined)
+    "undefined"
   else_if (data .is Boolean)
     ($invoke data 'inspect')
   else_if (data .is Array)

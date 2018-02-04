@@ -88,7 +88,7 @@ module Gene::Lang::Handlers
         context.get_member("Range")
       elsif obj.is_a? TrueClass or obj.is_a? FalseClass
         context.get_member("Boolean")
-      elsif obj == Gene::UNDEFINED
+      elsif obj.is_a? Gene::Types::Undefined
         context.get_member("Undefined")
       elsif obj == nil
         context.get_member("Null")

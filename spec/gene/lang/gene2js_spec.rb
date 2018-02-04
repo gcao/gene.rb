@@ -41,7 +41,7 @@ describe "JavaScript representation in Gene" do
     )
 
     (compile_and_verify
-      \undefined
+      undefined
       '
         undefined;
       '
