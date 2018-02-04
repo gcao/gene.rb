@@ -1075,9 +1075,17 @@ module Gene::Lang::Handlers
           end
 
           if target.is_a?(Gene::Lang::Object) or target.is_a?(Gene::Types::Base)
-            result = target.data[mapped_index]
+            if mapped_index.is_a?(Range) or mapped_index < target.data.size
+              result = target.data[mapped_index]
+            else
+              result = Gene::UNDEFINED
+            end
           elsif target.is_a? Array
-            result = target[mapped_index]
+            if mapped_index.is_a?(Range) or mapped_index < target.size
+              result = target[mapped_index]
+            else
+              result = Gene::UNDEFINED
+            end
           else
             result = Gene::UNDEFINED
           end
@@ -1120,9 +1128,17 @@ module Gene::Lang::Handlers
           end
 
           if target.is_a?(Gene::Lang::Object) or target.is_a?(Gene::Types::Base)
-            result = target.data[mapped_index]
+            if mapped_index.is_a?(Range) or mapped_index < target.data.size
+              result = target.data[mapped_index]
+            else
+              result = Gene::UNDEFINED
+            end
           elsif target.is_a? Array
-            result = target[mapped_index]
+            if mapped_index.is_a?(Range) or mapped_index < target.size
+              result = target[mapped_index]
+            else
+              result = Gene::UNDEFINED
+            end
           else
             result = Gene::UNDEFINED
           end
