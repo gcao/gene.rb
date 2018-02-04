@@ -43,6 +43,13 @@ describe "JavaScript representation in Gene" do
     (compile_and_verify
       undefined
       '
+      '
+    )
+
+    (compile_and_verify
+      ^^#render_args
+      (%symbol 'undefined')
+      '
         undefined;
       '
     )

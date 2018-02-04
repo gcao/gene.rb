@@ -391,6 +391,11 @@
   )
 )
 
+(fn symbol name
+  ^^global
+  ($invoke (get_native_class 'Gene::Types::Symbol') 'new' name)
+)
+
 (fn regexp [^^ignore_case ^^multi_line ^^extended args...]
   ^^global
   (var str ('' args...))

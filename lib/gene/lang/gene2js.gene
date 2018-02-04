@@ -13,7 +13,7 @@
   else_if (data .is Null)
     "null"
   else_if (data .is Undefined)
-    "undefined"
+    ""
   else_if (data .is Boolean)
     ($invoke data 'inspect')
   else_if (data .is Array)
@@ -66,7 +66,11 @@
   ((data .map
     (fnx item
       (var s (compile item))
-      ('' s (if (s !~ #/}\s*$/) ';') "\n")
+      (if (s == "")
+        s
+      else
+        ('' s (if (s !~ #/}\s*$/) ';') "\n")
+      )
     )
   ) .join)
 )
