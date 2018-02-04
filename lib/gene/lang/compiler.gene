@@ -43,14 +43,14 @@
 
 # Maybe we can create a function 'macro' that works like this
 # (macro compile_var data
-#   (($context . var_) <-
+#   (($context . var) <-
 #     (%= ((data .get 0) .to_s))
 #     (%data .get 1)
 #   )
 # )
 (fn compile_var data
   (::
-    (($context . var_) <-
+    (($context . var) <-
       (%= ((data .get 0) .to_s))
       (%data .get 1)
     )

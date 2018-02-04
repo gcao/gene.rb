@@ -77,7 +77,9 @@
 
 (fn compile_array data
   ("["
-    ((data .map (fnx item (compile item))) .join ", ")
+    (((data .select (fnx item (item != undefined)))
+      .map (fnx item (compile item))
+    ) .join ", ")
   "]")
 )
 
@@ -137,7 +139,7 @@
       compiled_target
     )
     "("
-    ((args .map (fnx arg (compile arg))) .join ", ")
+    (((args .select (fnx item (item != undefined))) .map (fnx arg (compile arg))) .join ", ")
     ")"
   )
 )

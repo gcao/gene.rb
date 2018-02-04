@@ -1270,7 +1270,6 @@ describe Gene::Lang::Interpreter do
       it "
         (match (_ first second) (_ 1))
         (assert (first  == 1))
-        (println (second .class))
         (assert (second == undefined))
       " do
         @application.parse_and_process(example.description)

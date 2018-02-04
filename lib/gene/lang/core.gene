@@ -58,27 +58,6 @@
   )
 
   (method class _
-    # if obj.is_a? Array
-    #   context.get_member("Array")
-    # elsif obj.is_a? Hash
-    #   context.get_member("Hash")
-    # elsif obj.is_a? Fixnum
-    #   context.get_member("Int")
-    # elsif obj.is_a? Gene::Lang::Aspect
-    #   context.get_member("Aspect")
-    # elsif obj.is_a? Gene::Lang::Class
-    #   context.get_member("Class")
-    # elsif obj.class == Gene::Lang::Object
-    #   context.get_member("Object")
-    # elsif obj.class == Gene::Lang::Context
-    #   context.get_member("Context")
-    # elsif obj.class == Gene::Lang::BreakValue
-    #   context.get_member("BreakValue")
-    # elsif obj.class == Gene::Lang::ReturnValue
-    #   context.get_member("ReturnValue")
-    # else
-    #   obj.class
-    # end
     (if ($invoke self 'is_a?' (get_native_class 'Gene::Types::Stream'))
       Stream
     else_if ($invoke self 'is_a?' (get_native_class 'Array'))
