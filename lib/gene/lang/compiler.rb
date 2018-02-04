@@ -14,7 +14,7 @@ class Gene::Lang::Compiler
     # var $root_context = $application.create_root_context();
     # (function($context){
     #   var $result;
-    #   $result = $context.var_("a", 1);
+    #   $result = $context.var("a", 1);
     #   return $result;
     # })($root_context);
     Root.new(self) {
@@ -114,11 +114,11 @@ class Gene::Lang::Compiler
       if data.is_a? Gene::Types::Base
         if VAR === data
           if data.data.length == 1
-            # "$context.var_(\"#{data.data[0]}\");"
-            context.eval { chain(ref('$context'), invoke('var_', data.data[0].to_s)) }
+            # "$context.var(\"#{data.data[0]}\");"
+            context.eval { chain(ref('$context'), invoke('var', data.data[0].to_s)) }
           else
-            # "$context.var_(\"#{data.data[0]}\", #{context.process(data.data[1])});"
-            context.eval { chain(ref('$context'), invoke('var_', data.data[0].to_s, process(data.data[1]))) }
+            # "$context.var(\"#{data.data[0]}\", #{context.process(data.data[1])});"
+            context.eval { chain(ref('$context'), invoke('var', data.data[0].to_s, process(data.data[1]))) }
           end
         elsif Gene::Types::Symbol.new('+=') == data.data[0]
           left  = data.type.to_s

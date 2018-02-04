@@ -49,17 +49,16 @@ describe Gene::Lang::Compiler do
     JAVASCRIPT
 
     ' # Variables
-      # !pending!
       # !eval-to-true!
       (var a 1)
       (a == 1)
     ' =>
     <<-JAVASCRIPT,
       var $root_context = $application.create_root_context();
-      (function($context){
+      (function($context) {
         var $result;
-        $context.var("a", 1);
-        $result = ($context.get_member("a") == 1);
+        ($result = $context.var("a", 1));
+        ($result = ($context.get_member("a") == 1));
         return $result;
       })($root_context);
     JAVASCRIPT

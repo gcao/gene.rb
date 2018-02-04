@@ -32,12 +32,24 @@
 )
 
 (fn compile_ data
-  (if (data .is Object)
+  (if (data .is Boolean Int)
+    data
+  else_if (data .is Symbol)
+    (compile_symbol data)
+  else_if (data .is Object)
     (if ((data .type) == :var)
       (compile_var data)
     else_if ((data .type) == :assert)
       (compile_assert data)
+    else_if ([:==] .include (data .get 0))
+      (compile_binary data)
     )
+  )
+)
+
+(fn compile_symbol data
+  (::
+    (($context .get_member) <- (%= (data .to_s)))
   )
 )
 
@@ -60,6 +72,13 @@
 (fn compile_assert data
   (match [cond mesg] data)
   (::
-    ((Gene .assert) <- %cond %mesg)
+    ((Gene .assert) <- (%compile_ cond) %mesg)
+  )
+)
+
+(fn compile_binary data
+  (match (left op right) data)
+  (::
+    ((%compile_ left) %op (%compile_ right))
   )
 )
