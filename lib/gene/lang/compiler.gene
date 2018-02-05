@@ -39,6 +39,8 @@
   else_if (data .is Object)
     (if ((data .type) == :var)
       (compile_var data)
+    else_if ((data .type) == :fn)
+      (compile_fn data)
     else_if ((data .type) == :assert)
       (compile_assert data)
     else_if ([:==] .include (data .get 0))
@@ -80,5 +82,19 @@
   (match (left op right) data)
   (::
     ((%compile_ left) %op (%compile_ right))
+  )
+)
+
+(fn compile_fn data
+  (match [name args stmts...] data)
+  (::
+    (($context .fn) <-
+      (%= (name .to_s))
+      (%args .map (fnx arg (arg .to_s)))
+      (fnx $context
+        (var $result)
+        (return $result)
+      )
+    )
   )
 )

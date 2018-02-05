@@ -11,6 +11,10 @@ describe Gene::Lang::Compiler do
     @ctx.eval File.read "gene-js/build/src/index.js"
   end
 
+  # In order to make "if", "for" etc to return result (everything is expression)
+  # Change last statement of if/for block to "$result = <last expression>;"
+  # Change break statement to "$result = <arg passed to break>; break;"
+
   {
     ' # Compiles empty code to below output
     ' =>
@@ -64,7 +68,6 @@ describe Gene::Lang::Compiler do
     JAVASCRIPT
 
     ' # Function
-      # !pending!
       (fn f [a b]
         (a + b)
       )

@@ -635,6 +635,14 @@ describe Gene::Lang::Interpreter do
   end
 
   describe "Variable definition" do
+    it "# Access undefined variable should throw error
+      a
+    " do
+      lambda {
+        @application.parse_and_process(example.description)
+      }.should raise_error
+    end
+
     it "(var a 'value')" do
       result = @application.parse_and_process(example.description)
       result.class.should == Gene::Lang::Variable
@@ -649,6 +657,25 @@ describe Gene::Lang::Interpreter do
       result.class.should == Gene::Lang::Variable
       result.name.should  == 'a'
       result.value.should == 3
+    end
+
+    it "# Duplicate definition is not allowed
+      (var a 1)
+      (var a 2)
+    " do
+      pending
+      lambda {
+        @application.parse_and_process(example.description)
+      }.should raise_error
+    end
+
+    it "# Define variable only if it's not defined in current scope
+      (var a 1)
+      (var ^!defined a 2)
+      (assert (a == 1))
+    " do
+      pending
+      @application.parse_and_process(example.description)
     end
 
     it "# Define and use variable
