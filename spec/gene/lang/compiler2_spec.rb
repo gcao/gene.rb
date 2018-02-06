@@ -80,7 +80,7 @@ describe Gene::Lang::Compiler do
           var $result;
           ($result = ($context.get_member("a") + $context.get_member("b")));
           return $result;
-        });
+        }));
         return $result;
       })($root_context);
     JAVASCRIPT

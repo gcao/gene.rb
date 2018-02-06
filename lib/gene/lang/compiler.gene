@@ -45,6 +45,8 @@
       (compile_assert data)
     else_if ([:+ :==] .include (data .get 0))
       (compile_binary data)
+    else
+      (compile_invocation data)
     )
   )
 )
@@ -108,4 +110,14 @@
       (:$result = (%compile_ item))
     )
   ))
+)
+
+(fn compile_invocation data
+  (match (name args...) data)
+  (::
+    ((($context .get_member) <- (%= (name .to_s))
+      .invoke) <-
+      (%expand (args .map (fnx arg (compile_ arg))))
+    )
+  )
 )
