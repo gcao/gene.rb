@@ -27,7 +27,6 @@ describe Gene::Lang::Compiler do
     JAVASCRIPT
 
     ' # assert
-      # !focus!
       # !throw-error!
       (assert false)
     ' =>
@@ -68,6 +67,7 @@ describe Gene::Lang::Compiler do
     JAVASCRIPT
 
     ' # Function
+      # !focus!
       (fn f [a b]
         (a + b)
       )
@@ -78,7 +78,7 @@ describe Gene::Lang::Compiler do
         var $result;
         ($result = $context.fn("f", ["a", "b"], function($context) {
           var $result;
-          ($result = $context.get_member("a") + $context.get_member("b"));
+          ($result = ($context.get_member("a") + $context.get_member("b")));
           return $result;
         });
         return $result;

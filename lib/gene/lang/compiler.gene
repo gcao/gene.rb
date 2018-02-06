@@ -43,7 +43,7 @@
       (compile_fn data)
     else_if ((data .type) == :assert)
       (compile_assert data)
-    else_if ([:==] .include (data .get 0))
+    else_if ([:+ :==] .include (data .get 0))
       (compile_binary data)
     )
   )
@@ -93,8 +93,19 @@
       (%args .map (fnx arg (arg .to_s)))
       (fnx $context
         (var $result)
+        (%expand (compile_stmts stmts))
         (return $result)
       )
     )
   )
+)
+
+(fn compile_stmts stmts
+  (stmts .map (fnx [item i]
+    (if (i < ((stmts .size) - 1))
+      (compile_ item)
+    else
+      (:$result = (%compile_ item))
+    )
+  ))
 )

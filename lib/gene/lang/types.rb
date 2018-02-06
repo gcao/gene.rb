@@ -163,9 +163,9 @@ module Gene::Lang
 
     def self.from_gene_base base_object
       obj = new
-      obj.properties = base_object.properties
+      obj.properties = base_object.properties.clone
       obj.set '#type', base_object.type
-      obj.data = base_object.data
+      obj.data = base_object.data.clone
       obj
     end
 

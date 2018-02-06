@@ -305,44 +305,51 @@
 (class String
   ^^global
 
-  (method type _ "String")
+  (method type _ :String)
   (method data _ [self])
 )
 
 (class Boolean
   ^^global
 
-  (method type _ "Boolean")
+  (method type _ :Boolean)
   (method data _ [self])
 )
 
 (class Symbol
   ^^global
 
-  (method type _ "Symbol")
+  (method type _ :Symbol)
   (method data _ [self])
 )
 
 (class Regexp
   ^^global
 
-  (method type _ "Regexp")
+  (method type _ :Regexp)
   (method data _ [self])
 )
 
 (class Range
   ^^global
 
-  (method type _ "Range")
+  (method type _ :Range)
   (method data _
     [($invoke self 'begin') ($invoke self 'end')]
   )
 )
 
+(class Null
+  ^^global
+
+  (method type _ :null)
+  (method data _ [])
+)
+
 (class Undefined
   ^^global
 
-  (method type _ "Undefined")
+  (method type _ :undefined)
   (method data _ [])
 )
 

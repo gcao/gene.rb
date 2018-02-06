@@ -1918,6 +1918,16 @@ describe Gene::Lang::Interpreter do
     end
 
     it "
+      (fn f a
+        (:: (a (%= (a + 1))))
+      )
+      +assert (((f 1) .get 0) == 2)
+      +assert (((f 2) .get 0) == 3)
+    " do
+      @application.parse_and_process(example.description)
+    end
+
+    it "
       (var a 100)
       (fn f [b c] (b + c))
       +assert ((:: (%f a 200)) == 300)
