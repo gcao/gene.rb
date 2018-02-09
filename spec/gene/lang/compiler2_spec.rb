@@ -110,7 +110,6 @@ describe Gene::Lang::Compiler do
     JAVASCRIPT
 
     ' # If
-      # !pending!
       ((if true 1 else 2) + 3)
     ' =>
     <<-JAVASCRIPT,
