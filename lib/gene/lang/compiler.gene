@@ -143,10 +143,9 @@
 (fn compile_if data
   (var processed (process_if data))
   (::
-    (if (%processed .get 'cond')
-      (%expand (processed .get 'then'))
-    else
-      (%expand (processed .get 'else'))
+    ((%processed .get 'cond') ?
+      (%group_stmts (processed .get 'then'))
+      (%group_stmts (processed .get 'else'))
     )
   )
 )
@@ -168,4 +167,18 @@
 # Must compile to an expression?
 # Has 'return' inside
 (fn compile_for data
+)
+
+(fn group_stmts stmts
+  (if ((stmts .size) < 2)
+    stmts
+  else
+    (var result (new Object []))
+    (result .set '#type' (stmts .get 0))
+    (for (var i 1) (i < (stmts .size)) (i += 1)
+      ((result .data) .push :~)
+      ((result .data) .push (stmts .get i))
+    )
+    result
+  )
 )

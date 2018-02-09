@@ -626,8 +626,9 @@ module Gene::Lang::Handlers
           self: context.self
         )
       elsif data.is_a? Gene::Types::Base and data.type.is_a? Gene::Types::Base
-        data.type = context.process data.type
-        context.process data
+        new_data = data.clone
+        new_data.type = context.process new_data.type
+        context.process new_data
       elsif data.is_a? Gene::Types::Base and data.type.is_a? Gene::Lang::Function
         # TODO: check eval_arguments
         args = data.data.map{|item| context.process item}
