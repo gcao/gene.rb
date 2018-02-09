@@ -45,4 +45,22 @@ describe "Module system" do
   " do
     @application.parse_and_process(example.description, dir: @dir, file: @file)
   end
+
+  describe "Complex usecases" do
+    it "# Circular dependency
+      # Usecase 1: A import from B, B import from A
+      # Usecase 2: A import from B, B import from C and C import from A
+    " do
+      pending
+      @application.parse_and_process(example.description)
+    end
+
+    it "# Easy import and re-export
+      # Usecase 1: Import and export everything
+      # Usecase 2: Import and export everything with prefix
+    " do
+      pending
+      @application.parse_and_process(example.description)
+    end
+  end
 end

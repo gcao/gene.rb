@@ -1,3 +1,5 @@
+(import process_if from './utils')
+
 (fn compile code...
   ^^global
 
@@ -39,6 +41,12 @@
   else_if (data .is Object)
     (if ((data .type) == :var)
       (compile_var data)
+    else_if ((data .type) == :if)
+      (compile_if data)
+    else_if ((data .type) == :for)
+      (compile_for data)
+    else_if ((data .type) == :loop)
+      (compile_loop data)
     else_if ((data .type) == :fn)
       (compile_fn data)
     else_if ((data .type) == :assert)
@@ -115,9 +123,49 @@
 (fn compile_invocation data
   (match (name args...) data)
   (::
-    ((($context .get_member) <- (%= (name .to_s))
+    (((($context .get_member) <- (%= (name .to_s)))
       .invoke) <-
       (%expand (args .map (fnx arg (compile_ arg))))
     )
   )
+)
+
+# Compilation depends on a few scenarios:
+# Is top level statement in function?
+#   If yes, compiles to regular if statement
+#   If is last statement, make sure $result is assigned
+# Must compile to an expression?
+#   Comiles to ternary expression and wrap up with ()
+#   All code inside must be compiled as expression
+# Has 'return' inside
+#   $result must be assigned
+#   Add a statement to check whether result is a return
+(fn compile_if data
+  (var processed (process_if data))
+  (::
+    (if (%processed .get 'cond')
+      (%expand (processed .get 'then'))
+    else
+      (%expand (processed .get 'else'))
+    )
+  )
+)
+
+# Compilation depends on a few scenarios:
+# Is top level statement in function?
+#   If yes, compiles to regular "while(true){}" statement
+#   If no, compiles to expression
+# Must compile to an expression?
+#   Compiles to a function that shares current context
+# Has 'return' inside
+#   $result must be assigned
+#   Add a statement to check whether result is a return
+(fn compile_loop data
+)
+
+# Compilation depends on a few scenarios:
+# Is top level statement in function?
+# Must compile to an expression?
+# Has 'return' inside
+(fn compile_for data
 )

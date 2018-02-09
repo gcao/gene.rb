@@ -650,6 +650,15 @@ describe Gene::Lang::Interpreter do
       result.value.should == 'value'
     end
 
+    it "# Alias
+      (var a 1)
+      (alias a b)
+      (assert (b == 1))
+    " do
+      pending
+      @application.parse_and_process(example.description)
+    end
+
     it "# Define a variable and assign expression result as value
       (var a (1 + 2))
     " do

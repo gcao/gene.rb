@@ -67,7 +67,6 @@ describe Gene::Lang::Compiler do
     JAVASCRIPT
 
     ' # Function
-      # !focus!
       (fn f [a b]
         (a + b)
       )
@@ -86,7 +85,6 @@ describe Gene::Lang::Compiler do
     JAVASCRIPT
 
     ' # Function call
-      # !pending!
       (f 1 2)
     ' =>
     <<-JAVASCRIPT,
@@ -106,7 +104,26 @@ describe Gene::Lang::Compiler do
       var $root_context = $application.create_root_context();
       (function($context) {
         var $result;
-        ($result = true ? a() : b());
+        if (true) {
+          1;
+          $result = 2;
+        } else {
+          3;
+          $result = 4;
+        }
+        return $result;
+      })($root_context);
+    JAVASCRIPT
+
+    ' # If
+      # !pending!
+      ((if true 1 else 2) + 3)
+    ' =>
+    <<-JAVASCRIPT,
+      var $root_context = $application.create_root_context();
+      (function($context) {
+        var $result;
+        ($result = ((true ? 1 : 2) + 3);
         return $result;
       })($root_context);
     JAVASCRIPT
@@ -122,7 +139,6 @@ describe Gene::Lang::Compiler do
       var $root_context = $application.create_root_context();
       (function($context) {
         var $result;
-        ($result = true ? a() : b());
         return $result;
       })($root_context);
     JAVASCRIPT

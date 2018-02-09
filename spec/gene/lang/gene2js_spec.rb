@@ -208,6 +208,38 @@ describe "JavaScript representation in Gene" do
     )
 
     (compile_and_verify
+      (throw a)
+      '
+        throw a;
+      '
+    )
+
+    (compile_and_verify
+      (try
+        1
+        2
+      catch error
+        3
+        4
+      finally
+        5
+        6
+      )
+      '
+        try {
+          1;
+          2;
+        } catch (error) {
+          3;
+          4;
+        } finally {
+          5;
+          6;
+        }
+      '
+    )
+
+    (compile_and_verify
       (if a 1 2)
       '
         if (a) {

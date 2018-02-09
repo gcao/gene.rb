@@ -23,8 +23,29 @@ describe Gene::Parser do
     'true'     => true,
     'truea'    => Gene::Types::Symbol.new('truea'),
     'false'    => false,
+
+    # Date
+    # '2010-01-01'                      => false,
+    # Date + hour + minute (local)
+    # '2010-01-01T10:00'                => false,
+    # Date + hour + minute (UTC)
+    # '2010-01-01T10:00Z'               => false,
+    # Date + hour + minute + second (local)
+    # '2010-01-01T10:00:00'             => false,
+    # Date + hour + minute + second (UTC)
+    # '2010-01-01T10:00:00Z'            => false,
+    # Date + hour + minute + second (Timezone is UTC+5)
+    # '2010-01-01T10:00:00Z+5'          => false,
+    # Date + hour + minute + second (Timezone is UTC-5)
+    # '2010-01-01T10:00:00Z-05'         => false,
+    # Date + hour + minute + second (Timezone is UTC-5)
+    # '2010-01-01T10:00:00Z-05:00'      => false,
+    # Date + hour + minute + second + fraction of second (Timezone is UTC-5)
+    # '2010-01-01T10:00:00.123Z-05:00'  => false,
+
     'null'     => nil,
     'undefined'=> Gene::UNDEFINED,
+    # 'void     '=> Gene::UNDEFINED,
     '#_'       => Gene::PLACEHOLDER,
     # '#a'       => Gene::Types::Ref.new('a'),
     '\#'       => Gene::Types::Symbol.new('#', true),

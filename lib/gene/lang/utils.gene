@@ -1,0 +1,45 @@
+(fn process_if data
+  (var if_cond (data .get 0))
+  (var if_stmts [])
+  (var else_ifs [])
+  (var else_stmts [])
+
+  (var state :if)
+  (var cond)
+  (var stmts [])
+  (for (var i 1) (i < (data .size)) (i += 1)
+    (var item (data .get i))
+
+    (if (item == :else_if)
+      (if (state == :else_if)
+        (else_ifs .push [cond stmts])
+      )
+      (state = :else_if)
+      (i += 1)
+      (cond  = (data .get i))
+      (stmts = [])
+
+    else_if (item == :else)
+      (if (state == :else_if)
+        (else_ifs .push [cond stmts])
+      )
+      (state = :else)
+
+    else
+      (if (state == :if)
+        (if_stmts .push item)
+      else_if (state == :else_if)
+        (stmts .push item)
+      else_if (state == :else)
+        (else_stmts .push item)
+      )
+    )
+  )
+
+  (:if
+    ^cond     %if_cond
+    ^then     %if_stmts
+    ^else_ifs %else_ifs
+    ^else     %else_stmts
+  )
+)

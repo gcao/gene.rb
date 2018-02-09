@@ -39,6 +39,8 @@
       else
         (compile_for data)
       )
+    else_if ((data .type) == :try)
+      (compile_try_catch data)
     else_if (BINARY_IDS .include (data .get 0))
       (compile_binary data)
     else_if ((data .get 0) == :?)
@@ -52,7 +54,7 @@
     else_if ([:@] .include (data .get 0))
       (match (first _ second) data)
       ("" (compile first) "[" (compile second) "]")
-    else_if ([:! :return] .include (data .type))
+    else_if ([:! :return :throw] .include (data .type))
       ("" (data .type) " " (compile (data .get 0)))
     else
       ("TODO: " data)
@@ -266,6 +268,59 @@
   (match [name _ list stmts...] data)
   ("for (var " name " in " (compile list) ") {\n"
     (compile_stmts stmts)
+    "}"
+  )
+)
+
+(fn compile_try_catch data
+  (var try_stmts [])
+
+  (var has_catch)
+  (var error_var)
+  (var catch_stmts [])
+
+  (var has_finally)
+  (var finally_stmts [])
+
+  (var state :try)
+  ((data .data) .each (fnx item
+    (if (state == :try)
+      (if (item == :catch)
+        (state = :catch)
+        (has_catch = true)
+      else_if (item == :finally)
+        (state = :finally)
+        (has_finally = true)
+      else
+        (try_stmts .push item)
+      )
+    else_if (state == :catch)
+      (error_var = item)
+      (state = :catch_stmts)
+    else_if (state == :catch_stmts)
+      (if (item == :finally)
+        (state = :finally)
+        (has_finally = true)
+      else
+        (catch_stmts .push item)
+      )
+    else_if (state == :finally)
+      (finally_stmts .push item)
+    )
+  ))
+
+  # TODO: throw error if both has_catch and has_finally are false
+
+  ("try {\n"
+    (compile_stmts try_stmts)
+    (if has_catch
+      "} catch (" error_var ") {\n"
+      (compile_stmts catch_stmts)
+    )
+    (if has_finally
+      "} finally {\n"
+      (compile_stmts finally_stmts)
+    )
     "}"
   )
 )
