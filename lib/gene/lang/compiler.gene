@@ -90,8 +90,15 @@
 
 (fn compile_binary data
   (match (left op right) data)
-  (::
-    ((%compile_ left) %op (%compile_ right))
+
+  (if (op == :++)
+    (::
+      (($context .set_member) <- (%left .to_s) ((($context .get_member) <- (%left .to_s)) + 1))
+    )
+  else
+    (::
+      ((%compile_ left) %op (%compile_ right))
+    )
   )
 )
 
@@ -107,6 +114,12 @@
         (return $result)
       )
     )
+  )
+)
+
+(fn compile_fnxx data
+  (::
+    TODO
   )
 )
 
@@ -169,11 +182,11 @@
 (fn compile_for data
   (match [init cond update body...] data)
   (::
-    ((Gene .for) <- (fnx $context
+    ((fnxx
       (for (%compile_ init) (%compile_ cond) (%compile_ update)
         (%expand (compile_stmts body))
       )
-    ))
+    ) <-)
   )
 )
 

@@ -178,7 +178,7 @@ namespace Gene {
       return new_context;
     }
 
-    public ["var"](name: string, value: any) {
+    public ['var'](name: string, value: any) {
       this.namespace.var(name, value);
     }
 
@@ -249,5 +249,9 @@ namespace Gene {
     }
   }
 }
+
+Gene['throw'] = function(error: string) {
+  throw error;
+};
 
 let $application = new Gene.Application();

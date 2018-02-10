@@ -22,9 +22,12 @@
       }
     ],
     // Gene customizations BEGIN
+    "function-name": false,
     "no-any": false,
+    "no-function-expression": false,
     "no-reserved-keywords": false,
     "variable-name": false,
+    "no-string-literal": false,
     "no-suspicious-comment": false,
     // Gene customizations END
     "max-classes-per-file": false,

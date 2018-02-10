@@ -166,6 +166,14 @@ describe "JavaScript representation in Gene" do
     )
 
     (compile_and_verify
+      ((fnxx) <-)
+      '
+        (function() {
+        })();
+      '
+    )
+
+    (compile_and_verify
       (new A a b)
       '
         new A(a, b);

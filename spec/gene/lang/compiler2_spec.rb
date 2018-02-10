@@ -78,6 +78,49 @@ describe Gene::Lang::Compiler do
       })($root_context);
     JAVASCRIPT
 
+    ' # Variables
+      # !focus!
+      (a ++)
+    ' =>
+    <<-JAVASCRIPT,
+      var $root_context = $application.create_root_context();
+      (function($context) {
+        var $result;
+        ($result = $context.set_member("a", ($context.get_member("a") + 1)));
+        return $result;
+      })($root_context);
+    JAVASCRIPT
+
+    ' # Variables
+      # !pending!
+      (fnxx
+        (return 1)
+        2
+      )
+    ' =>
+    <<-JAVASCRIPT,
+      var $root_context = $application.create_root_context();
+      (function($context) {
+        var $result;
+        ($result = function() {
+          try {
+            var $result;
+            ($result = 1);
+            Gene.throw("#return");
+            ($result = 2);
+            return $result;
+          } catch (error) {
+            if (error == "#return") {
+              return $result;
+            } else {
+              throw error;
+            }
+          }
+        });
+        return $result;
+      })($root_context);
+    JAVASCRIPT
+
     ' # Function
       (fn f [a b]
         (a + b)
@@ -108,6 +151,38 @@ describe Gene::Lang::Compiler do
       })($root_context);
     JAVASCRIPT
 
+    ' # Anonymous function
+      # !pending!
+      (fnx [a b])
+    ' =>
+    <<-JAVASCRIPT,
+      var $root_context = $application.create_root_context();
+      (function($context) {
+        var $result;
+        ($result = $context.fnx(["a", "b"], function($context) {
+          var $result;
+          return $result;
+        }));
+        return $result;
+      })($root_context);
+    JAVASCRIPT
+
+    ' # Dummy function
+      # !pending!
+      (fnxx)
+    ' =>
+    <<-JAVASCRIPT,
+      var $root_context = $application.create_root_context();
+      (function($context) {
+        var $result;
+        ($result = $context.fnxx(function($context) {
+          var $result;
+          return $result;
+        }));
+        return $result;
+      })($root_context);
+    JAVASCRIPT
+
     ' # If
       (if true 1 2 else 3 4)
     ' =>
@@ -133,7 +208,6 @@ describe Gene::Lang::Compiler do
     JAVASCRIPT
 
     ' # For
-      # !focus!
       (for (var i 0) (i < 10) true
         1
         2
@@ -143,12 +217,12 @@ describe Gene::Lang::Compiler do
       var $root_context = $application.create_root_context();
       (function($context) {
         var $result;
-        ($result = Gene.for(function($context) {
+        ($result = (function() {
           for ($context.var("i", 0); ($context.get_member("i") < 10); true) {
             1;
             2;
           }
-        }));
+        })());
         return $result;
       })($root_context);
     JAVASCRIPT
