@@ -194,6 +194,13 @@ describe "JavaScript representation in Gene" do
     )
 
     (compile_and_verify
+      (a ++)
+      '
+        (a ++);
+      '
+    )
+
+    (compile_and_verify
       (! a)
       '
         ! a;

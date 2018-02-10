@@ -1,5 +1,7 @@
 (import process_if from './utils')
 
+(var BINARY_IDS (:: [= + - * / < <= > >= == != ++ --]))
+
 (fn compile code...
   ^^global
 
@@ -38,6 +40,8 @@
     data
   else_if (data .is Symbol)
     (compile_symbol data)
+  else_if (data .is Undefined)
+    undefined
   else_if (data .is Object)
     (if ((data .type) == :var)
       (compile_var data)
@@ -51,7 +55,7 @@
       (compile_fn data)
     else_if ((data .type) == :assert)
       (compile_assert data)
-    else_if ([:+ :==] .include (data .get 0))
+    else_if (BINARY_IDS .include (data .get 0))
       (compile_binary data)
     else
       (compile_invocation data)
@@ -110,9 +114,9 @@
   )
 )
 
-(fn compile_stmts stmts
+(fn compile_stmts [^^assign_to_result stmts]
   (stmts .map (fnx [item i]
-    (if (i < ((stmts .size) - 1))
+    (if ((! assign_to_result) || (i < ((stmts .size) - 1)))
       (compile_ item)
     else
       (:$result = (%compile_ item))
@@ -167,11 +171,19 @@
 # Must compile to an expression?
 # Has 'return' inside
 (fn compile_for data
+  (match [init cond update body...] data)
+  (::
+    ((Gene .for) <- (fnx $context
+      (for (%compile_ init) (%compile_ cond) (%compile_ update)
+        (%expand (compile_stmts ^!assign_to_result body))
+      )
+    ))
+  )
 )
 
 (fn group_stmts stmts
   (if ((stmts .size) < 2)
-    stmts
+    (stmts .get 0)
   else
     (var result (new Object []))
     (result .set '#type' (stmts .get 0))

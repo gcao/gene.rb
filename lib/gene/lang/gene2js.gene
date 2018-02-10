@@ -314,12 +314,10 @@
   ("try {\n"
     (compile_stmts try_stmts)
     (if has_catch
-      "} catch (" error_var ") {\n"
-      (compile_stmts catch_stmts)
+      ("} catch (" error_var ") {\n" (compile_stmts catch_stmts))
     )
     (if has_finally
-      "} finally {\n"
-      (compile_stmts finally_stmts)
+      ("} finally {\n" (compile_stmts finally_stmts))
     )
     "}"
   )

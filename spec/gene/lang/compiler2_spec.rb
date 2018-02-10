@@ -97,7 +97,6 @@ describe Gene::Lang::Compiler do
     JAVASCRIPT
 
     ' # If
-      # !focus!
       (if true 1 2 else 3 4)
     ' =>
     <<-JAVASCRIPT,
@@ -116,14 +115,14 @@ describe Gene::Lang::Compiler do
       var $root_context = $application.create_root_context();
       (function($context) {
         var $result;
-        ($result = ((true ? 1 : 2) + 3);
+        ($result = ((true ? 1 : 2) + 3));
         return $result;
       })($root_context);
     JAVASCRIPT
 
     ' # For
-      # !pending!
-      (for (var i 0) (i < 10) (i ++)
+      # !focus!
+      (for (var i 0) (i < 10) true
         1
         2
       )
@@ -132,12 +131,12 @@ describe Gene::Lang::Compiler do
       var $root_context = $application.create_root_context();
       (function($context) {
         var $result;
-        Gene.for(function($context) {
-          for($context.var("i", 0); ($context.get_member("i") < 10); (i ++)) {
+        ($result = Gene.for(function($context) {
+          for ($context.var("i", 0); ($context.get_member("i") < 10); true) {
             1;
             2;
           }
-        });
+        }));
         return $result;
       })($root_context);
     JAVASCRIPT
