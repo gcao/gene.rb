@@ -58,30 +58,12 @@
   )
 
   (method class _
-    (if ($invoke self 'is_a?' (get_native_class 'Gene::Types::Stream'))
-      Stream
-    else_if ($invoke self 'is_a?' (get_native_class 'Array'))
-      Array
-    else_if ($invoke self 'is_a?' (get_native_class 'Hash'))
-      Hash
-    else_if ($invoke self 'is_a?' (get_native_class 'Gene::Types::Base'))
+    (if ($invoke self 'is_a?' (get_native_class 'Gene::Types::Base'))
       Object
     else_if ($invoke self 'is_a?' (get_native_class 'String'))
       String
     else_if ($invoke self 'is_a?' (get_native_class 'Gene::Types::Symbol'))
       Symbol
-    else_if ($invoke self 'is_a?' (get_native_class 'Fixnum'))
-      Int
-    else_if ([true false] .include self)
-      Boolean
-    else_if (self == null)
-      Null
-    else_if (self == undefined)
-      Undefined
-    else_if ($invoke self 'is_a?' (get_native_class 'Range'))
-      Range
-    else_if ($invoke self 'is_a?' (get_native_class 'Regexp'))
-      Regexp
     else_if ($invoke self 'is_a?' (get_native_class 'Gene::Lang::Class'))
       Class
     else_if ($invoke self 'is_a?' (get_native_class 'Gene::Lang::Function'))
@@ -93,6 +75,24 @@
       else
         cls
       )
+    else_if ($invoke self 'is_a?' (get_native_class 'Fixnum'))
+      Int
+    else_if ([true false] .include self)
+      Boolean
+    else_if (self == null)
+      Null
+    else_if ($invoke self 'is_a?' (get_native_class 'Gene::Types::Stream'))
+      Stream
+    else_if ($invoke self 'is_a?' (get_native_class 'Array'))
+      Array
+    else_if ($invoke self 'is_a?' (get_native_class 'Hash'))
+      Hash
+    else_if (self == undefined)
+      Undefined
+    else_if ($invoke self 'is_a?' (get_native_class 'Range'))
+      Range
+    else_if ($invoke self 'is_a?' (get_native_class 'Regexp'))
+      Regexp
     else
       (println "(" ($invoke self 'inspect') " .class)")
       Object
