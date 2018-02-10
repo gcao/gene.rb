@@ -60,8 +60,20 @@ describe Gene::Lang::Compiler do
       var $root_context = $application.create_root_context();
       (function($context) {
         var $result;
-        ($result = $context.var("a", 1));
+        $context.var("a", 1);
         ($result = ($context.get_member("a") == 1));
+        return $result;
+      })($root_context);
+    JAVASCRIPT
+
+    ' # Variables
+      (a + b)
+    ' =>
+    <<-JAVASCRIPT,
+      var $root_context = $application.create_root_context();
+      (function($context) {
+        var $result;
+        ($result = ($context.get_member("a") + $context.get_member("b")));
         return $result;
       })($root_context);
     JAVASCRIPT

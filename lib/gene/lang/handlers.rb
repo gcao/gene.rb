@@ -28,6 +28,7 @@ module Gene::Lang::Handlers
   end
 
   PLACEHOLDER = Gene::Types::Symbol.new('_')
+  NOT         = Gene::Types::Symbol.new('!')
   PROP_NAME   = Gene::Types::Symbol.new('@')
   APPLICATION = Gene::Types::Symbol.new('$application')
   CONTEXT     = Gene::Types::Symbol.new('$context')
@@ -211,6 +212,8 @@ module Gene::Lang::Handlers
           args   = data.data[2..-1].to_a.map {|item| context.process(item) }
           args   = expand args
           target.send method, *args
+        elsif NOT === data
+          ! context.process(data.data[0])
         elsif PROP_NAME === data
           Gene::Lang::PropertyName.new context.process(data.data[0])
         elsif DO === data

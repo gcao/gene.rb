@@ -14,11 +14,7 @@
     (var $root_context ($application . (create_root_context <-)))
     ((fnx $context
       (var $result)
-      (%expand
-        (code .map (fnx item
-          (:$result = (%compile_ item))
-        ))
-      )
+      (%expand (compile_stmts ^^assign_to_result code))
       (return $result)
     ) <- $root_context)
   )
@@ -107,7 +103,7 @@
       (%args .map (fnx arg (arg .to_s)))
       (fnx $context
         (var $result)
-        (%expand (compile_stmts stmts))
+        (%expand (compile_stmts ^^assign_to_result stmts))
         (return $result)
       )
     )
@@ -175,7 +171,7 @@
   (::
     ((Gene .for) <- (fnx $context
       (for (%compile_ init) (%compile_ cond) (%compile_ update)
-        (%expand (compile_stmts ^!assign_to_result body))
+        (%expand (compile_stmts body))
       )
     ))
   )

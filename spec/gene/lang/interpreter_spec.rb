@@ -620,6 +620,7 @@ describe Gene::Lang::Interpreter do
   end
 
   describe "Boolean operations" do
+    it("((! true)         == false)") { @application.parse_and_process(example.description).should be_true }
     it("((true  && true)  == true)")  { @application.parse_and_process(example.description).should be_true }
     it("((true  && false) == false)") { @application.parse_and_process(example.description).should be_true }
     it("((false && false) == false)") { @application.parse_and_process(example.description).should be_true }
