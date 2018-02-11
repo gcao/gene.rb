@@ -45,7 +45,7 @@ describe Gene::Parser do
 
     'null'     => nil,
     'undefined'=> Gene::UNDEFINED,
-    # 'void     '=> Gene::UNDEFINED,
+    'void'     => Gene::UNDEFINED,
     '#_'       => Gene::PLACEHOLDER,
     # '#a'       => Gene::Types::Ref.new('a'),
     '\#'       => Gene::Types::Symbol.new('#', true),

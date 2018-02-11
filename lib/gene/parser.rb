@@ -50,7 +50,7 @@ module Gene
     TRUE                  = /true#{SEP_OR_END}/
     FALSE                 = /false#{SEP_OR_END}/
     NULL                  = /null#{SEP_OR_END}/
-    UNDEFINED             = /undefined#{SEP_OR_END}/
+    UNDEFINED             = /undefined|void#{SEP_OR_END}/
     PLACEHOLDER           = /#_#{SEP_OR_END}/
     IGNORE                = %r(
       (?:

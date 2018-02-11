@@ -67,26 +67,21 @@ describe Gene::Lang::Compiler do
       )
     ' =>
     <<-JAVASCRIPT,
-      var $root_context = $application.create_root_context();
-      (function($context) {
-        var $result;
-        ($result = function() {
-          try {
-            var $result;
-            ($result = 1);
-            Gene.throw("#return");
-            ($result = 2);
+      function() {
+        try {
+          var $result;
+          ($result = 1);
+          Gene.throw("#return");
+          ($result = 2);
+          return $result;
+        } catch (error) {
+          if (error == "#return") {
             return $result;
-          } catch (error) {
-            if (error == "#return") {
-              return $result;
-            } else {
-              throw error;
-            }
+          } else {
+            throw error;
           }
-        });
-        return $result;
-      })($root_context);
+        }
+      }
     JAVASCRIPT
 
     ' # Function
@@ -110,35 +105,23 @@ describe Gene::Lang::Compiler do
     JAVASCRIPT
 
     ' # Anonymous function
-      # !pending!
       (fnx [a b])
     ' =>
     <<-JAVASCRIPT,
-      var $root_context = $application.create_root_context();
-      (function($context) {
+      $context.fn("", ["a", "b"], function($context) {
         var $result;
-        ($result = $context.fnx(["a", "b"], function($context) {
-          var $result;
-          return $result;
-        }));
         return $result;
-      })($root_context);
+      });
     JAVASCRIPT
 
     ' # Dummy function
-      # !pending!
       (fnxx)
     ' =>
     <<-JAVASCRIPT,
-      var $root_context = $application.create_root_context();
-      (function($context) {
+      $context.fn("", [], function($context) {
         var $result;
-        ($result = $context.fnxx(function($context) {
-          var $result;
-          return $result;
-        }));
         return $result;
-      })($root_context);
+      });
     JAVASCRIPT
 
     ' # If
@@ -161,6 +144,22 @@ describe Gene::Lang::Compiler do
           2;
         }
       })();
+    JAVASCRIPT
+
+    ' # Multiple statements with root context
+      # !with-root-context!
+      # !throw-error!
+      (var a 1)
+      (assert ((a + 1) == 3))
+    ' =>
+    <<-JAVASCRIPT,
+      var $root_context = $application.create_root_context();
+      (function($context) {
+        var $result;
+        $context.var("a", 1);
+        ($result = Gene.assert((($context.get_member("a") + 1) == 3)));
+        return $result;
+      })($root_context);
     JAVASCRIPT
 
   }
