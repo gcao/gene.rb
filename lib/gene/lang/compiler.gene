@@ -2,21 +2,27 @@
 
 (var BINARY_IDS (:: [= + - * / < <= > >= == != ++ --]))
 
-(fn compile code...
+(fn compile [^^with_root_context code...]
   ^^global
 
-  # Empty code becomes [Stream] for some reason
-  (if ((code .get 0) .is Stream)
-    (code = (code .get 0))
-  )
-  (gene2js_
-    ^^#render_args
-    (var $root_context ($application . (create_root_context <-)))
-    ((fnx $context
-      (var $result)
-      (%expand (compile_stmts ^^assign_to_result code))
-      (return $result)
-    ) <- $root_context)
+  (if with_root_context
+    # Empty code becomes [Stream] for some reason
+    (if ((code .get 0) .is Stream)
+      (code = (code .get 0))
+    )
+    (gene2js_
+      ^^#render_args
+      (var $root_context ($application . (create_root_context <-)))
+      ((fnx $context
+        (var $result)
+        (%expand (compile_stmts ^^assign_to_result code))
+        (return $result)
+      ) <- $root_context)
+    )
+  else
+    (gene2js
+      (expand (compile_stmts code))
+    )
   )
 )
 

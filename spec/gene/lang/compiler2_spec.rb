@@ -11,12 +11,9 @@ describe Gene::Lang::Compiler do
     @ctx.eval File.read "gene-js/build/src/index.js"
   end
 
-  # In order to make "if", "for" etc to return result (everything is expression)
-  # Change last statement of if/for block to "$result = <last expression>;"
-  # Change break statement to "$result = <arg passed to break>; break;"
-
-  {
+  testcases = {
     ' # Compiles empty code to below output
+      # !with-root-context!
     ' =>
     <<-JAVASCRIPT,
       var $root_context = $application.create_root_context();
@@ -31,64 +28,35 @@ describe Gene::Lang::Compiler do
       (assert false)
     ' =>
     <<-JAVASCRIPT,
-      var $root_context = $application.create_root_context();
-      (function($context) {
-        var $result;
-        ($result = Gene.assert(false));
-        return $result;
-      })($root_context);
+      Gene.assert(false);
+    JAVASCRIPT
+
+    ' # Variables
+      a
+    ' =>
+    <<-JAVASCRIPT,
+      $context.get_member("a");
+    JAVASCRIPT
+
+    ' # Variables
+      (1 == 1)
+    ' =>
+    <<-JAVASCRIPT,
+      (1 == 1);
     JAVASCRIPT
 
     ' # Variables
       (var a 1)
     ' =>
     <<-JAVASCRIPT,
-      var $root_context = $application.create_root_context();
-      (function($context) {
-        var $result;
-        ($result = $context.var("a", 1));
-        return $result;
-      })($root_context);
+      $context.var("a", 1);
     JAVASCRIPT
 
     ' # Variables
-      # !eval-to-true!
-      (var a 1)
-      (a == 1)
-    ' =>
-    <<-JAVASCRIPT,
-      var $root_context = $application.create_root_context();
-      (function($context) {
-        var $result;
-        $context.var("a", 1);
-        ($result = ($context.get_member("a") == 1));
-        return $result;
-      })($root_context);
-    JAVASCRIPT
-
-    ' # Variables
-      (a + b)
-    ' =>
-    <<-JAVASCRIPT,
-      var $root_context = $application.create_root_context();
-      (function($context) {
-        var $result;
-        ($result = ($context.get_member("a") + $context.get_member("b")));
-        return $result;
-      })($root_context);
-    JAVASCRIPT
-
-    ' # Variables
-      # !focus!
       (a ++)
     ' =>
     <<-JAVASCRIPT,
-      var $root_context = $application.create_root_context();
-      (function($context) {
-        var $result;
-        ($result = $context.set_member("a", ($context.get_member("a") + 1)));
-        return $result;
-      })($root_context);
+      $context.set_member("a", ($context.get_member("a") + 1));
     JAVASCRIPT
 
     ' # Variables
@@ -127,28 +95,18 @@ describe Gene::Lang::Compiler do
       )
     ' =>
     <<-JAVASCRIPT,
-      var $root_context = $application.create_root_context();
-      (function($context) {
+      $context.fn("f", ["a", "b"], function($context) {
         var $result;
-        ($result = $context.fn("f", ["a", "b"], function($context) {
-          var $result;
-          ($result = ($context.get_member("a") + $context.get_member("b")));
-          return $result;
-        }));
+        ($result = ($context.get_member("a") + $context.get_member("b")));
         return $result;
-      })($root_context);
+      });
     JAVASCRIPT
 
     ' # Function call
       (f 1 2)
     ' =>
     <<-JAVASCRIPT,
-      var $root_context = $application.create_root_context();
-      (function($context) {
-        var $result;
-        ($result = $context.get_member("f").invoke(1, 2));
-        return $result;
-      })($root_context);
+      $context.get_member("f").invoke(1, 2);
     JAVASCRIPT
 
     ' # Anonymous function
@@ -187,24 +145,7 @@ describe Gene::Lang::Compiler do
       (if true 1 2 else 3 4)
     ' =>
     <<-JAVASCRIPT,
-      var $root_context = $application.create_root_context();
-      (function($context) {
-        var $result;
-        ($result = (true ? (1, 2) : (3, 4)));
-        return $result;
-      })($root_context);
-    JAVASCRIPT
-
-    ' # If
-      ((if true 1 else 2) + 3)
-    ' =>
-    <<-JAVASCRIPT,
-      var $root_context = $application.create_root_context();
-      (function($context) {
-        var $result;
-        ($result = ((true ? 1 : 2) + 3));
-        return $result;
-      })($root_context);
+      (true ? (1, 2) : (3, 4));
     JAVASCRIPT
 
     ' # For
@@ -214,21 +155,23 @@ describe Gene::Lang::Compiler do
       )
     ' =>
     <<-JAVASCRIPT,
-      var $root_context = $application.create_root_context();
-      (function($context) {
-        var $result;
-        ($result = (function() {
-          for ($context.var("i", 0); ($context.get_member("i") < 10); true) {
-            1;
-            2;
-          }
-        })());
-        return $result;
-      })($root_context);
+      (function() {
+        for ($context.var("i", 0); ($context.get_member("i") < 10); true) {
+          1;
+          2;
+        }
+      })();
     JAVASCRIPT
 
-  }.each do |input, result|
-    next if ENV['focus'] and not input.include? '!focus!'
+  }
+
+  focus = testcases.keys.find {|key| key.include? '!focus!' }
+  if focus
+    puts "\nRun focused tests only!\n"
+  end
+
+  testcases.each do |input, result|
+    next if focus and not input.include? '!focus!'
 
     it input do
       pending if input.index('!pending!') and not input.include? '!focus!'
@@ -236,7 +179,14 @@ describe Gene::Lang::Compiler do
       parsed = Gene::Parser.parse(input)
       @application.global_namespace.set_member('$parsed_code', parsed)
 
-      output = @application.parse_and_process('(compile $parsed_code)')
+      code =
+        if input.include?('!with-root-context!')
+          '(compile ^^with_root_context $parsed_code)'
+        else
+          '(compile $parsed_code)'
+        end
+
+      output = @application.parse_and_process(code)
       compare_code output, result
 
       if input.index('!throw-error!')
