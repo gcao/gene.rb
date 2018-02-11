@@ -60,28 +60,26 @@ describe Gene::Lang::Compiler do
     JAVASCRIPT
 
     ' # Variables
-      # !pending!
       (fnxx
         (return 1)
         2
       )
     ' =>
     <<-JAVASCRIPT,
-      function() {
+      $context.fn("", [], function($context) {
         try {
           var $result;
-          ($result = 1);
-          Gene.throw("#return");
+          (($result = 1), Gene.throw("#return"));
           ($result = 2);
           return $result;
         } catch (error) {
-          if (error == "#return") {
+          if ((error == "#return")) {
             return $result;
           } else {
             throw error;
           }
         }
-      }
+      });
     JAVASCRIPT
 
     ' # Function

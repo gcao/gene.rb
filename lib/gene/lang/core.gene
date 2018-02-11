@@ -283,6 +283,10 @@
     ($invoke self 'keys')
   )
 
+  (method values _
+    ($invoke self 'values')
+  )
+
   (method map f
     ((.keys) .map
       ((fnx key

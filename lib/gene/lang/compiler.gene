@@ -45,6 +45,8 @@
       (compile_var data)
     else_if ((data .type) == :if)
       (compile_if data)
+    else_if ((data .type) == :return)
+      (compile_return data)
     else_if ((data .type) == :fn)
       (compile_fn data)
     else_if ((data .type) == :fnx)
@@ -148,10 +150,32 @@
       ""
       []
       (fnx $context
-        (var $result)
-        (%expand (compile_stmts ^^assign_to_result (data .data)))
-        (return $result)
+        (%if (has_return data)
+          (:try
+            (var $result)
+            (%expand (compile_stmts ^^assign_to_result (data .data)))
+            (return $result)
+          catch error
+            (if (error == "#return")
+              (return $result)
+            else
+              (throw error)
+            )
+          )
+        else
+          (:var $result)
+          (expand (compile_stmts ^^assign_to_result (data .data)))
+          (:return $result)
+        )
       )
+    )
+  )
+)
+
+(fn compile_return data
+  (::
+    (($result = (%data .get 0)) ~
+      ((Gene .throw) <- "#return")
     )
   )
 )
@@ -234,5 +258,19 @@
       ((result .data) .push (stmts .get i))
     )
     result
+  )
+)
+
+(fn has_return data
+  (if ((data .class) == Object)
+    (if ((data .type) == :return)
+      true
+    else
+      ((has_return (data .data)) || (has_return (data .properties)))
+    )
+  else_if (data .is Array)
+    (data .any (fnx item (has_return item)))
+  else_if (data .is Hash)
+    ((data .values) .any (fnx item (has_return item)))
   )
 )
