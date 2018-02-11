@@ -137,6 +137,20 @@ describe Gene::Lang::Compiler do
     JAVASCRIPT
 
     ' # If
+      (if true 1 2)
+    ' =>
+    <<-JAVASCRIPT,
+      (true ? (1, 2) : undefined);
+    JAVASCRIPT
+
+    ' # If...else
+      (if true 1 2 else 3 4)
+    ' =>
+    <<-JAVASCRIPT,
+      (true ? (1, 2) : (3, 4));
+    JAVASCRIPT
+
+    ' # If...else_if
       (if true 1 2 else 3 4)
     ' =>
     <<-JAVASCRIPT,
@@ -158,18 +172,39 @@ describe Gene::Lang::Compiler do
       })();
     JAVASCRIPT
 
-    ' # Multiple statements with root context
+    ' # Complex
       # !with-root-context!
-      # !throw-error!
+      # !eval!
       (var a 1)
-      (assert ((a + 1) == 3))
+      (assert ((a + 1) == 2))
     ' =>
     <<-JAVASCRIPT,
       var $root_context = $application.create_root_context();
       (function($context) {
         var $result;
         $context.var("a", 1);
-        ($result = Gene.assert((($context.get_member("a") + 1) == 3)));
+        ($result = Gene.assert((($context.get_member("a") + 1) == 2)));
+        return $result;
+      })($root_context);
+    JAVASCRIPT
+
+    ' # Complex
+      # !with-root-context!
+      # !eval!
+      # !focus!
+      (fn f [a b] (a + b))
+      (assert ((f 1 2) == 3))
+    ' =>
+    <<-JAVASCRIPT,
+      var $root_context = $application.create_root_context();
+      (function($context) {
+        var $result;
+        $context.fn("f", ["a", "b"], function($context) {
+          var $result;
+          ($result = ($context.get_member("a") + $context.get_member("b")));
+          return $result;
+        });
+        ($result = Gene.assert(($context.get_member("f").invoke(1, 2) == 3)));
         return $result;
       })($root_context);
     JAVASCRIPT
@@ -204,12 +239,8 @@ describe Gene::Lang::Compiler do
         lambda {
           @ctx.eval(output)
         }.should raise_error
-      elsif input.index('!eval-to-true!')
-        result = @ctx.eval(output)
-        if not result
-          print_code output
-        end
-        result.should be_true
+      elsif input.index('!eval!')
+        @ctx.eval(output)
       end
     end
   end

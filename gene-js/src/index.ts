@@ -178,16 +178,24 @@ namespace Gene {
       return new_context;
     }
 
-    public ['var'](name: string, value: any) {
-      this.namespace.var(name, value);
-    }
-
     public get_member(name: string) {
       return this.namespace.get_member(name);
     }
 
     public set_member(name: string, value: any) {
       this.namespace.set_member(name, value);
+    }
+
+    public ['var'](name: string, value: any) {
+      this.namespace.var(name, value);
+    }
+
+    public fn(name: string, args: [string], body: Function) {
+      const fn = new Gene.Func(name, args, body);
+      if (name !== "") {
+        this.namespace.var(name, fn);
+      }
+      return fn;
     }
   }
 
