@@ -55,6 +55,8 @@
       (compile_fnxx data)
     else_if ((data .type) == :for)
       (compile_for data)
+    else_if ((data .type) == :throw)
+      (compile_throw data)
     else_if ((data .type) == :loop)
       (compile_loop data)
     else_if ((data .type) == :assert)
@@ -149,23 +151,25 @@
     (($context .fn) <-
       ""
       []
-      (fnx $context
-        (%if (has_return data)
-          (:try
+      (%if (has_return data)
+        (:fnx $context
+          (try
             (var $result)
             (%expand (compile_stmts ^^assign_to_result (data .data)))
             (return $result)
           catch error
-            (if (error == "#return")
-              (return $result)
+            (if (error instanceof (Gene .Return))
+              (return (error .value))
             else
               (throw error)
             )
           )
-        else
-          (:var $result)
-          (expand (compile_stmts ^^assign_to_result (data .data)))
-          (:return $result)
+        )
+      else
+        (:fnx $context
+          (var $result)
+          (%expand (compile_stmts ^^assign_to_result (data .data)))
+          (return $result)
         )
       )
     )
@@ -174,9 +178,13 @@
 
 (fn compile_return data
   (::
-    (($result = (%data .get 0)) ~
-      ((Gene .throw) <- "#return")
-    )
+    ((Gene .return) <- (%data .get 0))
+  )
+)
+
+(fn compile_throw data
+  (::
+    ((Gene .throw) <- (%data .get 0))
   )
 )
 

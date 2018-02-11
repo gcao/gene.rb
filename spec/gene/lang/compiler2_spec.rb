@@ -52,34 +52,25 @@ describe Gene::Lang::Compiler do
       $context.var("a", 1);
     JAVASCRIPT
 
+    ' # Return
+      (return 1)
+    ' =>
+    <<-JAVASCRIPT,
+      Gene.return(1);
+    JAVASCRIPT
+
+    ' # Throw
+      (throw 1)
+    ' =>
+    <<-JAVASCRIPT,
+      Gene.throw(1);
+    JAVASCRIPT
+
     ' # Variables
       (a ++)
     ' =>
     <<-JAVASCRIPT,
       $context.set_member("a", ($context.get_member("a") + 1));
-    JAVASCRIPT
-
-    ' # Variables
-      (fnxx
-        (return 1)
-        2
-      )
-    ' =>
-    <<-JAVASCRIPT,
-      $context.fn("", [], function($context) {
-        try {
-          var $result;
-          (($result = 1), Gene.throw("#return"));
-          ($result = 2);
-          return $result;
-        } catch (error) {
-          if ((error == "#return")) {
-            return $result;
-          } else {
-            throw error;
-          }
-        }
-      });
     JAVASCRIPT
 
     ' # Function
@@ -92,6 +83,29 @@ describe Gene::Lang::Compiler do
         var $result;
         ($result = ($context.get_member("a") + $context.get_member("b")));
         return $result;
+      });
+    JAVASCRIPT
+
+    ' # Function + Return
+      (fnxx
+        (return 1)
+        2
+      )
+    ' =>
+    <<-JAVASCRIPT,
+      $context.fn("", [], function($context) {
+        try {
+          var $result;
+          Gene.return(1);
+          ($result = 2);
+          return $result;
+        } catch (error) {
+          if ((error instanceof Gene.Return)) {
+            return error.value;
+          } else {
+            throw error;
+          }
+        }
       });
     JAVASCRIPT
 

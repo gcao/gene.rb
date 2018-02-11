@@ -218,7 +218,7 @@ namespace Gene {
 
   export class Func extends Base {
     constructor(name: string, args: [string], body: Function) {
-      super(Function);
+      super(Func);
       this.set('name', name);
       this.set('args', args);
       this.set('body', body);
@@ -243,6 +243,17 @@ namespace Gene {
     }
   }
 
+  export class Return extends Base {
+    constructor(value: any) {
+      super(Return);
+      this.set('value', value);
+    }
+
+    get value() {
+      return this.get('value');
+    }
+  }
+
   export function assert(expr: any, message: string) {
     if (!expr) {
       throw message || 'AssertionError';
@@ -250,8 +261,13 @@ namespace Gene {
   }
 }
 
-Gene['throw'] = function(error: string) {
+Gene['throw'] = function(error: any) {
   throw error;
+};
+
+
+Gene['return'] = function(value: any) {
+  throw new Gene.Return(value);
 };
 
 let $application = new Gene.Application();

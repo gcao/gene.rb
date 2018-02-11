@@ -202,6 +202,13 @@ describe "JavaScript representation in Gene" do
     )
 
     (compile_and_verify
+      (a instanceof b)
+      '
+        (a instanceof b);
+      '
+    )
+
+    (compile_and_verify
       (a ++)
       '
         (a ++);

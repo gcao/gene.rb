@@ -3,7 +3,7 @@
   (compile_stmts data)
 )
 
-(var BINARY_IDS (:: [= + - * / < <= > >= == != ++ --]))
+(var BINARY_IDS (:: [= + - * / < <= > >= == != ++ -- instanceof]))
 
 (fn compile data
   (if ((data .class) == Object)
