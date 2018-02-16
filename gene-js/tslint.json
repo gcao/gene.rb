@@ -24,6 +24,7 @@
     // Gene customizations BEGIN
     "function-name": false,
     "no-any": false,
+    "no-conditional-assignment": false,
     "no-function-expression": false,
     "no-reserved-keywords": false,
     "variable-name": false,
