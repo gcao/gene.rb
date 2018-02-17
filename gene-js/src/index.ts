@@ -1,11 +1,19 @@
 namespace Gene {
-  export class Object {
+  export class Base {
+
+    public static from_data(data: any[]) {
+      const obj = new Gene.Base();
+      obj.data = data;
+
+      return obj;
+    }
+
     public class: any;
     public properties: object;
 
-    constructor(_class: any) {
-      this.properties = {};
+    constructor(_class: any = Base) {
       this.class = _class;
+      this.properties = {};
     }
 
     public get(name: string) {
@@ -19,19 +27,19 @@ namespace Gene {
     get data() {
       return this.get('#data');
     }
-    set data(data: [any]) {
+    set data(data: any[]) {
       this.set('#data', data);
     }
 
     public as(klass: any): any {
-      const obj = new Object(klass);
+      const obj = new Base(klass);
       obj.properties = this.properties;
 
       return obj;
     }
   }
 
-  export class Module extends Object {
+  export class Module extends Base {
     constructor(name: string) {
       super(Module);
       this.name = name;
@@ -77,7 +85,7 @@ namespace Gene {
     }
   }
 
-  export class Namespace extends Object {
+  export class Namespace extends Base {
     constructor(name: string, parent: Namespace) {
       super(Namespace);
       this.set('name', name);
@@ -107,7 +115,7 @@ namespace Gene {
     }
   }
 
-  export class Application extends Object {
+  export class Application extends Base {
     constructor() {
       super(Application);
       this.set('global_namespace', new Namespace('global', null));
@@ -125,7 +133,7 @@ namespace Gene {
     }
   }
 
-  export class Context extends Object {
+  export class Context extends Base {
     constructor(application: Application) {
       super(Context);
       this.set('application', application);
@@ -192,6 +200,7 @@ namespace Gene {
 
     public fn(name: string, args: [string], body: Function) {
       const fn = new Gene.Func(name, args, body);
+      fn.args_matcher = new Gene.Matcher(args);
       if (name !== '') {
         this.namespace.var(name, fn);
       }
@@ -200,7 +209,7 @@ namespace Gene {
     }
   }
 
-  export class Scope extends Object {
+  export class Scope extends Base {
     constructor(parent: Scope, inherit_variables: boolean) {
       super(Scope);
       this.set('parent', parent);
@@ -248,9 +257,19 @@ namespace Gene {
         this.ns_members.push(name);
       }
     }
+
+    public handle_arguments(matcher: Matcher, args: any) {
+      for (const m of matcher.data_matchers) {
+        this.set_member(m.name, args.get(m.index));
+      }
+
+      for (const m of matcher.prop_matchers) {
+        this.set_member(m.name, args.get(m.name));
+      }
+    }
   }
 
-  export class Func extends Object {
+  export class Func extends Base {
     constructor(name: string, args: [string], body: Function) {
       super(Func);
       this.set('name', name);
@@ -286,13 +305,20 @@ namespace Gene {
       this.set('inherit_scope', value);
     }
 
-    public invoke(options: {context: Context, self: any, args: any}) {
-      const { context, self, args } = options;
+    get args_matcher() {
+      return this.get('args_matcher');
+    }
 
+    set args_matcher(value: Matcher) {
+      this.set('args_matcher', value);
+    }
+
+    public invoke(context: Context, self: any, args: any) {
       const scope = new Scope(this.parent_scope, this.inherit_scope);
 
       scope.set_member('$function', this);
       scope.set_member('$caller_context', context);
+      scope.handle_arguments(this.args_matcher, args);
 
       const new_context = context.extend({scope: scope, self: self});
 
@@ -300,18 +326,12 @@ namespace Gene {
     }
   }
 
-  export class Matcher extends Object {
-    constructor() {
+  export class Matcher extends Base {
+    constructor(definition: any) {
       super(Matcher);
       this.set('data_matchers', []);
       this.set('prop_matchers', {});
-    }
-
-    public static from_array(array: any) {
-      const matcher = new Matcher();
-      matcher.from_array(array);
-
-      return matcher;
+      this.from_array(definition);
     }
 
     get data_matchers() {
@@ -343,7 +363,7 @@ namespace Gene {
       }
     }
 
-    public from_array(array: any) {
+    private from_array(array: any) {
       if (!(array instanceof Array)) {
         array = [array];
       }
@@ -423,7 +443,7 @@ namespace Gene {
     }
   }
 
-  export class DataMatcher extends Object {
+  export class DataMatcher extends Base {
     constructor(name: string) {
       super(DataMatcher);
       this.set('name', name);
@@ -467,7 +487,7 @@ namespace Gene {
     }
   }
 
-  export class PropMatcher extends Object {
+  export class PropMatcher extends Base {
     constructor(name: string) {
       super(PropMatcher);
       this.set('name', name);
@@ -495,7 +515,7 @@ namespace Gene {
     }
   }
 
-  export class Variable extends Object {
+  export class Variable extends Base {
     constructor(name: string) {
       super(Variable);
       this.set('name', name);
@@ -540,7 +560,7 @@ namespace Gene {
     }
   }
 
-  export class Return extends Object {
+  export class Return extends Base {
     constructor(value: any) {
       super(Return);
       this.set('value', value);
@@ -551,7 +571,7 @@ namespace Gene {
     }
   }
 
-  export class Throwable extends Object {
+  export class Throwable extends Base {
     constructor(reason: any) {
       super(Throwable);
       this.set('reason', reason);
@@ -562,14 +582,14 @@ namespace Gene {
     }
   }
 
-  export class Exception extends Object {
+  export class Exception extends Base {
     constructor(reason: any) {
       super(reason);
       this.class = Exception;
     }
   }
 
-  export class Error extends Object {
+  export class Error extends Base {
     constructor(reason: any) {
       super(reason);
       this.class = Error;

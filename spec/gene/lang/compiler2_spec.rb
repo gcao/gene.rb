@@ -204,7 +204,7 @@ describe Gene::Lang::Compiler do
           ($result = ($context.get_member("a") + $context.get_member("b")));
           return $result;
         });
-        ($result = Gene.assert(($context.get_member("f").invoke(1, 2) == 3)));
+        ($result = Gene.assert(($context.get_member("f").invoke($context, null, Gene.Base.from_data([1, 2])) == 3)));
         return $result;
       })($root_context);
     JAVASCRIPT

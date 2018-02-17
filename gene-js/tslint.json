@@ -23,10 +23,13 @@
     ],
     // Gene customizations BEGIN
     "function-name": false,
+    "member-ordering": false,
     "no-any": false,
     "no-conditional-assignment": false,
     "no-function-expression": false,
     "no-reserved-keywords": false,
+    "no-shadowed-variable": false,
+    "no-stateless-class": false,
     "variable-name": false,
     "no-string-literal": false,
     "no-suspicious-comment": false,

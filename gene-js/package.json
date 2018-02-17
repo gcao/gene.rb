@@ -35,6 +35,7 @@
   },
   "homepage": "https://github.com/gcao/gene#readme",
   "dependencies": {
-    "tslib": "~1.8.0"
+    "tslib": "~1.8.0",
+    "yarn": "^1.3.2"
   }
 }

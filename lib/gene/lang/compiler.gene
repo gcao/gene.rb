@@ -203,7 +203,7 @@
   (::
     (((($context .get_member) <- (%= (name .to_s)))
       .invoke) <-
-      (%expand (args .map (fnx arg (compile_ arg))))
+      $context null (((Gene .Base) .from_data) <- (%args .map (fnx arg (compile_ arg))))
     )
   )
 )
