@@ -99,7 +99,7 @@ namespace Gene {
     }
 
     public is_defined(name: string): boolean {
-      return this.members.include(name);
+      return this.members.hasOwnProperty(name);
     }
 
     public get_member(name: string) {
@@ -187,12 +187,22 @@ namespace Gene {
     }
 
     public get_member(name: string) {
-      return this.namespace.get_member(name);
+      if (this.scope && this.scope.is_defined(name)) {
+        return this.scope.get_member(name);
+      } else if (this.namespace && this.namespace.is_defined(name)) {
+        return this.namespace.get_member(name);
+      } else if (this.global_namespace.is_defined(name)) {
+        return this.global_namespace.get_member(name);
+      } else {
+        throw new Error(`${name} is not defined.`);
+      }
     }
 
     public set_member(name: string, value: any) {
-      this.namespace.set_member(name, value);
+      this.scope.set_member(name, value);
     }
+
+    // Helper methods
 
     public ['var'](name: string, value: any) {
       this.namespace.var(name, value);

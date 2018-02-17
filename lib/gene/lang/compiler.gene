@@ -65,7 +65,11 @@
       (compile_invocation data)
     )
   else_if (data .is Symbol)
-    (compile_symbol data)
+    (if ((data .name) == 'undefined')
+      data
+    else
+      (compile_symbol data)
+    )
   else_if (data .is Boolean Int)
     data
   else_if (data .is Undefined)
@@ -223,7 +227,7 @@
   (::
     ((%processed .get 'cond') ?
       (%group_stmts (processed .get 'then'))
-      (%group_stmts (processed .get 'else'))
+      (%group_stmts ((fnx x (if (x && ((x .size) > 0)) x else (symbol 'undefined'))) (processed .get 'else')))
     )
   )
 )

@@ -38,7 +38,6 @@ describe Gene::Lang::Compiler do
     JAVASCRIPT
 
     '
-      # !eval-to-true!
       (var result 0)
       (for (var i 0)(i < 5)(i += 1)
         (result += i)

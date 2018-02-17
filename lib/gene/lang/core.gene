@@ -325,6 +325,9 @@
 
   (method type _ :Symbol)
   (method data _ [self])
+  (method name _
+    ($invoke self 'name')
+  )
 )
 
 (class Regexp
