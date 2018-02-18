@@ -194,7 +194,8 @@ namespace Gene {
       } else if (this.global_namespace.is_defined(name)) {
         return this.global_namespace.get_member(name);
       } else {
-        throw new Error(`${name} is not defined.`);
+        // throw new Error(`${name} is not defined.`);
+        throw `${name} is not defined.`;
       }
     }
 
@@ -332,7 +333,7 @@ namespace Gene {
 
       const new_context = context.extend({scope: scope, self: self});
 
-      return this.body.call(new_context);
+      return this.body.call(undefined, new_context);
     }
   }
 

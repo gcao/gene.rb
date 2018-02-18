@@ -189,9 +189,13 @@ describe Gene::Lang::Compiler do
     JAVASCRIPT
 
     ' # Complex
+      # !focus!
       # !with-root-context!
       # !eval!
-      (fn f [a b] (a + b))
+      (fn f [a b]
+        # (js ((console .log) <- $context))
+        (a + b)
+      )
       (assert ((f 1 2) == 3))
     ' =>
     <<-JAVASCRIPT,

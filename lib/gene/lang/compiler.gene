@@ -53,6 +53,8 @@
       (compile_fnx data)
     else_if ((data .type) == :fnxx)
       (compile_fnxx data)
+    else_if ((data .type) == :js)
+      (compile_js data)
     else_if ((data .type) == :for)
       (compile_for data)
     else_if ((data .type) == :throw)
@@ -210,6 +212,11 @@
       $context null (((Gene .Base) .from_data) <- (%args .map (fnx arg (compile_ arg))))
     )
   )
+)
+
+(fn compile_js data
+  (match [code...] data)
+  (expand code)
 )
 
 # Compilation depends on a few scenarios:

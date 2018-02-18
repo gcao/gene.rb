@@ -32,6 +32,7 @@
     "no-stateless-class": false,
     "variable-name": false,
     "no-string-literal": false,
+    "no-string-throw": false,
     "no-suspicious-comment": false,
     // Gene customizations END
     "max-classes-per-file": false,
