@@ -174,13 +174,13 @@ namespace Gene {
     public extend(options: any): Context {
       const new_context = new Context(this.application);
       if (options.namespace) {
-        this.namespace = options.namespace;
+        new_context.namespace = options.namespace;
       }
       if (options.scope) {
-        this.scope = options.scope;
+        new_context.scope = options.scope;
       }
       if (options.self) {
-        this.self = options.self;
+        new_context.self = options.self;
       }
 
       return new_context;
