@@ -234,7 +234,7 @@
   (::
     ((%processed .get 'cond') ?
       (%group_stmts (processed .get 'then'))
-      (%group_stmts ((fnx x (if (x && ((x .size) > 0)) x else (symbol 'undefined'))) (processed .get 'else')))
+      (%group_stmts ((fnx x (if (x && ((x .size) > 0)) x else :undefined)) (processed .get 'else')))
     )
   )
 )
