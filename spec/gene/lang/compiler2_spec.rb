@@ -205,7 +205,34 @@ describe Gene::Lang::Compiler do
           ($result = ($context.get_member("a") + $context.get_member("b")));
           return $result;
         });
-        ($result = Gene.assert(($context.get_member("f").invoke($context, null, Gene.Base.from_data([1, 2])) == 3)));
+        ($result = Gene.assert(($context.get_member("f").invoke($context, undefined, Gene.Base.from_data([1, 2])) == 3)));
+        return $result;
+      })($root_context);
+    JAVASCRIPT
+
+    ' # Complex
+      # !focus!
+      # !with-root-context!
+      # !eval!
+      (var a 1)
+      (fn f b
+        (var c 3)
+        ((a + b) + c)
+      )
+      (assert ((f 2) == 6))
+    ' =>
+    <<-JAVASCRIPT,
+      var $root_context = $application.create_root_context();
+      (function($context) {
+        var $result;
+        $context.var("a", 1);
+        $context.fn("f", ["b"], function($context) {
+          var $result;
+          $context.var("c", 3);
+          ($result = (($context.get_member("a") + $context.get_member("b")) + $context.get_member("c")));
+          return $result;
+        });
+        ($result = Gene.assert(($context.get_member("f").invoke($context, undefined, Gene.Base.from_data([2])) == 6)));
         return $result;
       })($root_context);
     JAVASCRIPT

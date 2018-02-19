@@ -124,6 +124,7 @@
 
 (fn compile_fn data
   (match [name args stmts...] data)
+  (if_not (args .is Array) (args = [args]))
   (::
     (($context .fn) <-
       (%= (name .to_s))
@@ -209,7 +210,7 @@
   (::
     (((($context .get_member) <- (%= (name .to_s)))
       .invoke) <-
-      $context null (((Gene .Base) .from_data) <- (%args .map (fnx arg (compile_ arg))))
+      $context (%= :undefined) (((Gene .Base) .from_data) <- (%args .map (fnx arg (compile_ arg))))
     )
   )
 )

@@ -210,10 +210,14 @@ namespace Gene {
     // Helper methods
 
     public ['var'](name: string, value: any) {
-      this.namespace.var(name, value);
+      if (this.scope) {
+        this.scope.set_member(name, value);
+      } else {
+        this.namespace.var(name, value);
+      }
     }
 
-    public fn(name: string, args: [string], body: Function) {
+    public fn(name: string, args: any, body: Function) {
       const fn = new Gene.Func(name, args, body);
       fn.args_matcher = new Gene.Matcher(args);
       if (name !== '') {
