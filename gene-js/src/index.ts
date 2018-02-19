@@ -16,8 +16,12 @@ namespace Gene {
       this.properties = {};
     }
 
-    public get(name: string) {
-      return this.properties[name];
+    public get(name: any) {
+      if (typeof name === 'string') {
+        return this.properties[name];
+      } else {
+        return this.data[name];
+      }
     }
 
     public set(name: string, value: any) {

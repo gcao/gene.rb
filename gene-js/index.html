@@ -2,4 +2,17 @@
 <script type="text/javascript" src="build/src/index.js"></script>
 <body>
   Gene.js
+  <script>
+      var $root_context = $application.create_root_context();
+      (function($context) {
+        var $result;
+        $context.fn("f", ["a", "b"], function($context) {
+          var $result;
+          ($result = ($context.get_member("a") + $context.get_member("b")));
+          return $result;
+        });
+        ($result = Gene.assert(($context.get_member("f").invoke($context, null, Gene.Base.from_data([1, 2])) == 3)));
+        return $result;
+      })($root_context);
+  </script>
 </body>
