@@ -1,20 +1,6 @@
 <!DOCTYPE html>
 <script type="text/javascript" src="build/src/index.js"></script>
+<script type="text/javascript" src="build/src/generated.js"></script>
 <body>
   Gene.js
-  <script>
-      var $root_context = $application.create_root_context();
-      (function($context) {
-        var $result;
-        $context.var("a", 1);
-        $context.fn("f", ["b"], function($context) {
-          var $result;
-          $context.var("c", 3);
-          ($result = (($context.get_member("a") + $context.get_member("b")) + $context.get_member("c")));
-          return $result;
-        });
-        ($result = Gene.assert(($context.get_member("f").invoke($context, undefined, Gene.Base.from_data([2])) == 6)));
-        return $result;
-      })($root_context);
-  </script>
 </body>

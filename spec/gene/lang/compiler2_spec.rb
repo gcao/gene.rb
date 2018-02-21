@@ -263,6 +263,10 @@ describe Gene::Lang::Compiler do
       output = @application.parse_and_process(code)
       compare_code output, result
 
+      if focus and ENV["save"]
+        File.write File.expand_path(File.dirname(__FILE__) + '/../../../gene-js/build/src/generated.js'), result
+      end
+
       if input.index('!throw-error!')
         lambda {
           @ctx.eval(output)
