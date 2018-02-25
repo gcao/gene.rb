@@ -131,7 +131,9 @@ namespace Gene {
 
     public create_root_context(): Context {
       const context = new Context(this);
-      context.self = context.namespace = new Namespace('root', this.global_namespace);
+      context.namespace = new Namespace('root', this.global_namespace);
+      context.self = context.namespace;
+      context.scope = new Scope(undefined, false);
 
       return context;
     }
@@ -217,9 +219,11 @@ namespace Gene {
       }
     }
 
-    public fn(name: string, args: any, body: Function) {
-      const fn = new Gene.Func(name, args, body);
-      fn.args_matcher = new Gene.Matcher(args);
+    public fn(name: string, args: any, body: Function, inherit_scope: boolean = true) {
+      const fn = new Func(name, args, body);
+      fn.args_matcher = new Matcher(args);
+      fn.parent_scope = this.scope;
+      fn.inherit_scope = inherit_scope;
       if (name !== '') {
         this.namespace.var(name, fn);
       }
@@ -253,8 +257,17 @@ namespace Gene {
       return this.get('ns_members');
     }
 
-    public is_defined(name: string): boolean {
-      return this.variables.hasOwnProperty(name);
+    public is_defined(name: string) {
+      if (this.variables.hasOwnProperty(name)) {
+        return true;
+      } else if (this.parent) {
+        if (this.inherit_variables) {
+          return this.parent.is_defined(name);
+        } else {
+          // TODO: check in namespace
+          return false;
+        }
+      }
     }
 
     public get_member(name: string) {

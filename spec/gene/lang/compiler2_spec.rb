@@ -113,7 +113,7 @@ describe Gene::Lang::Compiler do
       (f 1 2)
     ' =>
     <<-JAVASCRIPT,
-      $context.get_member(\"f\").invoke($context, null, Gene.Base.from_data([1, 2]));
+      $context.get_member(\"f\").invoke($context, undefined, Gene.Base.from_data([1, 2]));
     JAVASCRIPT
 
     ' # Anonymous function
@@ -211,7 +211,6 @@ describe Gene::Lang::Compiler do
     JAVASCRIPT
 
     ' # Complex
-      # !focus!
       # !with-root-context!
       # !eval!
       (var a 1)
