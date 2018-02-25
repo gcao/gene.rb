@@ -150,11 +150,11 @@ describe Gene::Lang::Compiler do
       (true ? (1, 2) : (3, 4));
     JAVASCRIPT
 
-    ' # If...else_if
-      (if true 1 2 else 3 4)
+    ' # If...else_if...else
+      (if true 1 2 else_if true 3 4 else 5 6)
     ' =>
     <<-JAVASCRIPT,
-      (true ? (1, 2) : (3, 4));
+      (true ? (1, 2) : (true ? (3, 4) : (5, 6)));
     JAVASCRIPT
 
     ' # For
