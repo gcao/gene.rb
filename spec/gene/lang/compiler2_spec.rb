@@ -187,6 +187,39 @@ describe Gene::Lang::Compiler do
       })();
     JAVASCRIPT
 
+    ' # Break inside function
+      # !pending!
+      (loop
+        (scoped # create new scope
+          break
+        )
+        1
+        2
+      )
+    ' =>
+    <<-JAVASCRIPT,
+      (function() {
+        while (true) {
+          var $result;
+          try {
+            (function($context) {
+              // TODO
+            })($context);
+          } catch (ex) {
+            if (ex instanceof Gene.Break) {
+              break;
+            } else if (ex instanceof Gene.Continue) {
+              continue;
+            } else {
+              throw ex;
+            }
+          }
+          1;
+          2;
+        }
+      })();
+    JAVASCRIPT
+
     ' # Complex
       # !with-root-context!
       # !eval!
