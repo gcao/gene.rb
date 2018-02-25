@@ -2005,6 +2005,29 @@ describe Gene::Lang::Interpreter do
     end
   end
 
+  describe "Eval" do
+    it "
+      +assert ((eval 1) == 1)
+    " do
+      @application.parse_and_process(example.description)
+    end
+
+    it "
+      (var a 1)
+      +assert ((eval :a) == 1)
+    " do
+      @application.parse_and_process(example.description)
+    end
+
+    it "
+      (var a 1)
+      (var b :a)
+      +assert ((eval (eval :b)) == 1)
+    " do
+      @application.parse_and_process(example.description)
+    end
+  end
+
   describe "Range" do
     it "
       +assert ($invoke (1 .. 2) 'include?' 1)

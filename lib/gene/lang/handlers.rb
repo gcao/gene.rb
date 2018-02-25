@@ -20,6 +20,7 @@ module Gene::Lang::Handlers
     THROW CATCH
     BREAK
     RENDER
+    EVAL
     PRINT PRINTLN
     ASSERT DEBUG
     NOOP
@@ -1180,6 +1181,23 @@ module Gene::Lang::Handlers
       return Gene::NOT_HANDLED unless EXPAND === data
 
       Gene::Lang::Expandable.new context.process(data.data[0])
+    end
+  end
+
+  class EvalHandler
+    include Utilities
+
+    def call context, data
+      return Gene::NOT_HANDLED unless EVAL === data
+
+      result = Gene::UNDEFINED
+      data.data.each do |item|
+        # First round: treat each item as an argument
+        result = context.process item
+        # Second round: evaluate each result
+        result = context.process result
+      end
+      result
     end
   end
 
