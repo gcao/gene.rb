@@ -264,6 +264,13 @@
 #   $result must be assigned
 #   Add a statement to check whether result is a return
 (fn compile_loop data
+  (::
+    ((fnxx
+      (while true
+        (%expand (compile_stmts (data .data)))
+      )
+    ) <-)
+  )
 )
 
 # Compilation depends on a few scenarios:

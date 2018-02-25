@@ -172,6 +172,21 @@ describe Gene::Lang::Compiler do
       })();
     JAVASCRIPT
 
+    ' # Loop
+      (loop
+        1
+        2
+      )
+    ' =>
+    <<-JAVASCRIPT,
+      (function() {
+        while (true) {
+          1;
+          2;
+        }
+      })();
+    JAVASCRIPT
+
     ' # Complex
       # !with-root-context!
       # !eval!

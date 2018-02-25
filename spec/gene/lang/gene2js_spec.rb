@@ -304,6 +304,19 @@ describe "JavaScript representation in Gene" do
     )
 
     (compile_and_verify
+      (while true
+        1
+        2
+      )
+      '
+        while (true) {
+          1;
+          2;
+        }
+      '
+    )
+
+    (compile_and_verify
       (for (var i 0) (i < 5) (i ++)
         1
         2

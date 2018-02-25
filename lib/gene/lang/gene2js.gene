@@ -31,6 +31,8 @@
       else
         (compile_for data)
       )
+    else_if ((data .type) == :while)
+      (compile_while data)
     else_if ((data .type) == :try)
       (compile_try_catch data)
     else_if (((data .get 0) .is Symbol) && (((data .get 0) .to_s) =~ #/^\./))
@@ -250,6 +252,13 @@
         (compile_stmts else_stmts)
       )
     )
+  "}")
+)
+
+(fn compile_while data
+  (match [cond stmts...] data)
+  ("while (" (compile cond) ") {\n"
+    (compile_stmts stmts)
   "}")
 )
 
