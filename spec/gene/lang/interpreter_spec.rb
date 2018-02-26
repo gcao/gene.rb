@@ -373,6 +373,7 @@ describe Gene::Lang::Interpreter do
     " do
       @application.parse_and_process(example.description)
     end
+
     it "# Function parameters are passed by reference: check []
       (fn doSomething array
         ($invoke array 'push' 'doSomething')

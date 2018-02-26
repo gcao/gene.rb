@@ -219,9 +219,9 @@ namespace Gene {
       }
     }
 
-    public fn(name: string, args: any, body: Function, inherit_scope: boolean = true) {
+    public fn({name, args, body, inherit_scope}: any) {
       const fn = new Func(name, args, body);
-      fn.args_matcher = new Matcher(args);
+      // fn.args_matcher = new Matcher(args);
       fn.parent_scope = this.scope;
       fn.inherit_scope = inherit_scope;
       if (name !== '') {
@@ -306,6 +306,7 @@ namespace Gene {
       super(Func);
       this.set('name', name);
       this.set('args', args);
+      this.args_matcher = new Matcher(args);
       this.set('body', body);
     }
 
@@ -335,6 +336,14 @@ namespace Gene {
 
     set inherit_scope(value: boolean) {
       this.set('inherit_scope', value);
+    }
+
+    get eval_arguments() {
+      return this.get('eval_arguments');
+    }
+
+    set eval_arguments(new_value: boolean) {
+      this.set('eval_arguments', new_value);
     }
 
     get args_matcher() {

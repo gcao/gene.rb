@@ -15,6 +15,7 @@
       (var $root_context ($application . (create_root_context <-)))
       ((fnx $context
         (var $result)
+        (var $gene_temp_999)
         (%expand (compile_stmts ^^assign_to_result code))
         (return $result)
       ) <- $root_context)
@@ -124,41 +125,65 @@
 
 (fn compile_fn data
   (match [name args stmts...] data)
+  (var inherit_scope
+    (if ((data .get 'inherit_scope') == false)
+      false
+    else
+      true
+    )
+  )
   (if_not (args .is Array) (args = [args]))
   (::
-    (($context .fn) <-
-      (%= (name .to_s))
-      (%args .map (fnx arg (arg .to_s)))
-      (fnx $context
+    (($context .fn) <- {
+      ^inherit_scope %inherit_scope
+      ^name (%= (name .to_s))
+      ^args (%args .map (fnx arg (arg .to_s)))
+      ^body (fnx $context
         (var $result)
         (%expand (compile_stmts ^^assign_to_result stmts))
         (return $result)
       )
-    )
+    })
   )
 )
 
 (fn compile_fnx data
   (match [args stmts...] data)
+  (var inherit_scope
+    (if ((data .get 'inherit_scope') == false)
+      false
+    else
+      true
+    )
+  )
   (::
-    (($context .fn) <-
-      ""
-      (%args .map (fnx arg (arg .to_s)))
-      (fnx $context
+    (($context .fn) <- {
+      ^inherit_scope %inherit_scope
+      ^name ""
+      ^args (%args .map (fnx arg (arg .to_s)))
+      ^body (fnx $context
         (var $result)
         (%expand (compile_stmts ^^assign_to_result stmts))
         (return $result)
       )
-    )
+    })
   )
 )
 
 (fn compile_fnxx data
+  (var inherit_scope
+    (if ((data .get 'inherit_scope') == false)
+      false
+    else
+      true
+    )
+  )
   (::
-    (($context .fn) <-
-      ""
-      []
-      (%if (has_return data)
+    (($context .fn) <- {
+      ^inherit_scope %inherit_scope
+      ^name ""
+      ^args []
+      ^body (%if (has_return data)
         (:fnx $context
           (try
             (var $result)
@@ -179,7 +204,7 @@
           (return $result)
         )
       )
-    )
+    })
   )
 )
 
@@ -207,10 +232,30 @@
 
 (fn compile_invocation data
   (match (name args...) data)
-  (::
-    (((($context .get_member) <- (%= (name .to_s)))
-      .invoke) <-
-      $context (%= :undefined) (((Gene .Base) .from_data) <- (%args .map (fnx arg (compile_ arg))))
+  (var args_evaled (args .map (fnx arg (compile_ arg))))
+  (if (args == args_evaled)
+    (::
+      (((($context .get_member) <- (%= (name .to_s)))
+        .invoke) <-
+        $context (%= :undefined) (((Gene .Base) .from_data) <- (%args .map (fnx arg (compile_ arg))))
+      )
+    )
+  else
+    (group_stmts
+      (:$gene_temp_999 = (($context .get_member) <- (%= (name .to_s))))
+      (::
+        (($gene_temp_999 .invoke) <-
+          $context
+          (%= :undefined)
+          (((Gene .Base) .from_data) <-
+            (if ($gene_temp_999 @ 'eval_arguments')
+              %args_evaled
+            else
+              %args
+            )
+          )
+        )
+      )
     )
   )
 )
