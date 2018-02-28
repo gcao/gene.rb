@@ -241,22 +241,21 @@
       )
     )
   else
-    (group_stmts
+    (group_stmts [
       (:$gene_temp_999 = (($context .get_member) <- (%= (name .to_s))))
       (::
         (($gene_temp_999 .invoke) <-
           $context
           (%= :undefined)
           (((Gene .Base) .from_data) <-
-            (if ($gene_temp_999 @ 'eval_arguments')
+            (($gene_temp_999 @ 'eval_arguments') ?
               %args_evaled
-            else
               %args
             )
           )
         )
       )
-    )
+    ])
   )
 )
 
