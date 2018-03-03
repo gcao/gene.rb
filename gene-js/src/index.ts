@@ -301,6 +301,21 @@ namespace Gene {
     }
   }
 
+  export class Symbol extends Base {
+    constructor(value: string) {
+      super(Symbol);
+      this.set('value', value);
+    }
+
+    get value() {
+      return this.get('value');
+    }
+
+    set value(new_value: string) {
+      this.set('value', new_value);
+    }
+  }
+
   export class Func extends Base {
     constructor(name: string, args: [string], body: Function) {
       super(Func);

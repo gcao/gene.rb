@@ -232,31 +232,21 @@
 
 (fn compile_invocation data
   (match (name args...) data)
-  (var args_evaled (args .map (fnx arg (compile_ arg))))
-  (if (args == args_evaled)
+  (group_stmts [
+    (:$gene_temp_999 = (($context .get_member) <- (%= (name .to_s))))
     (::
-      (((($context .get_member) <- (%= (name .to_s)))
-        .invoke) <-
-        $context (%= :undefined) (((Gene .Base) .from_data) <- (%args .map (fnx arg (compile_ arg))))
-      )
-    )
-  else
-    (group_stmts [
-      (:$gene_temp_999 = (($context .get_member) <- (%= (name .to_s))))
-      (::
-        (($gene_temp_999 .invoke) <-
-          $context
-          (%= :undefined)
-          (((Gene .Base) .from_data) <-
-            (($gene_temp_999 @ 'eval_arguments') ?
-              %args_evaled
-              %args
-            )
+      (($gene_temp_999 .invoke) <-
+        $context
+        (%= :undefined)
+        (((Gene .Base) .from_data) <-
+          (($gene_temp_999 @ 'eval_arguments') ?
+            (%args .map (fnx arg (compile_ arg)))
+            (%args .map (fnx arg (:new (Gene .Symbol) (%arg .to_s))))
           )
         )
       )
-    ])
-  )
+    )
+  ])
 )
 
 (fn compile_js data

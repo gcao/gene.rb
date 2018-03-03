@@ -319,6 +319,7 @@ describe Gene::Lang::Compiler do
     JAVASCRIPT
 
     ' # Complex
+      # !focus!
       # !with-root-context!
       # !eval!
       (fn f a

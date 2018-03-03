@@ -180,7 +180,7 @@
 
 (fn compile_new data
   (match [type args...] data)
-  ("new " (compile type) "(" (args .join ", ") ")")
+  ("new " (compile type) "(" ((args .map (fnx arg (compile arg))) .join ", ") ")")
 )
 
 (fn compile_binary data
