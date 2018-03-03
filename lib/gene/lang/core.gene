@@ -311,6 +311,14 @@
 
   (method type _ :String)
   (method data _ [self])
+  (method substr [start end]
+    (if (end .is Int)
+      ($invoke self '[]' start end)
+    else
+      ($invoke self '[]' start)
+    )
+  )
+  (method to_s _ self)
 )
 
 (class Boolean
@@ -327,6 +335,9 @@
   (method data _ [self])
   (method name _
     ($invoke self 'name')
+  )
+  (method starts_with s
+    ($invoke (.to_s) 'start_with?' s)
   )
 )
 

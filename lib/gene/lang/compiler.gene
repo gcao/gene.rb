@@ -81,8 +81,12 @@
 )
 
 (fn compile_symbol data
-  (::
-    (($context .get_member) <- (%= (data .to_s)))
+  (if (data .starts_with ':')
+    (:new (Gene .Symbol) (%= ((data .to_s) .substr 1)))
+  else
+    (::
+      (($context .get_member) <- (%= (data .to_s)))
+    )
   )
 )
 
