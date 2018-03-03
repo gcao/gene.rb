@@ -106,6 +106,10 @@
     )
   )
 
+  (method equal o
+    (self == o)
+  )
+
   (method to_s _
     ($invoke self 'to_s')
   )

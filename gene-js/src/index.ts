@@ -41,6 +41,10 @@ namespace Gene {
 
       return obj;
     }
+
+    public equal(o: any) {
+      return this == o;
+    }
   }
 
   export class Module extends Base {
@@ -313,6 +317,14 @@ namespace Gene {
 
     set value(new_value: string) {
       this.set('value', new_value);
+    }
+
+    public equal(o: any) {
+      if (o instanceof Symbol) {
+        return this.value == o.value;
+      } else {
+        return false;
+      }
     }
   }
 
@@ -665,6 +677,14 @@ namespace Gene {
     }
   }
 }
+
+Gene['equal'] = function(first: any, second: any) {
+  if (first instanceof Gene.Base) {
+    return first.equal(second);
+  } else {
+    return first == second;
+  }
+};
 
 Gene['throw'] = function(error: any) {
   throw error;

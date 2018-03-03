@@ -43,7 +43,7 @@ describe Gene::Lang::Compiler do
       (1 == 1)
     ' =>
     <<-JAVASCRIPT,
-      (1 == 1);
+      Gene.equal(1, 1);
     JAVASCRIPT
 
     ' # Variables
@@ -253,7 +253,7 @@ describe Gene::Lang::Compiler do
         var $result;
         var $gene_temp_999;
         $context.var("a", 1);
-        ($result = Gene.assert((($context.get_member("a") + 1) == 2)));
+        ($result = Gene.assert(Gene.equal(($context.get_member("a") + 1), 2)));
         return $result;
       })($root_context);
     JAVASCRIPT
@@ -281,7 +281,7 @@ describe Gene::Lang::Compiler do
             return $result;
           }
         });
-        ($result = Gene.assert(($context.get_member("f").invoke($context, undefined, Gene.Base.from_data([1, 2])) == 3)));
+        ($result = Gene.assert(Gene.equal($context.get_member("f").invoke($context, undefined, Gene.Base.from_data([1, 2])), 3)));
         return $result;
       })($root_context);
     JAVASCRIPT
@@ -313,13 +313,12 @@ describe Gene::Lang::Compiler do
             return $result;
           }
         });
-        ($result = Gene.assert(($context.get_member("f").invoke($context, undefined, Gene.Base.from_data([2])) == 6)));
+        ($result = Gene.assert(Gene.equal($context.get_member("f").invoke($context, undefined, Gene.Base.from_data([2])), 6)));
         return $result;
       })($root_context);
     JAVASCRIPT
 
     ' # Complex
-      # !focus!
       # !with-root-context!
       # !eval!
       (fn f a
