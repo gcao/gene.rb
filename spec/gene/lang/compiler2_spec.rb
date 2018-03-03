@@ -18,9 +18,9 @@ describe Gene::Lang::Compiler do
     <<-JAVASCRIPT,
       var $root_context = $application.create_root_context();
       (function($context) {
-        var $result;
-        var $gene_temp_999;
-        return $result;
+        var $_result;
+        var $_temp;
+        return $_result;
       })($root_context);
     JAVASCRIPT
 
@@ -85,9 +85,9 @@ describe Gene::Lang::Compiler do
         "name": "f",
         "args": ["a", "b"],
         "body": function($context) {
-          var $result;
-          ($result = ($context.get_member("a") + $context.get_member("b")));
-          return $result;
+          var $_result;
+          ($_result = ($context.get_member("a") + $context.get_member("b")));
+          return $_result;
         }
       });
     JAVASCRIPT
@@ -105,10 +105,10 @@ describe Gene::Lang::Compiler do
         "args": [],
         "body": function($context) {
           try {
-            var $result;
+            var $_result;
             Gene.return(1);
-            ($result = 2);
-            return $result;
+            ($_result = 2);
+            return $_result;
           } catch (error) {
             if ((error instanceof Gene.Return)) {
               return error.value;
@@ -136,8 +136,8 @@ describe Gene::Lang::Compiler do
         "name": "",
         "args": ["a", "b"],
         "body": function($context) {
-          var $result;
-          return $result;
+          var $_result;
+          return $_result;
         }
       });
     JAVASCRIPT
@@ -151,8 +151,8 @@ describe Gene::Lang::Compiler do
         "name": "",
         "args": [],
         "body": function($context) {
-          var $result;
-          return $result;
+          var $_result;
+          return $_result;
         }
       });
     JAVASCRIPT
@@ -221,7 +221,7 @@ describe Gene::Lang::Compiler do
     <<-JAVASCRIPT,
       (function() {
         while (true) {
-          var $result;
+          var $_result;
           try {
             (function($context) {
               // TODO
@@ -250,11 +250,11 @@ describe Gene::Lang::Compiler do
     <<-JAVASCRIPT,
       var $root_context = $application.create_root_context();
       (function($context) {
-        var $result;
-        var $gene_temp_999;
+        var $_result;
+        var $_temp;
         $context.var("a", 1);
-        ($result = Gene.assert(Gene.equal(($context.get_member("a") + 1), 2)));
-        return $result;
+        ($_result = Gene.assert(Gene.equal(($context.get_member("a") + 1), 2)));
+        return $_result;
       })($root_context);
     JAVASCRIPT
 
@@ -269,20 +269,20 @@ describe Gene::Lang::Compiler do
     <<-JAVASCRIPT,
       var $root_context = $application.create_root_context();
       (function($context) {
-        var $result;
-        var $gene_temp_999;
+        var $_result;
+        var $_temp;
         $context.fn({
           "inherit_scope": true,
           "name": "f",
           "args": ["a", "b"],
           "body": function($context) {
-            var $result;
-            ($result = ($context.get_member("a") + $context.get_member("b")));
-            return $result;
+            var $_result;
+            ($_result = ($context.get_member("a") + $context.get_member("b")));
+            return $_result;
           }
         });
-        ($result = Gene.assert(Gene.equal($context.get_member("f").invoke($context, undefined, Gene.Base.from_data([1, 2])), 3)));
-        return $result;
+        ($_result = Gene.assert(Gene.equal($context.get_member("f").invoke($context, undefined, Gene.Base.from_data([1, 2])), 3)));
+        return $_result;
       })($root_context);
     JAVASCRIPT
 
@@ -299,22 +299,22 @@ describe Gene::Lang::Compiler do
     <<-JAVASCRIPT,
       var $root_context = $application.create_root_context();
       (function($context) {
-        var $result;
-        var $gene_temp_999;
+        var $_result;
+        var $_temp;
         $context.var("a", 1);
         $context.fn({
           "inherit_scope": true,
           "name": "f",
           "args": ["b"],
           "body": function($context) {
-            var $result;
+            var $_result;
             $context.var("c", 3);
-            ($result = (($context.get_member("a") + $context.get_member("b")) + $context.get_member("c")));
-            return $result;
+            ($_result = (($context.get_member("a") + $context.get_member("b")) + $context.get_member("c")));
+            return $_result;
           }
         });
-        ($result = Gene.assert(Gene.equal($context.get_member("f").invoke($context, undefined, Gene.Base.from_data([2])), 6)));
-        return $result;
+        ($_result = Gene.assert(Gene.equal($context.get_member("f").invoke($context, undefined, Gene.Base.from_data([2])), 6)));
+        return $_result;
       })($root_context);
     JAVASCRIPT
 

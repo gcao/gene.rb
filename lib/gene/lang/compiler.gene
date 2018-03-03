@@ -14,10 +14,10 @@
       ^^#render_args
       (var $root_context ($application . (create_root_context <-)))
       ((fnx $context
-        (var $result)
-        (var $gene_temp_999)
+        (var $_result)
+        (var $_temp)
         (%expand (compile_stmts ^^assign_to_result code))
-        (return $result)
+        (return $_result)
       ) <- $root_context)
     )
   else
@@ -160,9 +160,9 @@
       ^name (%= (name .to_s))
       ^args (%args .map (fnx arg (arg .to_s)))
       ^body (fnx $context
-        (var $result)
+        (var $_result)
         (%expand (compile_stmts ^^assign_to_result stmts))
-        (return $result)
+        (return $_result)
       )
     })
   )
@@ -183,9 +183,9 @@
       ^name ""
       ^args (%args .map (fnx arg (arg .to_s)))
       ^body (fnx $context
-        (var $result)
+        (var $_result)
         (%expand (compile_stmts ^^assign_to_result stmts))
-        (return $result)
+        (return $_result)
       )
     })
   )
@@ -207,9 +207,9 @@
       ^body (%if (has_return data)
         (:fnx $context
           (try
-            (var $result)
+            (var $_result)
             (%expand (compile_stmts ^^assign_to_result (data .data)))
-            (return $result)
+            (return $_result)
           catch error
             (if (error instanceof (Gene .Return))
               (return (error .value))
@@ -220,9 +220,9 @@
         )
       else
         (:fnx $context
-          (var $result)
+          (var $_result)
           (%expand (compile_stmts ^^assign_to_result (data .data)))
-          (return $result)
+          (return $_result)
         )
       )
     })
@@ -246,7 +246,7 @@
     (if ((! assign_to_result) || (i < ((stmts .size) - 1)))
       (compile_ item)
     else
-      (:$result = (%compile_ item))
+      (:$_result = (%compile_ item))
     )
   ))
 )
@@ -275,13 +275,13 @@
     )
   else
     (group_stmts [
-      (:$gene_temp_999 = (($context .get_member) <- (%= (name .to_s))))
+      (:$_temp = (($context .get_member) <- (%= (name .to_s))))
       (::
-        (($gene_temp_999 .invoke) <-
+        (($_temp .invoke) <-
           $context
           (%= :undefined)
           (((Gene .Base) .from_data) <-
-            (($gene_temp_999 @ 'eval_arguments') ?
+            (($_temp @ 'eval_arguments') ?
               %evaled_args
               %translated_args
             )
@@ -300,12 +300,12 @@
 # Compilation depends on a few scenarios:
 # Is top level statement in function?
 #   If yes, compiles to regular if statement
-#   If is last statement, make sure $result is assigned
+#   If is last statement, make sure $_result is assigned
 # Must compile to an expression?
 #   Comiles to ternary expression and wrap up with ()
 #   All code inside must be compiled as expression
 # Has 'return' inside
-#   $result must be assigned
+#   $_result must be assigned
 #   Add a statement to check whether result is a return
 (fn compile_if data
   (var processed (process_if data))
@@ -338,7 +338,7 @@
 # Must compile to an expression?
 #   Compiles to a function that shares current context
 # Has 'return' inside
-#   $result must be assigned
+#   $_result must be assigned
 #   Add a statement to check whether result is a return
 (fn compile_loop data
   (::
