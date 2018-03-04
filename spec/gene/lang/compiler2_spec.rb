@@ -326,7 +326,9 @@ describe Gene::Lang::Compiler do
         a
       )
       (assert ((f a) == :a))
-    ' => '',
+    ' =>
+    <<-JAVASCRIPT,
+    JAVASCRIPT
   }
 
   focus = testcases.keys.find {|key| key.include? '!focus!' }
@@ -352,7 +354,7 @@ describe Gene::Lang::Compiler do
 
       output = @application.parse_and_process(code)
 
-      if result != ''
+      if result.strip != ''
         compare_code output, result
       end
 
