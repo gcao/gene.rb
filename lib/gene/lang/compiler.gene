@@ -40,12 +40,17 @@
 
 (fn compile_ data
   (if ((data .class) == Object)
-    (if (BINARY_IDS .include (data .get 0))
+    (var data_first (data .get 0))
+    (if (BINARY_IDS .include data_first)
       (compile_binary data)
-    else_if ([:== :!=] .include (data .get 0))
+    else_if ([:== :!=] .include data_first)
       (compile_equality data)
+    else_if ((data_first .is Symbol) && (data_first .starts_with "."))
+      (compile_method_call data)
     else_if ((data .type) == :var)
       (compile_var data)
+    else_if ((data .type) == :new)
+      (compile_new data)
     else_if ((data .type) == :if)
       (compile_if data)
     else_if ((data .type) == :return)
@@ -62,6 +67,8 @@
       (compile_for data)
     else_if ((data .type) == :throw)
       (compile_throw data)
+    else_if ((data .type) == :class)
+      (compile_class data)
     else_if ((data .type) == :loop)
       (compile_loop data)
     else_if ((data .type) == :assert)
@@ -238,6 +245,32 @@
 (fn compile_throw data
   (::
     ((Gene .throw) <- (%data .get 0))
+  )
+)
+
+(fn compile_class data
+  (match [name stmts...] data)
+  (::
+    (($context .klass) <- (%name .to_s))
+  )
+)
+
+(fn compile_new data
+  (match [klass args...] data)
+  (::
+    (($context .new) <- (%klass .to_s))
+  )
+)
+
+(fn compile_method_call data
+  (match (_self method args...) data)
+  (::
+    ((Gene .invoke) <- {
+      ^context $context
+      ^self (%compile_ _self)
+      ^method (%= (method .to_s))
+      ^args %args
+    })
   )
 )
 

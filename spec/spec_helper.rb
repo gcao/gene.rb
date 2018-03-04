@@ -41,6 +41,8 @@ end
 
 # npm install -g js-beautify
 # https://www.npmjs.com/package/js-beautify
+# npm install -g cli-highlight
+# https://www.npmjs.com/package/cli-highlight
 def beautify code
   `echo '#{code.to_s.strip}' | js-beautify -s 2`
   # File.write '/tmp/generated.js', code.to_s

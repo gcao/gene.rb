@@ -50,7 +50,8 @@ namespace Gene {
   export class Module extends Base {
     constructor(name: string) {
       super(Module);
-      this.name = name;
+      this.set('name', name);
+      this.set('methods', []);
     }
 
     get name(): string {
@@ -83,6 +84,10 @@ namespace Gene {
 
     public method(name: string) {
       return this.methods[name];
+    }
+
+    public invoke({context, self, method, args}) {
+      // TODO
     }
   }
 
@@ -233,6 +238,14 @@ namespace Gene {
       }
 
       return fn;
+    }
+
+    public klass(name: string, body: Function = undefined) {
+      const klass = new Class(name);
+      if (body) {
+        body()
+      }
+      return klass;
     }
   }
 
@@ -692,6 +705,15 @@ Gene['throw'] = function(error: any) {
 
 Gene['return'] = function(value: any) {
   throw new Gene.Return(value);
+};
+
+Gene['invoke'] = function({context, self, method, args}) {
+  self.invoke({
+    context: context,
+    self: self,
+    method: method,
+    args: args
+  });
 };
 
 let $application = new Gene.Application();

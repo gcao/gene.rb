@@ -241,6 +241,63 @@ describe Gene::Lang::Compiler do
       })();
     JAVASCRIPT
 
+    ' # Class
+      (class A)
+    ' =>
+    <<-JAVASCRIPT,
+      $context.klass("A");
+    JAVASCRIPT
+
+    ' # Class
+      (new A)
+    ' =>
+    <<-JAVASCRIPT,
+      $context.new("A");
+    JAVASCRIPT
+
+    ' # Class
+      # !focus!
+      (a .b)
+    ' =>
+    <<-JAVASCRIPT,
+      Gene.invoke({
+        "context": $context,
+        "self": $context.get_member("a"),
+        "method": "b",
+        "args": []
+      });
+    JAVASCRIPT
+
+    ' # Class
+      # !pending!
+      # !with-root-context!
+      # !eval!
+      (class A)
+      (assert (((new A) .class) == A))
+    ' =>
+    <<-JAVASCRIPT,
+    JAVASCRIPT
+
+    ' # Class
+      # !pending!
+      (class A
+        (method m a a)
+      )
+    ' =>
+    <<-JAVASCRIPT,
+      $context.klass("A", function($context) {
+        $context.self.method({
+          "name": "m",
+          "args": ["a"],
+          "body": function($context) {
+            var $result;
+            $result = $context.get_member("a");
+            return $result;
+          }
+        })
+      });
+    JAVASCRIPT
+
     ' # Complex
       # !with-root-context!
       # !eval!
