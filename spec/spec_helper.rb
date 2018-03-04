@@ -22,21 +22,21 @@ def compress code
   code.gsub(/(^\s*)|(\s*\n\s*)|(\s*$)/, '')
 end
 
-def compare_code first, second
-  result = (beautify(first) == beautify(second))
+def compare_code expected, actual
+  result = (beautify(expected) == beautify(actual))
   if not result
     puts
     puts "vvvvvvvvvvvvvvv Expected vvvvvvvvvvvvvvv"
     puts
-    puts beautify(first).gsub(/^/m, '      ')
+    puts beautify(expected).gsub(/^/m, '      ')
     puts
     puts "----------------------------------------"
     puts
-    puts beautify(second).gsub(/^/m, '      ')
+    puts beautify(actual).gsub(/^/m, '      ')
     puts
     puts "^^^^^^^^^^^^^^^  Actual  ^^^^^^^^^^^^^^^"
   end
-  beautify(first).should == beautify(second)
+  beautify(actual).should == beautify(expected)
 end
 
 # npm install -g js-beautify

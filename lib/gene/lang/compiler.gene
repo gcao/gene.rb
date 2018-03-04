@@ -264,14 +264,14 @@
 
 (fn compile_method_call data
   (match (_self method args...) data)
-  (::
-    ((Gene .invoke) <- {
-      ^context $context
-      ^self (%compile_ _self)
-      ^method (%= (method .to_s))
-      ^args %args
-    })
-  )
+  # (::
+  #   ((Gene .invoke) <- {
+  #     ^context $context
+  #     ^self (%compile_ _self)
+  #     ^method (%= (method .to_s))
+  #     ^args %args
+  #   })
+  # )
 )
 
 (fn compile_stmts [^^assign_to_result stmts]

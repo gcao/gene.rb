@@ -12,15 +12,15 @@ describe Gene::Lang::Compiler do
   end
 
   testcases = {
-    ' # Compiles empty code to below output
+    ' # Compiles empty code to below actual_result
       # !with-root-context!
     ' =>
     <<-JAVASCRIPT,
       var $root_context = $application.create_root_context();
       (function($context) {
-        var $_result;
+        var $_expected;
         var $_temp;
-        return $_result;
+        return $_expected;
       })($root_context);
     JAVASCRIPT
 
@@ -85,9 +85,9 @@ describe Gene::Lang::Compiler do
         "name": "f",
         "args": ["a", "b"],
         "body": function($context) {
-          var $_result;
-          ($_result = ($context.get_member("a") + $context.get_member("b")));
-          return $_result;
+          var $_expected;
+          ($_expected = ($context.get_member("a") + $context.get_member("b")));
+          return $_expected;
         }
       });
     JAVASCRIPT
@@ -105,10 +105,10 @@ describe Gene::Lang::Compiler do
         "args": [],
         "body": function($context) {
           try {
-            var $_result;
+            var $_expected;
             Gene.return(1);
-            ($_result = 2);
-            return $_result;
+            ($_expected = 2);
+            return $_expected;
           } catch (error) {
             if ((error instanceof Gene.Return)) {
               return error.value;
@@ -136,8 +136,8 @@ describe Gene::Lang::Compiler do
         "name": "",
         "args": ["a", "b"],
         "body": function($context) {
-          var $_result;
-          return $_result;
+          var $_expected;
+          return $_expected;
         }
       });
     JAVASCRIPT
@@ -151,8 +151,8 @@ describe Gene::Lang::Compiler do
         "name": "",
         "args": [],
         "body": function($context) {
-          var $_result;
-          return $_result;
+          var $_expected;
+          return $_expected;
         }
       });
     JAVASCRIPT
@@ -221,7 +221,7 @@ describe Gene::Lang::Compiler do
     <<-JAVASCRIPT,
       (function() {
         while (true) {
-          var $_result;
+          var $_expected;
           try {
             (function($context) {
               // TODO
@@ -290,9 +290,9 @@ describe Gene::Lang::Compiler do
           "name": "m",
           "args": ["a"],
           "body": function($context) {
-            var $result;
-            $result = $context.get_member("a");
-            return $result;
+            var $expected;
+            $expected = $context.get_member("a");
+            return $expected;
           }
         })
       });
@@ -307,11 +307,11 @@ describe Gene::Lang::Compiler do
     <<-JAVASCRIPT,
       var $root_context = $application.create_root_context();
       (function($context) {
-        var $_result;
+        var $_expected;
         var $_temp;
         $context.var("a", 1);
-        ($_result = Gene.assert(Gene.equal(($context.get_member("a") + 1), 2)));
-        return $_result;
+        ($_expected = Gene.assert(Gene.equal(($context.get_member("a") + 1), 2)));
+        return $_expected;
       })($root_context);
     JAVASCRIPT
 
@@ -326,20 +326,20 @@ describe Gene::Lang::Compiler do
     <<-JAVASCRIPT,
       var $root_context = $application.create_root_context();
       (function($context) {
-        var $_result;
+        var $_expected;
         var $_temp;
         $context.fn({
           "inherit_scope": true,
           "name": "f",
           "args": ["a", "b"],
           "body": function($context) {
-            var $_result;
-            ($_result = ($context.get_member("a") + $context.get_member("b")));
-            return $_result;
+            var $_expected;
+            ($_expected = ($context.get_member("a") + $context.get_member("b")));
+            return $_expected;
           }
         });
-        ($_result = Gene.assert(Gene.equal($context.get_member("f").invoke($context, undefined, Gene.Base.from_data([1, 2])), 3)));
-        return $_result;
+        ($_expected = Gene.assert(Gene.equal($context.get_member("f").invoke($context, undefined, Gene.Base.from_data([1, 2])), 3)));
+        return $_expected;
       })($root_context);
     JAVASCRIPT
 
@@ -356,7 +356,7 @@ describe Gene::Lang::Compiler do
     <<-JAVASCRIPT,
       var $root_context = $application.create_root_context();
       (function($context) {
-        var $_result;
+        var $_expected;
         var $_temp;
         $context.var("a", 1);
         $context.fn({
@@ -364,14 +364,14 @@ describe Gene::Lang::Compiler do
           "name": "f",
           "args": ["b"],
           "body": function($context) {
-            var $_result;
+            var $_expected;
             $context.var("c", 3);
-            ($_result = (($context.get_member("a") + $context.get_member("b")) + $context.get_member("c")));
-            return $_result;
+            ($_expected = (($context.get_member("a") + $context.get_member("b")) + $context.get_member("c")));
+            return $_expected;
           }
         });
-        ($_result = Gene.assert(Gene.equal($context.get_member("f").invoke($context, undefined, Gene.Base.from_data([2])), 6)));
-        return $_result;
+        ($_expected = Gene.assert(Gene.equal($context.get_member("f").invoke($context, undefined, Gene.Base.from_data([2])), 6)));
+        return $_expected;
       })($root_context);
     JAVASCRIPT
 
@@ -393,7 +393,7 @@ describe Gene::Lang::Compiler do
     puts "\nRun focused tests only!\n"
   end
 
-  testcases.each do |input, result|
+  testcases.each do |input, expected|
     next if focus and not input.include? '!focus!'
 
     it input do
@@ -409,22 +409,22 @@ describe Gene::Lang::Compiler do
           '(compile $parsed_code)'
         end
 
-      output = @application.parse_and_process(code)
+      actual_result = @application.parse_and_process(code)
 
-      if result.strip != ''
-        compare_code output, result
+      if expected.strip != ''
+        compare_code expected, actual_result
       end
 
       if focus and ENV["save"]
-        File.write File.expand_path(File.dirname(__FILE__) + '/../../../gene-js/build/src/generated.js'), result
+        File.write File.expand_path(File.dirname(__FILE__) + '/../../../gene-js/build/src/generated.js'), expected
       end
 
       if input.index('!throw-error!')
         lambda {
-          @ctx.eval(output)
+          @ctx.eval(actual_result)
         }.should raise_error
       elsif input.index('!eval!')
-        @ctx.eval(output)
+        @ctx.eval(actual_result)
       end
     end
   end
