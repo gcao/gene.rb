@@ -26,15 +26,15 @@ def compare_code first, second
   result = (beautify(first) == beautify(second))
   if not result
     puts
-    puts "Expected vvvvvvvvvvvvvvv"
+    puts "vvvvvvvvvvvvvvv Expected vvvvvvvvvvvvvvv"
     puts
     puts beautify(first).gsub(/^/m, '      ')
     puts
-    puts "         ---------------"
+    puts "----------------------------------------"
     puts
     puts beautify(second).gsub(/^/m, '      ')
     puts
-    puts "Actual   ^^^^^^^^^^^^^^^"
+    puts "^^^^^^^^^^^^^^^  Actual  ^^^^^^^^^^^^^^^"
   end
   beautify(first).should == beautify(second)
 end
