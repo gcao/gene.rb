@@ -811,6 +811,13 @@ module Gene::Lang::Handlers
 
       op    = data.data[0].name
       left  = context.process(data.type)
+
+      if op == '&&'
+        return left && context.process(data.data[1])
+      elsif op == '||'
+        return left || context.process(data.data[1])
+      end
+
       right = context.process(data.data[1])
       case op
       when '==' then left == right
@@ -830,8 +837,8 @@ module Gene::Lang::Handlers
       when '|' then left | right
       when '&' then left & right
 
-      when '&&' then left && right
-      when '||' then left || right
+      # when '&&' then left && right
+      # when '||' then left || right
       when '..' then Range.new(left, right)
       end
     end

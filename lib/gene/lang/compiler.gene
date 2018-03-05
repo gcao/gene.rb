@@ -263,26 +263,12 @@
 )
 
 (fn compile_method_call data
-  (match (_self method args...) data)
-  # What's going on with 'method'?
-  (var a :a)
-  (println ($invoke a 'class'))
-  (println ($invoke method 'class'))
-  (println ($invoke a 'name'))
-  (println ($invoke method 'name'))
-  (println ($invoke a 'is_a?' (get_native_class 'Gene::Types::Symbol')))
-  (println ($invoke method 'is_a?' (get_native_class 'Gene::Types::Symbol')))
-  (println (a .class))
-  (debug method)
-  (open_repl)
-  (println (method .class))
-  (println (a .to_s))
-  (println (method .to_s))
+  (match (_self _method args...) data)
   (::
     ((Gene .invoke) <- {
       ^context $context
       ^self (%compile_ _self)
-      ^method (%= (method .to_s))
+      ^method (%= ((_method .to_s) .substr 1))
       ^args %args
     })
   )

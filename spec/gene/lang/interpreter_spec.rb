@@ -628,6 +628,9 @@ describe Gene::Lang::Interpreter do
     it("((true  || true)  == true)")  { @application.parse_and_process(example.description).should be_true }
     it("((true  || false) == true)")  { @application.parse_and_process(example.description).should be_true }
     it("((false || false) == false)") { @application.parse_and_process(example.description).should be_true }
+
+    it("((false && (throw 'error')) == false)")  { @application.parse_and_process(example.description).should be_true }
+    it("((true  || (throw 'error')) == true)")   { @application.parse_and_process(example.description).should be_true }
   end
 
   describe "Binary expression" do
