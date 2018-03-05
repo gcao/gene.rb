@@ -84,6 +84,8 @@
     )
   else_if (data .is Boolean Int)
     data
+  else_if (data .is Array)
+    (data .map (fnx item (compile_ item)))
   else_if (data .is Undefined)
     undefined
   )
@@ -258,7 +260,10 @@
 (fn compile_new data
   (match [klass args...] data)
   (::
-    (($context .new) <- (%klass .to_s))
+    (($context .new) <-
+      (%compile_ klass)
+      (%compile_ args)
+    )
   )
 )
 

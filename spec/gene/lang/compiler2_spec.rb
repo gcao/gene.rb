@@ -241,21 +241,21 @@ describe Gene::Lang::Compiler do
       })();
     JAVASCRIPT
 
-    ' # Class
+    ' # Create class
       (class A)
     ' =>
     <<-JAVASCRIPT,
       $context.klass("A");
     JAVASCRIPT
 
-    ' # Class
-      (new A)
+    ' # Instantiate class
+      (new A 1)
     ' =>
     <<-JAVASCRIPT,
-      $context.new("A");
+      $context.new($context.get_member("A"), [1]);
     JAVASCRIPT
 
-    ' # Class
+    ' # Invoke method
       (a .b)
     ' =>
     <<-JAVASCRIPT,
@@ -277,7 +277,7 @@ describe Gene::Lang::Compiler do
     <<-JAVASCRIPT,
     JAVASCRIPT
 
-    ' # Class
+    ' # Define methods
       # !pending!
       (class A
         (method m a a)
