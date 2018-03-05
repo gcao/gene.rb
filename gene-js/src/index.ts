@@ -689,31 +689,42 @@ namespace Gene {
       throw message || 'AssertionError';
     }
   }
-}
 
-Gene['equal'] = function(first: any, second: any) {
-  if (first instanceof Gene.Base) {
-    return first.equal(second);
-  } else {
-    return first == second;
+  export function equal(first: any, second: any) {
+    if (first instanceof Gene.Base) {
+      return first.equal(second);
+    } else {
+      return first == second;
+    }
+  };
+
+  Gene['throw'] = function(error: any) {
+    throw error;
+  };
+
+  Gene['return'] = function(value: any) {
+    throw new Gene.Return(value);
+  };
+
+  Gene['new'] = function({context, klass, args}) {
+    var obj = new Gene.Base(klass);
+    (Gene as any).invoke({
+      context: context,
+      self: obj,
+      method: 'init',
+      args: args
+    });
+    return obj;
   }
-};
 
-Gene['throw'] = function(error: any) {
-  throw error;
-};
-
-Gene['return'] = function(value: any) {
-  throw new Gene.Return(value);
-};
-
-Gene['invoke'] = function({context, self, method, args}) {
-  self.invoke({
-    context: context,
-    self: self,
-    method: method,
-    args: args
-  });
-};
+  export function invoke({context, self, method, args}) {
+    self.invoke({
+      context: context,
+      self: self,
+      method: method,
+      args: args
+    });
+  };
+}
 
 let $application = new Gene.Application();

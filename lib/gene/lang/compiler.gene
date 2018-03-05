@@ -260,10 +260,11 @@
 (fn compile_new data
   (match [klass args...] data)
   (::
-    (($context .new) <-
-      (%compile_ klass)
-      (%compile_ args)
-    )
+    ((Gene .new) <- {
+      ^context $context
+      ^class (%compile_ klass)
+      ^args (%compile_ args)
+    })
   )
 )
 

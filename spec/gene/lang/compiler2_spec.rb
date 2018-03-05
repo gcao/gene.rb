@@ -252,7 +252,11 @@ describe Gene::Lang::Compiler do
       (new A 1)
     ' =>
     <<-JAVASCRIPT,
-      $context.new($context.get_member("A"), [1]);
+      Gene.new({
+        "context": $context,
+        "class": $context.get_member("A"),
+        "args": [1]
+      });
     JAVASCRIPT
 
     ' # Invoke method
