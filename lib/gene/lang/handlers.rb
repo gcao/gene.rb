@@ -229,7 +229,11 @@ module Gene::Lang::Handlers
           puts
           repl.start
         elsif data === DEBUG
-          Gene::UNDEFINED
+          value = Gene::UNDEFINED
+          data.data.each do |item|
+            value = context.process(item)
+          end
+          value
         elsif data.type.is_a? Gene::Lang::PropertyName
           context.self[data.type.name]
         elsif data.type.is_a? String
