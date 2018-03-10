@@ -60,20 +60,19 @@
       (if (.skip IGNORE)
         # continue
       else_if ((value = (.parse_float)) != UNPARSED)
-        (result = value)
+        (result = (.handle_top_level_results result value))
       else_if ((value = (.parse_int)) != UNPARSED)
-        # (result = (.handle_top_level_results result value))
-        (result = value)
+        (result = (.handle_top_level_results result value))
       else_if ((value = (.parse_keywords)) != UNPARSED)
-        (result = value)
+        (result = (.handle_top_level_results result value))
       else_if ((value = (.parse_symbol)) != UNPARSED)
-        (result = value)
+        (result = (.handle_top_level_results result value))
       else_if ((value = (.parse_string)) != UNPARSED)
-        (result = value)
+        (result = (.handle_top_level_results result value))
       else_if ((value = (.parse_array)) != UNPARSED)
-        (result = value)
+        (result = (.handle_top_level_results result value))
       else_if ((value = (.parse_gene)) != UNPARSED)
-        (result = value)
+        (result = (.handle_top_level_results result value))
       )
     )
 
@@ -81,6 +80,16 @@
       ($invoke (get_native_class 'Gene::Types::Stream') 'new')
     else
       result
+    )
+  )
+
+  (method handle_top_level_results [container new_result]
+    (if (container == UNPARSED)
+      new_result
+    else_if (container .is Stream)
+      (container .push new_result)
+    else
+      ($invoke (get_native_class 'Gene::Types::Stream') 'new' container new_result)
     )
   )
 
