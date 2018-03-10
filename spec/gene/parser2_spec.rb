@@ -70,6 +70,18 @@ describe "Parser" do
     (var result ((new Parser '{^a b}') .parse))
     (assert (result == {^a :b}))
 
+    (var result ((new Parser '{^^a}') .parse))
+    (assert (result == {^^a}))
+
+    (var result ((new Parser '{^+a}') .parse))
+    (assert (result == {^^a}))
+
+    (var result ((new Parser '{^!a}') .parse))
+    (assert (result == {^!a}))
+
+    (var result ((new Parser '{^-a}') .parse))
+    (assert (result == {^!a}))
+
     (var result ((new Parser '(a ^name "value" 1)') .parse))
     (assert ((result .type) == :a))
     (assert ((result .get 'name') == 'value'))
