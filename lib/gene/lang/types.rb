@@ -181,15 +181,6 @@ module Gene::Lang
     end
   end
 
-  class ThrownException < Object
-    attr_accessor :exception
-
-    def initialize exception
-      super(ThrownException)
-      set 'exception', exception
-    end
-  end
-
   class ExceptionWrapper < Exception
     attr :wrapped_exception
 
@@ -316,8 +307,7 @@ module Gene::Lang
         statements.each do |stmt|
           result = process stmt
           if (result.is_a?(Gene::Lang::ReturnValue) or
-              result.is_a?(Gene::Lang::BreakValue) or
-              result.is_a?(Gene::Lang::ThrownException))
+              result.is_a?(Gene::Lang::BreakValue))
             break
           end
         end
