@@ -70,6 +70,11 @@ describe "Parser" do
     (var result ((new Parser '{^a b}') .parse))
     (assert (result == {^a :b}))
 
+    (var result ((new Parser '(a ^name "value" 1)') .parse))
+    (assert ((result .type) == :a))
+    (assert ((result .properties) == {^name 'value'}))
+    (assert ((result .data) == [1]))
+
   ~.split("\n\n").each do |code|
     it code do
       input = example.description

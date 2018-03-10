@@ -193,6 +193,9 @@
           (throw PrematureEndError "unexpected end of input")
         else_if (.scan GENE_CLOSE)
           break
+        else_if ((value = (.parse_property)) != UNPARSED)
+          (empty = false)
+          (properties .set (value .get 'name') (value .get 'value'))
         else_if ((value = (.parse_child)) != UNPARSED)
           (if empty
             (type = value)
@@ -210,6 +213,7 @@
       else
         (var result (new Object data))
         (result .set '#type' type)
+        (properties .each (fnx [name value] (result .set name value)))
         result
       )
     else
@@ -220,14 +224,15 @@
   (method parse_hash _
     (if (.scan HASH_OPEN)
       (var result {})
+      (var value)
 
       (loop
         (if (.eos?)
           (throw PrematureEndError "unexpected end of input")
         else_if (.scan HASH_CLOSE)
           break
-        else_if ((.parse_property result) != UNPARSED)
-          noop
+        else_if ((value = (.parse_property)) != UNPARSED)
+          (result .set (value .get 'name') (value .get 'value'))
         else
           (throw ParseError "unexpected token at 'TODO'!")
         )
@@ -262,7 +267,7 @@
     result
   )
 
-  (method parse_property parent
+  (method parse_property _
     (if (.scan PROPERTY)
       (var s '')
 
@@ -294,13 +299,11 @@
         (if (value == UNPARSED)
           (throw ParseError ("Attribute for " name " is not found."))
         else
-          (parent .set name value)
+          {^name name ^value value}
         )
       else
         (throw ParseError "Should never reach here")
       )
-
-      undefined
     else
       UNPARSED
     )
