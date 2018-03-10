@@ -65,6 +65,20 @@ module Gene
     RANGE = Gene::Types::Symbol.new('#..')
     SET   = Gene::Types::Symbol.new('#<>')
 
+    GENE_PI = Gene::Types::Symbol.new('#GENE')
+
+    # Document level instructions
+    DOCUMENT_INSTRUCTIONS = %w(version)
+
+    DEFAULT_DOCUMENT_VERSION = "1.0"
+
+    # TODO: we can potentially add below
+    # Group instructions
+    # Array instructions
+    # Hash  instructions
+
+    attr_accessor :version
+
     def self.parse input, options = {}
       new(input, options).parse
     end
@@ -74,6 +88,10 @@ module Gene
       @logger.debug('initialize', source, options)
       @options = options
       super source
+    end
+
+    def version
+      @version || DEFAULT_DOCUMENT_VERSION
     end
 
     def parse
@@ -97,7 +115,9 @@ module Gene
         when (value = parse_placeholder) != UNPARSED
           obj = handle_top_level_results obj, value
         when (value = parse_group) != UNPARSED
-          obj = handle_top_level_results obj, value
+          if value != IGNORABLE
+            obj = handle_top_level_results obj, value
+          end
         when (value = parse_hash) != UNPARSED
           obj = handle_top_level_results obj, value
         # when (value = parse_ref) != UNPARSED
@@ -447,7 +467,7 @@ module Gene
       attribute_for_group.each do |k, v|
         gene.properties[k] = v
       end
-      gene
+      handle_processing_instructions gene
     end
 
     def parse_hash
@@ -475,6 +495,10 @@ module Gene
             next
           elsif (parsed = parse_value) == UNPARSED
             raise ParseError, "unexpected token at '#{peek(20)}'!"
+          elsif parsed == IGNORABLE
+            # TODO: in order to support processing instructions which returns IGNORABLE in hash
+            # process it and call 'next' here
+            raise ParseError, "error at '#{peek(20)}'!"
           else
             key = parsed.to_s
           end
@@ -489,6 +513,8 @@ module Gene
             raise ParseError, "unexpected token at '#{peek(20)}'!"
           elsif (parsed = parse_value) == UNPARSED
             raise ParseError, "unexpected token at '#{peek(20)}'!"
+          elsif parsed == IGNORABLE
+            raise ParseError, "error at '#{peek(20)}'!"
           else
             value = parsed
             result[key] = value
@@ -502,6 +528,27 @@ module Gene
       raise PrematureEndError, "Incomplete content" unless closed
 
       result
+    end
+
+    def handle_processing_instructions gene
+      if gene.type == GENE_PI
+        gene.properties.each do |key, value|
+          if DOCUMENT_INSTRUCTIONS.include?(key)
+            send "#{key}=", value
+          end
+        end
+        result = Gene::UNDEFINED
+        gene.data.each do |item|
+          result = send item.to_s
+        end
+        if result == Gene::UNDEFINED
+          IGNORABLE
+        else
+          result
+        end
+      else
+        gene
+      end
     end
   end
 end

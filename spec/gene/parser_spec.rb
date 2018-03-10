@@ -210,12 +210,33 @@ describe Gene::Parser do
     end
   end
 
+  # (#GENE ^version 1.0) sets the version of the document but does NOT insert anything in the document
+  # (#GENE version) inserts the version into the document
+  # (#GENE (do_this) (do_that) void) if the last value returns undefined, it'll not be inserted
   describe 'Processing instructions' do
     it '
       # Gene version the document conforms to. The parser must be able to parse. If not, throw error
-      (#GENE ^version 1.0)
+      (#GENE ^version "1.0")
+      123
     ' do
-      pending
+      result = Gene::Parser.parse(example.description)
+      result.should == 123
+    end
+
+    it '
+      (#GENE ^version "1.0")
+      (#GENE version)
+    ' do
+      result = Gene::Parser.parse(example.description)
+      result.should == "1.0"
+    end
+
+    it '
+      # Default version is 1.0
+      (#GENE version)
+    ' do
+      result = Gene::Parser.parse(example.description)
+      result.should == "1.0"
     end
   end
 
