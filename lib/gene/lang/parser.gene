@@ -34,6 +34,7 @@
 (nsvar UNDEFINED  (regexp 'undefined' SEP_OR_END))
 
 (nsvar ESCAPE     #/\\/)
+(nsvar PROPERTY   #/\^(?=[+\-]?)/)
 
 (nsvar SYMBOL     #/([^"',\s\(\)\[\]\{\}][^,\s\(\)\[\]\{\}]*)/)
 (nsvar STRING     #/"(([^"]|\\")*)"/)
@@ -225,6 +226,8 @@
           (throw PrematureEndError "unexpected end of input")
         else_if (.scan HASH_CLOSE)
           break
+        else_if ((.parse_property result) != UNPARSED)
+          noop
         else
           (throw ParseError "unexpected token at 'TODO'!")
         )
@@ -257,6 +260,50 @@
     )
 
     result
+  )
+
+  (method parse_property parent
+    (if (.scan PROPERTY)
+      (var s '')
+
+      (loop
+        (if (.eos?)
+          break
+        else_if (.check SEPARATOR)
+          break
+        else
+          (.scan ESCAPE)
+          (s += ($invoke @target 'getch'))
+        )
+      )
+
+      (var matched (#/^[\^\!\+\-]?(.*)^?$/ .match s))
+      (if matched
+        (var name ($invoke matched '[]' 1))
+        (var first (s .substr 0 1))
+        (var value
+          (if (['^' '+'] .include first)
+            true
+          else_if (['!' '-'] .include first)
+            false
+          else
+            (.parse_child)
+          )
+        )
+
+        (if (value == UNPARSED)
+          (throw ParseError ("Attribute for " name " is not found."))
+        else
+          (parent .set name value)
+        )
+      else
+        (throw ParseError "Should never reach here")
+      )
+
+      undefined
+    else
+      UNPARSED
+    )
   )
 )
 
