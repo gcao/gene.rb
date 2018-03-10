@@ -18,11 +18,29 @@ describe "Parser" do
     (var result ((new Parser '1') .parse))
     (assert (result == 1))
 
+    (var result ((new Parser '-1') .parse))
+    (assert (result == -1))
+
+    (var result ((new Parser '1.5') .parse))
+    (assert (result == 1.5))
+
     (var result ((new Parser 'true') .parse))
     (assert (result == true))
 
+    (var result ((new Parser 'false') .parse))
+    (assert (result == false))
+
+    (var result ((new Parser 'null') .parse))
+    (assert (result == null))
+
+    (var result ((new Parser 'undefined') .parse))
+    (assert (result == undefined))
+
     (var result ((new Parser 'a') .parse))
     (assert (result == :a))
+
+    (var result ((new Parser '\\\\#') .parse))
+    (assert (result == :#))
 
     (var result ((new Parser '"a"') .parse))
     (assert (result == 'a'))
@@ -32,6 +50,9 @@ describe "Parser" do
 
     (var result ((new Parser '[1]') .parse))
     (assert (result == [1]))
+
+    (var result ((new Parser '[# 1\n]') .parse))
+    (assert (result == []))
 
     (var result ((new Parser '()') .parse))
     (assert (result == noop))

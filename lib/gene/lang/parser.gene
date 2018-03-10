@@ -24,10 +24,16 @@
 (nsvar SEP_OR_END (regexp "(?=" SEPARATOR "|$)"))
 (nsvar IGNORE     #/\#($|[\n\r]|\s+[^\n\r]*($|[\n\r]))|[\s]/m)
 
-(nsvar INTEGER    #/(-?0|-?[1-9]\d*)/)
+(nsvar INTEGER    #/(-?0|-?[1-9]\d*)/ )
+(nsvar FLOAT      #/((0|[1-9]\d*)(\.\d+([eE][+-]?\d+)|\.\d+|([eE][+-]?\d+)))/x )
 
 # Keywords
 (nsvar TRUE       (regexp 'true' SEP_OR_END))
+(nsvar FALSE      (regexp 'false' SEP_OR_END))
+(nsvar NULL       (regexp 'null' SEP_OR_END))
+(nsvar UNDEFINED  (regexp 'undefined' SEP_OR_END))
+
+(nsvar ESCAPE     #/\\/)
 
 (nsvar SYMBOL     #/([^"',\s\(\)\[\]\{\}][^,\s\(\)\[\]\{\}]*)/)
 (nsvar STRING     #/"(([^"]|\\")*)"/)
@@ -53,6 +59,8 @@
 
       (if (.skip IGNORE)
         # continue
+      else_if ((value = (.parse_float)) != UNPARSED)
+        (result = value)
       else_if ((value = (.parse_int)) != UNPARSED)
         # (result = (.handle_top_level_results result value))
         (result = value)
@@ -84,9 +92,23 @@
     )
   )
 
+  (method parse_float _
+    (if (.scan FLOAT)
+      ($invoke ($invoke @target '[]' 1) 'to_f')
+    else
+      UNPARSED
+    )
+  )
+
   (method parse_keywords _
     (if (.scan TRUE)
       true
+    else_if (.scan FALSE)
+      false
+    else_if (.scan NULL)
+      null
+    else_if (.scan UNDEFINED)
+      undefined
     else
       UNPARSED
     )
@@ -109,6 +131,7 @@
         else_if (.check SEPARATOR)
           break
         else
+          (.scan ESCAPE)
           (value += ($invoke @target 'getch'))
         )
       )
@@ -187,6 +210,7 @@
     (if (.eos?)
       (throw PrematureEndError "unexpected end of input")
     else_if ((result = (.parse_string))   != UNPARSED)
+    else_if ((result = (.parse_float))    != UNPARSED)
     else_if ((result = (.parse_int))      != UNPARSED)
     else_if ((result = (.parse_keywords)) != UNPARSED)
     else_if ((result = (.parse_symbol))   != UNPARSED)
