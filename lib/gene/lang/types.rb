@@ -190,6 +190,18 @@ module Gene::Lang
     end
   end
 
+  class ExceptionWrapper < Exception
+    attr :wrapped_exception
+
+    def initialize exception
+      @wrapped_exception = exception
+    end
+
+    def to_s
+      @wrapped_exception.get('message')
+    end
+  end
+
   class Application < Object
     attr_accessor :global_namespace
 

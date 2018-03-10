@@ -1244,11 +1244,14 @@ module Gene::Lang::Handlers
 
         exception = Gene::Lang::Object.new klass
         exception.set 'message', message
-        Gene::Lang::ThrownException.new exception
+        # Gene::Lang::ThrownException.new exception
+        raise Gene::Lang::ExceptionWrapper.new(exception)
       else
-        result = context.process_statements data.data
-        if result.is_a? Gene::Lang::ThrownException
-          exception = result.get 'exception'
+        begin
+          context.process_statements data.data
+        rescue Gene::Lang::ExceptionWrapper => wrapper
+          exception = wrapper.wrapped_exception
+
           handled = false
 
           data.properties.each do |key, value|
@@ -1269,9 +1272,38 @@ module Gene::Lang::Handlers
             args = Gene::Lang::Object.from_array_and_properties []
             function.call context: context, args: args
           end
+
+          if not handled
+            raise wrapper
+          end
         end
 
-        result
+        # result = context.process_statements data.data
+        # if result.is_a? Gene::Lang::ThrownException
+        #   exception = result.get 'exception'
+        #   handled = false
+
+        #   data.properties.each do |key, value|
+        #     next if key == 'ensure'
+
+        #     if exception.class.name == key or (key == 'default' and exception.class.name == 'Exception')
+        #       handled = true
+        #       handler = context.process value
+        #       args = Gene::Lang::Object.from_array_and_properties [exception]
+        #       result = handler.call context: context, args: args
+        #       break
+        #     end
+        #   end
+
+        #   ensure_cb = data.properties['ensure']
+        #   if ensure_cb
+        #     function = context.process ensure_cb
+        #     args = Gene::Lang::Object.from_array_and_properties []
+        #     function.call context: context, args: args
+        #   end
+        # end
+
+        # result
       end
     end
   end

@@ -44,6 +44,9 @@
 (nsvar ARRAY_OPEN  #/\[/)
 (nsvar ARRAY_CLOSE #/\]/)
 
+(nsvar HASH_OPEN  #/\{/)
+(nsvar HASH_CLOSE #/\}/)
+
 (class Parser extend StringScanner
   ^^global
 
@@ -72,6 +75,8 @@
       else_if ((value = (.parse_array)) != UNPARSED)
         (result = (.handle_top_level_results result value))
       else_if ((value = (.parse_gene)) != UNPARSED)
+        (result = (.handle_top_level_results result value))
+      else_if ((value = (.parse_hash)) != UNPARSED)
         (result = (.handle_top_level_results result value))
       )
     )
@@ -206,6 +211,26 @@
         (result .set '#type' type)
         result
       )
+    else
+      UNPARSED
+    )
+  )
+
+  (method parse_hash _
+    (if (.scan HASH_OPEN)
+      (var result {})
+
+      (loop
+        (if (.eos?)
+          (throw PrematureEndError "unexpected end of input")
+        else_if (.scan HASH_CLOSE)
+          break
+        else
+          (throw ParseError "unexpected token at 'TODO'!")
+        )
+      )
+
+      result
     else
       UNPARSED
     )

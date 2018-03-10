@@ -11,7 +11,7 @@ describe "Parser" do
   end
 
 
-  %q~
+  %Q~
     (var result ((new Parser '') .parse))
     (assert (result .is Stream))
 
@@ -48,6 +48,9 @@ describe "Parser" do
     (var result ((new Parser '"a"') .parse))
     (assert (result == 'a'))
 
+    (var result ((new Parser '"a \nmultiline \nstring"') .parse))
+    (assert (result == 'a \nmultiline \nstring'))
+
     (var result ((new Parser '[]') .parse))
     (assert (result == []))
 
@@ -63,6 +66,9 @@ describe "Parser" do
     (var result ((new Parser '(a 1)') .parse))
     (assert ((result .type) == :a))
     (assert ((result .data) == [1]))
+
+    (var result ((new Parser '{^a b}') .parse))
+    (assert (result == {^a :b}))
 
   ~.split("\n\n").each do |code|
     it code do

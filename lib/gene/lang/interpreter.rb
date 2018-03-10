@@ -54,10 +54,10 @@ class Gene::Lang::Interpreter
   def parse_and_process input
     parsed = Gene::Parser.parse input
     result = process parsed
-    # convert Gene exception to ruby exception
-    if result.is_a? Gene::Lang::ThrownException
-      raise result.exception.get('message')
-    end
+    # # convert Gene exception to ruby exception
+    # if result.is_a? Gene::Lang::ThrownException
+    #   raise result.exception.get('message')
+    # end
     result
   end
 

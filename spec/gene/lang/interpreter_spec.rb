@@ -1463,6 +1463,17 @@ describe Gene::Lang::Interpreter do
     end
 
     it "
+      [
+        (throw 'some error')
+        1 # should not reach here
+      ]
+    " do
+      lambda {
+        @application.parse_and_process(example.description)
+      }.should raise_error('some error')
+    end
+
+    it "
       (fn f _
         (throw 'some error')
       )
