@@ -2025,6 +2025,12 @@ describe Gene::Lang::Interpreter do
     end
 
     it "
+      +assert ((eval 1 2) == 2)
+    " do
+      @application.parse_and_process(example.description)
+    end
+
+    it "
       (var a 1)
       +assert ((eval :a) == 1)
     " do

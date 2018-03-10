@@ -5,22 +5,24 @@
 
 (println "Running unit tests...")
 
-(fn describe [title body...]
+(fn describe [^^pending title body...]
   ^!eval_arguments
+
+  (if pending
+    (println "PENDING: " title)
+  else
+    (body .each (fnx item (eval item)))
+  )
 )
 
-(fn xdescribe title
+(fn it [^^pending title body...]
   ^!eval_arguments
-  (println "PENDING: " title)
-)
 
-(fn it [title body...]
-  ^!eval_arguments
-)
-
-(fn xit title
-  ^!eval_arguments
-  (println "PENDING: " title)
+  (if pending
+    (println "PENDING: " title)
+  else
+    (body .each (fnx item (eval item)))
+  )
 )
 
 (describe "Parser"

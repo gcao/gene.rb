@@ -1,0 +1,3 @@
+#!/usr/bin/env glang
+
+(println "Running unit tests...")
