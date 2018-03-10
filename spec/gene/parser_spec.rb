@@ -74,6 +74,7 @@ describe Gene::Parser do
     # ## comment out next item (structural)
     # ##< comment out up to >## or end of group/array/hash (structural)
     # TODO need to add more tests espectially for structural comments
+    "#!/usr/bin/env glang\n 1"    => 1,  # Special case: treat unix shebang as comment
     "(a # b\n)"                   => Gene::Types::Base.new(Gene::Types::Symbol.new('a')),
     "(a #< this is a test ># b)"  => Gene::Types::Base.new(Gene::Types::Symbol.new('a'), Gene::Types::Symbol.new('b')),
     "(a #< this is a test)"       => Gene::Types::Base.new(Gene::Types::Symbol.new('a')),
@@ -243,6 +244,7 @@ describe Gene::Parser do
   # An optional readonly environment hash is passed in to the parser
   # By default it'll be the environment a process is attached to
   # However a custom environment can be passed in too
+  # When a custom environment is passed in, what restriction do we need on its values?
   describe 'Environment' do
     it '(#ENV "USER")' do
       result = Gene::Parser.parse(example.description)

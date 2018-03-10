@@ -1,3 +1,34 @@
+#!/usr/bin/env glang
 # TODO
 # Know which directory myself is in
 # Be able to load .gene file from this directory or parent or sibiling directories
+
+(println "Running unit tests...")
+
+(fn describe [title body...]
+  ^!eval_arguments
+)
+
+(fn xdescribe title
+  ^!eval_arguments
+  (println "PENDING: " title)
+)
+
+(fn it [title body...]
+  ^!eval_arguments
+)
+
+(fn xit title
+  ^!eval_arguments
+  (println "PENDING: " title)
+)
+
+(describe "Parser"
+  (it "should pass"
+    (assert true)
+  )
+
+  (it "should fail"
+    (assert false)
+  )
+)
