@@ -39,6 +39,9 @@ describe "Parser" do
     (var result ((new Parser 'undefined') .parse))
     (assert (result == undefined))
 
+    (var result ((new Parser 'void') .parse))
+    (assert (result == undefined))
+
     (var result ((new Parser 'a') .parse))
     (assert (result == :a))
 

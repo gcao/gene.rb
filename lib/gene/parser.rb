@@ -539,7 +539,9 @@ module Gene
         end
         result = Gene::UNDEFINED
         gene.data.each do |item|
-          result = send item.to_s
+          if DOCUMENT_INSTRUCTIONS.include?(item.to_s)
+            result = send item.to_s
+          end
         end
         if result == Gene::UNDEFINED
           IGNORABLE

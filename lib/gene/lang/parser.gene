@@ -31,7 +31,7 @@
 (nsvar TRUE       (regexp 'true' SEP_OR_END))
 (nsvar FALSE      (regexp 'false' SEP_OR_END))
 (nsvar NULL       (regexp 'null' SEP_OR_END))
-(nsvar UNDEFINED  (regexp 'undefined' SEP_OR_END))
+(nsvar UNDEFINED  (regexp 'undefined|void' SEP_OR_END))
 
 (nsvar ESCAPE     #/\\/)
 (nsvar PROPERTY   #/\^/)
