@@ -65,6 +65,8 @@ module Gene
     RANGE = Gene::Types::Symbol.new('#..')
     SET   = Gene::Types::Symbol.new('#<>')
 
+    ENV_TYPE = Gene::Types::Symbol.new('#ENV')
+
     GENE_PI = Gene::Types::Symbol.new('#GENE')
 
     # Document level instructions
@@ -92,6 +94,10 @@ module Gene
 
     def version
       @version || DEFAULT_DOCUMENT_VERSION
+    end
+
+    def env
+      @options['env'] || ENV
     end
 
     def parse
@@ -467,7 +473,9 @@ module Gene
       attribute_for_group.each do |k, v|
         gene.properties[k] = v
       end
-      handle_processing_instructions gene
+      result = handle_processing_instructions gene
+      result = handle_env result
+      result
     end
 
     def parse_hash
@@ -548,6 +556,14 @@ module Gene
         else
           result
         end
+      else
+        gene
+      end
+    end
+
+    def handle_env gene
+      if gene.is_a? Gene::Types::Base and gene.type == ENV_TYPE
+        env[gene.data.first.to_s]
       else
         gene
       end

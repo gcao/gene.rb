@@ -240,6 +240,22 @@ describe Gene::Parser do
     end
   end
 
+  # An optional readonly environment hash is passed in to the parser
+  # By default it'll be the environment a process is attached to
+  # However a custom environment can be passed in too
+  describe 'Environment' do
+    it '(#ENV "USER")' do
+      result = Gene::Parser.parse(example.description)
+      result.should == ENV['USER']
+    end
+
+    it '(#ENV "test")' do
+      env = {'test' => 123}
+      result = Gene::Parser.parse(example.description, 'env' => env)
+      result.should == env['test']
+    end
+  end
+
   [
     '(',
     ')',
