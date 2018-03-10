@@ -72,9 +72,20 @@ describe "Parser" do
 
     (var result ((new Parser '(a ^name "value" 1)') .parse))
     (assert ((result .type) == :a))
-    (assert ((result .properties) == {^name 'value'}))
+    (assert ((result .get 'name') == 'value'))
     (assert ((result .data) == [1]))
 
+    (var result ((new Parser '[1 {^a b}]') .parse))
+    (assert (result == [1 {^a :b}]))
+
+    (var result ((new Parser '{^a [1 2]}') .parse))
+    (assert (result == {^a [1 2]}))
+
+    (var result ((new Parser '(a ^b [1 2] ^c {^d e} 3)') .parse))
+    (assert ((result .type) == :a))
+    (assert ((result .get 'b') == [1 2]))
+    (assert ((result .get 'c') == {^d :e}))
+    (assert ((result .data) == [3]))
   ~.split("\n\n").each do |code|
     it code do
       input = example.description
