@@ -1256,7 +1256,7 @@ module Gene::Lang::Handlers
               handled = true
               handler = context.process value
               args = Gene::Lang::Object.from_array_and_properties [exception]
-              result = handler.call context: context, args: args
+              result = handler.call context: context, arguments: args
               break
             end
           end
@@ -1265,7 +1265,7 @@ module Gene::Lang::Handlers
           if ensure_cb
             function = context.process ensure_cb
             args = Gene::Lang::Object.from_array_and_properties []
-            function.call context: context, args: args
+            function.call context: context, arguments: args
           end
 
           if not handled

@@ -21,16 +21,32 @@
   (if pending
     (println "PENDING: " title)
   else
-    (body .each (fnx item (eval item)))
+    (catch
+      ^AssertionFailure (fnx e (println (e .message)))
+      (body .each (fnx item (eval item)))
+    )
+  )
+)
+
+(class AssertionFailure extend Exception
+)
+
+(fn assert2 [expr message]
+  ^!eval_arguments
+
+  (if_not (eval expr)
+    (throw AssertionFailure
+      (message || ("Assertion failed: " expr))
+    )
   )
 )
 
 (describe "Parser"
   (it "should pass"
-    (assert true)
+    (assert2 true)
   )
 
   (it "should fail"
-    (assert false)
+    (assert2 false)
   )
 )
