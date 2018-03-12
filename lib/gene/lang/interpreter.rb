@@ -54,10 +54,6 @@ class Gene::Lang::Interpreter
   def parse_and_process input
     parsed = Gene::Parser.parse input
     result = process parsed
-    # convert Gene exception to ruby exception
-    if result.is_a? Gene::Lang::ThrownException
-      raise result.exception.get('message')
-    end
     result
   end
 
@@ -72,8 +68,7 @@ class Gene::Lang::Interpreter
 
         # TODO: should we allow break / return on the top level?
         if (result.is_a?(Gene::Lang::ReturnValue) or
-            result.is_a?(Gene::Lang::BreakValue) or
-            result.is_a?(Gene::Lang::ThrownException))
+            result.is_a?(Gene::Lang::BreakValue))
           break
         end
       end

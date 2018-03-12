@@ -933,8 +933,6 @@ module Gene::Lang::Handlers
   #         return result
   #       elsif result.is_a? Gene::Lang::BreakValue
   #         break result.value
-  #       elsif result.is_a? Gene::Lang::ThrownException
-  #         break result
   #       end
   #       context.process update
   #     end
@@ -953,8 +951,6 @@ module Gene::Lang::Handlers
         if result.is_a? Gene::Lang::BreakValue
           break result.value
         elsif result.is_a? Gene::Lang::ReturnValue
-          break result
-        elsif result.is_a? Gene::Lang::ThrownException
           break result
         end
       end
@@ -1255,11 +1251,13 @@ module Gene::Lang::Handlers
 
         exception = Gene::Lang::Object.new klass
         exception.set 'message', message
-        Gene::Lang::ThrownException.new exception
+        raise Gene::Lang::ExceptionWrapper.new(exception)
       else
-        result = context.process_statements data.data
-        if result.is_a? Gene::Lang::ThrownException
-          exception = result.get 'exception'
+        begin
+          context.process_statements data.data
+        rescue Gene::Lang::ExceptionWrapper => wrapper
+          exception = wrapper.wrapped_exception
+
           handled = false
 
           data.properties.each do |key, value|
@@ -1269,7 +1267,7 @@ module Gene::Lang::Handlers
               handled = true
               handler = context.process value
               args = Gene::Lang::Object.from_array_and_properties [exception]
-              result = handler.call context: context, args: args
+              result = handler.call context: context, arguments: args
               break
             end
           end
@@ -1278,11 +1276,13 @@ module Gene::Lang::Handlers
           if ensure_cb
             function = context.process ensure_cb
             args = Gene::Lang::Object.from_array_and_properties []
-            function.call context: context, args: args
+            function.call context: context, arguments: args
+          end
+
+          if not handled
+            raise wrapper
           end
         end
-
-        result
       end
     end
   end

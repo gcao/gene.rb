@@ -1466,6 +1466,17 @@ describe Gene::Lang::Interpreter do
     end
 
     it "
+      [
+        (throw 'some error')
+        1 # should not reach here
+      ]
+    " do
+      lambda {
+        @application.parse_and_process(example.description)
+      }.should raise_error('some error')
+    end
+
+    it "
       (fn f _
         (throw 'some error')
       )
@@ -2012,6 +2023,12 @@ describe Gene::Lang::Interpreter do
   describe "Eval" do
     it "
       +assert ((eval 1) == 1)
+    " do
+      @application.parse_and_process(example.description)
+    end
+
+    it "
+      +assert ((eval 1 2) == 2)
     " do
       @application.parse_and_process(example.description)
     end

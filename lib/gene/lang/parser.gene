@@ -24,10 +24,17 @@
 (nsvar SEP_OR_END (regexp "(?=" SEPARATOR "|$)"))
 (nsvar IGNORE     #/\#($|[\n\r]|\s+[^\n\r]*($|[\n\r]))|[\s]/m)
 
-(nsvar INTEGER    #/(-?0|-?[1-9]\d*)/)
+(nsvar INTEGER    #/(-?0|-?[1-9]\d*)/ )
+(nsvar FLOAT      #/((0|[1-9]\d*)(\.\d+([eE][+-]?\d+)|\.\d+|([eE][+-]?\d+)))/x )
 
 # Keywords
 (nsvar TRUE       (regexp 'true' SEP_OR_END))
+(nsvar FALSE      (regexp 'false' SEP_OR_END))
+(nsvar NULL       (regexp 'null' SEP_OR_END))
+(nsvar UNDEFINED  (regexp 'undefined|void' SEP_OR_END))
+
+(nsvar ESCAPE     #/\\/)
+(nsvar PROPERTY   #/\^/)
 
 (nsvar SYMBOL     #/([^"',\s\(\)\[\]\{\}][^,\s\(\)\[\]\{\}]*)/)
 (nsvar STRING     #/"(([^"]|\\")*)"/)
@@ -37,6 +44,9 @@
 
 (nsvar ARRAY_OPEN  #/\[/)
 (nsvar ARRAY_CLOSE #/\]/)
+
+(nsvar HASH_OPEN  #/\{/)
+(nsvar HASH_CLOSE #/\}/)
 
 (class Parser extend StringScanner
   ^^global
@@ -53,19 +63,22 @@
 
       (if (.skip IGNORE)
         # continue
+      else_if ((value = (.parse_float)) != UNPARSED)
+        (result = (.handle_top_level_results result value))
       else_if ((value = (.parse_int)) != UNPARSED)
-        # (result = (.handle_top_level_results result value))
-        (result = value)
+        (result = (.handle_top_level_results result value))
       else_if ((value = (.parse_keywords)) != UNPARSED)
-        (result = value)
+        (result = (.handle_top_level_results result value))
       else_if ((value = (.parse_symbol)) != UNPARSED)
-        (result = value)
+        (result = (.handle_top_level_results result value))
       else_if ((value = (.parse_string)) != UNPARSED)
-        (result = value)
+        (result = (.handle_top_level_results result value))
       else_if ((value = (.parse_array)) != UNPARSED)
-        (result = value)
+        (result = (.handle_top_level_results result value))
       else_if ((value = (.parse_gene)) != UNPARSED)
-        (result = value)
+        (result = (.handle_top_level_results result value))
+      else_if ((value = (.parse_hash)) != UNPARSED)
+        (result = (.handle_top_level_results result value))
       )
     )
 
@@ -73,6 +86,16 @@
       ($invoke (get_native_class 'Gene::Types::Stream') 'new')
     else
       result
+    )
+  )
+
+  (method handle_top_level_results [container new_result]
+    (if (container == UNPARSED)
+      new_result
+    else_if (container .is Stream)
+      (container .push new_result)
+    else
+      ($invoke (get_native_class 'Gene::Types::Stream') 'new' container new_result)
     )
   )
 
@@ -84,9 +107,23 @@
     )
   )
 
+  (method parse_float _
+    (if (.scan FLOAT)
+      ($invoke ($invoke @target '[]' 1) 'to_f')
+    else
+      UNPARSED
+    )
+  )
+
   (method parse_keywords _
     (if (.scan TRUE)
       true
+    else_if (.scan FALSE)
+      false
+    else_if (.scan NULL)
+      null
+    else_if (.scan UNDEFINED)
+      undefined
     else
       UNPARSED
     )
@@ -109,6 +146,7 @@
         else_if (.check SEPARATOR)
           break
         else
+          (.scan ESCAPE)
           (value += ($invoke @target 'getch'))
         )
       )
@@ -153,8 +191,12 @@
       (loop
         (if (.eos?)
           (throw PrematureEndError "unexpected end of input")
+        else_if (.skip IGNORE)
+          noop
         else_if (.scan GENE_CLOSE)
           break
+        else_if ((value = (.parse_property)) != UNPARSED)
+          (properties .set (value .get 'name') (value .get 'value'))
         else_if ((value = (.parse_child)) != UNPARSED)
           (if empty
             (type = value)
@@ -172,8 +214,32 @@
       else
         (var result (new Object data))
         (result .set '#type' type)
+        (properties .each (fnx [name value] (result .set name value)))
         result
       )
+    else
+      UNPARSED
+    )
+  )
+
+  (method parse_hash _
+    (if (.scan HASH_OPEN)
+      (var result {})
+      (var value)
+
+      (loop
+        (if (.eos?)
+          (throw PrematureEndError "unexpected end of input")
+        else_if (.scan HASH_CLOSE)
+          break
+        else_if ((value = (.parse_property)) != UNPARSED)
+          (result .set (value .get 'name') (value .get 'value'))
+        else
+          (throw ParseError "unexpected token at 'TODO'!")
+        )
+      )
+
+      result
     else
       UNPARSED
     )
@@ -187,9 +253,13 @@
     (if (.eos?)
       (throw PrematureEndError "unexpected end of input")
     else_if ((result = (.parse_string))   != UNPARSED)
+    else_if ((result = (.parse_float))    != UNPARSED)
     else_if ((result = (.parse_int))      != UNPARSED)
     else_if ((result = (.parse_keywords)) != UNPARSED)
     else_if ((result = (.parse_symbol))   != UNPARSED)
+    else_if ((result = (.parse_array))    != UNPARSED)
+    else_if ((result = (.parse_gene))     != UNPARSED)
+    else_if ((result = (.parse_hash))     != UNPARSED)
     else
       (if (['"' "'"] .include? (.peek 1))
         (throw PrematureEndError "unexpected end of input")
@@ -199,6 +269,48 @@
     )
 
     result
+  )
+
+  (method parse_property _
+    (if (.scan PROPERTY)
+      (var s '')
+
+      (loop
+        (if (.eos?)
+          break
+        else_if (.check SEPARATOR)
+          break
+        else
+          (.scan ESCAPE)
+          (s += ($invoke @target 'getch'))
+        )
+      )
+
+      (var matched (#/^[\^\!\+\-]?(.*)^?$/ .match s))
+      (if matched
+        (var name ($invoke matched '[]' 1))
+        (var first (s .substr 0 1))
+        (var value
+          (if (['^' '+'] .include first)
+            true
+          else_if (['!' '-'] .include first)
+            false
+          else
+            (.parse_child)
+          )
+        )
+
+        (if (value == UNPARSED)
+          (throw ParseError ("Attribute for " name " is not found."))
+        else
+          {^name name ^value value}
+        )
+      else
+        (throw ParseError "Should never reach here")
+      )
+    else
+      UNPARSED
+    )
   )
 )
 

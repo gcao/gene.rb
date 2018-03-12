@@ -1,0 +1,52 @@
+#!/usr/bin/env glang
+# TODO
+# Know which directory myself is in
+# Be able to load .gene file from this directory or parent or sibiling directories
+
+(println "Running unit tests...")
+
+(fn describe [^^pending title body...]
+  ^!eval_arguments
+
+  (if pending
+    (println "PENDING: " title)
+  else
+    (body .each (fnx item (eval item)))
+  )
+)
+
+(fn it [^^pending title body...]
+  ^!eval_arguments
+
+  (if pending
+    (println "PENDING: " title)
+  else
+    (catch
+      ^AssertionFailure (fnx e (println (e .message)))
+      (body .each (fnx item (eval item)))
+    )
+  )
+)
+
+(class AssertionFailure extend Exception
+)
+
+(fn assert2 [expr message]
+  ^!eval_arguments
+
+  (if_not (eval expr)
+    (throw AssertionFailure
+      (message || ("Assertion failed: " expr))
+    )
+  )
+)
+
+(describe "Parser"
+  (it "should pass"
+    (assert2 true)
+  )
+
+  (it "should fail"
+    (assert2 false)
+  )
+)

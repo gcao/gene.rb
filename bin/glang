@@ -6,6 +6,16 @@ require "rubygems"
 require "bundler/setup"
 require "gene"
 require "gene/lang/interpreter"
-require "gene/lang/repl"
 
-Gene::Lang::Repl.new.start
+if ARGV.length > 0
+  application = Gene::Lang::Application.new
+  application.load_core_libs
+
+  file = ARGV[0]
+  dir  = File.dirname(file)
+  application.parse_and_process File.read(file), dir: dir, file: file
+else
+  require "gene/lang/repl"
+
+  Gene::Lang::Repl.new.start
+end

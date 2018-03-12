@@ -74,6 +74,7 @@ describe Gene::Parser do
     # ## comment out next item (structural)
     # ##< comment out up to >## or end of group/array/hash (structural)
     # TODO need to add more tests espectially for structural comments
+    "#!/usr/bin/env glang\n 1"    => 1,  # Special case: treat unix shebang as comment
     "(a # b\n)"                   => Gene::Types::Base.new(Gene::Types::Symbol.new('a')),
     "(a #< this is a test ># b)"  => Gene::Types::Base.new(Gene::Types::Symbol.new('a'), Gene::Types::Symbol.new('b')),
     "(a #< this is a test)"       => Gene::Types::Base.new(Gene::Types::Symbol.new('a')),
@@ -210,12 +211,50 @@ describe Gene::Parser do
     end
   end
 
+  # (#GENE ^version 1.0) sets the version of the document but does NOT insert anything in the document
+  # (#GENE version) inserts the version into the document
+  # (#GENE (do_this) (do_that) void) if the last value returns undefined, it'll not be inserted
   describe 'Processing instructions' do
     it '
       # Gene version the document conforms to. The parser must be able to parse. If not, throw error
-      (#GENE ^version 1.0)
+      (#GENE ^version "1.0")
+      123
     ' do
-      pending
+      result = Gene::Parser.parse(example.description)
+      result.should == 123
+    end
+
+    it '
+      (#GENE ^version "1.0")
+      (#GENE version)
+    ' do
+      result = Gene::Parser.parse(example.description)
+      result.should == "1.0"
+    end
+
+    it '
+      # Default version is 1.0
+      (#GENE version)
+    ' do
+      result = Gene::Parser.parse(example.description)
+      result.should == "1.0"
+    end
+  end
+
+  # An optional readonly environment hash is passed in to the parser
+  # By default it'll be the environment a process is attached to
+  # However a custom environment can be passed in too
+  # When a custom environment is passed in, what restriction do we need on its values?
+  describe 'Environment' do
+    it '(#ENV "USER")' do
+      result = Gene::Parser.parse(example.description)
+      result.should == ENV['USER']
+    end
+
+    it '(#ENV "test")' do
+      env = {'test' => 123}
+      result = Gene::Parser.parse(example.description, 'env' => env)
+      result.should == env['test']
     end
   end
 

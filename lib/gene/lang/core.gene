@@ -350,6 +350,9 @@
 
   (method type _ :Regexp)
   (method data _ [self])
+  (method match s
+    ($invoke self 'match' s)
+  )
 )
 
 (class Range
