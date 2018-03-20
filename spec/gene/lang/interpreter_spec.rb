@@ -2042,6 +2042,13 @@ describe Gene::Lang::Interpreter do
 
     it "
       (var a 1)
+      +assert ((eval ^^#render_args %a) == 1)
+    " do
+      @application.parse_and_process(example.description)
+    end
+
+    it "
+      (var a 1)
       (var b :a)
       +assert ((eval (eval :b)) == 1)
     " do

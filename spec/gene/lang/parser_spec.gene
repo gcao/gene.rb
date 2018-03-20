@@ -3,6 +3,8 @@
 # Know which directory myself is in
 # Be able to load .gene file from this directory or parent or sibiling directories
 
+(import '../../../lib/gene/lang/parser')
+
 (println "Running unit tests...")
 
 (fn describe [^^pending title body...]
@@ -11,7 +13,7 @@
   (if pending
     (println "PENDING: " title)
   else
-    (body .each (fnx item (eval item)))
+    (eval ^^#render_args %body...)
   )
 )
 
@@ -23,7 +25,7 @@
   else
     (catch
       ^AssertionFailure (fnx e (println (e .message)))
-      (body .each (fnx item (eval item)))
+      (eval ^^#render_args %body...)
     )
   )
 )
@@ -34,7 +36,7 @@
 (fn assert2 [expr message]
   ^!eval_arguments
 
-  (if_not (eval expr)
+  (if_not (eval ^context $caller_context expr)
     (throw AssertionFailure
       (message || ("Assertion failed: " expr))
     )
@@ -42,11 +44,8 @@
 )
 
 (describe "Parser"
-  (it "should pass"
-    (assert2 true)
-  )
-
-  (it "should fail"
-    (assert2 false)
+  (it "1"
+    (var result ((new Parser title) .parse))
+    (assert2 (result == 1))
   )
 )

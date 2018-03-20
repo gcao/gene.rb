@@ -979,8 +979,6 @@ module Gene::Lang::Handlers
     def call context, data
       return Gene::NOT_HANDLED unless IMPORT === data
 
-      raise "Invalid import statement: #{data}" if data.data.length <= 2 or data.data[-2] != FROM
-
       file = data.data.last.to_s
       file += '.gene' unless file =~ /\.gene$/
       # Parse file, which should return a namespace object
@@ -1198,12 +1196,25 @@ module Gene::Lang::Handlers
       return Gene::NOT_HANDLED unless EVAL === data
 
       result = Gene::UNDEFINED
-      data.data.each do |item|
+
+      stmts = data.data
+
+      context = data.get('context') || context
+
+      if data.get('#render_args')
+        stmts = stmts.map do |stmt|
+          render context, stmt
+        end
+        stmts = expand stmts
+      end
+
+      stmts.each do |item|
         # First round: treat each item as an argument
         result = context.process item
         # Second round: evaluate each result
         result = context.process result
       end
+
       result
     end
   end

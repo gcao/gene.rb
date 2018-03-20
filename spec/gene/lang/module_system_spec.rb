@@ -9,6 +9,12 @@ describe "Module system" do
     @application.load_core_libs
   end
 
+  it "# `import` nothing should work
+    (import './test')
+  " do
+    @application.parse_and_process(example.description, dir: @dir, file: @file)
+  end
+
   it "# `import` not-exported-variable should NOT work
     (import x from './test')
   " do
