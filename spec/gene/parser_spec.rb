@@ -12,11 +12,13 @@ describe Gene::Parser do
 
   {
     ''         => Gene::Types::Stream.new,
+    '#END'     => Gene::Types::Stream.new,
     '"a double-quoted String"' => "a double-quoted String",
     "'a single-quoted String'" => "a single-quoted String",
     "\"a \nmulti-line \nString\"" => "a \nmulti-line \nString",
     '"a"'      => "a",
     '1'        => 1,
+    "1 #END\n2"=> 1,
     '-1'       => -1,
     '1.0'      => 1.0,
     '-1.0'     => -1.0,
@@ -271,8 +273,11 @@ describe Gene::Parser do
     '{## : b}',
     '{a : ##}',
     '{a :}',
-    "(a # b)",
-    "(a ^b)",
+    '(a # b)',
+    '(a ^b)',
+    '[#END]', # #END is only allowed on the top level
+    '(#END)', # #END is only allowed on the top level
+    '{^a #END}', # #END is only allowed on the top level
   ].each do |input|
     it "process #{input} should fail" do
       lambda {

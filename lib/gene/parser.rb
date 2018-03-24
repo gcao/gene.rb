@@ -64,6 +64,7 @@ module Gene
 
     RANGE = Gene::Types::Symbol.new('#..')
     SET   = Gene::Types::Symbol.new('#<>')
+    END_SYMBOL = Gene::Types::Symbol.new('#END')
 
     ENV_TYPE = Gene::Types::Symbol.new('#ENV')
 
@@ -134,6 +135,9 @@ module Gene
         when (value = parse_regexp) != UNPARSED
           obj = handle_top_level_results obj, value
         when (value = parse_symbol) != UNPARSED
+          if value == END_SYMBOL
+            break
+          end
           obj = handle_top_level_results obj, value
         else
           if %w(' ").include? peek(1)
@@ -254,6 +258,9 @@ module Gene
       when (value = parse_regexp) != UNPARSED
         value
       when (value = parse_symbol) != UNPARSED
+        if value == END_SYMBOL
+          raise ParseError, '#END is only allowed on the top level!'
+        end
         value
       when eos?
         raise PrematureEndError, "Incomplete content"
