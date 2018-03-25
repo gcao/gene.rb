@@ -22,7 +22,6 @@ class Gene::Lang::Interpreter
     @handlers.add 100, Gene::Lang::Handlers::FunctionHandler.new
     @handlers.add 100, Gene::Lang::Handlers::MatchHandler.new
     @handlers.add 100, Gene::Lang::Handlers::BindHandler.new
-    @handlers.add 100, Gene::Lang::Handlers::MacroHandler.new
     @handlers.add 100, Gene::Lang::Handlers::SuperHandler.new
     @handlers.add 100, Gene::Lang::Handlers::DefinitionHandler.new
     @handlers.add 100, Gene::Lang::Handlers::AssignmentHandler.new
