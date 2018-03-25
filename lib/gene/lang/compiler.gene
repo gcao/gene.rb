@@ -1,244 +1,458 @@
-(fn compile data
-  ^^global
-  ^!eval_arguments
+(import process_if from './utils')
 
-  (println "compile: " data)
-  (if (data .is Object)
-    (if ((data .gene_type) == :var)
-      (compile_var data)
+(var BINARY_IDS (:: [= + - * / < <= > >= ++ --]))
+
+(fn compile [^^with_root_context code...]
+  ^^global
+
+  (if with_root_context
+    # Empty code becomes [Stream] for some reason
+    (if ((code .get 0) .is Stream)
+      (code = (code .get 0))
+    )
+    (gene2js_
+      ^^#render_args
+      (var $root_context ($application . (create_root_context <-)))
+      ((fnx $context
+        (var $_result)
+        (var $_temp)
+        (%expand (compile_stmts ^^assign_to_result code))
+        (return $_result)
+      ) <- $root_context)
     )
   else
-    data
+    (gene2js
+      (expand (compile_stmts code))
+    )
   )
 )
 
+(fn gene2js_ code...
+  ^!eval_arguments
+
+  (var result
+    (gene2js
+      code...
+    )
+  )
+  result
+)
+
+(fn compile_ data
+  (if ((data .class) == Object)
+    (var data_first (data .get 0))
+    (if (BINARY_IDS .include data_first)
+      (compile_binary data)
+    else_if ([:== :!=] .include data_first)
+      (compile_equality data)
+    else_if ((data_first .is Symbol) && (data_first .starts_with "."))
+      (compile_method_call data)
+    else_if ((data .type) == :var)
+      (compile_var data)
+    else_if ((data .type) == :new)
+      (compile_new data)
+    else_if ((data .type) == :if)
+      (compile_if data)
+    else_if ((data .type) == :return)
+      (compile_return data)
+    else_if ((data .type) == :fn)
+      (compile_fn data)
+    else_if ((data .type) == :fnx)
+      (compile_fnx data)
+    else_if ((data .type) == :fnxx)
+      (compile_fnxx data)
+    else_if ((data .type) == :js)
+      (compile_js data)
+    else_if ((data .type) == :for)
+      (compile_for data)
+    else_if ((data .type) == :throw)
+      (compile_throw data)
+    else_if ((data .type) == :class)
+      (compile_class data)
+    else_if ((data .type) == :method)
+      (compile_method data)
+    else_if ((data .type) == :loop)
+      (compile_loop data)
+    else_if ((data .type) == :assert)
+      (compile_assert data)
+    else
+      (compile_invocation data)
+    )
+  else_if (data .is Symbol)
+    (if ((data .name) == 'undefined')
+      data
+    else
+      (compile_symbol data)
+    )
+  else_if (data .is Boolean Int)
+    data
+  else_if (data .is Array)
+    (data .map (fnx item (compile_ item)))
+  else_if (data .is Undefined)
+    undefined
+  )
+)
+
+(fn compile_symbol data
+  (if (data .starts_with ':')
+    (:new (Gene .Symbol) (%= ((data .to_s) .substr 1)))
+  else
+    (::
+      (($context .get_member) <- (%= (data .to_s)))
+    )
+  )
+)
+
+(fn compile_equality data
+  (match (first op second) data)
+  (var result
+    (:: ((Gene .equal) <-
+      (%compile_ first)
+      (%compile_ second)
+    ))
+  )
+  (if (op == :==)
+    result
+  else
+    (:! %result)
+  )
+)
+
+# TODO: Maybe we can create a function 'macro' that works like this
+# (macro compile_var data
+#   (($context . var) <-
+#     (%= ((data .get 0) .to_s))
+#     (%data .get 1)
+#   )
+# )
 (fn compile_var data
-  (println 'compile_var' data)
-  ("var " (data .get 0)
-    (do
-      (var value (data .get 1))
-      (if (value != undefined)
-        ("= " (compile %value))
+  (::
+    (($context . var) <-
+      (%= ((data .get 0) .to_s))
+      (%data .get 1)
+    )
+  )
+)
+
+(fn compile_assert data
+  (match [cond mesg] data)
+  (::
+    ((Gene .assert) <- (%compile_ cond) %mesg)
+  )
+)
+
+(fn compile_binary data
+  (match (left op right) data)
+
+  (if (op == :++)
+    (::
+      (($context .set_member) <- (%left .to_s) ((($context .get_member) <- (%left .to_s)) + 1))
+    )
+  else
+    (::
+      ((%compile_ left) %op (%compile_ right))
+    )
+  )
+)
+
+(fn compile_fn data
+  (match [name args stmts...] data)
+  (var inherit_scope
+    (if ((data .get 'inherit_scope') == false)
+      false
+    else
+      true
+    )
+  )
+  (if_not (args .is Array) (args = [args]))
+  (::
+    (($context .fn) <- {
+      ^inherit_scope %inherit_scope
+      ^name (%= (name .to_s))
+      ^args (%args .map (fnx arg (arg .to_s)))
+      ^body (fnx $context
+        (var $_result)
+        (%expand (compile_stmts ^^assign_to_result stmts))
+        (return $_result)
+      )
+    })
+  )
+)
+
+(fn compile_fnx data
+  (match [args stmts...] data)
+  (var inherit_scope
+    (if ((data .get 'inherit_scope') == false)
+      false
+    else
+      true
+    )
+  )
+  (::
+    (($context .fn) <- {
+      ^inherit_scope %inherit_scope
+      ^name ""
+      ^args (%args .map (fnx arg (arg .to_s)))
+      ^body (fnx $context
+        (var $_result)
+        (%expand (compile_stmts ^^assign_to_result stmts))
+        (return $_result)
+      )
+    })
+  )
+)
+
+(fn compile_fnxx data
+  (var inherit_scope
+    (if ((data .get 'inherit_scope') == false)
+      false
+    else
+      true
+    )
+  )
+  (::
+    (($context .fn) <- {
+      ^inherit_scope %inherit_scope
+      ^name ""
+      ^args []
+      ^body (%if (has_return data)
+        (:fnx $context
+          (try
+            (var $_result)
+            (%expand (compile_stmts ^^assign_to_result (data .data)))
+            (return $_result)
+          catch error
+            (if (error instanceof (Gene .Return))
+              (return (error .value))
+            else
+              (throw error)
+            )
+          )
+        )
+      else
+        (:fnx $context
+          (var $_result)
+          (%expand (compile_stmts ^^assign_to_result (data .data)))
+          (return $_result)
+        )
+      )
+    })
+  )
+)
+
+(fn compile_return data
+  (::
+    ((Gene .return) <- (%data .get 0))
+  )
+)
+
+(fn compile_throw data
+  (::
+    ((Gene .throw) <- (%data .get 0))
+  )
+)
+
+(fn compile_class data
+  (match [name stmts...] data)
+  (::
+    (($context .klass) <-
+      (%name .to_s)
+      (%if (! (stmts .is_empty))
+        (:fnx $context
+          (%expand (compile_stmts stmts))
+        )
       )
     )
   )
 )
 
-# DEPRECATED
-(class Base
-  (method var [name value]
-    (new Variable name value)
-  )
-
-  (method ref name
-    (new Reference name)
-  )
-
-  (method new expr
-    (new New expr)
-  )
-
-  (method fn [name args callback]
-    (new Function name args callback)
-  )
-
-  (method fnx [args callback]
-    # (new Function '' args callback)
-  )
-
-  (method fnxx callback
-    (new Function '' _ callback)
-  )
-
-  (method for [init cond update stmts]
-    (new For init cond update stmts)
-  )
-
-  (method chain exprs...
-    (new ChainedInvocation exprs)
-  )
-
-  (method invoke [target args...]
-    (new Invocation target args)
-  )
-
-  (method binary [left op right]
-    (new BinaryExpr left op right)
-  )
-
-  (method assign [target value]
-    (new Assignment target value)
-  )
-
-  (method if_ [cond logic else_logic]
-    (new If cond logic else_logic)
-  )
-
-  (method ret value
-    (new Return value)
-  )
-
-  (method break_ _
-    (new Break)
-  )
-
-  (method obj data
-    (new Obj data)
-  )
-
-  (method to_s _
-    "// Base: should not reach here"
+(fn compile_method data
+  (match [name args stmts...] data)
+  (if_not (args .is Array) (args = [args]))
+  (::
+    ((($context .self) .method) <- {
+      ^name (%= (name .to_s))
+      ^args (%args .map (fnx arg (arg .to_s)))
+      ^body (fnx $context
+        (var $_result)
+        (%expand (compile_stmts ^^assign_to_result stmts))
+        (return $_result)
+      )
+    })
   )
 )
 
-(class Root extend Base
-  (init callback
-    (@stmts = [])
-    (if callback (call callback self))
-  )
-
-  (method to_s _
-    (var result '')
-    (@stmts .each (fnx stmt
-      (result += ((stmt .to_s) + '\n'))
-    ))
-    result
+(fn compile_new data
+  (match [klass args...] data)
+  (::
+    ((Gene .new) <- {
+      ^context $context
+      ^class (%compile_ klass)
+      ^args (%compile_ args)
+    })
   )
 )
 
-(class Variable extend Base
-  (prop name)
-  (prop value)
-
-  (init [name value]
-    (@name  = name)
-    (@value = value)
-  )
-
-  (method to_s _
-    ("var " @name (if @value (" = " @value)) ";")
+(fn compile_method_call data
+  (match (_self _method args...) data)
+  (::
+    ((Gene .invoke) <- {
+      ^context $context
+      ^self (%compile_ _self)
+      ^method (%= ((_method .to_s) .substr 1))
+      ^args %args
+    })
   )
 )
 
-(class Function extend Base
-  (prop name)
-  (prop args)
-  (prop stmts)
-
-  (init [name args callback]
-    (@name = name)
-    (@args = args)
-    (@stmts = [])
-    (if callback (call callback self))
-  )
-
-  (method to_s _
-    ('function '
-      (if @name then (@name .to_s) else '')
-      "(" (@args .map (fnx arg (arg .to_s))) "){\n"
-      "}\n"
-    )
-  )
-)
-
-(class If extend Base
-  (prop cond)
-  (prop logic)
-  (prop else_ifs)
-  (prop else_logic)
-
-  (init [cond logic else_logic]
-    (@cond       = cond)
-    (@logic      = logic)
-    (@else_ifs   = [])
-    (@else_logic = else_logic)
-  )
-
-  (method to_s _
-    (var result "if (")
-    (result += ") {\n")
-    (result += "}\n")
-    result
-  )
-)
-
-(class For extend Base
-  (prop init)
-  (prop cond)
-  (prop update)
-  (prop stmts)
-
-  (init [init cond update stmts]
-    (@init   = init)
-    (@cond   = cond)
-    (@update = update)
-    (@stmts  = stmts)
-  )
-
-  (method to_s _
-    (var result "for (")
-    (result += ") {\n")
-    (result += "}\n")
-    result
-  )
-)
-
-(class Reference extend Base
-  (prop name)
-
-  (init name
-    (@name = name)
-  )
-
-  (method to_s _
-    ("" @name)
-  )
-)
-
-(class Assignment extend Base
-  (prop target)
-  (prop value)
-
-  (init [target value]
-    (@target = target)
-    (@value  = value)
-  )
-
-  (method to_s _
-    ('' (@target .to_s) ' = ' (@value .to_s))
-  )
-)
-
-(class Invocation extend Base
-  (prop target)
-  (prop args)
-
-  (init [target args]
-    (@target = target)
-    (@args   = args)
-  )
-
-  (method to_s _
-    (var result "")
-    (if (@target .is Function)
-      (result += ("(" (@target .to_s) ")"))
+(fn compile_stmts [^^assign_to_result stmts]
+  (stmts .map (fnx [item i]
+    (if ((! assign_to_result) || (i < ((stmts .size) - 1)))
+      (compile_ item)
     else
-      (result += (@target .to_s))
+      (:$_result = (%compile_ item))
     )
-    (result += "(")
-    (result += ")")
+  ))
+)
+
+(fn compile_invocation data
+  (match (name args...) data)
+  (var evaled_args (args .map (fnx arg (compile_ arg))))
+  (var translated_args
+    (args .map
+      (fnx arg
+        (if (arg .is Symbol)
+          (:new (Gene .Symbol) (%arg .to_s))
+        else
+          arg
+        )
+      )
+    )
+  )
+  (if (evaled_args == translated_args)
+    (::
+      (((($context .get_member) <- (%= (name .to_s))) .invoke) <-
+        $context
+        (%= :undefined)
+        (((Gene .Base) .from_data) <- %evaled_args)
+      )
+    )
+  else
+    (group_stmts [
+      (:$_temp = (($context .get_member) <- (%= (name .to_s))))
+      (::
+        (($_temp .invoke) <-
+          $context
+          (%= :undefined)
+          (((Gene .Base) .from_data) <-
+            (($_temp @ 'eval_arguments') ?
+              %evaled_args
+              %translated_args
+            )
+          )
+        )
+      )
+    ])
+  )
+)
+
+(fn compile_js data
+  (match [code...] data)
+  (expand code)
+)
+
+# Compilation depends on a few scenarios:
+# Is top level statement in function?
+#   If yes, compiles to regular if statement
+#   If is last statement, make sure $_result is assigned
+# Must compile to an expression?
+#   Comiles to ternary expression and wrap up with ()
+#   All code inside must be compiled as expression
+# Has 'return' inside
+#   $_result must be assigned
+#   Add a statement to check whether result is a return
+(fn compile_if data
+  (var processed (process_if data))
+  (::
+    ((%processed .get 'cond') ?
+      (%group_stmts (processed .get 'then'))
+      (%compile_if_ (processed .get 'else_ifs') (processed .get 'else'))
+    )
+  )
+)
+
+(fn compile_if_ [condition_and_logics else_logic]
+  (if ((condition_and_logics .size) > 0)
+    (match [condition logic] (condition_and_logics .shift))
+    (::
+      ((%= condition) ?
+        (%group_stmts logic)
+        (%compile_if_ condition_and_logics else_logic)
+      )
+    )
+  else
+    (group_stmts ((fnx x (if (x && ((x .size) > 0)) x else :undefined)) else_logic))
+  )
+)
+
+# Compilation depends on a few scenarios:
+# Is top level statement in function?
+#   If yes, compiles to regular "while(true){}" statement
+#   If no, compiles to expression
+# Must compile to an expression?
+#   Compiles to a function that shares current context
+# Has 'return' inside
+#   $_result must be assigned
+#   Add a statement to check whether result is a return
+(fn compile_loop data
+  (::
+    ((fnxx
+      (while true
+        (%expand (compile_stmts (data .data)))
+      )
+    ) <-)
+  )
+)
+
+# Compilation depends on a few scenarios:
+# Is top level statement in function?
+# Must compile to an expression?
+# Has 'return' inside
+(fn compile_for data
+  (match [init cond update body...] data)
+  (::
+    ((fnxx
+      (for (%compile_ init) (%compile_ cond) (%compile_ update)
+        (%expand (compile_stmts body))
+      )
+    ) <-)
+  )
+)
+
+(fn group_stmts stmts
+  (if ((stmts .size) < 2)
+    (stmts .get 0)
+  else
+    (var result (new Object []))
+    (result .set '#type' (stmts .get 0))
+    (for (var i 1) (i < (stmts .size)) (i += 1)
+      ((result .data) .push :~)
+      ((result .data) .push (stmts .get i))
+    )
     result
   )
 )
 
-(class ChainedInvocation extend Base
-  (prop invocations)
-
-  (init invocations
-    (@invocations = invocations)
-  )
-
-  (method to_s _
-    (@invocations .join '.')
+(fn has_return data
+  (if ((data .class) == Object)
+    (if ((data .type) == :return)
+      true
+    else
+      ((has_return (data .data)) || (has_return (data .properties)))
+    )
+  else_if (data .is Array)
+    (data .any (fnx item (has_return item)))
+  else_if (data .is Hash)
+    ((data .values) .any (fnx item (has_return item)))
   )
 )

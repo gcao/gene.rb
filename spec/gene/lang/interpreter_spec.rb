@@ -13,6 +13,11 @@ describe Gene::Lang::Interpreter do
       @application.parse_and_process(example.description)
     end
 
+    it "# runtime information
+    " do
+      pending "TODO: define a built-in variable that is a hash containing runtime information, e.g. interpreter, version - make this part of $application?"
+    end
+
     it "# $context: the current context
       (assert (($invoke ($invoke $context 'class') 'name') == 'Gene::Lang::Context'))
     " do
@@ -359,7 +364,7 @@ describe Gene::Lang::Interpreter do
       )
       (var a 1)
       (var result (f (:a + 1)))
-      (assert ((result .gene_type) == 1))
+      (assert ((result .type) == 1))
     " do
       pending
       @application.parse_and_process(example.description)
@@ -373,6 +378,7 @@ describe Gene::Lang::Interpreter do
     " do
       @application.parse_and_process(example.description)
     end
+
     it "# Function parameters are passed by reference: check []
       (fn doSomething array
         ($invoke array 'push' 'doSomething')
@@ -620,12 +626,16 @@ describe Gene::Lang::Interpreter do
   end
 
   describe "Boolean operations" do
+    it("((! true)         == false)") { @application.parse_and_process(example.description).should be_true }
     it("((true  && true)  == true)")  { @application.parse_and_process(example.description).should be_true }
     it("((true  && false) == false)") { @application.parse_and_process(example.description).should be_true }
     it("((false && false) == false)") { @application.parse_and_process(example.description).should be_true }
     it("((true  || true)  == true)")  { @application.parse_and_process(example.description).should be_true }
     it("((true  || false) == true)")  { @application.parse_and_process(example.description).should be_true }
     it("((false || false) == false)") { @application.parse_and_process(example.description).should be_true }
+
+    it("((false && (throw 'error')) == false)")  { @application.parse_and_process(example.description).should be_true }
+    it("((true  || (throw 'error')) == true)")   { @application.parse_and_process(example.description).should be_true }
   end
 
   describe "Binary expression" do
@@ -635,11 +645,28 @@ describe Gene::Lang::Interpreter do
   end
 
   describe "Variable definition" do
+    it "# Access undefined variable should throw error
+      a
+    " do
+      lambda {
+        @application.parse_and_process(example.description)
+      }.should raise_error
+    end
+
     it "(var a 'value')" do
       result = @application.parse_and_process(example.description)
       result.class.should == Gene::Lang::Variable
       result.name.should  == 'a'
       result.value.should == 'value'
+    end
+
+    it "# Alias
+      (var a 1)
+      (alias a b)
+      (assert (b == 1))
+    " do
+      pending
+      @application.parse_and_process(example.description)
     end
 
     it "# Define a variable and assign expression result as value
@@ -649,6 +676,25 @@ describe Gene::Lang::Interpreter do
       result.class.should == Gene::Lang::Variable
       result.name.should  == 'a'
       result.value.should == 3
+    end
+
+    it "# Duplicate definition is not allowed
+      (var a 1)
+      (var a 2)
+    " do
+      pending
+      lambda {
+        @application.parse_and_process(example.description)
+      }.should raise_error
+    end
+
+    it "# Define variable only if it's not defined in current scope
+      (var a 1)
+      (var ^!defined a 2)
+      (assert (a == 1))
+    " do
+      pending
+      @application.parse_and_process(example.description)
     end
 
     it "# Define and use variable
@@ -1148,23 +1194,15 @@ describe Gene::Lang::Interpreter do
 
     it "# decorator can be invoked with arguments
       (var members [])
-      (fn add_to_members [array f]
-        ($invoke array 'push' (f .name))
+      (fn add_to_members [array]
+        (fnx target
+          ($invoke array 'push' (target .name))
+          target
+        )
       )
       (+add_to_members members)
       (fn test)
       (assert (members == ['test']))
-    " do
-      @application.parse_and_process(example.description)
-    end
-  end
-
-  describe "Macros" do
-    it "
-      (macro add [a b]
-        (a + b)
-      )
-      (assert ((add 1 2) == 3))
     " do
       @application.parse_and_process(example.description)
     end
@@ -1220,7 +1258,7 @@ describe Gene::Lang::Interpreter do
   end
 
   describe "Create / modify / access native Gene object" do
-    it "(assert (((:a 1) .gene_type) == :a))" do
+    it "(assert (((:a 1) .type) == :a))" do
       @application.parse_and_process(example.description)
     end
 
@@ -1261,17 +1299,62 @@ describe Gene::Lang::Interpreter do
       end
 
       it "
+        (match (type) (:: ((a) 1)))
+        (assert ((type .type) == :a))
+      " do
+        @application.parse_and_process(example.description)
+      end
+
+      it "
         (match (_ first second) (_ 1 2))
-        (assert (first == 1))
+        (assert (first  == 1))
         (assert (second == 2))
       " do
         @application.parse_and_process(example.description)
       end
 
       it "
+        (match (_ first second) (_ 1))
+        (assert (first  == 1))
+        (assert (second == undefined))
+      " do
+        @application.parse_and_process(example.description)
+      end
+
+      it "
+        (match (_ first second...) (_ 1 2 3))
+        (assert (first  == 1))
+        (assert (second == [2 3]))
+      " do
+        @application.parse_and_process(example.description)
+      end
+
+      it "
+        (match (_ ... last) (_ 1 2 3))
+        (assert (last == 3))
+      " do
+        @application.parse_and_process(example.description)
+      end
+
+      it "
         (match [first second] (_ 1 2))
-        (assert (first == 1))
+        (assert (first  == 1))
         (assert (second == 2))
+      " do
+        @application.parse_and_process(example.description)
+      end
+
+      it "
+        (match [first second...] (_ 1 2 3))
+        (assert (first  == 1))
+        (assert (second == [2 3]))
+      " do
+        @application.parse_and_process(example.description)
+      end
+
+      it "
+        (match [... last] (_ 1 2 3))
+        (assert (last == 3))
       " do
         @application.parse_and_process(example.description)
       end
@@ -1294,8 +1377,16 @@ describe Gene::Lang::Interpreter do
 
       it "
         (match (_ (_ first second)) (_ (_ 1 2)))
-        (assert (first == 1))
+        (assert (first  == 1))
         (assert (second == 2))
+      " do
+        @application.parse_and_process(example.description)
+      end
+
+      it "
+        (match (_ (_ first second)))
+        (assert (first  == undefined))
+        (assert (second == undefined))
       " do
         @application.parse_and_process(example.description)
       end
@@ -1370,15 +1461,58 @@ describe Gene::Lang::Interpreter do
   end
 
   describe "Exception" do
-    it "(throw 'some error')" do
+    it "
+      (throw 'some error')
+      1 # should not reach here
+    " do
       lambda {
         @application.parse_and_process(example.description)
       }.should raise_error('some error')
     end
 
     it "
-      (throw 'some error')
-      1 # should not reach here
+      [
+        (throw 'some error')
+        1 # should not reach here
+      ]
+    " do
+      lambda {
+        @application.parse_and_process(example.description)
+      }.should raise_error('some error')
+    end
+
+    it "
+      (fn f _
+        (throw 'some error')
+      )
+      (f)
+      (println 'Should not reach here')
+    " do
+      lambda {
+        @application.parse_and_process(example.description)
+      }.should raise_error('some error')
+    end
+
+    it "
+      (var a (throw 'some error'))
+      (println 'Should not reach here')
+    " do
+      pending
+      lambda {
+        @application.parse_and_process(example.description)
+      }.should raise_error('some error')
+    end
+
+    it "
+      (fn f1 f
+        (f)
+      )
+      (fn f2 _
+        (throw 'some error')
+        (println 'f2: Should not reach here')
+      )
+      (f1 f2)
+      (println 'Should not reach here')
     " do
       lambda {
         @application.parse_and_process(example.description)
@@ -1547,55 +1681,97 @@ describe Gene::Lang::Interpreter do
 
   describe "Templates" do
     it "
-      +assert ((render (a 100)) == (:a 100))
+      +assert ((:: (a 100)) == (:a 100))
     " do
       @application.parse_and_process(example.description)
     end
 
     it "
       (var a 100)
-      +assert ((render (a %a)) == (:a 100))
+      +assert ((:: (a %a)) == (:a 100))
     " do
       @application.parse_and_process(example.description)
     end
 
     it "
       (var a 100)
-      +assert ((render (a [%a])) == (:a [100]))
+      +assert ((:a %a) == (:a 100))
     " do
       @application.parse_and_process(example.description)
     end
 
     it "
       (var a 100)
-      +assert ((render {^value %a}) == {^value 100})
+      +assert ((:: (a %a)) == (:a 100))
+    " do
+      @application.parse_and_process(example.description)
+    end
+
+    it "
+      +assert ((:a (%= true)) == (:a true))
+    " do
+      @application.parse_and_process(example.description)
+    end
+
+    it "
+      +assert ((:a (%= (100 < 200))) == (:a true))
     " do
       @application.parse_and_process(example.description)
     end
 
     it "
       (var a 100)
-      +assert ((render (a ^prop %a)) == (:a ^prop 100))
+      +assert ((:: (a [%a])) == (:a [100]))
     " do
       @application.parse_and_process(example.description)
     end
 
     it "
       (var a 100)
-      +assert ((render (a (b ^prop %a))) == (:a (:b ^prop 100)))
+      +assert ((:: {^value %a}) == {^value 100})
     " do
       @application.parse_and_process(example.description)
     end
 
     it "
-      +assert ((render (% 1 < 2)) == true)
+      (var a 100)
+      +assert ((:: (a ^prop %a)) == (:a ^prop 100))
+    " do
+      @application.parse_and_process(example.description)
+    end
+
+    it "
+      (var a 100)
+      +assert ((:: (a (b ^prop %a))) == (:a (b ^prop 100)))
+    " do
+      @application.parse_and_process(example.description)
+    end
+
+    it "
+      +assert ((:: (%= (var a 100) a)) == 100)
+    " do
+      @application.parse_and_process(example.description)
+    end
+
+    it "
+      +assert ((:: (%= (1 < 2))) == true)
     " do
       @application.parse_and_process(example.description)
     end
 
     it "
       (var a [1 2])
-      +assert ((render (a (%expand a))) == (:a 1 2))
+      +assert ((:: (a (%expand a))) == (:a 1 2))
+    " do
+      @application.parse_and_process(example.description)
+    end
+
+    it "
+      (fn f a
+        (:: (a (%= (a + 1))))
+      )
+      +assert (((f 1) .get 0) == 2)
+      +assert (((f 2) .get 0) == 3)
     " do
       @application.parse_and_process(example.description)
     end
@@ -1603,7 +1779,110 @@ describe Gene::Lang::Interpreter do
     it "
       (var a 100)
       (fn f [b c] (b + c))
-      +assert ((render (%f a 200)) == 300)
+      +assert ((:: (%f a 200)) == 300)
+    " do
+      @application.parse_and_process(example.description)
+    end
+
+    it "
+      (fn f [b c]
+        ^!eval_arguments
+        (b + c)
+      )
+      (var a 100)
+      +assert ((f ^^#render_args %a 200) == 300)
+      +assert ((f ^^#render_args 200 %a) == 300)
+    " do
+      @application.parse_and_process(example.description)
+    end
+
+    it "
+      (fn f [b c]
+        ^!eval_arguments
+        (b + c)
+      )
+      +assert ((f ^^#render_args (%expand [100]) 200) == 300)
+    " do
+      @application.parse_and_process(example.description)
+    end
+
+    it "
+      (fn f [b c d]
+        ^!eval_arguments
+        [b c d]
+      )
+      (var a 100)
+      (fn d x (x * 100))
+      (var result
+        (f ^^#render_args
+          %a
+          (:b %c)
+          (%d 1)
+        )
+       )
+      +assert (((result .get 1) .type) == :b)
+      +assert (((result .get 1) .get 0) == :%c)
+      +assert ((result .get 2) == 100)
+    " do
+      @application.parse_and_process(example.description)
+    end
+
+    it "
+      (fn f a
+        ^!eval_arguments
+        a
+      )
+      +assert (((f ^^#render_args ((%= :a))) .type) == :a)
+    " do
+      @application.parse_and_process(example.description)
+    end
+
+    it "
+    " do
+      pending "Need a way to escape : and % (maybe prefix with \\ and check escaped)"
+      @application.parse_and_process(example.description)
+    end
+  end
+
+  describe "Eval" do
+    it "
+      +assert ((eval 1) == 1)
+    " do
+      @application.parse_and_process(example.description)
+    end
+
+    it "
+      +assert ((eval 1 2) == 2)
+    " do
+      @application.parse_and_process(example.description)
+    end
+
+    it "
+      (var a 1)
+      +assert ((eval :a) == 1)
+    " do
+      @application.parse_and_process(example.description)
+    end
+
+    it "
+      (var a 1)
+      +assert ((eval ^^#render_args %a) == 1)
+    " do
+      @application.parse_and_process(example.description)
+    end
+
+    it "
+      (var a 1)
+      (var b :a)
+      +assert ((eval (eval :b)) == 1)
+    " do
+      @application.parse_and_process(example.description)
+    end
+  end
+
+  describe "Range" do
+    it "
+      +assert ($invoke (1 .. 2) 'include?' 1)
     " do
       @application.parse_and_process(example.description)
     end

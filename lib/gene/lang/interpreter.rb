@@ -36,6 +36,7 @@ class Gene::Lang::Interpreter
     @handlers.add 100, Gene::Lang::Handlers::WithHandler.new
     @handlers.add 100, Gene::Lang::Handlers::ScopeHandler.new
     @handlers.add 100, Gene::Lang::Handlers::ExceptionHandler.new
+    @handlers.add 100, Gene::Lang::Handlers::EvalHandler.new
     @handlers.add 100, Gene::Lang::Handlers::PrintHandler.new
     @handlers.add 100, Gene::Lang::Handlers::AssertHandler.new
     @handlers.add 100, Gene::Lang::Handlers::BinaryExprHandler.new
@@ -51,10 +52,6 @@ class Gene::Lang::Interpreter
   def parse_and_process input
     parsed = Gene::Parser.parse input
     result = process parsed
-    # convert Gene exception to ruby exception
-    if result.is_a? Gene::Lang::ThrownException
-      raise result.exception.get('message')
-    end
     result
   end
 
@@ -69,8 +66,7 @@ class Gene::Lang::Interpreter
 
         # TODO: should we allow break / return on the top level?
         if (result.is_a?(Gene::Lang::ReturnValue) or
-            result.is_a?(Gene::Lang::BreakValue) or
-            result.is_a?(Gene::Lang::ThrownException))
+            result.is_a?(Gene::Lang::BreakValue))
           break
         end
       end
@@ -108,6 +104,7 @@ class Gene::Lang::Interpreter
         i += 1
       else
         data[i] = apply_decorators decorators, item
+        decorators = []
         i += 1
       end
     end
@@ -124,15 +121,13 @@ class Gene::Lang::Interpreter
     while not decorators.empty?
       decorator = decorators.pop
 
-      if decorator.is_a? Gene::Types::Symbol
-        decorator = Gene::Types::Base.new decorator, item
-      else
-        decorator.data.push item
-      end
-
-      decorator.type = Gene::Types::Symbol.new decorator.type.to_s[1..-1]
-
-      item = decorator
+      item =
+        if decorator.is_a? Gene::Types::Symbol
+          Gene::Types::Base.new Gene::Types::Symbol.new(decorator.to_s[1..-1]), item
+        else
+          decorator.type = Gene::Types::Symbol.new(decorator.type.to_s[1..-1])
+          Gene::Types::Base.new decorator, item
+        end
     end
 
     item

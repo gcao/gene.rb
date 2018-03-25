@@ -22,17 +22,30 @@ def compress code
   code.gsub(/(^\s*)|(\s*\n\s*)|(\s*$)/, '')
 end
 
-def compare_code first, second
-  compress(first.to_s).should == compress(second.to_s)
+def compare_code expected, actual
+  result = (beautify(expected) == beautify(actual))
+  if not result
+    puts
+    puts "vvvvvvvvvvvvvvv Expected vvvvvvvvvvvvvvv"
+    puts
+    puts beautify(expected).gsub(/^/m, '      ')
+    puts
+    puts "----------------------------------------"
+    puts
+    puts beautify(actual).gsub(/^/m, '      ')
+    puts
+    puts "^^^^^^^^^^^^^^^  Actual  ^^^^^^^^^^^^^^^"
+  end
+  beautify(actual).should == beautify(expected)
 end
 
+# npm install -g js-beautify
+# https://www.npmjs.com/package/js-beautify
+# npm install -g cli-highlight
+# https://www.npmjs.com/package/cli-highlight
 def beautify code
-  File.write '/tmp/generated.js', code.to_s
-  `jsbeautifier /tmp/generated.js 2>&1 > /tmp/generated1.js`
-  File.read('/tmp/generated1.js')
-end
-
-def print_code code
-  puts
-  puts beautify code
+  `echo '#{code.to_s.strip}' | js-beautify -s 2`
+  # File.write '/tmp/generated.js', code.to_s
+  # `js-beautify /tmp/generated.js 2>&1 > /tmp/generated1.js`
+  # File.read('/tmp/generated1.js')
 end

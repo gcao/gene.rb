@@ -8,7 +8,6 @@ module Gene::Lang::Handlers
     SCOPE
     FN FNX FNXX BIND
     RETURN
-    MACRO
     MATCH
     CALL DO
     VAR NSVAR
@@ -20,6 +19,7 @@ module Gene::Lang::Handlers
     THROW CATCH
     BREAK
     RENDER
+    EVAL
     PRINT PRINTLN
     ASSERT DEBUG
     NOOP
@@ -28,6 +28,7 @@ module Gene::Lang::Handlers
   end
 
   PLACEHOLDER = Gene::Types::Symbol.new('_')
+  NOT         = Gene::Types::Symbol.new('!')
   PROP_NAME   = Gene::Types::Symbol.new('@')
   APPLICATION = Gene::Types::Symbol.new('$application')
   CONTEXT     = Gene::Types::Symbol.new('$context')
@@ -84,9 +85,11 @@ module Gene::Lang::Handlers
         context.get_member("Int")
       elsif obj.is_a? Regexp
         context.get_member("Regexp")
+      elsif obj.is_a? Range
+        context.get_member("Range")
       elsif obj.is_a? TrueClass or obj.is_a? FalseClass
         context.get_member("Boolean")
-      elsif obj == Gene::UNDEFINED
+      elsif obj.is_a? Gene::Types::Undefined
         context.get_member("Undefined")
       elsif obj == nil
         context.get_member("Null")
@@ -106,6 +109,71 @@ module Gene::Lang::Handlers
         obj.class
       end
     end
+
+    def render context, template
+      if template.is_a? Gene::Types::Base
+        if template.type == Gene::Types::Symbol.new('%')
+          raise 'If you want to construct an expression, you should use "%%" or "%=" instead.'
+        elsif template.type == Gene::Types::Symbol.new('%=')
+          # new_type = template.data[0]
+          # obj = Gene::Types::Base.new new_type, *template.data[1..-1]
+          # obj.properties = template.properties
+          # context.process_statements obj
+          context.process_statements template.data
+        elsif template.type.is_a?(Gene::Types::Symbol) and template.type.name[0] == '%'
+          new_type = Gene::Types::Symbol.new(template.type.name[1..-1])
+          obj = Gene::Types::Base.new new_type, *template.data
+          obj.properties = template.properties
+          context.process_statements obj
+        elsif template.type == Gene::Types::Symbol.new('::')
+          template.get(0)
+        elsif template.type.is_a?(Gene::Types::Symbol) and template.type.name[0] == ':'
+          new_type = Gene::Types::Symbol.new(template.type.name[1..-1])
+          obj = Gene::Types::Base.new new_type, *template.data
+          obj.properties = template.properties
+          obj
+        else
+          result = Gene::Lang::Object.from_gene_base template
+          result.type = render context, result.type
+          result.properties.each do |name, value|
+            # "#data" property is special and handled below
+            next if ['#type', '#data'].include? name
+            result.set name, render(context, value)
+          end
+          result.data.each_with_index do |item, index|
+            rendered_item = render context, item
+            handle_render_result result, index, rendered_item
+          end
+          result
+        end
+      elsif template.is_a? Gene::Types::Symbol and template.name[0] == '%'
+        context.process_statements Gene::Types::Symbol.new(template.name[1..-1])
+      elsif template.is_a? Array
+        result = template.map {|item| render context, item }
+      elsif template.is_a? Hash
+        result = {}
+        template.each do |name, value|
+          result[name] = render context, value
+        end
+        result
+      else
+        template
+      end
+    end
+
+    private
+
+    def handle_render_result parent, index, child
+      if child.is_a? Gene::Lang::Expandable
+        parent.data.delete_at index
+        child.value.each do |item|
+          parent.data.insert index, item
+          index += 1
+        end
+      else
+        parent.data[index] = child
+      end
+    end
   end
 
   # Handle scope variables, instance variables like @var and literals
@@ -122,27 +190,28 @@ module Gene::Lang::Handlers
           end
           obj
         elsif data.type.is_a?(Gene::Types::Symbol) and data.type.to_s == ":"
-          obj = Gene::Lang::Object.new
-          obj.set "#type", context.process(data.data[0])
-          obj.data = data.data[1..-1].map { |item| context.process(item) }
-          data.properties.each do |key, value|
-            obj.set key, context.process(value)
-          end
-          obj
+          raise 'If you want to construct a Gene data, you should use "::" instead.'
+        elsif data.type.is_a?(Gene::Types::Symbol) and data.type.to_s == "::"
+          # obj = Gene::Types::Base.new data.data[0], *data.data[1..-1]
+          # data.properties.each do |key, value|
+          #   obj[key] = value
+          # end
+          # render context, obj
+          render context, data.data[0]
         elsif data.type.is_a?(Gene::Types::Symbol) and data.type.to_s[0] == ":"
-          obj = Gene::Lang::Object.new
-          obj.set "#type", Gene::Types::Symbol.new(data.type.to_s[1..-1])
-          obj.data = data.data.map { |item| context.process(item) }
+          obj = Gene::Types::Base.new Gene::Types::Symbol.new(data.type.to_s[1..-1]), *data.data
           data.properties.each do |key, value|
-            obj.set key, context.process(value)
+            obj[key] = value
           end
-          obj
+          render context, obj
         elsif INVOKE === data
           target = context.process data.data[0]
           method = context.process(data.data[1]).to_s
           args   = data.data[2..-1].to_a.map {|item| context.process(item) }
           args   = expand args
           target.send method, *args
+        elsif NOT === data
+          ! context.process(data.data[0])
         elsif PROP_NAME === data
           Gene::Lang::PropertyName.new context.process(data.data[0])
         elsif DO === data
@@ -157,7 +226,11 @@ module Gene::Lang::Handlers
           puts
           repl.start
         elsif data === DEBUG
-          Gene::UNDEFINED
+          value = Gene::UNDEFINED
+          data.data.each do |item|
+            value = context.process(item)
+          end
+          value
         elsif data.type.is_a? Gene::Lang::PropertyName
           context.self[data.type.name]
         elsif data.type.is_a? String
@@ -354,26 +427,6 @@ module Gene::Lang::Handlers
     end
   end
 
-  class MacroHandler
-    def call context, data
-      return Gene::NOT_HANDLED unless MACRO === data
-
-      name  = data.data[0].to_s
-      macro = Gene::Lang::Macro.new name
-      macro.args_matcher = Gene::Lang::Matcher.from_array data.data[1]
-      macro.parent_scope = context.scope
-      macro.statements   = data.data[2..-1] || []
-
-      if data['global']
-        context.set_global name, macro
-      else
-        context.define name, macro, export: true
-      end
-
-      macro
-    end
-  end
-
   class IncludeHandler
     def call context, data
       return Gene::NOT_HANDLED unless INCLUDE === data
@@ -548,18 +601,19 @@ module Gene::Lang::Handlers
       elsif data.is_a? Gene::Types::Base and data.type.is_a? Gene::Types::Symbol and data.type.name =~ /^[a-zA-Z_]/
         value = context.process(data.type)
         args = data.data
-        if value.is_a? Gene::Lang::Macro
-          args = Gene::Lang::Object.from_array_and_properties(args, data.properties)
-          value.call context: context, arguments: args
-        elsif value.is_a?(Gene::Lang::Function) or value.is_a?(Gene::Lang::BoundFunction)
+        if value.is_a?(Gene::Lang::Function) or value.is_a?(Gene::Lang::BoundFunction)
           if value.eval_arguments
             args = args.map{|item| context.process item}
+          end
+          if data.get('#render_args')
+            data.properties.delete '#render_args'
+            args = render context, args
           end
           args = expand args
           args = Gene::Lang::Object.from_array_and_properties(args, data.properties)
           value.call context: context, arguments: args
         else
-          raise "Invacation is not supported for #{data.inspect}"
+          raise "Invocation is not supported for #{data.inspect}"
         end
       elsif data.is_a? Gene::Types::Base and data.type.is_a? Gene::Types::Symbol and data.type.name =~ /^.(.*)$/
         method = $1
@@ -577,8 +631,9 @@ module Gene::Lang::Handlers
           self: context.self
         )
       elsif data.is_a? Gene::Types::Base and data.type.is_a? Gene::Types::Base
-        data.type = context.process data.type
-        context.process data
+        new_data = data.clone
+        new_data.type = context.process new_data.type
+        context.process new_data
       elsif data.is_a? Gene::Types::Base and data.type.is_a? Gene::Lang::Function
         # TODO: check eval_arguments
         args = data.data.map{|item| context.process item}
@@ -676,6 +731,8 @@ module Gene::Lang::Handlers
 
       Gene::Types::Symbol.new('&&'),
       Gene::Types::Symbol.new('||'),
+
+      Gene::Types::Symbol.new('..'),
     ]
 
     def call context, data
@@ -683,6 +740,13 @@ module Gene::Lang::Handlers
 
       op    = data.data[0].name
       left  = context.process(data.type)
+
+      if op == '&&'
+        return left && context.process(data.data[1])
+      elsif op == '||'
+        return left || context.process(data.data[1])
+      end
+
       right = context.process(data.data[1])
       case op
       when '==' then left == right
@@ -702,8 +766,9 @@ module Gene::Lang::Handlers
       when '|' then left | right
       when '&' then left & right
 
-      when '&&' then left && right
-      when '||' then left || right
+      # when '&&' then left && right
+      # when '||' then left || right
+      when '..' then Range.new(left, right)
       end
     end
   end
@@ -797,8 +862,6 @@ module Gene::Lang::Handlers
   #         return result
   #       elsif result.is_a? Gene::Lang::BreakValue
   #         break result.value
-  #       elsif result.is_a? Gene::Lang::ThrownException
-  #         break result
   #       end
   #       context.process update
   #     end
@@ -817,8 +880,6 @@ module Gene::Lang::Handlers
         if result.is_a? Gene::Lang::BreakValue
           break result.value
         elsif result.is_a? Gene::Lang::ReturnValue
-          break result
-        elsif result.is_a? Gene::Lang::ThrownException
           break result
         end
       end
@@ -846,8 +907,6 @@ module Gene::Lang::Handlers
   class ImportHandler
     def call context, data
       return Gene::NOT_HANDLED unless IMPORT === data
-
-      raise "Invalid import statement: #{data}" if data.data.length <= 2 or data.data[-2] != FROM
 
       file = data.data.last.to_s
       file += '.gene' unless file =~ /\.gene$/
@@ -930,36 +989,59 @@ module Gene::Lang::Handlers
             value = Gene::Types::Symbol.new('Array')
           elsif target.is_a? Hash
             value = Gene::Types::Symbol.new('Hash')
-          elsif target.is_a? Gene::Lang::Object
-            value = Gene::Types::Symbol.new(target.gene_type.to_s)
+          elsif target.is_a?(Gene::Lang::Object) or target.is_a?(Gene::Types::Base)
+            value = target.type
           else
             value = Gene::Types::Symbol.new(target.class.to_s)
           end
 
           context.define pattern.type.name, value
         end
+
+        triple_dot_seen = false # name... or ... is seen
         pattern.data.each_with_index do |name, i|
-          if target.is_a? Gene::Lang::Object
-            result = target.data[i]
+          mapped_index = i
+          if triple_dot_seen
+            mapped_index = i - pattern.data.length
+          elsif name.is_a? Gene::Types::Symbol
+            if name.to_s == '...'
+              triple_dot_seen = true
+              next
+            elsif name.to_s =~ /\.\.\.$/
+              triple_dot_seen = true
+              mapped_index = i..(i - pattern.data.length)
+            end
+          end
+
+          if target.is_a?(Gene::Lang::Object) or target.is_a?(Gene::Types::Base)
+            if mapped_index.is_a?(Range) or mapped_index < target.data.size
+              result = target.data[mapped_index]
+            else
+              result = Gene::UNDEFINED
+            end
           elsif target.is_a? Array
-            result = target[i]
+            if mapped_index.is_a?(Range) or mapped_index < target.size
+              result = target[mapped_index]
+            else
+              result = Gene::UNDEFINED
+            end
           else
-            next
+            result = Gene::UNDEFINED
           end
 
           if name.is_a? Gene::Types::Symbol
-            context.define name.to_s, result
+            context.define name.to_s.gsub(/\.\.\.$/, ''), result
           else
             match name, result, context
           end
         end
         pattern.properties.each do |key, value|
-          if target.is_a? Gene::Lang::Object
+          if target.is_a?(Gene::Lang::Object) or target.is_a?(Gene::Types::Base)
             result = target.get(key.to_s)
           elsif target.is_a? Hash
             result = target[key.to_s]
           else
-            next
+            result = Gene::UNDEFINED
           end
 
           if value == true
@@ -969,29 +1051,51 @@ module Gene::Lang::Handlers
           end
         end
       elsif pattern.is_a? Array
+        triple_dot_seen = false # name... or ... is seen
         pattern.each_with_index do |name, i|
-          if target.is_a? Gene::Lang::Object
-            result = target.data[i]
+          mapped_index = i
+          if triple_dot_seen
+            mapped_index = i - pattern.length
+          elsif name.is_a? Gene::Types::Symbol
+            if name.to_s == '...'
+              triple_dot_seen = true
+              next
+            elsif name.to_s =~ /\.\.\.$/
+              triple_dot_seen = true
+              mapped_index = i..(i - pattern.length)
+            end
+          end
+
+          if target.is_a?(Gene::Lang::Object) or target.is_a?(Gene::Types::Base)
+            if mapped_index.is_a?(Range) or mapped_index < target.data.size
+              result = target.data[mapped_index]
+            else
+              result = Gene::UNDEFINED
+            end
           elsif target.is_a? Array
-            result = target[i]
+            if mapped_index.is_a?(Range) or mapped_index < target.size
+              result = target[mapped_index]
+            else
+              result = Gene::UNDEFINED
+            end
           else
-            next
+            result = Gene::UNDEFINED
           end
 
           if name.is_a? Gene::Types::Symbol
-            context.define name.to_s, result
+            context.define name.to_s.gsub(/\.\.\.$/, ''), result
           else
             match name, result, context
           end
         end
       elsif pattern.is_a? Hash
         pattern.each do |key, value|
-          if target.is_a? Gene::Lang::Object
+          if target.is_a?(Gene::Lang::Object) or target.is_a?(Gene::Types::Base)
             result = target.get(key.to_s)
           elsif target.is_a? Hash
             result = target[key.to_s]
           else
-            next
+            result = Gene::UNDEFINED
           end
 
           if value == true
@@ -1011,6 +1115,23 @@ module Gene::Lang::Handlers
       return Gene::NOT_HANDLED unless EXPAND === data
 
       Gene::Lang::Expandable.new context.process(data.data[0])
+    end
+  end
+
+  class EvalHandler
+    include Utilities
+
+    def call context, data
+      return Gene::NOT_HANDLED unless EVAL === data
+
+      result = Gene::UNDEFINED
+
+      stmts = expand data.data.map {|stmt| context.process stmt }
+      stmts.each do |stmt|
+        result = context.process stmt
+      end
+
+      result
     end
   end
 
@@ -1057,11 +1178,13 @@ module Gene::Lang::Handlers
 
         exception = Gene::Lang::Object.new klass
         exception.set 'message', message
-        Gene::Lang::ThrownException.new exception
+        raise Gene::Lang::ExceptionWrapper.new(exception)
       else
-        result = context.process_statements data.data
-        if result.is_a? Gene::Lang::ThrownException
-          exception = result.get 'exception'
+        begin
+          context.process_statements data.data
+        rescue Gene::Lang::ExceptionWrapper => wrapper
+          exception = wrapper.wrapped_exception
+
           handled = false
 
           data.properties.each do |key, value|
@@ -1071,7 +1194,7 @@ module Gene::Lang::Handlers
               handled = true
               handler = context.process value
               args = Gene::Lang::Object.from_array_and_properties [exception]
-              result = handler.call context: context, args: args
+              result = handler.call context: context, arguments: args
               break
             end
           end
@@ -1080,71 +1203,25 @@ module Gene::Lang::Handlers
           if ensure_cb
             function = context.process ensure_cb
             args = Gene::Lang::Object.from_array_and_properties []
-            function.call context: context, args: args
+            function.call context: context, arguments: args
+          end
+
+          if not handled
+            raise wrapper
           end
         end
-
-        result
       end
     end
   end
 
   class RenderHandler
+    include Utilities
+
     def call context, data
       return Gene::NOT_HANDLED unless RENDER === data
 
       template = data.data[0]
       render context, template
-    end
-
-    def render context, template
-      if template.is_a? Gene::Types::Base
-        if template.type == Gene::Types::Symbol.new('%')
-          new_type = template.data[0]
-          obj = Gene::Types::Base.new new_type, *template.data[1..-1]
-          obj.properties = template.properties
-          context.process_statements obj
-        elsif template.type.is_a?(Gene::Types::Symbol) and template.type.name[0] == '%'
-          new_type = Gene::Types::Symbol.new(template.type.name[1..-1])
-          obj = Gene::Types::Base.new new_type, *template.data
-          obj.properties = template.properties
-          context.process_statements obj
-        else
-          result = Gene::Lang::Object.from_gene_base template
-          result.properties.each do |name, value|
-            result.set name, render(context, value)
-          end
-          result.data.each_with_index do |item, index|
-            rendered_item = render context, item
-            handle_result result, index, rendered_item
-          end
-          result
-        end
-      elsif template.is_a? Gene::Types::Symbol and template.name[0] == '%'
-        context.process_statements Gene::Types::Symbol.new(template.name[1..-1])
-      elsif template.is_a? Array
-        result = template.map {|item| render context, item }
-      elsif template.is_a? Hash
-        result = {}
-        template.each do |name, value|
-          result[name] = render context, value
-        end
-        result
-      else
-        template
-      end
-    end
-
-    def handle_result parent, index, child
-      if child.is_a? Gene::Lang::Expandable
-        parent.data.delete_at index
-        child.value.each do |item|
-          parent.data.insert index, item
-          index += 1
-        end
-      else
-        parent.data[index] = child
-      end
     end
   end
 

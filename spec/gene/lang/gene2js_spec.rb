@@ -4,15 +4,18 @@ describe "JavaScript representation in Gene" do
   before do
     @application = Gene::Lang::Application.new
     @application.load_core_libs
-    @application.load File.expand_path(File.dirname(__FILE__) + '/../../../lib/gene/lang/compiler.gene')
+    @application.load File.expand_path(File.dirname(__FILE__) + '/../../../lib/gene/lang/gene2js.gene')
     @application.parse_and_process <<-GENE
       (fn compress code
         ^^global
         ($invoke ('' code) 'gsub' #/(^\\s*)|(\\s*\\n\\s*)|(\\s*$)/ '')
       )
-      (fn compare [first second]
+      (fn compile_and_verify [first second]
         ^^global
+        ^!eval_arguments
+        (first = (gene2js first))
         (if_not ((compress first) == (compress second))
+          (println first)
           (throw
             ('' first " does not equal " second)
           )
@@ -22,12 +25,356 @@ describe "JavaScript representation in Gene" do
   end
 
   %q~
-    (compare
-      (compile
-        (render (var a 1))
-      )
+    # Atomic expression / statements
+    (compile_and_verify
+      "abc"
+      '
+        "abc";
+      '
+    )
+
+    (compile_and_verify
+      null
+      '
+        null;
+      '
+    )
+
+    (compile_and_verify
+      undefined
+      '
+      '
+    )
+
+    (compile_and_verify
+      ^^#render_args
+      (%symbol 'undefined')
+      '
+        undefined;
+      '
+    )
+
+    (compile_and_verify
+      true
+      '
+        true;
+      '
+    )
+
+    (compile_and_verify
+      1
+      '
+        1;
+      '
+    )
+
+    (compile_and_verify
+      [a b]
+      '
+        [a, b];
+      '
+    )
+
+    (compile_and_verify
+      {
+        ^a 1
+        ^b test
+      }
+      '
+        {
+          "a": 1,
+          "b": test
+        }
+      '
+    )
+
+    (compile_and_verify
+      (var a)
+      '
+        var a;
+      '
+    )
+
+    (compile_and_verify
+      (var a 1)
       '
         var a = 1;
+      '
+    )
+
+    (compile_and_verify
+      (a . b)
+      '
+        a.b;
+      '
+    )
+
+    (compile_and_verify
+      (a .b)
+      '
+        a.b;
+      '
+    )
+
+    (compile_and_verify
+      (a <- b c)
+      '
+        a(b, c);
+      '
+    )
+
+    (compile_and_verify
+      (a <- false)
+      '
+        a(false);
+      '
+    )
+
+    (compile_and_verify
+      (a \~ b \~ c)
+      '
+        (a, b, c);
+      '
+    )
+
+    (compile_and_verify
+      (fn f [a b] 1)
+      '
+        function f(a, b) {
+          1;
+        }
+      '
+    )
+
+    (compile_and_verify
+      (fnx [a b] 1)
+      '
+        function(a, b) {
+          1;
+        }
+      '
+    )
+
+    (compile_and_verify
+      (fnxx 1 2)
+      '
+        function() {
+          1;
+          2;
+        }
+      '
+    )
+
+    (compile_and_verify
+      ((fnxx) <-)
+      '
+        (function() {
+        })();
+      '
+    )
+
+    (compile_and_verify
+      (new A a b)
+      '
+        new A(a, b);
+      '
+    )
+
+    (compile_and_verify
+      (new A "str")
+      '
+        new A("str");
+      '
+    )
+
+    (compile_and_verify
+      (a @ 1)
+      '
+        a[1];
+      '
+    )
+
+    (compile_and_verify
+      (a @ 'name')
+      '
+        a["name"];
+      '
+    )
+
+    (compile_and_verify
+      (a + b)
+      '
+        (a + b);
+      '
+    )
+
+    (compile_and_verify
+      (a instanceof b)
+      '
+        (a instanceof b);
+      '
+    )
+
+    (compile_and_verify
+      (a ++)
+      '
+        (a ++);
+      '
+    )
+
+    (compile_and_verify
+      (! a)
+      '
+        ! a;
+      '
+    )
+
+    (compile_and_verify
+      (return a)
+      '
+        return a;
+      '
+    )
+
+    (compile_and_verify
+      (throw a)
+      '
+        throw a;
+      '
+    )
+
+    (compile_and_verify
+      (try
+        1
+        2
+      catch error
+        3
+        4
+      finally
+        5
+        6
+      )
+      '
+        try {
+          1;
+          2;
+        } catch (error) {
+          3;
+          4;
+        } finally {
+          5;
+          6;
+        }
+      '
+    )
+
+    (compile_and_verify
+      (if a 1 2)
+      '
+        if (a) {
+          1;
+          2;
+        }
+      '
+    )
+
+    (compile_and_verify
+      (a ? 1 2)
+      '
+        (a ? 1 : 2);
+      '
+    )
+
+    (compile_and_verify
+      (if a
+        1
+        2
+      else_if b
+        3
+        4
+      else
+        5
+        6
+      )
+      '
+        if (a) {
+          1;
+          2;
+        } else if (b) {
+          3;
+          4;
+        } else {
+          5;
+          6;
+        }
+      '
+    )
+
+    (compile_and_verify
+      (while true
+        1
+        2
+      )
+      '
+        while (true) {
+          1;
+          2;
+        }
+      '
+    )
+
+    (compile_and_verify
+      (for (var i 0) (i < 5) (i ++)
+        1
+        2
+      )
+      '
+        for (var i = 0; (i < 5); (i ++)) {
+          1;
+          2;
+        }
+      '
+    )
+
+    (compile_and_verify
+      (for i in list
+        1
+        2
+      )
+      '
+        for (var i in list) {
+          1;
+          2;
+        }
+      '
+    )
+
+    # More complex code
+    (compile_and_verify
+      (var a (((new A) @ 0) <- 1 2))
+      '
+        var a = new A()[0](1, 2);
+      '
+    )
+
+    (compile_and_verify
+      ((Gene .assert) <- false )
+      '
+        Gene.assert(false);
+      '
+    )
+
+    (compile_and_verify
+      (fnxx (var $root_context ($application . (create_root_context <-))) ((fnx $context (var $result) ($result = ((Gene .assert) <- false)) (return $result)) <- $root_context))
+      '
+        function() {
+          var $root_context = $application.create_root_context();
+          (function($context) {
+            var $result;
+            ($result = Gene.assert(false));
+            return $result;
+          })($root_context);
+        }
       '
     )
 
@@ -41,209 +388,4 @@ describe "JavaScript representation in Gene" do
       @application.parse_and_process(input)
     end
   end
-
-  # {
-  #   # Atomic operations
-  #   ' # var
-  #     # !pending!
-  #     (jvar a 1)
-  #   ' =>
-  #   <<-JAVASCRIPT,
-  #     var a = 1;
-  #   JAVASCRIPT
-
-  #   ' # function
-  #     # !pending!
-  #     (jfn f [a b] 1)
-  #   ' =>
-  #   <<-JAVASCRIPT,
-  #     function f(a, b) {
-  #       1;
-  #     }
-  #   JAVASCRIPT
-
-  #   ' # anonymous function
-  #     # !pending!
-  #     (jfnx [a b] 1)
-  #   ' =>
-  #   <<-JAVASCRIPT,
-  #     function(a, b) {
-  #       1;
-  #     }
-  #   JAVASCRIPT
-
-  #   ' # dummy function
-  #     # !pending!
-  #     (jfnxx 1)
-  #   ' =>
-  #   <<-JAVASCRIPT,
-  #     function() {
-  #       1;
-  #     }
-  #   JAVASCRIPT
-
-  #   ' # dot access
-  #     # !pending!
-  #     (jdot a b c)
-  #   ' =>
-  #   <<-JAVASCRIPT,
-  #     a.b.c
-  #   JAVASCRIPT
-
-  #   ' # new
-  #     # !pending!
-  #     (jnew A 1 2)
-  #   ' =>
-  #   <<-JAVASCRIPT,
-  #     new A(1, 2)
-  #   JAVASCRIPT
-
-  #   ' # binary expressions
-  #     # !pending!
-  #     (jbin a + b)
-  #   ' =>
-  #   <<-JAVASCRIPT,
-  #     a + b
-  #   JAVASCRIPT
-
-  #   ' # unary expressions
-  #     # !pending!
-  #     (jpre ! a)
-  #   ' =>
-  #   <<-JAVASCRIPT,
-  #     !a
-  #   JAVASCRIPT
-
-  #   ' # return
-  #     # !pending!
-  #     (jret 1)
-  #   ' =>
-  #   <<-JAVASCRIPT,
-  #     return 1;
-  #   JAVASCRIPT
-
-  #   ' # ()
-  #     # !pending!
-  #     (jgrp a b)
-  #   ' =>
-  #   <<-JAVASCRIPT,
-  #     (a, b)
-  #   JAVASCRIPT
-
-  #   ' # if
-  #     # !pending!
-  #     (jif true 1)
-  #   ' =>
-  #   <<-JAVASCRIPT,
-  #     if (true) {
-  #       1;
-  #     }
-  #   JAVASCRIPT
-
-  #   ' # if...else
-  #     # !pending!
-  #     (jif true 1 else 2)
-  #   ' =>
-  #   <<-JAVASCRIPT,
-  #     if (true) {
-  #       1;
-  #     } else {
-  #       2;
-  #     }
-  #   JAVASCRIPT
-
-  #   ' # if...else if...else
-  #     # !pending!
-  #     (jif true 1 else_if true 2 else 3)
-  #   ' =>
-  #   <<-JAVASCRIPT,
-  #     if (true) {
-  #       1;
-  #     } else if (true) {
-  #       2;
-  #     } else {
-  #       3;
-  #     }
-  #   JAVASCRIPT
-
-  #   ' # for
-  #     # !pending!
-  #     (jfor (jvar a 0) (jbin a < 100) (jbin a ++) 1)
-  #   ' =>
-  #   <<-JAVASCRIPT,
-  #     for (var a = 0; a < 100; a ++) {
-  #       1;
-  #     }
-  #   JAVASCRIPT
-
-  #   ' # for...in
-  #     # !pending!
-  #     (jfor a in b [])
-  #   ' =>
-  #   <<-JAVASCRIPT,
-  #     for (var a in b) {
-  #       1;
-  #     }
-  #   JAVASCRIPT
-
-  #   ' # Ternary expression:  a ? b : c
-  #     # !pending!
-  #     (jtern true ? 1 2)
-  #   ' =>
-  #   <<-JAVASCRIPT,
-  #     true ? 1 : 2
-  #   JAVASCRIPT
-
-  #   ' # Object
-  #     # !pending!
-  #     {
-  #       ^a 1
-  #       ^b 2
-  #     }
-  #   ' =>
-  #   <<-JAVASCRIPT,
-  #     {
-  #       "a" : 1,
-  #       "b" : 2
-  #     }
-  #   JAVASCRIPT
-
-  #   ' # Object access
-  #     # !pending!
-  #     (jget a 1)
-  #   ' =>
-  #   <<-JAVASCRIPT,
-  #     a[1]
-  #   JAVASCRIPT
-
-  #   ' # Invoke function
-  #     # !pending!
-  #     (jcall f a b)
-  #   ' =>
-  #   <<-JAVASCRIPT,
-  #     f(a, b)
-  #   JAVASCRIPT
-
-  #   # Building blocks built on top of atomic components, that are commonly used
-
-  #   # Programs
-  #   '
-  #     # !pending!
-  #     (jvar a (jcall (jget (jnew A) 0) 1 2))
-  #   ' =>
-  #   <<-JAVASCRIPT,
-  #     var a = new A()[0](1, 2);
-  #   JAVASCRIPT
-
-  # }.each do |input, result|
-  #   it input do
-  #     pending if input.index('!pending!')
-
-  #     parsed = Gene::Parser.parse(input)
-  #     @application.global_namespace.set_member('$parsed_code', parsed)
-
-  #     output = @application.parse_and_process('(compile $parsed_code)')
-  #     compare_code output, result
-  #   end
-  # end
 end

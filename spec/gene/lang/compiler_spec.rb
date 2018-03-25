@@ -17,7 +17,7 @@ describe Gene::Lang::Compiler do
       var $root_context = $application.create_root_context();
       (function($context){
         var $result;
-        $context.var_("a", 1);
+        $context.var("a", 1);
         $result = ($context.get_member("a") == 1);
         return $result;
       })($root_context);
@@ -31,14 +31,13 @@ describe Gene::Lang::Compiler do
       var $root_context = $application.create_root_context();
       (function($context){
         var $result;
-        $context.var_("a");
-        $result = $context.var_("b");
+        $context.var("a");
+        $result = $context.var("b");
         return $result;
       })($root_context);
     JAVASCRIPT
 
     '
-      # !eval-to-true!
       (var result 0)
       (for (var i 0)(i < 5)(i += 1)
         (result += i)
@@ -49,8 +48,8 @@ describe Gene::Lang::Compiler do
       var $root_context = $application.create_root_context();
       (function($context){
         var $result;
-        $context.var_("result", 0);
-        for($context.var_("i", 0); ($context.get_member("i") < 5); $context.set_member("i", ($context.get_member("i") + 1))) {
+        $context.var("result", 0);
+        for($context.var("i", 0); ($context.get_member("i") < 5); $context.set_member("i", ($context.get_member("i") + 1))) {
           $context.set_member("result", ($context.get_member("result") + $context.get_member("i")));
         };
         $result = ($context.get_member("result") == 10);
@@ -73,8 +72,8 @@ describe Gene::Lang::Compiler do
       var $root_context = $application.create_root_context();
       (function($context){
         var $result;
-        $context.var_("result", 0);
-        for($context.var_("i", 0); ($context.get_member("i") < 100); $context.set_member("i", ($context.get_member("i") + 1))) {
+        $context.var("result", 0);
+        for($context.var("i", 0); ($context.get_member("i") < 100); $context.set_member("i", ($context.get_member("i") + 1))) {
           if (($context.get_member("result") >= 100)) {
             break;
           } else {

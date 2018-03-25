@@ -8,13 +8,15 @@ class Gene::Types::Base
     @properties = {}
   end
 
-  def [] name
+  def get name
     @properties[name.to_s]
   end
+  alias [] get
 
-  def []= name, value
+  def set name, value
     @properties[name.to_s] = value
   end
+  alias []= set
 
   def == other
     return unless other.is_a? self.class

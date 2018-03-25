@@ -24,8 +24,12 @@ module Gene::Lang
       @klass = klass
     end
 
-    def gene_type
+    def type
       get('#type') or self.class
+    end
+
+    def type= type
+      set('#type', type)
     end
 
     def get name
@@ -60,13 +64,19 @@ module Gene::Lang
 
     def to_s
       parts = []
-      # TODO: check "#type" property
-      type = self.class ? self.class.name : Object.name
+      type =
+        if self.type
+          self.type.to_s
+        elsif self.class
+          self.class.to_s
+        else
+          "Object"
+        end
       parts << type.sub(/^Gene::Lang::/, '')
 
       @properties.each do |name, value|
         next if name.to_s =~ /^\$/
-        next if %W(#class #data).include? name.to_s
+        next if %W(#type #class #data).include? name.to_s
         next if properties_to_hide.include? name.to_s
 
         if value == true
@@ -95,7 +105,7 @@ module Gene::Lang
       end
 
       if @properties.include? "#data"
-        parts << @properties["#data"].inspect
+        parts += @properties["#data"].map(&:to_s)
       end
 
       "(#{parts.join(' ')})"
@@ -153,9 +163,9 @@ module Gene::Lang
 
     def self.from_gene_base base_object
       obj = new
-      obj.properties = base_object.properties
+      obj.properties = base_object.properties.clone
       obj.set '#type', base_object.type
-      obj.data = base_object.data
+      obj.data = base_object.data.clone
       obj
     end
 
@@ -171,12 +181,15 @@ module Gene::Lang
     end
   end
 
-  class ThrownException < Object
-    attr_accessor :exception
+  class ExceptionWrapper < Exception
+    attr :wrapped_exception
 
     def initialize exception
-      super(ThrownException)
-      set 'exception', exception
+      @wrapped_exception = exception
+    end
+
+    def to_s
+      @wrapped_exception.get('message')
     end
   end
 
@@ -294,8 +307,7 @@ module Gene::Lang
         statements.each do |stmt|
           result = process stmt
           if (result.is_a?(Gene::Lang::ReturnValue) or
-              result.is_a?(Gene::Lang::BreakValue) or
-              result.is_a?(Gene::Lang::ThrownException))
+              result.is_a?(Gene::Lang::BreakValue))
             break
           end
         end
@@ -509,34 +521,6 @@ module Gene::Lang
     def call options = {}
       options[:self] = self.self
       function.call options
-    end
-  end
-
-  class Macro < Object
-    attr_reader :name
-    attr_accessor :parent_scope, :args_matcher, :statements
-
-    def initialize name
-      super(Macro)
-      set 'name', name
-    end
-
-    def call options = {}
-      scope   = Scope.new parent_scope, false
-      context = options[:context]
-
-      scope.set_member '$caller_context', context
-      scope.set_member '$arguments', options[:arguments]
-      scope.arguments = Gene::Lang::ArgumentsScope.new options[:arguments], self.args_matcher
-
-      new_context = context.extend scope: scope
-      result = new_context.process_statements statements
-      if result.is_a? ReturnValue
-        result = result.value
-      end
-
-      # Treat result as new AST and evaluate
-      context.process_statements result
     end
   end
 

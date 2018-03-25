@@ -1,15 +1,27 @@
 namespace Gene {
   export class Base {
+
+    public static from_data(data: any[]) {
+      const obj = new Gene.Base();
+      obj.data = data;
+
+      return obj;
+    }
+
     public class: any;
     public properties: object;
 
-    constructor(_class: any) {
-      this.properties = {};
+    constructor(_class: any = Base) {
       this.class = _class;
+      this.properties = {};
     }
 
-    public get(name: string) {
-      return this.properties[name];
+    public get(name: any) {
+      if (typeof name === 'string') {
+        return this.properties[name];
+      } else {
+        return this.data[name];
+      }
     }
 
     public set(name: string, value: any) {
@@ -19,7 +31,7 @@ namespace Gene {
     get data() {
       return this.get('#data');
     }
-    set data(data: [any]) {
+    set data(data: any[]) {
       this.set('#data', data);
     }
 
@@ -29,12 +41,17 @@ namespace Gene {
 
       return obj;
     }
+
+    public equal(o: any) {
+      return this == o;
+    }
   }
 
   export class Module extends Base {
     constructor(name: string) {
       super(Module);
-      this.name = name;
+      this.set('name', name);
+      this.set('methods', {});
     }
 
     get name(): string {
@@ -46,9 +63,6 @@ namespace Gene {
 
     get methods(): [any] {
       return this.get('methods');
-    }
-    set methods(new_methods: [any]) {
-      this.set('methods', new_methods);
     }
 
     get prop_descriptors(): object {
@@ -65,9 +79,19 @@ namespace Gene {
       this.set('modules', new_modules);
     }
 
-    public method(name: string) {
-      return this.methods[name]
+    public def_method({name, args, body}) {
+      const method = new Func(name, args, body);
+      this.methods[name] = method;
+      return method;
     }
+
+    public get_method(name: string) {
+      return this.methods[name];
+    }
+
+    // TODO
+    // public invoke({context, self, method, args}) {
+    // }
   }
 
   export class Class extends Module {
@@ -91,7 +115,7 @@ namespace Gene {
     }
 
     public is_defined(name: string): boolean {
-      return this.members.include(name);
+      return this.members.hasOwnProperty(name);
     }
 
     public get_member(name: string) {
@@ -102,7 +126,7 @@ namespace Gene {
       this.members[name] = value;
     }
 
-    public var_(name: string, value: any) {
+    public ['var'](name: string, value: any) {
       this.members[name] = value;
     }
   }
@@ -119,7 +143,9 @@ namespace Gene {
 
     public create_root_context(): Context {
       const context = new Context(this);
-      context.self = context.namespace = new Namespace('root', this.global_namespace);
+      context.namespace = new Namespace('root', this.global_namespace);
+      context.self = context.namespace;
+      context.scope = new Scope(undefined, false);
 
       return context;
     }
@@ -166,28 +192,63 @@ namespace Gene {
     public extend(options: any): Context {
       const new_context = new Context(this.application);
       if (options.namespace) {
-        this.namespace = options.namespace;
+        new_context.namespace = options.namespace;
       }
       if (options.scope) {
-        this.scope = options.scope;
+        new_context.scope = options.scope;
       }
       if (options.self) {
-        this.self = options.self;
+        new_context.self = options.self;
       }
 
       return new_context;
     }
 
-    public var_(name: string, value: any) {
-      this.namespace.var_(name, value);
-    }
-
     public get_member(name: string) {
-      return this.namespace.get_member(name);
+      if (this.scope && this.scope.is_defined(name)) {
+        return this.scope.get_member(name);
+      } else if (this.namespace && this.namespace.is_defined(name)) {
+        return this.namespace.get_member(name);
+      } else if (this.global_namespace.is_defined(name)) {
+        return this.global_namespace.get_member(name);
+      } else {
+        // throw new Error(`${name} is not defined.`);
+        throw `${name} is not defined.`;
+      }
     }
 
     public set_member(name: string, value: any) {
-      this.namespace.set_member(name, value);
+      this.scope.set_member(name, value);
+    }
+
+    // Helper methods
+
+    public ['var'](name: string, value: any) {
+      if (this.scope) {
+        this.scope.set_member(name, value);
+      } else {
+        this.namespace.var(name, value);
+      }
+    }
+
+    public fn({name, args, body, inherit_scope}: any) {
+      const fn = new Func(name, args, body);
+      // fn.args_matcher = new Matcher(args);
+      fn.parent_scope = this.scope;
+      fn.inherit_scope = inherit_scope;
+      if (name !== '') {
+        this.namespace.var(name, fn);
+      }
+
+      return fn;
+    }
+
+    public klass(name: string, body: Function = undefined) {
+      const klass = new Class(name);
+      if (body) {
+        body()
+      }
+      return klass;
     }
   }
 
@@ -197,6 +258,7 @@ namespace Gene {
       this.set('parent', parent);
       this.set('inherit_variables', inherit_variables);
       this.set('variables', {});
+      this.set('ns_members', []);
     }
 
     get parent() {
@@ -211,16 +273,83 @@ namespace Gene {
       return this.get('variables');
     }
 
-    public is_defined(name: string): boolean {
-      return this.variables.hasOwnProperty(name);
+    get ns_members() {
+      return this.get('ns_members');
+    }
+
+    public is_defined(name: string) {
+      if (this.variables.hasOwnProperty(name)) {
+        return true;
+      } else if (this.parent) {
+        if (this.inherit_variables) {
+          return this.parent.is_defined(name);
+        } else {
+          // TODO: check in namespace
+          return false;
+        }
+      }
+    }
+
+    public get_member(name: string) {
+      if (this.variables.hasOwnProperty(name)) {
+        return this.variables[name];
+      } else if (this.parent) {
+        if (this.inherit_variables) {
+          return this.parent.get_member(name);
+        } else {
+          return this.parent.get_ns_member(name);
+        }
+      }
+    }
+
+    public set_member(name: string, value: any, options: any = {}) {
+      this.variables[name] = value;
+
+      if (options.namespace && this.ns_members.indexOf(name) < 0) {
+        this.ns_members.push(name);
+      }
+    }
+
+    public handle_arguments(matcher: Matcher, args: any) {
+      for (const m of matcher.data_matchers) {
+        this.set_member(m.name, args.get(m.index));
+      }
+
+      for (const m of matcher.prop_matchers) {
+        this.set_member(m.name, args.get(m.name));
+      }
+    }
+  }
+
+  export class Symbol extends Base {
+    constructor(value: string) {
+      super(Symbol);
+      this.set('value', value);
+    }
+
+    get value() {
+      return this.get('value');
+    }
+
+    set value(new_value: string) {
+      this.set('value', new_value);
+    }
+
+    public equal(o: any) {
+      if (o instanceof Symbol) {
+        return this.value == o.value;
+      } else {
+        return false;
+      }
     }
   }
 
   export class Func extends Base {
     constructor(name: string, args: [string], body: Function) {
-      super(Function);
+      super(Func);
       this.set('name', name);
       this.set('args', args);
+      this.args_matcher = new Matcher(args);
       this.set('body', body);
     }
 
@@ -236,10 +365,325 @@ namespace Gene {
       return this.get('body');
     }
 
-    public invoke(options: {context: Context}) {
-      const { context } = options;
+    get parent_scope() {
+      return this.get('parent_scope');
+    }
 
-      return this.body.call(context);
+    set parent_scope(scope: Scope) {
+      this.set('parent_scope', scope);
+    }
+
+    get inherit_scope() {
+      return this.get('inherit_scope');
+    }
+
+    set inherit_scope(value: boolean) {
+      this.set('inherit_scope', value);
+    }
+
+    get eval_arguments() {
+      return this.get('eval_arguments');
+    }
+
+    set eval_arguments(new_value: boolean) {
+      this.set('eval_arguments', new_value);
+    }
+
+    get args_matcher() {
+      return this.get('args_matcher');
+    }
+
+    set args_matcher(value: Matcher) {
+      this.set('args_matcher', value);
+    }
+
+    public invoke(context: Context, self: any, args: any) {
+      const scope = new Scope(this.parent_scope, this.inherit_scope);
+
+      scope.set_member('$function', this);
+      scope.set_member('$caller_context', context);
+      scope.handle_arguments(this.args_matcher, args);
+
+      const new_context = context.extend({scope: scope, self: self});
+
+      return this.body.call(undefined, new_context);
+    }
+  }
+
+  export class Matcher extends Base {
+    constructor(definition: any) {
+      super(Matcher);
+      this.set('data_matchers', []);
+      this.set('prop_matchers', {});
+      this.from_array(definition);
+    }
+
+    get data_matchers() {
+      return this.get('data_matchers');
+    }
+
+    set data_matchers(value: any) {
+      this.set('data_matchers', value);
+    }
+
+    get prop_matchers() {
+      return this.get('prop_matchers');
+    }
+
+    set prop_matchers(value: any) {
+      this.set('prop_matchers', value);
+    }
+
+    public get_matcher(name: string) {
+      let matcher = this.prop_matchers[name];
+      if (matcher) {
+        return matcher;
+      }
+
+      for (matcher of this.data_matchers.length) {
+        if (matcher.name === name) {
+          return matcher;
+        }
+      }
+    }
+
+    private from_array(array: any) {
+      if (!(array instanceof Array)) {
+        array = [array];
+      }
+
+      let data_matcher: DataMatcher;
+      let index = 0;
+      let name;
+      let expandable;
+      let matched;
+
+      while (index < array.length) {
+        const item = array[index];
+        index += 1;
+
+        if (item === '=') {
+          if (data_matcher) {
+            data_matcher.default_value = array[index];
+            index += 1;
+            data_matcher = null;
+          } else {
+            throw new SyntaxError('Argument name is expected before `=`');
+          }
+
+        } else if (matched = item.match(/^\^\^(.*)$/)) {
+          name = matched[0];
+          if (this.get_matcher(name)) {
+            throw new SyntaxError(`Name conflict: ${name}`);
+          }
+          this.prop_matchers[name] = new PropMatcher(name);
+          data_matcher = null;
+
+        } else if (matched = item.match(/^\^(.*)$/)) {
+          name = matched[1];
+          if (this.get_matcher(name)) {
+            throw new SyntaxError(`Name conflict: ${name}`);
+          }
+          const prop_matcher = new PropMatcher(name);
+          prop_matcher.default_value = array[index];
+          index += 1;
+          this.prop_matchers[name] = prop_matcher;
+          data_matcher = null;
+
+        } else {
+          if (matched = item.match(/^(.*)(\.\.\.)$/)) {
+            name = matched[1];
+            expandable = true;
+          } else {
+            name = item;
+            expandable = false;
+          }
+
+          if (this.get_matcher(name)) {
+            throw new SyntaxError(`Name conflict: ${name}`);
+          }
+          data_matcher = new DataMatcher(name);
+          data_matcher.expandable = expandable;
+          this.data_matchers.push(data_matcher);
+        }
+      }
+
+      this.calc_indexes();
+    }
+
+    private calc_indexes() {
+      if (this.data_matchers.length <= 0) {
+        return;
+      }
+
+      this.data_matchers.forEach((element: any, index: number) => {
+        element.index = index;
+      });
+
+      const last = this.data_matchers[this.data_matchers.length - 1];
+      if (last.expandable) {
+        last.end_index = -1;
+      }
+    }
+  }
+
+  export class DataMatcher extends Base {
+    constructor(name: string) {
+      super(DataMatcher);
+      this.set('name', name);
+      this.set('default_value', undefined);
+    }
+
+    get name() {
+      return this.get('name');
+    }
+
+    get index() {
+      return this.get('index');
+    }
+
+    set index(value: number) {
+      this.set('index', value);
+    }
+
+    get end_index() {
+      return this.get('end_index');
+    }
+
+    set end_index(value: number) {
+      this.set('end_index', value);
+    }
+
+    get expandable() {
+      return this.get('expandable');
+    }
+
+    set expandable(value: boolean) {
+      this.set('expandable', value);
+    }
+
+    get default_value() {
+      return this.get('default_value');
+    }
+
+    set default_value(value: any) {
+      this.set('default_value', value);
+    }
+  }
+
+  export class PropMatcher extends Base {
+    constructor(name: string) {
+      super(PropMatcher);
+      this.set('name', name);
+      this.set('default_value', undefined);
+    }
+
+    get name() {
+      return this.get('name');
+    }
+
+    get expandable() {
+      return this.get('expandable');
+    }
+
+    set expandable(value: boolean) {
+      this.set('expandable', value);
+    }
+
+    get default_value() {
+      return this.get('default_value');
+    }
+
+    set default_value(value: any) {
+      this.set('default_value', value);
+    }
+  }
+
+  export class Variable extends Base {
+    constructor(name: string) {
+      super(Variable);
+      this.set('name', name);
+    }
+    get name() {
+      return this.get('name');
+    }
+
+    set name(value: string) {
+      this.set('name', value);
+    }
+
+    get value() {
+      return this.get('value');
+    }
+
+    set value(new_value: any) {
+      this.set('value', new_value);
+    }
+
+    get default_value() {
+      return this.get('default_value');
+    }
+
+    set default_value(value: any) {
+      this.set('default_value', value);
+    }
+  }
+
+  export class Argument extends Variable {
+    constructor(name: string) {
+      super(name);
+      this.class = Argument;
+    }
+
+    get matcher() {
+      return this.get('matcher');
+    }
+
+    set matcher(value: any) {
+      this.matcher = value;
+    }
+  }
+
+  export class Return extends Base {
+    constructor(value: any) {
+      super(Return);
+      this.set('value', value);
+    }
+
+    get value() {
+      return this.get('value');
+    }
+  }
+
+  export class Throwable extends Base {
+    constructor(reason: any) {
+      super(Throwable);
+      this.set('reason', reason);
+    }
+
+    get reason() {
+      return this.get('reason');
+    }
+  }
+
+  export class Exception extends Base {
+    constructor(reason: any) {
+      super(reason);
+      this.class = Exception;
+    }
+  }
+
+  export class Error extends Base {
+    constructor(reason: any) {
+      super(reason);
+      this.class = Error;
+    }
+  }
+
+  export class SyntaxError extends Error {
+    constructor(reason: any) {
+      super(reason);
+      this.class = SyntaxError;
     }
   }
 
@@ -248,6 +692,42 @@ namespace Gene {
       throw message || 'AssertionError';
     }
   }
+
+  export function equal(first: any, second: any) {
+    if (first instanceof Gene.Base) {
+      return first.equal(second);
+    } else {
+      return first == second;
+    }
+  };
+
+  Gene['throw'] = function(error: any) {
+    throw error;
+  };
+
+  Gene['return'] = function(value: any) {
+    throw new Gene.Return(value);
+  };
+
+  Gene['new'] = function({context, klass, args}) {
+    var obj = new Gene.Base(klass);
+    (Gene as any).invoke({
+      context: context,
+      self: obj,
+      method: 'init',
+      args: args
+    });
+    return obj;
+  }
+
+  export function invoke({context, self, method, args}) {
+    self.invoke({
+      context: context,
+      self: self,
+      method: method,
+      args: args
+    });
+  };
 }
 
 let $application = new Gene.Application();

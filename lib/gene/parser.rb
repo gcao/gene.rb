@@ -50,11 +50,11 @@ module Gene
     TRUE                  = /true#{SEP_OR_END}/
     FALSE                 = /false#{SEP_OR_END}/
     NULL                  = /null#{SEP_OR_END}/
-    UNDEFINED             = /undefined#{SEP_OR_END}/
+    UNDEFINED             = /undefined|void#{SEP_OR_END}/
     PLACEHOLDER           = /#_#{SEP_OR_END}/
     IGNORE                = %r(
       (?:
-       \#($ | [\n\r] | \s+[^\n\r]*($|[\n\r]))|   # line comments
+       \#($ | \r?\n | \s+[^\n\r]*($|\r?\n) | ![^\n\r]*($|\r?\n))|   # line comments
        [\s]+             # whitespaces: space, horicontal tab, lf, cr
       )+
     )mx
@@ -64,6 +64,23 @@ module Gene
 
     RANGE = Gene::Types::Symbol.new('#..')
     SET   = Gene::Types::Symbol.new('#<>')
+    END_SYMBOL = Gene::Types::Symbol.new('#END')
+
+    ENV_TYPE = Gene::Types::Symbol.new('#ENV')
+
+    GENE_PI = Gene::Types::Symbol.new('#GENE')
+
+    # Document level instructions
+    DOCUMENT_INSTRUCTIONS = %w(version)
+
+    DEFAULT_DOCUMENT_VERSION = "1.0"
+
+    # TODO: we can potentially add below
+    # Group instructions
+    # Array instructions
+    # Hash  instructions
+
+    attr_accessor :version
 
     def self.parse input, options = {}
       new(input, options).parse
@@ -74,6 +91,14 @@ module Gene
       @logger.debug('initialize', source, options)
       @options = options
       super source
+    end
+
+    def version
+      @version || DEFAULT_DOCUMENT_VERSION
+    end
+
+    def env
+      @options['env'] || ENV
     end
 
     def parse
@@ -97,7 +122,9 @@ module Gene
         when (value = parse_placeholder) != UNPARSED
           obj = handle_top_level_results obj, value
         when (value = parse_group) != UNPARSED
-          obj = handle_top_level_results obj, value
+          if value != IGNORABLE
+            obj = handle_top_level_results obj, value
+          end
         when (value = parse_hash) != UNPARSED
           obj = handle_top_level_results obj, value
         # when (value = parse_ref) != UNPARSED
@@ -108,6 +135,9 @@ module Gene
         when (value = parse_regexp) != UNPARSED
           obj = handle_top_level_results obj, value
         when (value = parse_symbol) != UNPARSED
+          if value == END_SYMBOL
+            break
+          end
           obj = handle_top_level_results obj, value
         else
           if %w(' ").include? peek(1)
@@ -228,6 +258,9 @@ module Gene
       when (value = parse_regexp) != UNPARSED
         value
       when (value = parse_symbol) != UNPARSED
+        if value == END_SYMBOL
+          raise ParseError, '#END is only allowed on the top level!'
+        end
         value
       when eos?
         raise PrematureEndError, "Incomplete content"
@@ -447,7 +480,9 @@ module Gene
       attribute_for_group.each do |k, v|
         gene.properties[k] = v
       end
-      gene
+      result = handle_processing_instructions gene
+      result = handle_env result
+      result
     end
 
     def parse_hash
@@ -475,6 +510,10 @@ module Gene
             next
           elsif (parsed = parse_value) == UNPARSED
             raise ParseError, "unexpected token at '#{peek(20)}'!"
+          elsif parsed == IGNORABLE
+            # TODO: in order to support processing instructions which returns IGNORABLE in hash
+            # process it and call 'next' here
+            raise ParseError, "error at '#{peek(20)}'!"
           else
             key = parsed.to_s
           end
@@ -489,6 +528,8 @@ module Gene
             raise ParseError, "unexpected token at '#{peek(20)}'!"
           elsif (parsed = parse_value) == UNPARSED
             raise ParseError, "unexpected token at '#{peek(20)}'!"
+          elsif parsed == IGNORABLE
+            raise ParseError, "error at '#{peek(20)}'!"
           else
             value = parsed
             result[key] = value
@@ -502,6 +543,37 @@ module Gene
       raise PrematureEndError, "Incomplete content" unless closed
 
       result
+    end
+
+    def handle_processing_instructions gene
+      if gene.type == GENE_PI
+        gene.properties.each do |key, value|
+          if DOCUMENT_INSTRUCTIONS.include?(key)
+            send "#{key}=", value
+          end
+        end
+        result = Gene::UNDEFINED
+        gene.data.each do |item|
+          if DOCUMENT_INSTRUCTIONS.include?(item.to_s)
+            result = send item.to_s
+          end
+        end
+        if result == Gene::UNDEFINED
+          IGNORABLE
+        else
+          result
+        end
+      else
+        gene
+      end
+    end
+
+    def handle_env gene
+      if gene.is_a? Gene::Types::Base and gene.type == ENV_TYPE
+        env[gene.data.first.to_s]
+      else
+        gene
+      end
     end
   end
 end
