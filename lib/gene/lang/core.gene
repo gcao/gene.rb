@@ -318,6 +318,58 @@
   )
 )
 
+(class HashPlus extend Hash
+  ^^global
+
+  (prop default)
+
+  (init _
+    (@target = {})
+  )
+
+  (method size _
+    ($invoke @target "size")
+  )
+
+  (method get key
+    (if ($invoke @target 'include?' key)
+      ($invoke @target '[]' key)
+    else
+      (.default)
+    )
+  )
+
+  (method set [key value]
+    ($invoke @target '[]=' key value)
+  )
+
+  (method keys _
+    ($invoke @target 'keys')
+  )
+
+  (method values _
+    ($invoke @target 'values')
+  )
+
+  (method map f
+    ((.keys) .map
+      ((fnx key
+        (var value (.get key))
+        (f key value)
+      ) .bind self)
+    )
+  )
+
+  (method each f
+    ((.keys) .each
+      ((fnx key
+        (var value (.get key))
+        (f key value)
+      ) .bind self)
+    )
+  )
+)
+
 (class String
   ^^global
 

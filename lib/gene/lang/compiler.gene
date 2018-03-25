@@ -38,7 +38,7 @@
   result
 )
 
-(var HANDLERS {})
+(var HANDLERS (new HashPlus))
 
 (fn compile_ data
   (if ((data .class) == Object)
@@ -50,7 +50,7 @@
     else_if ((data_first .is Symbol) && (data_first .starts_with "."))
       (compile_method_call data)
     else
-      (var handler ((HANDLERS .get (data .type)) || compile_invocation))
+      (var handler (HANDLERS .get (data .type)))
       (handler data)
     )
   else_if (data .is Symbol)
@@ -305,6 +305,7 @@
   ))
 )
 
+(+fnx handler (HANDLERS .default= handler))
 (fn compile_invocation data
   (match (name args...) data)
   (var evaled_args (args .map (fnx arg (compile_ arg))))
