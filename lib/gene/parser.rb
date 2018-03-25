@@ -105,40 +105,40 @@ module Gene
       @logger.debug 'parse'
       reset
 
-      obj = UNPARSED
+      result = Gene::Types::Stream.new
 
       until eos?
         case
         when skip(IGNORE)
           ;
         when (value = parse_string) != UNPARSED
-          obj = handle_top_level_results obj, value
+          result << value
         when (value = parse_float) != UNPARSED
-          obj = handle_top_level_results obj, value
+          result << value
         when (value = parse_int) != UNPARSED
-          obj = handle_top_level_results obj, value
+          result << value
         when (value = parse_keywords) != UNPARSED
-          obj = handle_top_level_results obj, value
+          result << value
         when (value = parse_placeholder) != UNPARSED
-          obj = handle_top_level_results obj, value
+          result << value
         when (value = parse_group) != UNPARSED
           if value != IGNORABLE
-            obj = handle_top_level_results obj, value
+            result << value
           end
         when (value = parse_hash) != UNPARSED
-          obj = handle_top_level_results obj, value
+          result << value
         # when (value = parse_ref) != UNPARSED
-        #   obj = handle_top_level_results obj, value
+        #   result << value
         # Attribute should not appear on top level
         # when (value = parse_attribute) != UNPARSED
-        #   obj = handle_top_level_results obj, value
+        #   result << value
         when (value = parse_regexp) != UNPARSED
-          obj = handle_top_level_results obj, value
+          result << value
         when (value = parse_symbol) != UNPARSED
           if value == END_SYMBOL
             break
           end
-          obj = handle_top_level_results obj, value
+          result << value
         else
           if %w(' ").include? peek(1)
             raise PrematureEndError, "Incomplete content"
@@ -148,10 +148,10 @@ module Gene
         end
       end
 
-      if obj == UNPARSED
-        Gene::Types::Stream.new
+      if result.size == 1
+        result[0]
       else
-        obj
+        result
       end
     end
 
@@ -219,16 +219,6 @@ module Gene
     EMPTY_8BIT_STRING = ''
     if ::String.method_defined?(:encode)
       EMPTY_8BIT_STRING.force_encoding Encoding::ASCII_8BIT
-    end
-
-    def handle_top_level_results container, new_result
-      if container == UNPARSED
-        new_result
-      elsif container.is_a? Gene::Types::Stream
-        container << new_result
-      else
-        Gene::Types::Stream.new(container, new_result)
-      end
     end
 
     def parse_value options = {}
