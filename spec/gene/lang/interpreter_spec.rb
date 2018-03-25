@@ -13,6 +13,11 @@ describe Gene::Lang::Interpreter do
       @application.parse_and_process(example.description)
     end
 
+    it "# runtime information
+    " do
+      pending "TODO: define a built-in variable that is a hash containing runtime information, e.g. interpreter, version - make this part of $application?"
+    end
+
     it "# $context: the current context
       (assert (($invoke ($invoke $context 'class') 'name') == 'Gene::Lang::Context'))
     " do

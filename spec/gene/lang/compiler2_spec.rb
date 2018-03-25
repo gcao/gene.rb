@@ -282,7 +282,6 @@ describe Gene::Lang::Compiler do
     JAVASCRIPT
 
     ' # Define methods
-      # !pending!
       (class A
         (method m a a)
       )
@@ -293,11 +292,11 @@ describe Gene::Lang::Compiler do
           "name": "m",
           "args": ["a"],
           "body": function($context) {
-            var $result;
-            $result = $context.get_member("a");
-            return $result;
+            var $_result;
+            ($_result = $context.get_member("a"));
+            return $_result;
           }
-        })
+        });
       });
     JAVASCRIPT
 

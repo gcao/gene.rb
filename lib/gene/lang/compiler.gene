@@ -69,6 +69,8 @@
       (compile_throw data)
     else_if ((data .type) == :class)
       (compile_class data)
+    else_if ((data .type) == :method)
+      (compile_method data)
     else_if ((data .type) == :loop)
       (compile_loop data)
     else_if ((data .type) == :assert)
@@ -253,7 +255,30 @@
 (fn compile_class data
   (match [name stmts...] data)
   (::
-    (($context .klass) <- (%name .to_s))
+    (($context .klass) <-
+      (%name .to_s)
+      (%if (! (stmts .is_empty))
+        (:fnx $context
+          (%expand (compile_stmts stmts))
+        )
+      )
+    )
+  )
+)
+
+(fn compile_method data
+  (match [name args stmts...] data)
+  (if_not (args .is Array) (args = [args]))
+  (::
+    ((($context .self) .method) <- {
+      ^name (%= (name .to_s))
+      ^args (%args .map (fnx arg (arg .to_s)))
+      ^body (fnx $context
+        (var $_result)
+        (%expand (compile_stmts ^^assign_to_result stmts))
+        (return $_result)
+      )
+    })
   )
 )
 

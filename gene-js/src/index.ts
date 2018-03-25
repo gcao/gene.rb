@@ -51,7 +51,7 @@ namespace Gene {
     constructor(name: string) {
       super(Module);
       this.set('name', name);
-      this.set('methods', []);
+      this.set('methods', {});
     }
 
     get name(): string {
@@ -63,9 +63,6 @@ namespace Gene {
 
     get methods(): [any] {
       return this.get('methods');
-    }
-    set methods(new_methods: [any]) {
-      this.set('methods', new_methods);
     }
 
     get prop_descriptors(): object {
@@ -82,13 +79,19 @@ namespace Gene {
       this.set('modules', new_modules);
     }
 
-    public method(name: string) {
+    public def_method({name, args, body}) {
+      const method = new Func(name, args, body);
+      this.methods[name] = method;
+      return method;
+    }
+
+    public get_method(name: string) {
       return this.methods[name];
     }
 
-    public invoke({context, self, method, args}) {
-      // TODO
-    }
+    // TODO
+    // public invoke({context, self, method, args}) {
+    // }
   }
 
   export class Class extends Module {

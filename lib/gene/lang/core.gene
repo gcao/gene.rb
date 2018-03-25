@@ -196,6 +196,9 @@
   (method size _
     ($invoke self "size")
   )
+  (method is_empty _
+    ((.size) == 0)
+  )
   (method get i
     (if (i < (.size))
       ($invoke self '[]' i)
