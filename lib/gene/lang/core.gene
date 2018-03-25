@@ -122,6 +122,11 @@
     # Gotcha: `return` is needed here in order to return any value as is to the caller.
     (return ($invoke self 'process_statements' stmts))
   )
+
+  (method eval stmts...
+    # Gotcha: `return` is needed here in order to return any value as is to the caller.
+    (return ($invoke self 'process_statements' stmts))
+  )
 )
 
 (class Function
@@ -474,4 +479,9 @@
     # when block: when => condition => (optional)then => statements
     # Should throw error on invalid transitions
   )
+)
+
+# TODO: replace EvalHandler
+(fn eval stmts...
+  ^^global
 )

@@ -1197,22 +1197,9 @@ module Gene::Lang::Handlers
 
       result = Gene::UNDEFINED
 
-      stmts = data.data
-
-      context = data.get('context') || context
-
-      if data.get('#render_args')
-        stmts = stmts.map do |stmt|
-          render context, stmt
-        end
-        stmts = expand stmts
-      end
-
-      stmts.each do |item|
-        # First round: treat each item as an argument
-        result = context.process item
-        # Second round: evaluate each result
-        result = context.process result
+      stmts = expand data.data.map {|stmt| context.process stmt }
+      stmts.each do |stmt|
+        result = context.process stmt
       end
 
       result

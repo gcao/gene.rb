@@ -13,7 +13,7 @@
   (if pending
     (println "PENDING: " title)
   else
-    (eval ^^#render_args %body...)
+    (eval body...)
   )
 )
 
@@ -25,7 +25,7 @@
   else
     (catch
       ^AssertionFailure (fnx e (println (e .message)))
-      (eval ^^#render_args %body...)
+      (eval body...)
     )
   )
 )
@@ -36,7 +36,7 @@
 (fn assert2 [expr message]
   ^!eval_arguments
 
-  (if_not (eval ^context $caller_context expr)
+  (if_not ($caller_context .eval expr)
     (throw AssertionFailure
       (message || ("Assertion failed: " expr))
     )
