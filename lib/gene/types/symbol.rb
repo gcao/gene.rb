@@ -17,6 +17,10 @@ class Gene::Types::Symbol
   end
   alias eql? ==
 
+  def hash
+    name.hash
+  end
+
   def === other
     other.is_a? Gene::Types::Base and other.type == self
   end
