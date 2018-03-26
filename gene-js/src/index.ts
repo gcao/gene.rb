@@ -89,9 +89,14 @@ namespace Gene {
       return this.methods[name];
     }
 
-    // TODO
-    // public invoke({context, self, method, args}) {
-    // }
+    public handle_method({context, self, method_name, args}) {
+      const method = this.get_method(method_name);
+      if (method) {
+        return method.call(context, self, args);
+      } else {
+        throw `${method_name} is not found in ${this}`;
+      }
+    }
   }
 
   export class Class extends Module {
@@ -721,10 +726,27 @@ namespace Gene {
   }
 
   export function invoke({context, self, method, args}) {
-    self.invoke({
+    return self.invoke({
       context: context,
       self: self,
       method: method,
+      args: args
+    });
+  };
+
+  export function get_class(obj): Module {
+    if (obj instanceof Base) {
+      return obj.class;
+    }
+    return null;
+  }
+
+  export function handle_method({context, self, method, args}) {
+    var klass = get_class(self);
+    return klass.handle_method({
+      context: context,
+      self: self,
+      method_name: method,
       args: args
     });
   };

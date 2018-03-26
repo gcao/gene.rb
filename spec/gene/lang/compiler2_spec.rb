@@ -263,7 +263,7 @@ describe Gene::Lang::Compiler do
       (a .b)
     ' =>
     <<-JAVASCRIPT,
-      Gene.invoke({
+      Gene.handle_method({
         "context": $context,
         "self": $context.get_member("a"),
         "method": "b",
