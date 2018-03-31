@@ -4,11 +4,12 @@ include Gene::Lang::Jit
 
 describe "Jit" do
   it "should work" do
-    app = Application.new [
+    block = CompiledBlock.new([
       [WRITE, 'a', 1],
       [READ, 'a'],
-      [APP_END],
-    ]
+    ])
+
+    app = Application.new(CompiledModule.new(block))
     app.run.should == 1
   end
 end
