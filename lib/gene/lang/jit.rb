@@ -1,28 +1,28 @@
 module Gene::Lang::Jit
-  class Context
-    attr_reader :parent
-    attr_reader :registers
-    attr_accessor :default # Default register
+  # class Context
+  #   attr_reader :parent
+  #   attr_reader :registers
+  #   attr_accessor :default # Default register
 
-    def initialize parent = nil
-      @parent    = parent
-      @registers = {}
-    end
+  #   def initialize parent = nil
+  #     @parent    = parent
+  #     @registers = {}
+  #   end
 
-    def define name, value
-      @registers[name] = value
-    end
+  #   def define name, value
+  #     @registers[name] = value
+  #   end
 
-    def write name, value
-      @registers[name] = value
-    end
+  #   def write name, value
+  #     @registers[name] = value
+  #   end
 
-    def read name
-      @registers[name]
-    end
-  end
+  #   def read name
+  #     @registers[name]
+  #   end
+  # end
 
-  # Stack of contexts
+  # Stack of registers
   class Stack < Array
     def initialize
       push Context.new
@@ -33,7 +33,10 @@ module Gene::Lang::Jit
     end
   end
 
-  class Processor
+  # Represents a complete virtual machine that will be used to run
+  # the instructions and hold the application state
+  class VirtualMachine
+
     attr_reader :global
 
     def initialize
@@ -82,18 +85,17 @@ module Gene::Lang::Jit
 
   [
     'define', # Define a variable in current context
-    'read',   # read from register and store in default register
-    'write',  # write to register
-    'copy',   # copy from one register to another register
+    'read',   # read "a": read from register and store in default register
+    'write',  # write "a" 1: write to register
 
     # Number instructions
-    'incr',   # increment variable by 1
-    'decr',   # decrement variable by 1
-    'add',
+    'incr',   # incr "a": increment register "a" by 1
+    'decr',   # decr "a": decrement register "a" by 1
+    'add',    # add "a" "b" "c":
     'sub',
     'mul',
     'div',
-    'cmp',
+    'cmp',    # cmp "a" 1: a == 1
 
     # String instructions
     'substr',
@@ -104,7 +106,8 @@ module Gene::Lang::Jit
     # Hash instructions
 
     # Control flow instructions
-    'jump',   # jump to instruction
+    'jump',   # jump 1: jump to instruction 1 in the block
+    'relative_jump', # relative_jump -1: jump back by 1
     'long_jump', # jump to instruction in another block
     'return', # return value stored in default register
     'break',

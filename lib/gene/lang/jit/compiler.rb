@@ -45,11 +45,27 @@ module Gene::Lang::Jit
     def compile source
       block = CompiledBlock.new []
       mod   = CompiledModule.new block
+      compile_ mod, source
+      mod
     end
 
     def parse_and_compile string
       parsed = Gene::Parser.parse string
       compile parsed
+    end
+
+    def compile_ mod, source
+      if source.is_a? Gene::Types::Base
+        if source === VAR
+          mod.primary_block.add_instr [DEFINE, source.data.first.to_s]
+        end
+      end
+    end
+
+    %W(
+      VAR
+    ).each do |name|
+      const_set name, Gene::Types::Symbol.new("#{name.downcase}")
     end
   end
 end
