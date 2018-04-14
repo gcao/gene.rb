@@ -1,42 +1,6 @@
 require 'securerandom'
 
 module Gene::Lang::Jit
-  class CompiledModule
-    attr_reader :blocks
-    attr_reader :primary_block
-
-    def initialize primary_block
-      @blocks = {}
-      self.primary_block = primary_block
-    end
-
-    def add_block block
-      @blocks[block.key] = block
-    end
-
-    def get_block key
-      @blocks[key]
-    end
-
-    def primary_block= block
-      add_block block
-      @primary_block = block
-    end
-  end
-
-  class CompiledBlock
-    attr_reader :key, :instructions
-
-    def initialize instructions
-      @key          = SecureRandom.uuid
-      @instructions = instructions
-    end
-
-    def add_instr instruction
-      @instructions << instruction
-    end
-  end
-
   class Compiler
     def initialize
     end
@@ -61,6 +25,10 @@ module Gene::Lang::Jit
         else
           # TODO
         end
+      elsif source.is_a? Gene::Types::Stream
+        source.each do |item|
+          compile_ mod, item
+        end
       elsif source.is_a? Array
         # TODO
       elsif source.is_a? Hash
@@ -73,7 +41,76 @@ module Gene::Lang::Jit
     %W(
       VAR
     ).each do |name|
-      const_set name, Gene::Types::Symbol.new("#{name.downcase}_TYPE")
+      const_set "#{name}_TYPE", Gene::Types::Symbol.new(name.downcase)
     end
+  end
+
+  class CompiledModule
+    attr_reader :blocks
+    attr_reader :primary_block
+
+    def initialize primary_block
+      @blocks = {}
+      self.primary_block = primary_block
+    end
+
+    def add_block block
+      @blocks[block.key] = block
+    end
+
+    def get_block key
+      @blocks[key]
+    end
+
+    def primary_block= block
+      add_block block
+      @primary_block = block
+    end
+
+    def to_s indent = nil
+      s = "\n(CompiledModule"
+      @blocks.each do |key, block|
+        if key == @primary_block.key
+          key += "__primary"
+        end
+        s << "\n  ^#{key} " << block.to_s('    ')
+      end
+      s << "\n)"
+
+      if indent
+        s.gsub! "\n", "\n#{indent}"
+      end
+
+      s
+    end
+    alias inspect to_s
+  end
+
+  class CompiledBlock
+    attr_reader :key, :instructions
+
+    def initialize instructions
+      @key          = SecureRandom.uuid
+      @instructions = instructions
+    end
+
+    def add_instr instruction
+      @instructions << instruction
+    end
+
+    def to_s indent = nil
+      s = "\n(CompiledBlock"
+      @instructions.each do |instr|
+        s << "\n  #{instr.inspect}"
+      end
+      s << "\n)"
+
+      if indent
+        s.gsub! "\n", "\n#{indent}"
+      end
+
+      s
+    end
+    alias inspect to_s
   end
 end
