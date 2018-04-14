@@ -9,7 +9,7 @@ module Gene::Lang::Jit
     end
 
     def run
-      Processor.new.process primary_module
+      VirtualMachine.new.process primary_module
     end
   end
 end

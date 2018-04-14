@@ -1,51 +1,40 @@
+require 'securerandom'
+require 'gene/lang/jit/application'
+require 'gene/lang/jit/compiler'
+
 module Gene::Lang::Jit
-  # class Context
-  #   attr_reader :parent
-  #   attr_reader :registers
-  #   attr_accessor :default # Default register
+  # Registers has a unique id, a default register and other registers
+  class Registers < Hash
+    attr_reader :id
+    attr_accessor :default
 
-  #   def initialize parent = nil
-  #     @parent    = parent
-  #     @registers = {}
-  #   end
-
-  #   def define name, value
-  #     @registers[name] = value
-  #   end
-
-  #   def write name, value
-  #     @registers[name] = value
-  #   end
-
-  #   def read name
-  #     @registers[name]
-  #   end
-  # end
-
-  # Stack of registers
-  class Stack < Array
     def initialize
-      push Context.new
+      @id = SecureRandom.uuid
+    end
+  end
+
+  class RegistersManager
+    def initialize
+      @store = {}
     end
 
-    def current
-      self[-1]
+    def create
+      registers = Registers.new
+      @store[registers.id] = registers
+      registers
+    end
+
+    def destroy id
+      @store.delete id
     end
   end
 
   # Represents a complete virtual machine that will be used to run
   # the instructions and hold the application state
   class VirtualMachine
-
-    attr_reader :global
-
     def initialize
-      @global = Context.new
-      @stack  = Stack.new
-    end
-
-    def context
-      @stack.current
+      @registers_mgr = RegistersManager.new
+      @registers     = @registers_mgr.create
     end
 
     def process mod
@@ -58,7 +47,7 @@ module Gene::Lang::Jit
       while @exec_pos < instructions.length
         type, arg0, *rest = instructions[@exec_pos]
 
-        result = handle type, arg0, *rest
+        result = send type, arg0, *rest
 
         @exec_pos += 1
       end
@@ -66,19 +55,15 @@ module Gene::Lang::Jit
       result
     end
 
-    def handle type, arg0 = nil, *rest
-      send "handle_#{type}", arg0, *rest
-    end
-
-    def handle_define name, value = nil
+    def define name, value = nil
       context.define name, value
     end
 
-    def handle_write name, value
+    def write name, value
       context.write name, value
     end
 
-    def handle_read name
+    def read name
       context.default = context.read name
     end
   end
@@ -106,15 +91,12 @@ module Gene::Lang::Jit
     # Hash instructions
 
     # Control flow instructions
-    'jump',   # jump 1: jump to instruction 1 in the block
-    'relative_jump', # relative_jump -1: jump back by 1
-    'long_jump', # jump to instruction in another block
-    'return', # return value stored in default register
-    'break',
+    'jmp',      # jmp 1 result: jump to instruction 1 in the block
+    'reljmp',   # reljmp -1 result: jump back by 1
+    'longjump', # longjmp 'block' 123 result: jump to instruction in another block
+    'ret', # ret result: jump out and save result in default register
+    'brk',
   ].each do |instruction|
     const_set instruction.upcase, instruction
   end
 end
-
-require 'gene/lang/jit/application'
-require 'gene/lang/jit/compiler'

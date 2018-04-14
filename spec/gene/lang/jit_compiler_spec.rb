@@ -4,6 +4,7 @@ include Gene::Lang::Jit
 
 describe "Jit Compiler" do
   before do
+    pending
     @compiler = Compiler.new
   end
 
