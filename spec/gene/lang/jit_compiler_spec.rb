@@ -2,7 +2,7 @@ require File.expand_path(File.dirname(__FILE__) + '/../../spec_helper')
 
 include Gene::Lang::Jit
 
-describe "Jit Compiler" do
+describe "JIT Compiler" do
   before do
     pending
     @compiler = Compiler.new

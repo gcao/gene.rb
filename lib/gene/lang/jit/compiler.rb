@@ -56,16 +56,24 @@ module Gene::Lang::Jit
 
     def compile_ mod, source
       if source.is_a? Gene::Types::Base
-        if source === VAR
+        if source === VAR_TYPE
           mod.primary_block.add_instr [DEFINE, source.data.first.to_s]
+        else
+          # TODO
         end
+      elsif source.is_a? Array
+        # TODO
+      elsif source.is_a? Hash
+        # TODO
+      else
+        mod.primary_block.add_instr [DEFAULT, source]
       end
     end
 
     %W(
       VAR
     ).each do |name|
-      const_set name, Gene::Types::Symbol.new("#{name.downcase}")
+      const_set name, Gene::Types::Symbol.new("#{name.downcase}_TYPE")
     end
   end
 end

@@ -2,7 +2,7 @@ require File.expand_path(File.dirname(__FILE__) + '/../../spec_helper')
 
 include Gene::Lang::Jit
 
-describe "Jit" do
+describe "JIT" do
   before do
     @compiler = Compiler.new
   end
@@ -15,7 +15,9 @@ describe "Jit" do
     app = Application.new(mod)
     app.run.should == 1
   end
+end
 
+describe "JIT Virtual Machine" do
   it "should run compiled block" do
     pending
     block = CompiledBlock.new([

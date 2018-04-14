@@ -56,22 +56,32 @@ module Gene::Lang::Jit
     end
 
     def define name, value = nil
-      context.define name, value
     end
 
     def write name, value
-      context.write name, value
+      @registers[name] = value
     end
 
-    def read name
-      context.default = context.read name
+    def default value
+      @registers.default = value
+    end
+
+    def read name = nil
+      if name
+        @registers[name]
+      else
+        @registers.default
+      end
     end
   end
 
   [
     'define', # Define a variable in current context
+
     'read',   # read "a": read from register and store in default register
-    'write',  # write "a" 1: write to register
+    'write',  # write "a" 1: write to register 'a'
+    'default',# default 1: write 1 to default register
+    'copy',   # copy "a" "b": copy from one register to another
 
     # Number instructions
     'incr',   # incr "a": increment register "a" by 1
@@ -91,9 +101,10 @@ module Gene::Lang::Jit
     # Hash instructions
 
     # Control flow instructions
-    'jmp',      # jmp 1 result: jump to instruction 1 in the block
-    'reljmp',   # reljmp -1 result: jump back by 1
-    'longjump', # longjmp 'block' 123 result: jump to instruction in another block
+    'jump',       # jump 1 result: jump to instruction 1 in the block
+    'jump_rel',   # jump_rel -1 result: jump back by 1
+    'jump_out',   # jump_out 'block' 123 result: jump to instruction in another block
+
     'ret', # ret result: jump out and save result in default register
     'brk',
   ].each do |instruction|
