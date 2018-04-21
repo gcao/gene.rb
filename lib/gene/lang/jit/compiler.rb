@@ -19,22 +19,25 @@ module Gene::Lang::Jit
     end
 
     def compile_ mod, source
+      block = mod.primary_block
       if source.is_a? Gene::Types::Base
         if source === VAR_TYPE
-          mod.primary_block.add_instr [DEFINE, source.data.first.to_s]
+          block.add_instr [DEF_MEMBER, source.data.first.to_s]
         else
           # TODO
         end
       elsif source.is_a? Gene::Types::Stream
         source.each do |item|
-          compile_ mod, item
+          compile_ mod, itmod.primary_blockem
         end
+      elsif source.is_a? Gene::Types::Symbol
+        block.add_instr [GET_MEMBER, source.to_s]
       elsif source.is_a? Array
         # TODO
       elsif source.is_a? Hash
         # TODO
       else
-        mod.primary_block.add_instr [DEFAULT, source]
+        block.add_instr [DEFAULT, source]
       end
     end
 
