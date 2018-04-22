@@ -62,77 +62,88 @@ module Gene::Lang::Jit
       @registers.default
     end
 
-    def def_member name, value = nil
+    def self.instr name, &block
+      Gene::Lang::Jit.const_set name.upcase, name
+      define_method name, &block
+    end
+
+    # Define a variable in current context
+    instr 'def_member' do |name, value = nil|
       puts "def_member: TODO"
     end
 
-    def get_member name
+    # Get value of a variable in current context
+    instr 'get_member' do |name|
       puts "get_member: TODO"
     end
 
-    def set_member name, value
+    # Set value of a variable in current context
+    instr 'set_member' do |name, value|
       puts "set_member: TODO"
     end
 
-    def write name, value
+    # write "a" 1: write to register 'a'
+    instr 'write' do |name, value|
       @registers[name] = value
     end
 
-    def default value
+    # default 1: write 1 to default register
+    instr 'default' do |value|
       @registers.default = value
     end
 
-    def read name = nil
-      if name
-        @registers[name]
-      else
-        @registers.default
-      end
+    # # TODO: is this needed? copy should cover this
+    # # read "a": read from register a and store in default register
+    # instr 'read' do |name = nil|
+    # end
+
+    # copy "a" "b": copy from register a to register b
+    instr 'copy' do
     end
-  end
 
-  [
-    'start_block',# start_block {}: initialize a block with options
-    'end_block',  # Clean up
+    # copy "a" "b": copy from a to b and release a
+    instr 'copy_release' do
+    end
 
-    'start_scope',# start_scope parent: start a new scope, save to a register
-    'end_scope',  # End/close the current scope
+    # label "abc": do nothing, act like an anchor
+    instr 'label' do |name|
+    end
 
-    'def_member', # Define a variable in current context
-    'get_member', # Get value of a variable in current context
-    'set_member', # Set value of a variable in current context
+    instr 'todo' do |code|
+      puts "TODO: #{code}"
+    end
 
-    'read',   # read "a": read from register and store in default register
-    'write',  # write "a" 1: write to register 'a'
-    'default',# default 1: write 1 to default register
-    'copy',   # copy "a" "b": copy from one register to another
+    # 'start_block',# start_block {}: initialize a block with options
+    # 'end_block',  # Clean up
+
+    # 'start_scope',# start_scope parent: start a new scope, save to a register
+    # 'end_scope',  # End/close the current scope
 
     # Number instructions
-    'incr',   # incr "a": increment register "a" by 1
-    'decr',   # decr "a": decrement register "a" by 1
-    'add',    # add "a" "b" "c":
-    'sub',
-    'mul',
-    'div',
-    'cmp',    # cmp "a" 1: a == 1
+    # 'incr',   # incr "a": increment register "a" by 1
+    # 'decr',   # decr "a": decrement register "a" by 1
+    # 'add',    # add "a" "b" "c":
+    # 'sub',
+    # 'mul',
+    # 'div',
+    # 'cmp',    # cmp "a" 1: a == 1
 
     # String instructions
-    'substr',
-    'concat',
+    # 'substr',
+    # 'concat',
 
     # Array instructions
 
     # Hash instructions
 
     # Control flow instructions
-    'if',         # if pos1 pos2: if default register's value is truthy, jump relatively to pos1, otherwise, jump to pos2
-    'jump',       # jump 1 result: jump to instruction 1 in the block
-    'jump_rel',   # jump_rel -1 result: jump back by 1
-    'jump_out',   # jump_out 'block' 123 result: jump to instruction in another block
+    # 'jump',       # jump 1 result: jump to instruction 1 in the block
+    # 'jump_rel',   # jump_rel -1 result: jump back by 1
+    # 'jump_out',   # jump_out 'block' 123 result: jump to instruction in another block
 
-    'ret', # ret result: jump out and save result in default register
-    'brk', # brk result:
-  ].each do |instruction|
-    const_set instruction.upcase, instruction
+    # 'ret', # ret result: jump out and save result in default register
+    # 'brk', # brk result:
+
+    # 'if',         # if pos1 pos2: if default register's value is truthy, jump relatively to pos1, otherwise, jump to pos2
   end
 end
