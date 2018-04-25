@@ -49,7 +49,7 @@ module Gene::Lang::Jit
       else
         # TODO: compile value, store in default register, define member with value in default
         compile_ block, source.data[1]
-        block.add_instr [DEF_MEMBER, name, true]
+        block.add_instr [DEF_MEMBER, name, 'default']
       end
     end
 

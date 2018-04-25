@@ -68,13 +68,18 @@ module Gene::Lang::Jit
     end
 
     # Define a variable in current context
-    instr 'def_member' do |name, value = nil|
-      puts "def_member: TODO"
+    instr 'def_member' do |name, value_register = nil|
+      if value_register
+        value = value_register == 'default' ? @registers.default : @registers[value_register]
+        @context.def_member name, value
+      else
+        @context.def_member name
+      end
     end
 
     # Get value of a variable in current context
     instr 'get_member' do |name|
-      puts "get_member: TODO"
+      @registers.default = @context.get_member name
     end
 
     # Set value of a variable in current context
