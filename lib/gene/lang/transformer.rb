@@ -1,0 +1,72 @@
+class Gene::Lang::Transformer
+  %W(
+    NS
+    CLASS PROP METHOD NEW INIT CAST
+    MODULE INCLUDE
+    EXTEND SUPER
+    SELF WITH
+    SCOPE
+    FN FNX FNXX BIND
+    RETURN
+    MATCH
+    CALL DO
+    VAR NSVAR
+    EXPAND
+    IMPORT EXPORT FROM
+    PUBLIC PRIVATE
+    IF IF_NOT ELSE_IF ELSE THEN
+    FOR LOOP
+    THROW CATCH
+    BREAK
+    RENDER
+    EVAL
+    PRINT PRINTLN
+    ASSERT DEBUG
+    NOOP
+  ).each do |name|
+    const_set name, Gene::Types::Symbol.new("#{name.downcase}")
+  end
+
+  def call input, options = {}
+    if not input.is_a? Gene::Types::Base
+      return input
+    end
+
+    if input === IF
+      transform_if input, options
+    else
+      input
+    end
+  end
+
+  def transform_if input, options
+    result = Gene::Types::Base.new('if$')
+
+    if_expr = result
+    status  = :if
+    input.data.each do |item|
+      if status == :if
+        # status = :cond
+        # if_expr['cond'] = call(item)
+        # if_expr['then'] = Gene::Lang::Statements.new
+      elsif status == :cond
+        # if item == ELSE_IF
+        #   status = :if
+        # elsif item == ELSE
+        #   status = :else
+        #   if_expr['else'] = Gene::Lang::Statements.new
+        # else
+        #   if_expr['then'] << call(item)
+        # end
+      elsif status == :else
+        # status = :if
+        # new_if_expr = Gene::Types::Base.new('if$')
+        # if_expr['else'] = new_if_expr
+      else
+        # if_expr['else'] << call(item)
+      end
+    end
+
+    result
+  end
+end

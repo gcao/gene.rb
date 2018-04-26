@@ -37,6 +37,8 @@ module Gene::Lang::Jit
     def compile_object block, source
       if source === VAR_TYPE
         compile_var block, source
+      elsif source === IF_TYPE
+        compile_if block, source
       else
         compile_unknown block, source
       end
@@ -51,6 +53,10 @@ module Gene::Lang::Jit
         compile_ block, source.data[1]
         block.add_instr [DEF_MEMBER, name, 'default']
       end
+    end
+
+    def compile_if block, source
+      compile_unknown block, source
     end
 
     def compile_symbol block, source
@@ -75,6 +81,10 @@ module Gene::Lang::Jit
       block.add_instr [DEFAULT, source]
     end
 
+    def compile_statements block, stmts
+      block.add_instr ['todo', 'statements']
+    end
+
     def compile_unknown block, source
       block.add_instr ['todo', source.inspect]
     end
@@ -84,9 +94,10 @@ module Gene::Lang::Jit
     end
 
     %W(
-      VAR
+      var
+      if
     ).each do |name|
-      const_set "#{name}_TYPE", Gene::Types::Symbol.new(name.downcase)
+      const_set "#{name.upcase}_TYPE", Gene::Types::Symbol.new(name)
     end
   end
 
