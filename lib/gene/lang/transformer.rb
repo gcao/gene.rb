@@ -40,30 +40,29 @@ class Gene::Lang::Transformer
   end
 
   def transform_if input, options
-    result = Gene::Types::Base.new('if$')
+    result = Gene::Types::Base.new(Gene::Types::Symbol.new('if$'))
 
     if_expr = result
     status  = :if
     input.data.each do |item|
       if status == :if
-        # status = :cond
-        # if_expr['cond'] = call(item)
-        # if_expr['then'] = Gene::Lang::Statements.new
+        status = :cond
+        if_expr['cond'] = call(item)
+        if_expr['then'] = Gene::Lang::Statements.new
       elsif status == :cond
-        # if item == ELSE_IF
-        #   status = :if
-        # elsif item == ELSE
-        #   status = :else
-        #   if_expr['else'] = Gene::Lang::Statements.new
-        # else
-        #   if_expr['then'] << call(item)
-        # end
+        if item == ELSE_IF
+          # TODO
+          # status = :if
+          # new_if_expr = Gene::Types::Base.new('if$')
+          # if_expr['else'] = new_if_expr
+        elsif item == ELSE
+          status = :else
+          if_expr['else'] = Gene::Lang::Statements.new
+        else
+          if_expr['then'] << call(item)
+        end
       elsif status == :else
-        # status = :if
-        # new_if_expr = Gene::Types::Base.new('if$')
-        # if_expr['else'] = new_if_expr
-      else
-        # if_expr['else'] << call(item)
+        if_expr['else'] << call(item)
       end
     end
 

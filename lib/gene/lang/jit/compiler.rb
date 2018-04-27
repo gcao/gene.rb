@@ -23,6 +23,8 @@ module Gene::Lang::Jit
         compile_object block, source
       elsif source.is_a? Gene::Types::Symbol
         compile_symbol block, source
+      elsif source.is_a? Gene::Lang::Statements
+        compile_statements block, source
       elsif source.is_a? Gene::Types::Stream
         compile_stream block, source
       elsif source.is_a? Array
@@ -35,9 +37,13 @@ module Gene::Lang::Jit
     end
 
     def compile_object block, source
-      if source === VAR_TYPE
+      source = Gene::Lang::Transformer.new.call(source)
+
+      type = source.type.to_s
+
+      if type == "var"
         compile_var block, source
-      elsif source === IF_TYPE
+      elsif type == "if$"
         compile_if block, source
       else
         compile_unknown block, source
@@ -56,11 +62,28 @@ module Gene::Lang::Jit
     end
 
     def compile_if block, source
-      compile_unknown block, source
+      compile_ block, source['cond']
+
+      jump1 = block.add_instr [JUMP_IF_FALSE, nil]
+
+      compile_ block, source['then']
+      jump2 = block.add_instr [JUMP, nil]
+
+      jump1[1] = block.length
+
+      compile_ block, source['else']
+
+      jump2[1] = block.length
     end
 
     def compile_symbol block, source
       block.add_instr [GET_MEMBER, source.to_s]
+    end
+
+    def compile_statements block, source
+      source.each do |item|
+        compile_ block, item
+      end
     end
 
     def compile_stream block, source
@@ -79,10 +102,6 @@ module Gene::Lang::Jit
 
     def compile_literal block, source
       block.add_instr [DEFAULT, source]
-    end
-
-    def compile_statements block, stmts
-      block.add_instr ['todo', 'statements']
     end
 
     def compile_unknown block, source
@@ -150,11 +169,15 @@ module Gene::Lang::Jit
       @instructions = instructions
     end
 
-    def add_instr *instructions
-      instructions.each do |instruction|
-        @instructions << instruction
-      end
+    def add_instr instruction
+      @instructions << instruction
+      instruction
     end
+
+    def size
+      @instructions.size
+    end
+    alias length size
 
     def to_s indent = nil
       s = "\n(CompiledBlock"

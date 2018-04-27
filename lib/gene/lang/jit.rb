@@ -142,7 +142,18 @@ module Gene::Lang::Jit
     # Hash instructions
 
     # Control flow instructions
-    # 'jump',       # jump 1 result: jump to instruction 1 in the block
+
+    # jump 1 result: jump to instruction 1 in the block
+    instr 'jump' do |pos|
+      @exec_pos = pos
+    end
+
+    instr 'jump_if_false' do |pos|
+      if not @registers.default
+        @exec_pos = pos
+      end
+    end
+
     # 'jump_rel',   # jump_rel -1 result: jump back by 1
     # 'jump_out',   # jump_out 'block' 123 result: jump to instruction in another block
 

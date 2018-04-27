@@ -28,7 +28,6 @@ describe "JIT" do
     (if true 1 else 2)
   " do
     mod = @compiler.parse_and_compile example.description
-    p mod
     app = Application.new(mod)
     app.run.should == 1
   end
@@ -36,7 +35,6 @@ describe "JIT" do
   it "
     (if false 1 else 2)
   " do
-    pending
     mod = @compiler.parse_and_compile example.description
     p mod
     app = Application.new(mod)
