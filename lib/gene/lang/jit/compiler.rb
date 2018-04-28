@@ -256,7 +256,7 @@ module Gene::Lang::Jit
       s = "\n(CompiledBlock"
       @instructions.each_with_index do |instr, i|
         s << "\n  "
-        s << "#{i}: #{instr[0]} #{instr[1..-1].to_s.gsub(/[\[\],]/, '')}"
+        s << "#{i}: #{instr[0]} #{instr[1..-1].to_s.gsub(/^\[/, '').gsub(/\]$/, '').gsub(/, /, ' ')}"
       end
       s << "\n)"
 

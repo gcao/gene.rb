@@ -53,7 +53,15 @@ class Gene::Lang::Transformer
   def transform_fn input, options
     result = Gene::Types::Base.new(Gene::Types::Symbol.new('fn$'))
     result['name'] = input.data[0]
-    result['args'] = input.data[1]
+    args = input.data[1]
+    if args.is_a? Gene::Types::Symbol
+      if args.to_s == "_"
+        args = []
+      else
+        args = [args]
+      end
+    end
+    result['args'] = args
     result['body'] = Gene::Lang::Statements.new input.data[2..-1]
     result
   end
