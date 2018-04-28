@@ -113,13 +113,15 @@ module Gene::Lang::Jit
 
       # Create a function object and store in namespace/scope
       block.add_instr [FN, source['name'], source['args'], block.key]
+      block.add_instr [DEF_MEMBER, source['name'].to_s, 'default']
     end
 
     def compile_invocation block, source
       compile_symbol block, source.type
       reg_fn = new_reg
       block.add_instr [COPY, nil, reg_fn]
-      block.add_instr [INVOKE, reg_fn]
+      reg_args = nil
+      block.add_instr [INVOKE, reg_fn, reg_args]
     end
 
     def compile_break block, source
@@ -167,8 +169,8 @@ module Gene::Lang::Jit
     end
 
     def new_reg
-      # Add 10000 to make sure the register name length is always 5
-      (rand(10000) + 10000).to_s
+      # TODO add logic to prevent collision - cache all registers assigned so far and check existance
+      "R#{rand(100000)}"
     end
 
     %W(

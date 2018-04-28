@@ -110,7 +110,18 @@ module Gene::Lang::Jit
     # end
 
     # copy "a" "b": copy from register a to register b
-    instr 'copy' do
+    instr 'copy' do |reg1, reg2|
+      if reg1.nil? or reg1 == 'default'
+        value = @registers.default
+      else
+        value = @registers[reg1]
+      end
+
+      if reg2.nil? or reg2 == 'default'
+        @registers.default = value
+      else
+        @registers[reg2]   = value
+      end
     end
 
     # copy "a" "b": copy from a to b and release a
@@ -153,8 +164,9 @@ module Gene::Lang::Jit
       @registers.default = Gene::Lang::Jit::Function.new name, args, body
     end
 
-    instr 'invoke' do |fn, args|
-      puts "TODO: invoke function stored in #{fn} with args in #{args}"
+    instr 'invoke' do |reg_fn, reg_args|
+      fn = @registers[reg_fn]
+      puts "TODO: invoke function stored in #{reg_fn} with args in #{reg_args}"
     end
 
     # Control flow instructions
