@@ -14,7 +14,12 @@ module Gene::Lang::Jit
 
     def run options = {}
       context = create_root_context
-      VirtualMachine.new(self).process context, primary_module, options
+      vm      = VirtualMachine.new(self)
+      primary_module.blocks.each do |_, block|
+        vm.add_block block
+      end
+      block   = primary_module.primary_block
+      vm.process context, block, options
     end
 
     def create_root_context

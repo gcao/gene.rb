@@ -106,13 +106,13 @@ module Gene::Lang::Jit
     def compile_fn block, source
       # Compile function body as a block
       # Function default args are evaluated in the block as well
-      body_block = CompiledBlock.new
+      body_block      = CompiledBlock.new
       body_block.name = source['name']
       compile_ body_block, source['body']
       @mod.add_block body_block
 
       # Create a function object and store in namespace/scope
-      block.add_instr [FN, source['name'], source['args'], block.key]
+      block.add_instr [FN, source['name'], source['args'], body_block.key]
       block.add_instr [DEF_MEMBER, source['name'].to_s, 'default']
     end
 

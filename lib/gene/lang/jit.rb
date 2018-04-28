@@ -27,6 +27,10 @@ module Gene::Lang::Jit
     def destroy id
       @store.delete id
     end
+
+    def [] id
+      @store[id]
+    end
   end
 
   # Represents a complete virtual machine that will be used to run
@@ -37,12 +41,18 @@ module Gene::Lang::Jit
     def initialize application
       @application   = application
       @registers_mgr = RegistersManager.new
+      @blocks        = {}
     end
 
-    def process context, mod, options
+    def add_block block
+      @blocks[block.key] = block
+    end
+
+    def process context, block, options
       @context      = context
+      @block        = block
       @registers    = @registers_mgr.create
-      @instructions = mod.primary_block.instructions
+      @instructions = @block.instructions
 
       @exec_pos = 0
       @jumped   = false # Set to true if last instruction is a jump
@@ -53,7 +63,7 @@ module Gene::Lang::Jit
         instruction = @instructions[@exec_pos]
         type, arg0, *rest = instruction
         if options[:debug]
-          puts "#{@exec_pos}: #{type} #{instruction[1..-1].to_s.gsub(/[\[\],]/, '')}"
+          puts "#{@block.name} #{@exec_pos}: #{type} #{instruction[1..-1].to_s.gsub(/[\[\],]/, '')}"
         end
 
         send type, arg0, *rest
@@ -165,8 +175,12 @@ module Gene::Lang::Jit
     end
 
     instr 'invoke' do |reg_fn, reg_args|
-      fn = @registers[reg_fn]
-      puts "TODO: invoke function stored in #{reg_fn} with args in #{reg_args}"
+      fn            = @registers[reg_fn]
+      @block        = @blocks[fn.body]
+
+      @instructions = @block.instructions
+      @exec_pos     = 0
+      @jumped       = true
     end
 
     # Control flow instructions
