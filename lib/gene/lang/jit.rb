@@ -148,6 +148,15 @@ module Gene::Lang::Jit
 
     # Hash instructions
 
+    # Function instructions
+    instr 'fn' do |name, args, body|
+      @registers.default = Gene::Lang::Jit::Function.new name, args, body
+    end
+
+    instr 'invoke' do |fn, args|
+      puts "TODO: invoke function stored in #{fn} with args in #{args}"
+    end
+
     # Control flow instructions
 
     # jump 1 result: jump to instruction 1 in the block

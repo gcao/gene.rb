@@ -56,7 +56,7 @@ module Gene::Lang::Jit
         elsif type == "fn$"
           compile_fn block, source
         else
-          compile_unknown block, source
+          compile_invocation block, source
         end
       else
         compile_ block, source.type
@@ -104,8 +104,22 @@ module Gene::Lang::Jit
     end
 
     def compile_fn block, source
-      # Create a function object and store in namespace/scope
       # Compile function body as a block
+      # Function default args are evaluated in the block as well
+      body_block = CompiledBlock.new
+      body_block.name = source['name']
+      compile_ body_block, source['body']
+      @mod.add_block body_block
+
+      # Create a function object and store in namespace/scope
+      block.add_instr [FN, source['name'], source['args'], block.key]
+    end
+
+    def compile_invocation block, source
+      compile_symbol block, source.type
+      reg_fn = new_reg
+      block.add_instr [COPY, nil, reg_fn]
+      block.add_instr [INVOKE, reg_fn]
     end
 
     def compile_break block, source
@@ -152,6 +166,11 @@ module Gene::Lang::Jit
       not (source.is_a? Array or source.is_a? Hash or source.is_a? Gene::Types::Base)
     end
 
+    def new_reg
+      # Add 10000 to make sure the register name length is always 5
+      (rand(10000) + 10000).to_s
+    end
+
     %W(
       var
       if
@@ -187,6 +206,8 @@ module Gene::Lang::Jit
       @blocks.each do |key, block|
         if key == @primary_block.key
           key += "__primary"
+        else
+          key += "__#{block.name}"
         end
         s << "\n  ^#{key} " << block.to_s('    ')
       end
@@ -204,8 +225,9 @@ module Gene::Lang::Jit
   class CompiledBlock
     attr_reader :key, :instructions
     attr_accessor :name
+    attr_writer :is_default
 
-    def initialize instructions
+    def initialize instructions = []
       @key          = SecureRandom.uuid
       @instructions = instructions
     end
@@ -223,6 +245,10 @@ module Gene::Lang::Jit
       @instructions.size
     end
     alias length size
+
+    def is_default?
+      @is_default
+    end
 
     def to_s indent = nil
       s = "\n(CompiledBlock"

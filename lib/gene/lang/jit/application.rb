@@ -149,4 +149,18 @@ module Gene::Lang::Jit
     end
     alias def_member set_member
   end
+
+  class Function
+    attr_reader :name, :args, :body
+    attr_reader :inherit_scope
+    attr_reader :eval_arguments
+
+    def initialize name, args, body, options = {}
+      @name = name
+      @args = args
+      @body = body
+      @inherit_scope  = options[:inherit_scope]
+      @eval_arguments = options[:eval_arguments]
+    end
+  end
 end
