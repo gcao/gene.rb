@@ -181,8 +181,9 @@ module Gene::Lang::Jit
 
     def to_s indent = nil
       s = "\n(CompiledBlock"
-      @instructions.each do |instr|
-        s << "\n  #{instr.inspect}"
+      @instructions.each_with_index do |instr, i|
+        s << "\n  "
+        s << "#{i}: #{instr[0]} #{instr[1..-1].to_s.gsub(/[\[\],]/, '')}"
       end
       s << "\n)"
 

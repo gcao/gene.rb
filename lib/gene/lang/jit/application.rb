@@ -12,9 +12,9 @@ module Gene::Lang::Jit
       @global_namespace = Namespace.new
     end
 
-    def run
+    def run options = {}
       context = create_root_context
-      VirtualMachine.new(self).process context, primary_module
+      VirtualMachine.new(self).process context, primary_module, options
     end
 
     def create_root_context

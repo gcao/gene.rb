@@ -39,15 +39,22 @@ module Gene::Lang::Jit
       @registers_mgr = RegistersManager.new
     end
 
-    def process context, mod
+    def process context, mod, options
       @context      = context
       @registers    = @registers_mgr.create
       @instructions = mod.primary_block.instructions
 
       @exec_pos = 0
       @jumped   = false # Set to true if last instruction is a jump
+      if options[:debug]
+        puts
+      end
       while @exec_pos < @instructions.length
-        type, arg0, *rest = @instructions[@exec_pos]
+        instruction = @instructions[@exec_pos]
+        type, arg0, *rest = instruction
+        if options[:debug]
+          puts "#{@exec_pos}: #{type} #{instruction[1..-1].to_s.gsub(/[\[\],]/, '')}"
+        end
 
         send type, arg0, *rest
 
@@ -145,11 +152,13 @@ module Gene::Lang::Jit
 
     # jump 1 result: jump to instruction 1 in the block
     instr 'jump' do |pos|
+      @jumped   = true
       @exec_pos = pos
     end
 
     instr 'jump_if_false' do |pos|
       if not @registers.default
+        @jumped   = true
         @exec_pos = pos
       end
     end
