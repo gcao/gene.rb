@@ -22,7 +22,12 @@ module Gene::Lang::Jit
       if source.is_a? Gene::Types::Base
         compile_object block, source
       elsif source.is_a? Gene::Types::Symbol
-        compile_symbol block, source
+        value = source.to_s
+        if value == 'break'
+          compile_break block, source
+        else
+          compile_symbol block, source
+        end
       elsif source.is_a? Gene::Lang::Statements
         compile_statements block, source
       elsif source.is_a? Gene::Types::Stream
@@ -39,16 +44,24 @@ module Gene::Lang::Jit
     def compile_object block, source
       source = Gene::Lang::Transformer.new.call(source)
 
-      type = source.type.to_s
+      if source.type.is_a? Gene::Types::Symbol
+        type = source.type.to_s
 
-      if type == "var"
-        compile_var block, source
-      elsif type == "if$"
-        compile_if block, source
-      elsif type == "loop"
-        compile_loop block, source
+        if type == "var"
+          compile_var block, source
+        elsif type == "if$"
+          compile_if block, source
+        elsif type == "loop"
+          compile_loop block, source
+        elsif type == "fn$"
+          compile_fn block, source
+        else
+          compile_unknown block, source
+        end
       else
-        compile_unknown block, source
+        compile_ block, source.type
+        # if eval_arguments is true, evaluate arguments
+        # invoke function with rest as arguments
       end
     end
 
@@ -90,21 +103,21 @@ module Gene::Lang::Jit
       end
     end
 
+    def compile_fn block, source
+      # Create a function object and store in namespace/scope
+      # Compile function body as a block
+    end
+
     def compile_break block, source
       if source.is_a? Gene::Types::Base
-        # TODO
+        compile_unknown block, source
       else
         block.add_instr [JUMP, -1]
       end
     end
 
     def compile_symbol block, source
-      value = source.to_s
-      if value == 'break'
-        compile_break block, source
-      else
-        block.add_instr [GET_MEMBER, value]
-      end
+      block.add_instr [GET_MEMBER, source.to_s]
     end
 
     def compile_statements block, source
@@ -120,11 +133,11 @@ module Gene::Lang::Jit
     end
 
     def compile_array block, source
-      block.add_instr ['todo', source.inspect]
+      compile_unknown block, source
     end
 
     def compile_hash block, source
-      block.add_instr ['todo', source.inspect]
+      compile_unknown block, source
     end
 
     def compile_literal block, source
@@ -190,6 +203,7 @@ module Gene::Lang::Jit
 
   class CompiledBlock
     attr_reader :key, :instructions
+    attr_accessor :name
 
     def initialize instructions
       @key          = SecureRandom.uuid

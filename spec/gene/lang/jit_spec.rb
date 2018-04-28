@@ -45,6 +45,15 @@ describe "JIT" do
     1
   " do
     mod = @compiler.parse_and_compile example.description
+    app = Application.new(mod)
+    app.run.should == 1
+  end
+
+  it "
+    (fn f _ 1)
+    (f)
+  " do
+    mod = @compiler.parse_and_compile example.description
     p mod
     app = Application.new(mod)
     app.run(debug: true).should == 1

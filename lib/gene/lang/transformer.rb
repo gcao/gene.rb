@@ -1,28 +1,7 @@
 class Gene::Lang::Transformer
   %W(
-    NS
-    CLASS PROP METHOD NEW INIT CAST
-    MODULE INCLUDE
-    EXTEND SUPER
-    SELF WITH
-    SCOPE
-    FN FNX FNXX BIND
-    RETURN
-    MATCH
-    CALL DO
-    VAR NSVAR
-    EXPAND
-    IMPORT EXPORT FROM
-    PUBLIC PRIVATE
-    IF IF_NOT ELSE_IF ELSE THEN
-    FOR LOOP
-    THROW CATCH
-    BREAK
-    RENDER
-    EVAL
-    PRINT PRINTLN
-    ASSERT DEBUG
-    NOOP
+    IF ELSE_IF ELSE
+    FN
   ).each do |name|
     const_set name, Gene::Types::Symbol.new("#{name.downcase}")
   end
@@ -34,6 +13,8 @@ class Gene::Lang::Transformer
 
     if input === IF
       transform_if input, options
+    elsif input === FN
+      transform_fn input, options
     else
       input
     end
@@ -66,6 +47,14 @@ class Gene::Lang::Transformer
       end
     end
 
+    result
+  end
+
+  def transform_fn input, options
+    result = Gene::Types::Base.new(Gene::Types::Symbol.new('fn$'))
+    result['name'] = input.data[0]
+    result['args'] = input.data[1]
+    result['body'] = Gene::Lang::Statements.new input.data[2..-1]
     result
   end
 end
