@@ -39,6 +39,16 @@ describe "JIT" do
     app = Application.new(mod)
     app.run.should == 2
   end
+
+  it "
+    (loop (if true break))
+    1
+  " do
+    mod = @compiler.parse_and_compile example.description
+    p mod
+    app = Application.new(mod)
+    app.run(debug: true).should == 1
+  end
 end
 
 describe "JIT Virtual Machine" do

@@ -45,6 +45,8 @@ module Gene::Lang::Jit
         compile_var block, source
       elsif type == "if$"
         compile_if block, source
+      elsif type == "loop"
+        compile_loop block, source
       else
         compile_unknown block, source
       end
@@ -76,8 +78,33 @@ module Gene::Lang::Jit
       jump2[1] = block.length
     end
 
+    def compile_loop block, source
+      start_pos = block.length
+      compile_statements block, source.data
+      block.add_instr [JUMP, start_pos]
+      start_pos.upto(block.length - 1) do |i|
+        instr = block[i]
+        if instr[0] == JUMP and instr[1] < 0
+          instr[1] = block.length
+        end
+      end
+    end
+
+    def compile_break block, source
+      if source.is_a? Gene::Types::Base
+        # TODO
+      else
+        block.add_instr [JUMP, -1]
+      end
+    end
+
     def compile_symbol block, source
-      block.add_instr [GET_MEMBER, source.to_s]
+      value = source.to_s
+      if value == 'break'
+        compile_break block, source
+      else
+        block.add_instr [GET_MEMBER, value]
+      end
     end
 
     def compile_statements block, source
@@ -167,6 +194,10 @@ module Gene::Lang::Jit
     def initialize instructions
       @key          = SecureRandom.uuid
       @instructions = instructions
+    end
+
+    def [] index
+      @instructions[index]
     end
 
     def add_instr instruction
