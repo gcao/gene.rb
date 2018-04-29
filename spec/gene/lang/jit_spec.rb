@@ -49,6 +49,15 @@ describe "JIT" do
   end
 
   it "
+    (var a 1)
+    {^a a ^b 2}
+  " do
+    mod = @compiler.parse_and_compile example.description
+    app = Application.new(mod)
+    app.run.should == {'a' => 1, 'b' => 2}
+  end
+
+  it "
     (1 + 2)
   " do
     mod = @compiler.parse_and_compile example.description
