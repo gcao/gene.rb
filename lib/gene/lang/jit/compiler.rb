@@ -108,6 +108,10 @@ module Gene::Lang::Jit
       # Function default args are evaluated in the block as well
       body_block      = CompiledBlock.new
       body_block.name = source['name']
+
+      # Arguments & default values
+      body_block.add_instr []
+
       compile_ body_block, source['body']
       @mod.add_block body_block
 
@@ -118,9 +122,54 @@ module Gene::Lang::Jit
 
     def compile_invocation block, source
       compile_symbol block, source.type
+
       reg_fn = new_reg
-      block.add_instr [COPY, nil, reg_fn]
-      reg_args = nil
+      block.add_instr [COPY, 'default', reg_fn]
+
+      reg_args = new_reg
+
+      if is_literal? source.properties
+        properties = source.properties
+      else
+        properties = {}
+        props_to_process = {}
+        source.properties.each do |key, value|
+          if is_literal? value
+            properties[key] = value
+          else
+            props_to_process[key] = value
+          end
+        end
+      end
+
+      if is_literal? source.data
+        data = source.data
+      else
+        data = []
+        data_to_process = []
+        data.each_with_index do |item, i|
+          if is_literal? item
+            data << item
+          else
+            data << nil
+            data_to_process << [i, item]
+          end
+        end
+      end
+
+      block.add_instr [CREATE_OBJ, reg_args, nil, properties, data]
+
+      props_to_process.each do |key, value|
+        compile_ block, value
+        block.add_instr [SET, reg_args, key, 'default']
+      end
+
+      data_to_process.each do |pair|
+        index, value = pair
+        compile_ block, value
+        block.add_instr [SET, reg_args, index, 'default']
+      end
+
       block.add_instr [INVOKE, reg_fn, reg_args]
     end
 
@@ -153,7 +202,24 @@ module Gene::Lang::Jit
     end
 
     def compile_hash block, source
-      compile_unknown block, source
+      if is_literal? source
+        block.add_instr [DEFAULT, source]
+      else
+        result = {}
+        reg    = new_reg
+        block.add_instr [WRITE, reg, result]
+
+        source.each do |key, value|
+          if is_literal? value
+            result[key] = value
+          else
+            compile_ value
+            block.add_instr [SET, reg, key, 'default']
+          end
+        end
+
+        block.add_instr [COPY, reg, 'default']
+      end
     end
 
     def compile_literal block, source
@@ -161,7 +227,7 @@ module Gene::Lang::Jit
     end
 
     def compile_unknown block, source
-      block.add_instr ['todo', source.inspect]
+      block.add_instr [TODO, source.inspect]
     end
 
     def is_literal? source

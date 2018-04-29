@@ -84,6 +84,25 @@ module Gene::Lang::Jit
       define_method name, &block
     end
 
+    # instr 'get' do |reg, path, target_reg|
+    # end
+
+    instr 'set' do |reg, path, value_reg|
+      if value_reg == 'default'
+        value = @registers.default
+      else
+        value = @registers[value_reg]
+      end
+
+      if reg == 'default'
+        target = @registers.default
+      else
+        target = @registers[reg]
+      end
+
+      target[path] = value
+    end
+
     # Define a variable in current context
     instr 'def_member' do |name, value_register = nil|
       if value_register
@@ -121,13 +140,13 @@ module Gene::Lang::Jit
 
     # copy "a" "b": copy from register a to register b
     instr 'copy' do |reg1, reg2|
-      if reg1.nil? or reg1 == 'default'
+      if reg1 == 'default'
         value = @registers.default
       else
         value = @registers[reg1]
       end
 
-      if reg2.nil? or reg2 == 'default'
+      if reg2 == 'default'
         @registers.default = value
       else
         @registers[reg2]   = value
@@ -140,6 +159,17 @@ module Gene::Lang::Jit
 
     # label "abc": do nothing, act like an anchor
     instr 'label' do |name|
+    end
+
+    instr 'create_obj' do |reg, type, properties, data|
+      obj = Gene::Types::Base.new type
+      obj.properties = properties
+      obj.data       = data
+      if reg == 'default'
+        @registers.default = obj
+      else
+        @registers[reg]    = obj
+      end
     end
 
     instr 'todo' do |code|
