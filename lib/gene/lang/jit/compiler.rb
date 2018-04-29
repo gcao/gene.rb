@@ -55,6 +55,8 @@ module Gene::Lang::Jit
           compile_loop block, source
         elsif type == "fn$"
           compile_fn block, source
+        elsif type == "return"
+          compile_return block, source
         else
           compile_invocation block, source
         end
@@ -179,6 +181,11 @@ module Gene::Lang::Jit
       block.add_instr [CALL, fn_reg, args_reg, {
         'return_reg'  => 'default',
       }]
+    end
+
+    def compile_return block, source
+      compile_ block, source.data[0]
+      block.add_instr [CALL_END]
     end
 
     def compile_break block, source
