@@ -18,7 +18,6 @@ describe "JIT" do
   it "
     (1 + 2)
   " do
-    pending
     mod = @compiler.parse_and_compile example.description
     app = Application.new(mod)
     app.run.should == 3

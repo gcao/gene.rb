@@ -172,11 +172,13 @@ module Gene::Lang::Jit
     # 'mul',
     # 'div',
 
-    instr 'cmp' do |type, first_reg, second_reg|
+    instr 'binary' do |first_reg, type, second_reg|
       first  = @registers[first_reg]
       second = @registers[second_reg]
       result  =
         case type
+        when '+'
+          first + second
         when '=='
           first == second
         when '<'
@@ -188,7 +190,7 @@ module Gene::Lang::Jit
         when '>='
           first >= second
         else
-          first <=> second
+          raise "Not supported binary operation: #{op}"
         end
 
       @registers['default'] = result

@@ -69,28 +69,41 @@ module Gene::Lang::Jit
     def compile_object block, source
       source = Gene::Lang::Transformer.new.call(source)
 
-      if source.type.is_a? Gene::Types::Symbol
-        type = source.type.to_s
-        op   = source.data[0]
+      op = source.data[0]
 
-        if BINARY_OPS.include?(op)
-          case op
-          when LE
-            compile_ block, source.type
-            first_reg  = new_reg
-            block.add_instr [COPY, 'default', first_reg]
-            compile_ block, source.data[1]
-            second_reg = new_reg
-            block.add_instr [CMP, op.to_s, first_reg, 'default']
-          when PLUS_EQ
-            compile_ block, source.data[1]
-            value_reg = new_reg
-            block.add_instr [COPY, 'default', value_reg]
-            block.add_instr [GET_MEMBER, type]
-            block.add_instr [ADD, 'default', value_reg]
-            block.add_instr [SET_MEMBER, type, 'default']
-          end
-        elsif type == "var"
+      if BINARY_OPS.include?(op)
+        case op
+        when LE
+          compile_ block, source.type
+          first_reg  = new_reg
+          block.add_instr [COPY, 'default', first_reg]
+          compile_ block, source.data[1]
+          block.add_instr [BINARY, first_reg, op.to_s, 'default']
+
+        when PLUS
+          compile_ block, source.type
+          first_reg  = new_reg
+          block.add_instr [COPY, 'default', first_reg]
+          compile_ block, source.data[1]
+          block.add_instr [BINARY, first_reg, op.to_s, 'default']
+
+        when PLUS_EQ
+          compile_ block, source.data[1]
+          target = source.type.to_s
+          value_reg = new_reg
+          block.add_instr [COPY, 'default', value_reg]
+          block.add_instr [GET_MEMBER, target]
+          block.add_instr [ADD, 'default', value_reg]
+          block.add_instr [SET_MEMBER, target, 'default']
+
+        else
+          compile_unknown block, source
+        end
+
+      elsif source.type.is_a? Gene::Types::Symbol
+        type = source.type.to_s
+
+        if type == "var"
           compile_var block, source
         elsif type == "if$"
           compile_if block, source
@@ -106,7 +119,8 @@ module Gene::Lang::Jit
           compile_invocation block, source
         end
       else
-        compile_ block, source.type
+        compile_unknown block, source
+        # compile_ block, source.type
         # if eval_arguments is true, evaluate arguments
         # invoke function with rest as arguments
       end
