@@ -95,9 +95,9 @@ module Gene::Lang::Jit
     end
 
     # Define a variable in current context
-    instr 'def_member' do |name, value_register = nil|
-      if value_register
-        value = @registers[value_register]
+    instr 'def_member' do |name, value_reg|
+      if value_reg
+        value = @registers[value_reg]
         @context.def_member name, value
       else
         @context.def_member name
@@ -110,8 +110,10 @@ module Gene::Lang::Jit
     end
 
     # Set value of a variable in current context
-    instr 'set_member' do |name, value|
-      puts "set_member: TODO"
+    instr 'set_member' do |name, value_reg|
+      value = @registers[value_reg]
+      @context.set_member name, value
+      @registers['default'] = value
     end
 
     # write "a" 1: write to register 'a'
@@ -164,7 +166,13 @@ module Gene::Lang::Jit
     # 'sub',
     # 'mul',
     # 'div',
-    # 'cmp',    # cmp "a" 1: a == 1
+
+    instr 'cmp' do |first_reg, second_reg|
+      first  = @registers[first_reg]
+      second = @registers[second_reg]
+      result = first <=> second
+      @registers['default'] = result
+    end
 
     # String instructions
     # 'substr',

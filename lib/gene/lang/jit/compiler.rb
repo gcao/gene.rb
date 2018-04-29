@@ -41,18 +41,63 @@ module Gene::Lang::Jit
       end
     end
 
+    ASSIGN = Gene::Types::Symbol.new('=')
+
+    EQ = Gene::Types::Symbol.new('==')
+    LT = Gene::Types::Symbol.new('<')
+    LE = Gene::Types::Symbol.new('<=')
+    GT = Gene::Types::Symbol.new('>')
+    GE = Gene::Types::Symbol.new('>=')
+
+    PLUS  = Gene::Types::Symbol.new('+')
+    MINUS = Gene::Types::Symbol.new('-')
+    MULTI = Gene::Types::Symbol.new('*')
+    DIV   = Gene::Types::Symbol.new('/')
+
+    PLUS_EQ  = Gene::Types::Symbol.new('+=')
+    MINUS_EQ = Gene::Types::Symbol.new('-=')
+    MULTI_EQ = Gene::Types::Symbol.new('*=')
+    DIV_EQ   = Gene::Types::Symbol.new('/=')
+
+    BINARY_OPS = [
+      ASSIGN,
+      EQ, LT, LE, GT, GE,
+      PLUS, MINUS, MULTI, DIV,
+      PLUS_EQ, MINUS_EQ, MULTI_EQ, DIV_EQ,
+    ]
+
     def compile_object block, source
       source = Gene::Lang::Transformer.new.call(source)
 
       if source.type.is_a? Gene::Types::Symbol
         type = source.type.to_s
+        op   = source.data[0]
 
-        if type == "var"
+        if BINARY_OPS.include?(op)
+          case op
+          when LE
+            compile_ block, source.type
+            first_reg  = new_reg
+            block.add_instr [COPY, 'default', first_reg]
+            compile_ block, source.data[1]
+            second_reg = new_reg
+            block.add_instr [CMP, first_reg, 'default']
+          when PLUS_EQ
+            compile_ block, source.data[1]
+            value_reg = new_reg
+            block.add_instr [COPY, 'default', value_reg]
+            block.add_instr [GET_MEMBER, type]
+            block.add_instr [ADD, 'default', value_reg]
+            block.add_instr [SET_MEMBER, type]
+          end
+        elsif type == "var"
           compile_var block, source
         elsif type == "if$"
           compile_if block, source
         elsif type == "loop"
           compile_loop block, source
+        elsif type == "for"
+          compile_for block, source
         elsif type == "fn$"
           compile_fn block, source
         elsif type == "return"
@@ -102,6 +147,29 @@ module Gene::Lang::Jit
         if instr[0] == JUMP and instr[1] < 0
           instr[1] = block.length
         end
+      end
+    end
+
+    def compile_for block, source
+      compile_ block, source.data[0]
+
+      cond_pos = block.length
+      compile_ block, source.data[1]
+      cond_jump = block.add_instr [JUMP_IF_FALSE, nil]
+
+      compile_ block, source.data[2]
+
+      compile_ block, Gene::Lang::Statements.new(source.data[3..-1])
+      block.add_instr [JUMP, cond_pos]
+
+      cond_jump[1] = block.length
+    end
+
+    def compile_break block, source
+      if source.is_a? Gene::Types::Base
+        compile_unknown block, source
+      else
+        block.add_instr [JUMP, -1]
       end
     end
 
@@ -186,14 +254,6 @@ module Gene::Lang::Jit
     def compile_return block, source
       compile_ block, source.data[0]
       block.add_instr [CALL_END]
-    end
-
-    def compile_break block, source
-      if source.is_a? Gene::Types::Base
-        compile_unknown block, source
-      else
-        block.add_instr [JUMP, -1]
-      end
     end
 
     def compile_symbol block, source

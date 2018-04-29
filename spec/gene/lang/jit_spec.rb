@@ -59,6 +59,19 @@ describe "JIT" do
   end
 
   it "
+    (var sum 0)
+    (for (var i 0) (i <= 4) (i += 1)
+      (sum += i)
+    )
+    sum
+  " do
+    mod = @compiler.parse_and_compile example.description
+    p mod
+    app = Application.new(mod)
+    # app.run(debug: true).should == 1
+  end
+
+  it "
     (fn f _ 1)
     (f)
   " do
