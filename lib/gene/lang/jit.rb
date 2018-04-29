@@ -6,7 +6,7 @@ module Gene::Lang::Jit
   # Registers has a unique id, a default register and other registers
   class Registers < Hash
     attr_reader :id
-    attr_accessor :default
+    # attr_accessor :default
 
     def initialize
       @id = SecureRandom.uuid
@@ -218,12 +218,15 @@ module Gene::Lang::Jit
     #   return_reg: caller registers id, register name
     #   args_reg: caller registers id, register name
     instr 'call' do |fn_reg, args_reg, options|
-      fn   = @registers[fn_reg]
-      args = @registers[args_reg]
+      fn          = @registers[fn_reg]
+      args        = @registers[args_reg]
+      return_addr = [@block.id, @exec_pos + 1]
+
+      registers_id = @registers.id
 
       @registers = @registers_mgr.create
-      @registers['return_addr'] = options['return_addr']
-      @registers['return_reg']  = options['return_reg']
+      @registers['return_addr'] = return_addr
+      @registers['return_reg']  = [registers_id, options['return_reg']]
 
       @registers['args'] = args
 
@@ -231,6 +234,24 @@ module Gene::Lang::Jit
 
       @instructions = @block.instructions
       @exec_pos     = 0
+      @jumped       = true
+    end
+
+    instr 'call_end' do |*args|
+      # Copy the result to the return register
+      id, reg = @registers['return_reg']
+      @registers_mgr[id][reg] = @registers['default']
+
+      block_id, pos = @registers['return_addr']
+
+      # Delete the registers of current block
+      @registers_mgr.destroy id
+
+      # Change block and set the position
+      @block        = @blocks[block_id]
+
+      @instructions = @block.instructions
+      @exec_pos     = pos
       @jumped       = true
     end
 
@@ -257,12 +278,13 @@ module Gene::Lang::Jit
 
     # 'if',         # if pos1 pos2: if default register's value is truthy, jump relatively to pos1, otherwise, jump to pos2
 
-    instr 'info_to_reg' do |name, reg|
-      if name == 'next_addr'
-        [@block.key, @exec_pos]
-      else
-        raise "TODO: info_to_reg #{name} #{reg}"
-      end
-    end
+    # # Get information by name, save result to reg
+    # instr 'info_to_reg' do |name, reg|
+    #   if name == 'abc'
+    #     @registers[reg] = 'value of abc'
+    #   else
+    #     raise "TODO: info_to_reg #{name} #{reg}"
+    #   end
+    # end
   end
 end

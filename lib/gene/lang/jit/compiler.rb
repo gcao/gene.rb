@@ -117,6 +117,8 @@ module Gene::Lang::Jit
       end
 
       compile_ body_block, source['body']
+      body_block.add_instr [CALL_END]
+
       @mod.add_block body_block
 
       # Create a function object and store in namespace/scope
@@ -174,11 +176,7 @@ module Gene::Lang::Jit
         block.add_instr [SET, args_reg, index, 'default']
       end
 
-      next_addr_reg = new_reg
-      block.add_instr [INFO_TO_REG, 'next_addr', next_addr_reg]
-
       block.add_instr [CALL, fn_reg, args_reg, {
-        'return_addr' => next_addr_reg,
         'return_reg'  => 'default',
       }]
     end
@@ -304,6 +302,8 @@ module Gene::Lang::Jit
     attr_reader :key, :instructions
     attr_accessor :name
     attr_writer :is_default
+
+    alias id key
 
     def initialize instructions = []
       @key          = SecureRandom.uuid
