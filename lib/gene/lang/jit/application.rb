@@ -153,6 +153,16 @@ module Gene::Lang::Jit
       self[name] = value
     end
     alias def_member set_member
+
+    def let name, value
+      raise "#{name} is not defined." unless self.defined? name
+
+      if include? name
+        self[name] = value
+      else
+        parent.let name, value
+      end
+    end
   end
 
   class Function

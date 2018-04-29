@@ -162,15 +162,35 @@ module Gene::Lang::Jit
     # Number instructions
     # 'incr',   # incr "a": increment register "a" by 1
     # 'decr',   # decr "a": decrement register "a" by 1
-    # 'add',    # add "a" "b" "c":
+
+    instr 'add' do |reg1, reg2|
+      result = @registers[reg1] + @registers[reg2]
+      @registers['default'] = result
+    end
+
     # 'sub',
     # 'mul',
     # 'div',
 
-    instr 'cmp' do |first_reg, second_reg|
+    instr 'cmp' do |type, first_reg, second_reg|
       first  = @registers[first_reg]
       second = @registers[second_reg]
-      result = first <=> second
+      result  =
+        case type
+        when '=='
+          first == second
+        when '<'
+          first < second
+        when '<='
+          first <= second
+        when '>'
+          first > second
+        when '>='
+          first >= second
+        else
+          first <=> second
+        end
+
       @registers['default'] = result
     end
 

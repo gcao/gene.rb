@@ -81,14 +81,14 @@ module Gene::Lang::Jit
             block.add_instr [COPY, 'default', first_reg]
             compile_ block, source.data[1]
             second_reg = new_reg
-            block.add_instr [CMP, first_reg, 'default']
+            block.add_instr [CMP, op.to_s, first_reg, 'default']
           when PLUS_EQ
             compile_ block, source.data[1]
             value_reg = new_reg
             block.add_instr [COPY, 'default', value_reg]
             block.add_instr [GET_MEMBER, type]
             block.add_instr [ADD, 'default', value_reg]
-            block.add_instr [SET_MEMBER, type]
+            block.add_instr [SET_MEMBER, type, 'default']
           end
         elsif type == "var"
           compile_var block, source
@@ -151,15 +151,17 @@ module Gene::Lang::Jit
     end
 
     def compile_for block, source
-      compile_ block, source.data[0]
+      init, cond, update, *rest = source.data
+
+      compile_ block, init
 
       cond_pos = block.length
-      compile_ block, source.data[1]
+      compile_ block, cond
       cond_jump = block.add_instr [JUMP_IF_FALSE, nil]
 
-      compile_ block, source.data[2]
+      compile_ block, Gene::Lang::Statements.new(rest)
 
-      compile_ block, Gene::Lang::Statements.new(source.data[3..-1])
+      compile_ block, update
       block.add_instr [JUMP, cond_pos]
 
       cond_jump[1] = block.length
