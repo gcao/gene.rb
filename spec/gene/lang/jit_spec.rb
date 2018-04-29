@@ -16,6 +16,39 @@ describe "JIT" do
   end
 
   it "
+    'hello world'
+  " do
+    mod = @compiler.parse_and_compile example.description
+    app = Application.new(mod)
+    app.run.should == 'hello world'
+  end
+
+  it "
+    [1 2]
+  " do
+    mod = @compiler.parse_and_compile example.description
+    app = Application.new(mod)
+    app.run.should == [1, 2]
+  end
+
+  it "
+    (var a 1)
+    [a 2]
+  " do
+    mod = @compiler.parse_and_compile example.description
+    app = Application.new(mod)
+    app.run.should == [1, 2]
+  end
+
+  it "
+    {^a 1 ^b 2}
+  " do
+    mod = @compiler.parse_and_compile example.description
+    app = Application.new(mod)
+    app.run.should == {'a' => 1, 'b' => 2}
+  end
+
+  it "
     (1 + 2)
   " do
     mod = @compiler.parse_and_compile example.description
@@ -97,5 +130,42 @@ describe "JIT" do
     mod = @compiler.parse_and_compile example.description
     app = Application.new(mod)
     app.run.should == 1
+  end
+
+  it "
+    (fn f [a b c]
+      (if a b else c)
+    )
+    (f true 1 2)
+  " do
+    mod = @compiler.parse_and_compile example.description
+    app = Application.new(mod)
+    app.run.should == 1
+  end
+
+  it "
+    (fn f [a b c]
+      (if a b else c)
+    )
+    (f false 1 2)
+  " do
+    mod = @compiler.parse_and_compile example.description
+    app = Application.new(mod)
+    app.run.should == 2
+  end
+
+  it "
+    (fn f a
+      (var sum 0)
+      (for (var i 0) (i <= a) (i += 1)
+        (sum += i)
+      )
+      sum
+    )
+    (f 4)
+  " do
+    mod = @compiler.parse_and_compile example.description
+    app = Application.new(mod)
+    app.run.should == 10
   end
 end

@@ -251,15 +251,19 @@ module Gene::Lang::Jit
 
       block.add_instr [CREATE_OBJ, args_reg, nil, properties, data]
 
-      props_to_process.each do |key, value|
-        compile_ block, value
-        block.add_instr [SET, args_reg, key, 'default']
+      if props_to_process
+        props_to_process.each do |key, value|
+          compile_ block, value
+          block.add_instr [SET, args_reg, key, 'default']
+        end
       end
 
-      data_to_process.each do |pair|
-        index, value = pair
-        compile_ block, value
-        block.add_instr [SET, args_reg, index, 'default']
+      if data_to_process
+        data_to_process.each do |pair|
+          index, value = pair
+          compile_ block, value
+          block.add_instr [SET, args_reg, index, 'default']
+        end
       end
 
       block.add_instr [CALL, fn_reg, args_reg, {
@@ -289,7 +293,24 @@ module Gene::Lang::Jit
     end
 
     def compile_array block, source
-      compile_unknown block, source
+      if is_literal? source
+        block.add_instr [DEFAULT, source]
+      else
+        result = []
+        reg    = new_reg
+        block.add_instr [WRITE, reg, result]
+
+        source.each_with_index do |value, index|
+          if is_literal? value
+            result[index] = value
+          else
+            compile_ block, value
+            block.add_instr [SET, reg, index, 'default']
+          end
+        end
+
+        block.add_instr [COPY, reg, 'default']
+      end
     end
 
     def compile_hash block, source
@@ -322,7 +343,24 @@ module Gene::Lang::Jit
     end
 
     def is_literal? source
-      not (source.is_a? Array or source.is_a? Hash or source.is_a? Gene::Types::Base)
+      if source.is_a? Array
+        source.all? {|item| is_literal?(item) }
+      elsif source.is_a? Hash
+        result = true
+        source.each do |key, value|
+          if not is_literal? value
+            result = false
+            break
+          end
+        end
+        result
+      elsif source.is_a? Gene::Types::Base
+        false
+      elsif source.is_a? Gene::Types::Symbol
+        false
+      else
+        true
+      end
     end
 
     def new_reg
