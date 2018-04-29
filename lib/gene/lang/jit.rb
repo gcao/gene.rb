@@ -212,7 +212,10 @@ module Gene::Lang::Jit
       block_id, pos = @registers['return_addr']
 
       # Delete the registers of current block
-      @registers_mgr.destroy id
+      @registers_mgr.destroy @registers.id
+
+      # Switch to the caller's registers
+      @registers = @registers_mgr[id]
 
       # Change block and set the position
       @block        = @blocks[block_id]

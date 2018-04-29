@@ -9,12 +9,20 @@ class Gene::Types::Base
   end
 
   def get name
-    @properties[name.to_s]
+    if name.is_a? Fixnum
+      @data[name]
+    else
+      @properties[name.to_s]
+    end
   end
   alias [] get
 
   def set name, value
-    @properties[name.to_s] = value
+    if name.is_a? Fixnum
+      @data[name] = value
+    else
+      @properties[name.to_s] = value
+    end
   end
   alias []= set
 

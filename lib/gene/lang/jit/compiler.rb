@@ -153,7 +153,7 @@ module Gene::Lang::Jit
       else
         data = []
         data_to_process = []
-        data.each_with_index do |item, i|
+        source.data.each_with_index do |item, i|
           if is_literal? item
             data << item
           else
