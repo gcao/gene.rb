@@ -3,10 +3,8 @@ require 'gene/lang/jit/application'
 require 'gene/lang/jit/compiler'
 
 module Gene::Lang::Jit
-  # Registers has a unique id, a default register and other registers
   class Registers < Hash
     attr_reader :id
-    # attr_accessor :default
 
     def initialize
       @id = SecureRandom.uuid
@@ -76,7 +74,7 @@ module Gene::Lang::Jit
       end
 
       # Result should always be stored in the default register
-      @registers.default
+      @registers['default']
     end
 
     def self.instr name, &block
@@ -85,31 +83,13 @@ module Gene::Lang::Jit
     end
 
     instr 'get' do |reg, path, target_reg|
-      if reg == 'default'
-        value = @registers.default[path]
-      else
-        value = @registers[reg][path]
-      end
-
-      if target_reg == 'default'
-        @registers.default = value
-      else
-        @registers[target_reg] = value
-      end
+      value = @registers[reg][path]
+      @registers[target_reg] = value
     end
 
     instr 'set' do |reg, path, value_reg|
-      if value_reg == 'default'
-        value = @registers.default
-      else
-        value = @registers[value_reg]
-      end
-
-      if reg == 'default'
-        target = @registers.default
-      else
-        target = @registers[reg]
-      end
+      value  = @registers[value_reg]
+      target = @registers[reg]
 
       target[path] = value
     end
@@ -117,7 +97,7 @@ module Gene::Lang::Jit
     # Define a variable in current context
     instr 'def_member' do |name, value_register = nil|
       if value_register
-        value = value_register == 'default' ? @registers.default : @registers[value_register]
+        value = @registers[value_register]
         @context.def_member name, value
       else
         @context.def_member name
@@ -126,7 +106,7 @@ module Gene::Lang::Jit
 
     # Get value of a variable in current context
     instr 'get_member' do |name|
-      @registers.default = @context.get_member name
+      @registers['default'] = @context.get_member name
     end
 
     # Set value of a variable in current context
@@ -141,7 +121,7 @@ module Gene::Lang::Jit
 
     # default 1: write 1 to default register
     instr 'default' do |value|
-      @registers.default = value
+      @registers['default'] = value
     end
 
     # # TODO: is this needed? copy should cover this
@@ -151,17 +131,8 @@ module Gene::Lang::Jit
 
     # copy "a" "b": copy from register a to register b
     instr 'copy' do |reg1, reg2|
-      if reg1 == 'default'
-        value = @registers.default
-      else
-        value = @registers[reg1]
-      end
-
-      if reg2 == 'default'
-        @registers.default = value
-      else
-        @registers[reg2]   = value
-      end
+      value = @registers[reg1]
+      @registers[reg2]   = value
     end
 
     # copy "a" "b": copy from a to b and release a
@@ -176,11 +147,7 @@ module Gene::Lang::Jit
       obj = Gene::Types::Base.new type
       obj.properties = properties
       obj.data       = data
-      if reg == 'default'
-        @registers.default = obj
-      else
-        @registers[reg]    = obj
-      end
+      @registers[reg]    = obj
     end
 
     instr 'todo' do |code|
@@ -209,7 +176,7 @@ module Gene::Lang::Jit
 
     # Function instructions
     instr 'fn' do |name, body|
-      @registers.default = Gene::Lang::Jit::Function.new name, body
+      @registers['default'] = Gene::Lang::Jit::Function.new name, body
     end
 
     # call block_key options: initialize a block with options
@@ -264,7 +231,7 @@ module Gene::Lang::Jit
     end
 
     instr 'jump_if_false' do |pos|
-      if not @registers.default
+      if not @registers['default']
         @jumped   = true
         @exec_pos = pos
       end
