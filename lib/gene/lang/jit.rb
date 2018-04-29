@@ -207,7 +207,6 @@ module Gene::Lang::Jit
     instr 'call_end' do |*args|
       # Copy the result to the return register
       id, reg = @registers['return_reg']
-      p @registers['default']
       @registers_mgr[id][reg] = @registers['default']
 
       block_id, pos = @registers['return_addr']
