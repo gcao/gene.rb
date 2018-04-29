@@ -325,7 +325,7 @@ module Gene::Lang::Jit
           if is_literal? value
             result[key] = value
           else
-            compile_ value
+            compile_ block, value
             block.add_instr [SET, reg, key, 'default']
           end
         end
