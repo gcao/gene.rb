@@ -156,13 +156,13 @@ module Gene::Lang::Jit
   end
 
   class Function
-    attr_reader :name, :args, :body
+    # args are processed in the function body
+    attr_reader :name, :body
     attr_reader :inherit_scope
     attr_reader :eval_arguments
 
-    def initialize name, args, body, options = {}
+    def initialize name, body, options = {}
       @name = name
-      @args = args
       @body = body
       @inherit_scope  = options[:inherit_scope]
       @eval_arguments = options[:eval_arguments]

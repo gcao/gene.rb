@@ -84,8 +84,19 @@ module Gene::Lang::Jit
       define_method name, &block
     end
 
-    # instr 'get' do |reg, path, target_reg|
-    # end
+    instr 'get' do |reg, path, target_reg|
+      if reg == 'default'
+        value = @registers.default[path]
+      else
+        value = @registers[reg][path]
+      end
+
+      if target_reg == 'default'
+        @registers.default = value
+      else
+        @registers[target_reg] = value
+      end
+    end
 
     instr 'set' do |reg, path, value_reg|
       if value_reg == 'default'
@@ -176,9 +187,6 @@ module Gene::Lang::Jit
       puts "TODO: #{code}"
     end
 
-    # 'start_block',# start_block {}: initialize a block with options
-    # 'end_block',  # Clean up
-
     # 'start_scope',# start_scope parent: start a new scope, save to a register
     # 'end_scope',  # End/close the current scope
 
@@ -200,12 +208,25 @@ module Gene::Lang::Jit
     # Hash instructions
 
     # Function instructions
-    instr 'fn' do |name, args, body|
-      @registers.default = Gene::Lang::Jit::Function.new name, args, body
+    instr 'fn' do |name, body|
+      @registers.default = Gene::Lang::Jit::Function.new name, body
     end
 
-    instr 'invoke' do |reg_fn, reg_args|
-      fn            = @registers[reg_fn]
+    # call block_key options: initialize a block with options
+    # options : a hash that contains below keys / values
+    #   return_addr: caller block key, next pos
+    #   return_reg: caller registers id, register name
+    #   args_reg: caller registers id, register name
+    instr 'call' do |fn_reg, args_reg, options|
+      fn   = @registers[fn_reg]
+      args = @registers[args_reg]
+
+      @registers = @registers_mgr.create
+      @registers['return_addr'] = options['return_addr']
+      @registers['return_reg']  = options['return_reg']
+
+      @registers['args'] = args
+
       @block        = @blocks[fn.body]
 
       @instructions = @block.instructions
@@ -235,5 +256,13 @@ module Gene::Lang::Jit
     # 'brk', # brk result:
 
     # 'if',         # if pos1 pos2: if default register's value is truthy, jump relatively to pos1, otherwise, jump to pos2
+
+    instr 'info_to_reg' do |name, reg|
+      if name == 'next_addr'
+        [@block.key, @exec_pos]
+      else
+        raise "TODO: info_to_reg #{name} #{reg}"
+      end
+    end
   end
 end

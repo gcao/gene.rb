@@ -110,23 +110,27 @@ module Gene::Lang::Jit
       body_block.name = source['name']
 
       # Arguments & default values
-      body_block.add_instr []
+      args = source['args']
+      args.data_matchers.each do |matcher|
+        body_block.add_instr [GET, 'args', matcher.index, 'default']
+        body_block.add_instr [DEF_MEMBER, matcher.name, 'default']
+      end
 
       compile_ body_block, source['body']
       @mod.add_block body_block
 
       # Create a function object and store in namespace/scope
-      block.add_instr [FN, source['name'], source['args'], body_block.key]
+      block.add_instr [FN, source['name'], body_block.key]
       block.add_instr [DEF_MEMBER, source['name'].to_s, 'default']
     end
 
     def compile_invocation block, source
       compile_symbol block, source.type
 
-      reg_fn = new_reg
-      block.add_instr [COPY, 'default', reg_fn]
+      fn_reg = new_reg
+      block.add_instr [COPY, 'default', fn_reg]
 
-      reg_args = new_reg
+      args_reg = new_reg
 
       if is_literal? source.properties
         properties = source.properties
@@ -157,20 +161,26 @@ module Gene::Lang::Jit
         end
       end
 
-      block.add_instr [CREATE_OBJ, reg_args, nil, properties, data]
+      block.add_instr [CREATE_OBJ, args_reg, nil, properties, data]
 
       props_to_process.each do |key, value|
         compile_ block, value
-        block.add_instr [SET, reg_args, key, 'default']
+        block.add_instr [SET, args_reg, key, 'default']
       end
 
       data_to_process.each do |pair|
         index, value = pair
         compile_ block, value
-        block.add_instr [SET, reg_args, index, 'default']
+        block.add_instr [SET, args_reg, index, 'default']
       end
 
-      block.add_instr [INVOKE, reg_fn, reg_args]
+      next_addr_reg = new_reg
+      block.add_instr [INFO_TO_REG, 'next_addr', next_addr_reg]
+
+      block.add_instr [CALL, fn_reg, args_reg, {
+        'return_addr' => next_addr_reg,
+        'return_reg'  => 'default',
+      }]
     end
 
     def compile_break block, source
