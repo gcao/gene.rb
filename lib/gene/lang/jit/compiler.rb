@@ -72,22 +72,21 @@ module Gene::Lang::Jit
       op = source.data[0]
 
       if BINARY_OPS.include?(op)
-        case op
-        when LE
+        if op == LE
           compile_ block, source.type
           first_reg  = new_reg
           block.add_instr [COPY, 'default', first_reg]
           compile_ block, source.data[1]
           block.add_instr [BINARY, first_reg, op.to_s, 'default']
 
-        when PLUS
+        elsif op == PLUS
           compile_ block, source.type
           first_reg  = new_reg
           block.add_instr [COPY, 'default', first_reg]
           compile_ block, source.data[1]
           block.add_instr [BINARY, first_reg, op.to_s, 'default']
 
-        when PLUS_EQ
+        elsif op == PLUS_EQ
           compile_ block, source.data[1]
           target = source.type.to_s
           value_reg = new_reg

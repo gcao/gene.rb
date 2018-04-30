@@ -22,7 +22,7 @@ class Gene::Types::Symbol
   end
 
   def === other
-    self == other or (other.is_a? Gene::Types::Base and other.type == self)
+    other.is_a? Gene::Types::Base and other.type == self
   end
 
   def to_s
