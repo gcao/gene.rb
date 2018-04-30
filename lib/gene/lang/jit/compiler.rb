@@ -114,6 +114,8 @@ module Gene::Lang::Jit
           compile_fn block, source
         elsif type == "return"
           compile_return block, source
+        elsif type == "assert"
+          compile_assert block, source
         else
           compile_invocation block, source
         end
@@ -335,6 +337,10 @@ module Gene::Lang::Jit
 
     def compile_literal block, source
       block.add_instr [DEFAULT, source]
+    end
+
+    def compile_assert block, source
+      compile_unknown block, source
     end
 
     def compile_unknown block, source

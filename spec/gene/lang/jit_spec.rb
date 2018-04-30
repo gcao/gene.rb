@@ -201,4 +201,15 @@ describe "JIT" do
     app = Application.new(mod)
     app.run.should == 10
   end
+
+  it "
+    (assert false 'Huston, we have a problem')
+  " do
+    mod = @compiler.parse_and_compile example.description
+    p mod
+    app = Application.new(mod)
+    lambda {
+      app.run(debug: true)
+    }.should raise_error('Huston, we have a problem')
+  end
 end
