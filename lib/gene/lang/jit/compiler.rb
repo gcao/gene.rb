@@ -340,7 +340,12 @@ module Gene::Lang::Jit
     end
 
     def compile_assert block, source
-      compile_unknown block, source
+      expr, error = *source.data
+      compile_ block, expr
+      jump = block.add_instr [JUMP_IF_TRUE, nil]
+      compile_ block, error
+      block.add_instr [THROW, 'default']
+      jump[1] = block.length
     end
 
     def compile_unknown block, source

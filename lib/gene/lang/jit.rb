@@ -172,6 +172,10 @@ module Gene::Lang::Jit
     # 'mul',
     # 'div',
 
+    instr 'not' do |reg|
+      @registers[reg] = !@registers[reg]
+    end
+
     instr 'binary' do |first_reg, type, second_reg|
       first  = @registers[first_reg]
       second = @registers[second_reg]
@@ -263,11 +267,22 @@ module Gene::Lang::Jit
       @exec_pos = pos
     end
 
+    instr 'jump_if_true' do |pos|
+      if @registers['default']
+        @jumped   = true
+        @exec_pos = pos
+      end
+    end
+
     instr 'jump_if_false' do |pos|
       if not @registers['default']
         @jumped   = true
         @exec_pos = pos
       end
+    end
+
+    instr 'throw' do |error_reg|
+      raise @registers[error_reg]
     end
 
     # 'jump_rel',   # jump_rel -1 result: jump back by 1
