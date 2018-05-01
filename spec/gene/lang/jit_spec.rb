@@ -225,7 +225,8 @@ describe "JIT" do
 
   describe "Complex expressions" do
     testcases = %Q~
-      (assert (1 == 1))
+      # !pending!
+      (assert (1 == 2))
     ~
 
     focus = testcases.include?('!focus!')
