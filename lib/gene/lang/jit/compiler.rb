@@ -72,7 +72,7 @@ module Gene::Lang::Jit
       op = source.data[0]
 
       if BINARY_OPS.include?(op)
-        if op == LE
+        if [EQ, LT, LE, GT, GE].include? op
           compile_ block, source.type
           first_reg  = new_reg
           block.add_instr [COPY, 'default', first_reg]
@@ -340,11 +340,17 @@ module Gene::Lang::Jit
     end
 
     def compile_assert block, source
-      expr, error = *source.data
+      expr = source.data[0]
       compile_ block, expr
       jump = block.add_instr [JUMP_IF_TRUE, nil]
-      compile_ block, error
+
+      if source.data.length > 1
+        compile_ block, source.data[1]
+      else
+        block.add_instr [DEFAULT, "AssertionError: #{expr}"]
+      end
       block.add_instr [THROW, 'default']
+
       jump[1] = block.length
     end
 

@@ -282,7 +282,8 @@ module Gene::Lang::Jit
     end
 
     instr 'throw' do |error_reg|
-      raise @registers[error_reg]
+      message = error_reg ? @registers[error_reg] : "Unknown error"
+      raise message
     end
 
     # 'jump_rel',   # jump_rel -1 result: jump back by 1
