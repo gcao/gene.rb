@@ -14,6 +14,7 @@ module Gene::Lang::Jit
     # return CompiledModule
     def compile source
       primary_block = CompiledBlock.new []
+      primary_block.is_default = true
       @mod          = CompiledModule.new primary_block
       compile_ primary_block, source
       @mod
