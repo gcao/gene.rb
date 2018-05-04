@@ -1,4 +1,5 @@
 require 'securerandom'
+require 'json'
 
 module Gene::Lang::Jit
   class Compiler
@@ -209,7 +210,7 @@ module Gene::Lang::Jit
       @mod.add_block body_block
 
       # Create a function object and store in namespace/scope
-      block.add_instr [FN, source['name'], body_block.key]
+      block.add_instr [FN, source['name'], body_block.id]
       block.add_instr [DEF_MEMBER, source['name'].to_s, 'default']
     end
 
@@ -396,17 +397,19 @@ module Gene::Lang::Jit
     attr_reader :blocks
     attr_reader :primary_block
 
-    def initialize primary_block
+    def initialize primary_block = nil
       @blocks = {}
-      self.primary_block = primary_block
+      if primary_block
+        self.primary_block = primary_block
+      end
     end
 
     def add_block block
-      @blocks[block.key] = block
+      @blocks[block.id] = block
     end
 
-    def get_block key
-      @blocks[key]
+    def get_block id
+      @blocks[id]
     end
 
     def primary_block= block
@@ -416,13 +419,13 @@ module Gene::Lang::Jit
 
     def to_s indent = nil
       s = "\n(CompiledModule"
-      @blocks.each do |key, block|
-        if key == @primary_block.key
-          key += "__primary"
+      @blocks.each do |id, block|
+        if id == @primary_block.id
+          id += "__primary"
         else
-          key += "__#{block.name}"
+          id += "__#{block.name}"
         end
-        s << "\n  ^#{key} " << block.to_s('    ')
+        s << "\n  ^#{id} " << block.to_s('    ')
       end
       s << "\n)"
 
@@ -433,17 +436,36 @@ module Gene::Lang::Jit
       s
     end
     alias inspect to_s
+
+    def to_json
+      {
+        type:   "CompiledModule",
+        blocks: blocks.values,
+      }.to_json
+    end
+
+    def self.from_json json
+      mod = new
+      json['blocks'].each do |block_json|
+        block = CompiledBlock.from_json block_json
+        if block.is_default?
+          mod.primary_block = block
+        else
+          mod.add_block block
+        end
+      end
+      mod
+    end
   end
 
   class CompiledBlock
-    attr_reader :key, :instructions
+    attr_accessor :id
     attr_accessor :name
     attr_writer :is_default
-
-    alias id key
+    attr_reader :instructions
 
     def initialize instructions = []
-      @key          = SecureRandom.uuid
+      @id           = SecureRandom.uuid
       @instructions = instructions
     end
 
@@ -480,5 +502,28 @@ module Gene::Lang::Jit
       s
     end
     alias inspect to_s
+
+    def to_json options = {}
+      hash = {
+        type:         "CompiledBlock",
+        id:           id,
+        instructions: instructions,
+      }
+      if name
+        hash[:name] = name
+      end
+      if is_default?
+        hash[:default] = true
+      end
+      hash.to_json
+    end
+
+    def self.from_json json
+      block = new json['instructions']
+      block.id         = json['id']
+      block.name       = json['name']
+      block.is_default = json['default']
+      block
+    end
   end
 end

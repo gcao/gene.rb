@@ -43,7 +43,7 @@ module Gene::Lang::Jit
     end
 
     def add_block block
-      @blocks[block.key] = block
+      @blocks[block.id] = block
     end
 
     def process context, block, options
@@ -213,9 +213,9 @@ module Gene::Lang::Jit
       @registers['default'] = Gene::Lang::Jit::Function.new name, body
     end
 
-    # call block_key options: initialize a block with options
+    # call block_id options: initialize a block with options
     # options : a hash that contains below keys / values
-    #   return_addr: caller block key, next pos
+    #   return_addr: caller block id, next pos
     #   return_reg: caller registers id, register name
     #   args_reg: caller registers id, register name
     instr 'call' do |fn_reg, args_reg, options|
