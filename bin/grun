@@ -1,0 +1,27 @@
+#!/usr/bin/env ruby
+
+$LOAD_PATH.unshift(File.join(File.dirname(__FILE__), '..', 'lib'))
+
+require "rubygems"
+require "bundler/setup"
+require "json"
+require "gene"
+
+if ARGV.length != 1
+  puts "Usage: grun <FILE TO RUN>"
+else
+  file = ARGV[0]
+
+  if file =~ /\.gmod$/
+    mod = Gene::Lang::Jit::CompiledModule.from_json JSON.parse(File.read(file))
+    app = Gene::Lang::Jit::Application.new(mod)
+    app.run
+  elsif file =~ /\.gene$/
+    compiler = Gene::Lang::Jit::Compiler.new
+    mod = compiler.parse_and_compile File.read(file)
+    app = Gene::Lang::Jit::Application.new(mod)
+    app.run
+  else
+    raise "Unrecognized file type: #{file}"
+  end
+end

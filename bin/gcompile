@@ -1,0 +1,35 @@
+#!/usr/bin/env ruby
+
+=begin
+
+# Useful commands to help debugging compiler
+# Install jq
+brew install jq
+
+# Compile a file and display the compiled output
+gcompile /tmp/test.gene && jq . /tmp/test.gmod |
+ruby -e "puts ARGF.read.gsub(/\n          /, '').gsub(/\n        \\]/, ']')"
+
+=end
+
+$LOAD_PATH.unshift(File.join(File.dirname(__FILE__), '..', 'lib'))
+
+require "rubygems"
+require "bundler/setup"
+require "gene"
+
+def compile file
+  compiler = Gene::Lang::Jit::Compiler.new
+  mod      = compiler.parse_and_compile File.read(file)
+
+  output_file = file.sub(/\.gene/, '.gmod')
+  File.write output_file, mod.to_json
+end
+
+if ARGV.length == 0
+  puts "Usage: gcompile <FILE TO COMPILE>"
+else
+  ARGV.each do |file|
+    compile file
+  end
+end
