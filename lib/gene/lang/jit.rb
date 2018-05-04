@@ -294,6 +294,22 @@ module Gene::Lang::Jit
 
     # 'if',         # if pos1 pos2: if default register's value is truthy, jump relatively to pos1, otherwise, jump to pos2
 
+    instr 'prnt' do |reg, new_line, is_error = false|
+      if is_error
+        if new_line
+          STDERR.puts @registers[reg]
+        else
+          STDERR.print @registers[reg]
+        end
+      else
+        if new_line
+          puts @registers[reg]
+        else
+          print @registers[reg]
+        end
+      end
+    end
+
     # # Get information by name, save result to reg
     # instr 'info_to_reg' do |name, reg|
     #   if name == 'abc'

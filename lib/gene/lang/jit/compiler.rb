@@ -118,6 +118,8 @@ module Gene::Lang::Jit
           compile_return block, source
         elsif type == "assert"
           compile_assert block, source
+        elsif type == "print"
+          compile_print block, source
         else
           compile_invocation block, source
         end
@@ -339,6 +341,14 @@ module Gene::Lang::Jit
 
     def compile_literal block, source
       block.add_instr [DEFAULT, source]
+    end
+
+    def compile_print block, source
+      source.data.each do |item|
+        compile_ block, source.data[0]
+        block.add_instr [PRNT, 'default', false]
+      end
+      block.add_instr [DEFAULT, nil]
     end
 
     def compile_assert block, source
