@@ -7,7 +7,7 @@
 brew install jq
 
 # Compile a file and display the compiled output
-gcompile /tmp/test.gene && jq . /tmp/test.gmod |
+gcompile /tmp/test.gene | jq . |
 ruby -e "puts ARGF.read.gsub(/\n          /, '').gsub(/\n        \\]/, ']').gsub(/,([^\n])/, ', \\1')"
 
 =end
@@ -22,8 +22,7 @@ def compile file
   compiler = Gene::Lang::Jit::Compiler.new
   mod      = compiler.parse_and_compile File.read(file)
 
-  output_file = file.sub(/\.gene/, '.gmod')
-  File.write output_file, mod.to_json
+  puts mod.to_json
 end
 
 if ARGV.length == 0

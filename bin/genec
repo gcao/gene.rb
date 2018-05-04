@@ -1,0 +1,2 @@
+gcompile $1 | jq . |
+ruby -e "puts ARGF.read.gsub(/\n          /, '').gsub(/\n        \\]/, ']').gsub(/,([^\n])/, ', \\1')"

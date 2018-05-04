@@ -153,7 +153,7 @@ module Gene::Lang::Jit
     end
 
     instr 'todo' do |code|
-      puts "TODO: #{code}"
+      raise "TODO: #{code}"
     end
 
     # 'start_scope',# start_scope parent: start a new scope, save to a register
