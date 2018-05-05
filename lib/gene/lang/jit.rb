@@ -218,20 +218,28 @@ module Gene::Lang::Jit
     #   return_addr: caller block id, next pos
     #   return_reg: caller registers id, register name
     #   args_reg: caller registers id, register name
-    instr 'call' do |fn_reg, args_reg, options|
-      fn          = @registers[fn_reg]
-      args        = @registers[args_reg]
+    instr 'call' do |block_id_reg, options|
+      caller_regs = @registers
       return_addr = [@block.id, @exec_pos + 1]
 
-      registers_id = @registers.id
-
       @registers = @registers_mgr.create
+      @registers['return_reg']  = [caller_regs.id, options['return_reg']]
       @registers['return_addr'] = return_addr
-      @registers['return_reg']  = [registers_id, options['return_reg']]
 
-      @registers['args'] = args
+      if options['fn_arg']
+        fn_reg = options['fn_arg']
+        fn     = caller_regs[fn_reg]
+        @registers['fn'] = fn
+      end
 
-      @block        = @blocks[fn.body]
+      if options['args_reg']
+        args_reg    = options['args_reg']
+        args        = caller_regs[args_reg]
+        @registers['args'] = args
+      end
+
+      block_id      = caller_regs[block_id_reg]
+      @block        = @blocks[block_id]
 
       @instructions = @block.instructions
       @exec_pos     = 0
@@ -257,6 +265,17 @@ module Gene::Lang::Jit
       @instructions = @block.instructions
       @exec_pos     = pos
       @jumped       = true
+    end
+
+    instr 'call_native' do |target_reg, method, args_reg|
+      target = @registers[target_reg]
+      args   = args_reg ? @registers[args_reg] : []
+      result = target.send method, *args
+      @registers['default'] = result
+    end
+
+    instr 'cls' do |name|
+      raise  "cls #{name}"
     end
 
     # Control flow instructions

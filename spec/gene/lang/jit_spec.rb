@@ -204,6 +204,18 @@ describe "JIT" do
     end
 
     it "
+      (class A
+        (method test _ 1)
+      )
+      ((new A) .test)
+    " do
+      mod = @compiler.parse_and_compile example.description
+      p mod
+      app = Application.new(mod)
+      app.run(debug: true).should == 1
+    end
+
+    it "
       (assert false 'Huston, we have a problem')
     " do
       mod = @compiler.parse_and_compile example.description

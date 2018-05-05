@@ -88,6 +88,11 @@ module Gene::Lang::Jit
           compile_ block, source.data[1]
           block.add_instr [BINARY, first_reg, op.to_s, 'default']
 
+        elsif op == ASSIGN
+          compile_ block, source.data[1]
+          target = source.type.to_s
+          block.add_instr [SET_MEMBER, target, 'default']
+
         elsif op == PLUS_EQ
           compile_ block, source.data[1]
           target = source.type.to_s
@@ -114,6 +119,8 @@ module Gene::Lang::Jit
           compile_for block, source
         elsif type == "fn$"
           compile_fn block, source
+        elsif type == "class"
+          compile_class block, source
         elsif type == "return"
           compile_return block, source
         elsif type == "assert"
@@ -271,8 +278,12 @@ module Gene::Lang::Jit
         end
       end
 
-      block.add_instr [CALL, fn_reg, args_reg, {
-        'return_reg'  => 'default',
+      block.add_instr [CALL_NATIVE, fn_reg, 'body', nil]
+
+      block.add_instr [CALL, 'default', {
+        'fn_reg'     => fn_reg,
+        'args_reg'   => args_reg,
+        'return_reg' => 'default',
       }]
     end
 
@@ -337,6 +348,34 @@ module Gene::Lang::Jit
 
         block.add_instr [COPY, reg, 'default']
       end
+    end
+
+    def compile_class block, source
+      name = source.data[0].to_s
+      body = source.data[1..-1]
+
+      # Compile body as a block
+      body_block      = CompiledBlock.new
+      body_block.name = name
+
+      compile_ body_block, body
+      body_block.add_instr [CALL_END]
+
+      @mod.add_block body_block
+
+      # Create a class object and store in namespace/scope
+      block.add_instr [CLS, name]
+      block.add_instr [DEF_MEMBER, name, 'default']
+      class_reg = new_reg
+      block.add_instr [COPY, 'default', class_reg]
+
+      # Invoke block immediately
+      block.add_instr [CALL, nil, nil, {
+        self_reg: class_reg
+      }]
+
+      # Return the class
+      block.add_instr [COPY, class_reg, 'default']
     end
 
     def compile_literal block, source
