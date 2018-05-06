@@ -4,6 +4,7 @@ require 'json'
 module Gene::Lang::Jit
   class Compiler
     def initialize
+      @used_registers = []
     end
 
     def parse_and_compile string
@@ -433,8 +434,15 @@ module Gene::Lang::Jit
     end
 
     def new_reg
-      # TODO add logic to prevent collision - cache all registers assigned so far and check existance
-      "R#{rand(100000)}"
+      # Prevent collision - cache all registers assigned so far and check existance
+      reg = nil
+      while true
+        reg = "R#{rand(100000)}"
+        if not @used_registers.include? reg
+          break
+        end
+      end
+      reg
     end
 
     %W(
