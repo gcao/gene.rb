@@ -46,8 +46,7 @@ module Gene::Lang::Jit
       @blocks[block.id] = block
     end
 
-    def process context, block, options
-      @context      = context
+    def process block, options
       @block        = block
       @registers    = @registers_mgr.create
       @instructions = @block.instructions
@@ -82,6 +81,10 @@ module Gene::Lang::Jit
       define_method name, &block
     end
 
+    instr 'init' do |options = {}|
+      @registers['context'] = @application.create_root_context
+    end
+
     instr 'get' do |reg, path, target_reg|
       value = @registers[reg][path]
       @registers[target_reg] = value
@@ -96,23 +99,26 @@ module Gene::Lang::Jit
 
     # Define a variable in current context
     instr 'def_member' do |name, value_reg|
+      context = @registers['context']
       if value_reg
         value = @registers[value_reg]
-        @context.def_member name, value
+        context.def_member name, value
       else
-        @context.def_member name
+        context.def_member name
       end
     end
 
     # Get value of a variable in current context
     instr 'get_member' do |name|
-      @registers['default'] = @context.get_member name
+      context = @registers['context']
+      @registers['default'] = context.get_member name
     end
 
     # Set value of a variable in current context
     instr 'set_member' do |name, value_reg|
+      context = @registers['context']
       value = @registers[value_reg]
-      @context.set_member name, value
+      context.set_member name, value
       @registers['default'] = value
     end
 
@@ -223,6 +229,19 @@ module Gene::Lang::Jit
       return_addr = [@block.id, @exec_pos + 1]
 
       @registers = @registers_mgr.create
+
+      caller_context = caller_regs['context']
+      if options['inherit_scope']
+        scope_ = Gene::Lang::Jit::Scope.new caller_context.scope, true
+      else
+        scope = Gene::Lang::Jit::Scope.new
+      end
+      if options['self_reg']
+        self_ = caller_regs[options['self_reg']]
+      end
+      context = caller_context.extend scope: scope, self: self_
+      @registers['context']     = context
+
       @registers['return_reg']  = [caller_regs.id, options['return_reg']]
       @registers['return_addr'] = return_addr
 

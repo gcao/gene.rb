@@ -13,13 +13,12 @@ module Gene::Lang::Jit
     end
 
     def run options = {}
-      context = create_root_context
       vm      = VirtualMachine.new(self)
       primary_module.blocks.each do |_, block|
         vm.add_block block
       end
       block   = primary_module.primary_block
-      vm.process context, block, options
+      vm.process block, options
     end
 
     def create_root_context
@@ -40,7 +39,7 @@ module Gene::Lang::Jit
       @self      = self_
     end
 
-    def extend options
+    def extend options = {}
       self.class.new(
         self,
         options[:namespace] || @namespace,
