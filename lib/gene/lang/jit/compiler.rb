@@ -372,7 +372,8 @@ module Gene::Lang::Jit
       # Invoke block immediately and remove it to reduce memory usage
       block.add_instr [DEFAULT, body_block.id]
       block.add_instr [CALL, 'default', {
-        self_reg: class_reg,
+        'inherit_scope' => false,
+        'self_reg' => class_reg,
       }]
 
       # Return the class
