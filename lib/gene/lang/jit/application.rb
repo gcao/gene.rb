@@ -178,4 +178,112 @@ module Gene::Lang::Jit
       @eval_arguments = options[:eval_arguments]
     end
   end
+
+  # Module is like Class, except it doesn't include init and parent class
+  # TODO: support aspects - before, after, when - works like  before -> when -> method -> when -> after
+  # TODO: support meta programming - method_added, method_removed, method_missing
+  # TODO: support meta programming - module_created, module_included
+  # TODO: Support prepend like how Ruby does
+  class Module < Gene::Lang::Object
+    attr_accessor :name, :methods, :prop_descriptors, :modules
+    attr_accessor :scope
+
+    def initialize name
+      super(Class)
+      set 'name', name
+      set 'methods', {}
+      set 'prop_descriptors', {}
+      set 'modules', []
+    end
+
+    def properties_to_hide
+      %w()
+    end
+
+    def method name
+      methods[name]
+    end
+
+    # include myself
+    def ancestors
+      return @ancestors if @ancestors
+
+      @ancestors = [self]
+      modules.each do |mod|
+        @ancestors += mod.ancestors
+      end
+      @ancestors
+    end
+
+    # BEGIN: Implement Namespace-like interface
+    def defined? name
+      scope.defined? name
+    end
+
+    def get_member name
+      scope.get_member name
+    end
+
+    def def_member name, value
+      scope.def_member name, value
+    end
+
+    def set_member name, value, options
+      scope.set_member name, value, options
+    end
+
+    def members
+      scope.variables
+    end
+    # END
+
+    def handle_method options
+      method_name = options[:method]
+      m = method(method_name)
+      if m
+        m.call options
+      else
+        hierarchy = options[:hierarchy]
+        next_class_or_module = hierarchy.next
+        if next_class_or_module
+          next_class_or_module.handle_method options
+        else
+          #TODO: throw error or invoke method_missing
+          raise "Undefined method #{method} for #{options[:self]}"
+        end
+      end
+    end
+  end
+
+  # TODO: change to single inheritance and include modules like Ruby
+  # TODO: support meta programming - class_created, class_extended
+  class Class < Module
+    attr_accessor :parent_class
+
+    def initialize name
+      super(name)
+      self.class = Class
+    end
+
+    def parent_class
+      return nil if self == Gene::Lang::Object
+
+      get('parent_class') || Gene::Lang::Object
+    end
+
+    # include myself
+    def ancestors
+      return @ancestors if @ancestors
+
+      @ancestors = [self]
+      modules.each do |mod|
+        @ancestors += mod.ancestors
+      end
+      if parent_class
+        @ancestors += parent_class.ancestors
+      end
+      @ancestors
+    end
+  end
+
 end

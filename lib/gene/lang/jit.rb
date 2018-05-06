@@ -275,7 +275,7 @@ module Gene::Lang::Jit
     end
 
     instr 'cls' do |name|
-      raise  "cls #{name}"
+      @registers['default'] = Gene::Lang::Jit::Class.new name
     end
 
     # Control flow instructions

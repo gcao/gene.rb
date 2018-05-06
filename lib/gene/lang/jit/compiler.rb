@@ -369,9 +369,10 @@ module Gene::Lang::Jit
       class_reg = new_reg
       block.add_instr [COPY, 'default', class_reg]
 
-      # Invoke block immediately
-      block.add_instr [CALL, nil, nil, {
-        self_reg: class_reg
+      # Invoke block immediately and remove it to reduce memory usage
+      block.add_instr [DEFAULT, body_block.id]
+      block.add_instr [CALL, 'default', {
+        self_reg: class_reg,
       }]
 
       # Return the class
