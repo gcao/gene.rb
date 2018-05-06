@@ -199,6 +199,10 @@ module Gene::Lang::Jit
       %w()
     end
 
+    def add_method method
+      methods[method.name] = method
+    end
+
     def method name
       methods[name]
     end

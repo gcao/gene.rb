@@ -123,6 +123,8 @@ module Gene::Lang::Jit
           compile_fn block, source
         elsif type == "class"
           compile_class block, source
+        elsif type == "method$"
+          compile_method block, source
         elsif type == "return"
           compile_return block, source
         elsif type == "assert"
@@ -380,6 +382,28 @@ module Gene::Lang::Jit
 
       # Return the class
       block.add_instr [COPY, class_reg, 'default']
+    end
+
+    def compile_method block, source
+      # Compile method body as a block
+      # Default args are evaluated in the block as well
+      body_block      = CompiledBlock.new
+      body_block.name = source['name']
+
+      # Arguments & default values
+      args = source['args']
+      args.data_matchers.each do |matcher|
+        body_block.add_instr [GET, 'args', matcher.index, 'default']
+        body_block.add_instr [DEF_MEMBER, matcher.name, 'default']
+      end
+
+      compile_ body_block, source['body']
+      body_block.add_instr [CALL_END]
+
+      @mod.add_block body_block
+
+      # Create a function object and store in namespace/scope
+      block.add_instr [METHOD, source['name'], body_block.id]
     end
 
     def compile_literal block, source

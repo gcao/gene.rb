@@ -2,6 +2,7 @@ class Gene::Lang::Transformer
   %W(
     IF ELSE_IF ELSE
     FN
+    METHOD
   ).each do |name|
     const_set name, Gene::Types::Symbol.new("#{name.downcase}")
   end
@@ -15,6 +16,8 @@ class Gene::Lang::Transformer
       transform_if input, options
     elsif input === FN
       transform_fn input, options
+    elsif input === METHOD
+      transform_method input, options
     else
       input
     end
@@ -52,6 +55,22 @@ class Gene::Lang::Transformer
 
   def transform_fn input, options
     result = Gene::Types::Base.new(Gene::Types::Symbol.new('fn$'))
+    result['name'] = input.data[0]
+    args = input.data[1]
+    if args.is_a? Gene::Types::Symbol
+      if args.to_s == "_"
+        args = []
+      else
+        args = [args]
+      end
+    end
+    result['args'] = Gene::Lang::Matcher.from_array args
+    result['body'] = Gene::Lang::Statements.new input.data[2..-1]
+    result
+  end
+
+  def transform_method input, options
+    result = Gene::Types::Base.new(Gene::Types::Symbol.new('method$'))
     result['name'] = input.data[0]
     args = input.data[1]
     if args.is_a? Gene::Types::Symbol

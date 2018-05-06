@@ -297,7 +297,12 @@ module Gene::Lang::Jit
       @registers['default'] = Gene::Lang::Jit::Class.new name
     end
 
-    instr 'method' do |name|
+    instr 'method' do |name, block_id|
+      fn = Gene::Lang::Jit::Function.new name, block_id
+      context = @registers['context']
+      self_ = context.self
+      self_.add_method fn
+      @registers['default'] = fn
     end
 
     # Control flow instructions
