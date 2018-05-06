@@ -366,7 +366,7 @@ module Gene::Lang::Jit
       @mod.add_block body_block
 
       # Create a class object and store in namespace/scope
-      block.add_instr [CLS, name]
+      block.add_instr [CLASS, name]
       block.add_instr [DEF_MEMBER, name, 'default']
       class_reg = new_reg
       block.add_instr [COPY, 'default', class_reg]
@@ -389,7 +389,7 @@ module Gene::Lang::Jit
     def compile_print block, source
       source.data.each do |item|
         compile_ block, source.data[0]
-        block.add_instr [PRNT, 'default', false]
+        block.add_instr [PRINT, 'default', false]
       end
       block.add_instr [DEFAULT, nil]
     end

@@ -63,7 +63,7 @@ module Gene::Lang::Jit
           puts "#{@block.name} #{@exec_pos}: #{type} #{instruction[1..-1].to_s.gsub(/[\[\],]/, '')}"
         end
 
-        send type, arg0, *rest
+        send "do_#{type}", arg0, *rest
 
         if @jumped
           @jumped = false
@@ -78,7 +78,7 @@ module Gene::Lang::Jit
 
     def self.instr name, &block
       Gene::Lang::Jit.const_set name.upcase, name
-      define_method name, &block
+      define_method "do_#{name}", &block
     end
 
     instr 'init' do |options = {}|
@@ -293,8 +293,11 @@ module Gene::Lang::Jit
       @registers['default'] = result
     end
 
-    instr 'cls' do |name|
+    instr 'class' do |name|
       @registers['default'] = Gene::Lang::Jit::Class.new name
+    end
+
+    instr 'method' do |name|
     end
 
     # Control flow instructions
@@ -332,7 +335,7 @@ module Gene::Lang::Jit
 
     # 'if',         # if pos1 pos2: if default register's value is truthy, jump relatively to pos1, otherwise, jump to pos2
 
-    instr 'prnt' do |reg, new_line, is_error = false|
+    instr 'print' do |reg, new_line, is_error = false|
       if is_error
         if new_line
           STDERR.puts @registers[reg]
