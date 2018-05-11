@@ -305,6 +305,15 @@ module Gene::Lang::Jit
       @registers['default'] = fn
     end
 
+    instr 'new' do |class_reg|
+      klass = @registers[class_reg]
+      instance = Gene::Lang::Object.new klass
+      @registers['default'] = instance
+    end
+
+    instr 'call_method' do |self_reg, method, args_reg|
+    end
+
     # Control flow instructions
 
     # jump 1 result: jump to instruction 1 in the block

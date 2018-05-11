@@ -75,7 +75,10 @@ module Gene::Lang::Jit
 
       op = source.data[0]
 
-      if BINARY_OPS.include?(op)
+      if op.is_a? Gene::Types::Symbol and op.name[0] == '.'
+        compile_method_invocation block, source
+
+      elsif BINARY_OPS.include?(op)
         if [EQ, LT, LE, GT, GE].include? op
           compile_ block, source.type
           first_reg  = new_reg
@@ -125,6 +128,8 @@ module Gene::Lang::Jit
           compile_class block, source
         elsif type == "method$"
           compile_method block, source
+        elsif type == "new"
+          compile_new block, source
         elsif type == "return"
           compile_return block, source
         elsif type == "assert"
@@ -234,53 +239,7 @@ module Gene::Lang::Jit
       fn_reg = new_reg
       block.add_instr [COPY, 'default', fn_reg]
 
-      args_reg = new_reg
-
-      if is_literal? source.properties
-        properties = source.properties
-      else
-        properties = {}
-        props_to_process = {}
-        source.properties.each do |key, value|
-          if is_literal? value
-            properties[key] = value
-          else
-            props_to_process[key] = value
-          end
-        end
-      end
-
-      if is_literal? source.data
-        data = source.data
-      else
-        data = []
-        data_to_process = []
-        source.data.each_with_index do |item, i|
-          if is_literal? item
-            data << item
-          else
-            data << nil
-            data_to_process << [i, item]
-          end
-        end
-      end
-
-      block.add_instr [CREATE_OBJ, args_reg, nil, properties, data]
-
-      if props_to_process
-        props_to_process.each do |key, value|
-          compile_ block, value
-          block.add_instr [SET, args_reg, key, 'default']
-        end
-      end
-
-      if data_to_process
-        data_to_process.each do |pair|
-          index, value = pair
-          compile_ block, value
-          block.add_instr [SET, args_reg, index, 'default']
-        end
-      end
+      args_reg = compile_args block, source
 
       block.add_instr [CALL_NATIVE, fn_reg, 'body', nil]
 
@@ -404,6 +363,90 @@ module Gene::Lang::Jit
 
       # Create a function object and store in namespace/scope
       block.add_instr [METHOD, source['name'], body_block.id]
+    end
+
+    def compile_new block, source
+      compile_ block, source.data
+      block.add_instr [NEW, 'default']
+    end
+
+    def compile_method_invocation block, source
+      compile_ block, source.type
+
+      self_reg = new_reg
+      block.add_instr [COPY, 'default', self_reg]
+
+      method   = source.data.first.to_s[1..-1]
+
+      args_reg = compile_args block, source, true
+
+      block.add_instr [CALL_METHOD, self_reg, method, args_reg]
+
+      # block.add_instr [CALL_NATIVE, fn_reg, 'body', nil]
+
+      # block.add_instr [CALL, 'default', {
+      #   'self_reg'   => self_reg,
+      #   'fn_reg'     => fn_reg,
+      #   'args_reg'   => args_reg,
+      #   'return_reg' => 'default',
+      # }]
+    end
+
+    # Compile args
+    # Save to a register
+    # @return the regiser address
+    def compile_args block, source, is_method = false
+      args_reg = new_reg
+
+      if is_literal? source.properties
+        properties = source.properties
+      else
+        properties = {}
+        props_to_process = {}
+        source.properties.each do |key, value|
+          if is_literal? value
+            properties[key] = value
+          else
+            props_to_process[key] = value
+          end
+        end
+      end
+
+      args_data = is_method ? source.data[1..-1] : source.data
+
+      if is_literal? args_data
+        data = args_data
+      else
+        data = []
+        data_to_process = []
+        args_data.each_with_index do |item, i|
+          if is_literal? item
+            data << item
+          else
+            data << nil
+            data_to_process << [i, item]
+          end
+        end
+      end
+
+      block.add_instr [CREATE_OBJ, args_reg, nil, properties, data]
+
+      if props_to_process
+        props_to_process.each do |key, value|
+          compile_ block, value
+          block.add_instr [SET, args_reg, key, 'default']
+        end
+      end
+
+      if data_to_process
+        data_to_process.each do |pair|
+          index, value = pair
+          compile_ block, value
+          block.add_instr [SET, args_reg, index, 'default']
+        end
+      end
+
+      args_reg
     end
 
     def compile_literal block, source
