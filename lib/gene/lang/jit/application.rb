@@ -341,4 +341,13 @@ module Gene::Lang::Jit
     end
   end
 
+  class Expandable < Gene::Lang::Object
+    attr_reader :value
+
+    def initialize value = Gene::UNDEFINED
+      super(Expandable)
+      set 'value', value
+    end
+  end
+
 end

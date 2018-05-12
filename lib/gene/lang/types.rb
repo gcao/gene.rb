@@ -797,6 +797,7 @@ module Gene::Lang
     end
 
     # TODO: support `^arg...`
+    # TODO: throw error if optional arguments and expandable arguments are both present.
     def from_array array
       array = [array] unless array.is_a? ::Array
 

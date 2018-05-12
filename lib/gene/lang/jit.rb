@@ -60,7 +60,7 @@ module Gene::Lang::Jit
         instruction = @instructions[@exec_pos]
         type, arg0, *rest = instruction
         if options[:debug]
-          puts "#{@block.name} #{@exec_pos}: #{type} #{instruction[1..-1].to_s.gsub(/[\[\],]/, '')}"
+          puts "#{@block.name} #{@exec_pos}: #{type} #{instruction[1..-1].to_s.gsub(/^\[/, '').gsub(/\]$/, '').gsub(/, /, ' ')}"
         end
 
         send "do_#{type}", arg0, *rest
@@ -94,7 +94,15 @@ module Gene::Lang::Jit
       value  = @registers[value_reg]
       target = @registers[reg]
 
-      target[path] = value
+      if value.is_a? Gene::Lang::Jit::Expandable
+        if path.is_a? String
+          target[path] = value
+        else
+          target[path..path] = value.value
+        end
+      else
+        target[path] = value
+      end
     end
 
     # Define a variable in current context
@@ -111,7 +119,11 @@ module Gene::Lang::Jit
     # Get value of a variable in current context
     instr 'get_member' do |name|
       context = @registers['context']
-      @registers['default'] = context.get_member name
+      if name[-3..-1] == '...'
+        @registers['default'] = Gene::Lang::Jit::Expandable.new context.get_member(name[0..-4])
+      else
+        @registers['default'] = context.get_member name
+      end
     end
 
     # Set value of a variable in current context

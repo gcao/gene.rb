@@ -148,6 +148,16 @@ describe "JIT" do
     end
 
     it "
+      # a... should work
+      (var a [1 2])
+      [a... 3]
+    " do
+      mod = @compiler.parse_and_compile example.description
+      app = Application.new(mod)
+      app.run.should == [1, 2, 3]
+    end
+
+    it "
       (var a 1)
       (a += 2)
       a
@@ -232,12 +242,23 @@ describe "JIT" do
     end
 
     it "
+      # varargs should work
       (fn f a... a)
       (f 1 2)
     " do
       mod = @compiler.parse_and_compile example.description
       app = Application.new(mod)
       app.run.should == [1, 2]
+    end
+
+    it "
+      # varargs should work
+      (fn f [a b...] b)
+      (f 1 2 3)
+    " do
+      mod = @compiler.parse_and_compile example.description
+      app = Application.new(mod)
+      app.run.should == [2, 3]
     end
 
     it "
