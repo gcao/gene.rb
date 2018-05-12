@@ -256,9 +256,19 @@ module Gene::Lang::Jit
 
       @registers = @registers_mgr.create
 
+      inherit_scope = options['inherit_scope']
+
+      if options['fn_reg']
+        fn_reg = options['fn_reg']
+        fn     = caller_regs[fn_reg]
+        @registers['fn'] = fn
+        inherit_scope ||= fn.inherit_scope
+      end
+
       caller_context = caller_regs['context']
-      if options['inherit_scope']
-        scope_ = Gene::Lang::Jit::Scope.new caller_context.scope, true
+
+      if inherit_scope
+        scope = Gene::Lang::Jit::Scope.new caller_context.scope, true
       else
         scope = Gene::Lang::Jit::Scope.new
       end
@@ -270,12 +280,6 @@ module Gene::Lang::Jit
 
       @registers['return_reg']  = [caller_regs.id, options['return_reg']]
       @registers['return_addr'] = return_addr
-
-      if options['fn_arg']
-        fn_reg = options['fn_arg']
-        fn     = caller_regs[fn_reg]
-        @registers['fn'] = fn
-      end
 
       if options['args_reg']
         args_reg    = options['args_reg']

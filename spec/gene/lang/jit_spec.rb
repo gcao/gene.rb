@@ -233,6 +233,17 @@ describe "JIT" do
     end
 
     it "
+      # Scope inheritance should work
+      (fn g _ 1)
+      (fn f _ (g))
+      (f)
+    " do
+      mod = @compiler.parse_and_compile example.description
+      app = Application.new(mod)
+      app.run.should == 1
+    end
+
+    it "
       (fn f [a b] (a + b))
       (f 1 2)
     " do
