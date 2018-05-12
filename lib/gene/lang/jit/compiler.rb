@@ -53,6 +53,9 @@ module Gene::Lang::Jit
     GT = Gene::Types::Symbol.new('>')
     GE = Gene::Types::Symbol.new('>=')
 
+    AND = Gene::Types::Symbol.new('&&')
+    OR  = Gene::Types::Symbol.new('||')
+
     PLUS  = Gene::Types::Symbol.new('+')
     MINUS = Gene::Types::Symbol.new('-')
     MULTI = Gene::Types::Symbol.new('*')
@@ -65,6 +68,7 @@ module Gene::Lang::Jit
 
     BINARY_OPS = [
       ASSIGN,
+      AND, OR,
       EQ, LT, LE, GT, GE,
       PLUS, MINUS, MULTI, DIV,
       PLUS_EQ, MINUS_EQ, MULTI_EQ, DIV_EQ,
@@ -86,12 +90,26 @@ module Gene::Lang::Jit
           compile_ block, source.data[1]
           block.add_instr [BINARY, first_reg, op.to_s, 'default']
 
-        elsif op == PLUS
+        elsif [PLUS, MINUS, MULTI, DIV].include? op
           compile_ block, source.type
           first_reg  = new_reg
           block.add_instr [COPY, 'default', first_reg]
           compile_ block, source.data[1]
           block.add_instr [BINARY, first_reg, op.to_s, 'default']
+
+        elsif op == AND
+          compile_ block, source.type
+          # Skip evaluating second expression if false
+          jump = block.add_instr [JUMP_IF_FALSE, nil]
+          compile_ block, source.data[1]
+          jump[1] = block.length
+
+        elsif op == OR
+          compile_ block, source.type
+          # Skip evaluating second expression if false
+          jump = block.add_instr [JUMP_IF_TRUE, nil]
+          compile_ block, source.data[1]
+          jump[1] = block.length
 
         elsif op == ASSIGN
           compile_ block, source.data[1]
