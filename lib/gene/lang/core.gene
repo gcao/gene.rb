@@ -29,8 +29,8 @@
         ($invoke self '[]' prop_name)
       else
         # This causes complexities in the interpreter/compiler.
-        ((@ prop_name))
-        # ($invoke @properties '[]' prop_name)
+        # ((@ prop_name))
+        ($invoke (.properties) '[]' prop_name)
       )
     )
   )
@@ -39,8 +39,8 @@
     (if (.is_base_type)
       ($invoke self '[]=' prop_name value)
     else
-      ((@ prop_name) = value)
-      # ($invoke @properties '[]=' prop_name value)
+      # ((@ prop_name) = value)
+      ($invoke (.properties) '[]=' prop_name value)
     )
   )
 
