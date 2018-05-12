@@ -272,6 +272,7 @@ describe "JIT" do
     end
 
     it "
+      # class, new, method invocation should work
       (class A
         (method test _ 1)
       )
@@ -283,6 +284,7 @@ describe "JIT" do
     end
 
     it "
+      # (.test) should work
       (class A
         (method test _ 1)
         (method test2 _ (.test))
@@ -292,6 +294,19 @@ describe "JIT" do
       mod = @compiler.parse_and_compile example.description
       app = Application.new(mod)
       app.run.should == 1
+    end
+
+    it "
+      # self should work
+      (class A
+        (method test _ self)
+      )
+      (var a (new A))
+      (a == (a .test))
+    " do
+      mod = @compiler.parse_and_compile example.description
+      app = Application.new(mod)
+      app.run.should == true
     end
 
     it "
