@@ -284,6 +284,18 @@ describe "JIT" do
 
     it "
       (class A
+        (method test _ 1)
+        (method test2 _ (.test))
+      )
+      ((new A) .test2)
+    " do
+      mod = @compiler.parse_and_compile example.description
+      app = Application.new(mod)
+      app.run.should == 1
+    end
+
+    it "
+      (class A
         (method test _
           (@a = 1)
           @a

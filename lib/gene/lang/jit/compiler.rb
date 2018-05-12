@@ -157,7 +157,9 @@ module Gene::Lang::Jit
       elsif source.type.is_a? Gene::Types::Symbol
         type = source.type.to_s
 
-        if type == "var"
+        if type[0] == "."
+          compile_short_method_invocation block, source
+        elsif type == "var"
           compile_var block, source
         elsif type == "if$"
           compile_if block, source
@@ -463,6 +465,42 @@ module Gene::Lang::Jit
       block.add_instr [COPY, 'default', method_reg]
 
       args_reg   = compile_args block, source, true
+
+      block.add_instr [CALL_METHOD, self_reg, method_reg, args_reg, hierarchy_reg]
+    end
+
+    # Get class of object
+    # Get class hierarchy
+    # Get method from hierarchy
+    # If method's eval_arguments option is false, do not eval arguments (same as function)
+    # Call method with self object, arguments, class, hierarchy (is useful when super is invoked)
+    def compile_short_method_invocation block, source
+      block.add_instr [CALL_NATIVE, 'context', 'self']
+
+      self_reg = new_reg
+      block.add_instr [COPY, 'default', self_reg]
+
+      block.add_instr [GET_CLASS, self_reg]
+
+      # Create a hierarchy for class stored in default register
+      block.add_instr [CREATE_INHERITANCE_HIERARCHY, 'default']
+
+      hierarchy_reg = new_reg
+      block.add_instr [COPY, 'default', hierarchy_reg]
+
+      method_name     = source.type.to_s[1..-1]
+      method_name_reg = new_reg
+
+      block.add_instr [WRITE, method_name_reg, method_name]
+
+      # Get the method object from the hierarchy and save to default register
+      block.add_instr [CALL_NATIVE, 'default', 'method', method_name_reg]
+
+      method_reg = new_reg
+      block.add_instr [COPY, 'default', method_reg]
+
+      # Treat arguments the same way as function arguments
+      args_reg   = compile_args block, source
 
       block.add_instr [CALL_METHOD, self_reg, method_reg, args_reg, hierarchy_reg]
     end
