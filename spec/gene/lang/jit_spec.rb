@@ -158,6 +158,7 @@ describe "JIT" do
     end
 
     it "
+      # += should work
       (var a 1)
       (a += 2)
       a
@@ -168,6 +169,7 @@ describe "JIT" do
     end
 
     it "
+      # -= should work
       (var a 3)
       (a -= 2)
       a
@@ -178,6 +180,7 @@ describe "JIT" do
     end
 
     it "
+      # if should work
       (if true 1 else 2)
     " do
       mod = @compiler.parse_and_compile example.description
@@ -186,6 +189,7 @@ describe "JIT" do
     end
 
     it "
+      # else should work
       (if false 1 else 2)
     " do
       mod = @compiler.parse_and_compile example.description
@@ -194,6 +198,7 @@ describe "JIT" do
     end
 
     it "
+      # loop...break should work
       (loop (if true break))
       1
     " do
@@ -203,6 +208,7 @@ describe "JIT" do
     end
 
     it "
+      # for should work
       (var sum 0)
       (for (var i 0) (i <= 4) (i += 1)
         (sum += i)
@@ -215,6 +221,7 @@ describe "JIT" do
     end
 
     it "
+      # function should work
       (fn f _ 1)
       (f)
     " do
@@ -224,12 +231,23 @@ describe "JIT" do
     end
 
     it "
+      # passing argument to function should work
       (fn f a a)
       (f 1)
     " do
       mod = @compiler.parse_and_compile example.description
       app = Application.new(mod)
       app.run.should == 1
+    end
+
+    it "
+      # Passing multiple arguments should work
+      (fn f [a b] (a + b))
+      (f 1 2)
+    " do
+      mod = @compiler.parse_and_compile example.description
+      app = Application.new(mod)
+      app.run.should == 3
     end
 
     it "
@@ -241,15 +259,6 @@ describe "JIT" do
       mod = @compiler.parse_and_compile example.description
       app = Application.new(mod)
       app.run.should == 1
-    end
-
-    it "
-      (fn f [a b] (a + b))
-      (f 1 2)
-    " do
-      mod = @compiler.parse_and_compile example.description
-      app = Application.new(mod)
-      app.run.should == 3
     end
 
     it "
@@ -283,6 +292,7 @@ describe "JIT" do
     end
 
     it "
+      # return should work
       (fn f _
         (return 1)
         2
@@ -295,6 +305,7 @@ describe "JIT" do
     end
 
     it "
+      # fn...if should work
       (fn f [a b c]
         (if a b else c)
       )
@@ -306,6 +317,7 @@ describe "JIT" do
     end
 
     it "
+      # fn...if should work
       (fn f [a b c]
         (if a b else c)
       )
@@ -317,6 +329,7 @@ describe "JIT" do
     end
 
     it "
+      # fn...for should work
       (fn f a
         (var sum 0)
         (for (var i 0) (i <= a) (i += 1)
@@ -332,6 +345,7 @@ describe "JIT" do
     end
 
     it "
+      # class/method should work
       (class A
         (method test)
       )
@@ -396,6 +410,7 @@ describe "JIT" do
     end
 
     it "
+      # property access should work
       (class A
         (method test _
           (@a = 1)
@@ -410,11 +425,16 @@ describe "JIT" do
     end
 
     it "
+      # super should work
       (class A
-        (method test _ 1)
+        (method test _
+          1
+        )
       )
       (class B extend A
-        (method test _ (super))
+        (method test _
+          (super)
+        )
       )
       ((new B) .test)
     " do
@@ -424,7 +444,7 @@ describe "JIT" do
     end
 
     it "
-      # Module should work
+      # module should work
       (module M
         (method test)
       )
@@ -451,6 +471,7 @@ describe "JIT" do
     end
 
     it "
+      # assert should work
       (assert false 'Houston, we have a problem')
     " do
       mod = @compiler.parse_and_compile example.description
@@ -461,6 +482,7 @@ describe "JIT" do
     end
 
     it "
+      # assert should work
       (assert true 'Houston, we have a problem')
       1
     " do
