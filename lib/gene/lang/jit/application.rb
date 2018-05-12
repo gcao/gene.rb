@@ -200,7 +200,7 @@ module Gene::Lang::Jit
     end
 
     def add_method method
-      methods[method.name] = method
+      methods[method.name.to_s] = method
     end
 
     def method name
@@ -330,7 +330,6 @@ module Gene::Lang::Jit
     def method name
       while index < hierarchy.length
         module_or_class = hierarchy[index]
-        p module_or_class
         method = module_or_class.method(name)
         if method
           return method
