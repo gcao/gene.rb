@@ -123,6 +123,14 @@ describe "JIT" do
     end
 
     it "
+      ($invoke 'abc' '[]' 1)
+    " do
+      mod = @compiler.parse_and_compile example.description
+      app = Application.new(mod)
+      app.run.should == 'b'
+    end
+
+    it "
       ('' 1 2 '3')
     " do
       mod = @compiler.parse_and_compile example.description

@@ -302,6 +302,14 @@ module Gene::Lang::Jit
       @registers['default'] = result
     end
 
+    instr 'call_native_dynamic' do |target_reg, method_reg, args_reg = nil|
+      target = @registers[target_reg]
+      method = @registers[method_reg]
+      args   = args_reg ? @registers[args_reg] : []
+      result = target.send method, *args
+      @registers['default'] = result
+    end
+
     instr 'class' do |name|
       @registers['default'] = Gene::Lang::Jit::Class.new name
     end

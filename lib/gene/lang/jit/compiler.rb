@@ -177,6 +177,8 @@ module Gene::Lang::Jit
           compile_return block, source
         elsif type == "!"
           compile_invert block, source
+        elsif type == "$invoke"
+          compile_invoke block, source
         elsif type == "assert"
           compile_assert block, source
         elsif type == "print"
@@ -546,6 +548,22 @@ module Gene::Lang::Jit
         block.add_instr [PRINT, 'default', false]
       end
       block.add_instr [DEFAULT, nil]
+    end
+
+    def compile_invoke block, source
+      target, method, *args = source.data
+
+      compile_ block, target
+      target_reg = new_reg
+      block.add_instr [COPY, 'default', target_reg]
+
+      compile_ block, method
+      method_reg = new_reg
+      block.add_instr [COPY, 'default', method_reg]
+
+      compile_array block, args
+
+      block.add_instr [CALL_NATIVE_DYNAMIC, target_reg, method_reg, 'default']
     end
 
     def compile_assert block, source
