@@ -410,6 +410,20 @@ describe "JIT" do
     end
 
     it "
+      (class A
+        (method test _ 1)
+      )
+      (class B extend A
+        (method test _ (super))
+      )
+      ((new B) .test)
+    " do
+      mod = @compiler.parse_and_compile example.description
+      app = Application.new(mod)
+      app.run.should == 1
+    end
+
+    it "
       # Module should work
       (module M
         (method test)

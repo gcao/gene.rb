@@ -169,7 +169,7 @@ module Gene::Lang::Jit
           compile_for block, source
         elsif type == "fn$"
           compile_fn block, source
-        elsif type == "class"
+        elsif type == "class$"
           compile_class block, source
         elsif type == "module"
           compile_module block, source
@@ -179,6 +179,8 @@ module Gene::Lang::Jit
           compile_new block, source
         elsif type == "init"
           compile_init block, source
+        elsif type == "super"
+          compile_super block, source
         elsif type == "return"
           compile_return block, source
         elsif type == "!"
@@ -388,8 +390,9 @@ module Gene::Lang::Jit
     end
 
     def compile_class block, source
-      name = source.data[0].to_s
-      body = source.data[1..-1]
+      name        = source['name'].to_s
+      body        = source['body']
+      super_class = source['super_class']
 
       # Compile body as a block
       body_block      = CompiledBlock.new
@@ -403,8 +406,14 @@ module Gene::Lang::Jit
       # Create a class object and store in namespace/scope
       block.add_instr [CLASS, name]
       block.add_instr [DEF_MEMBER, name, 'default']
+
       class_reg = new_reg
       block.add_instr [COPY, 'default', class_reg]
+
+      if super_class
+        compile_ block, super_class
+        block.add_instr [CALL_NATIVE, class_reg, 'parent_class=', 'default']
+      end
 
       # Invoke block immediately and remove it to reduce memory usage
       block.add_instr [DEFAULT, body_block.id]
@@ -576,6 +585,23 @@ module Gene::Lang::Jit
 
     # Get hierarchy from hierarchy register (if not found, throw error?)
     def compile_super block, source
+      hierarchy_reg   = 'hierarchy'
+
+      # Get method name
+      block.add_instr [CALL_NATIVE, 'method', 'name']
+
+      # Get the method object from the hierarchy and save to default register
+      block.add_instr [CALL_NATIVE, hierarchy_reg, 'method', 'default']
+
+      method_reg = new_reg
+      block.add_instr [COPY, 'default', method_reg]
+
+      # TODO: (super!) will re-use the arguments
+      args_reg = compile_args block, source, true
+
+      block.add_instr [CALL_NATIVE, 'context', 'self']
+
+      block.add_instr [CALL_METHOD, 'default', method_reg, args_reg, hierarchy_reg]
     end
 
     # Compile args

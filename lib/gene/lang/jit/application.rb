@@ -276,11 +276,11 @@ module Gene::Lang::Jit
       self.class = Class
     end
 
-    def parent_class
-      # return nil if self == Gene::Lang::Object
+    # def parent_class
+    #   return nil if self == Gene::Lang::Object
 
-      # get('parent_class') || Gene::Lang::Object
-    end
+    #   get('parent_class') || Gene::Lang::Object
+    # end
 
     # include myself
     def ancestors

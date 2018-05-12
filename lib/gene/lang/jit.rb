@@ -417,6 +417,9 @@ module Gene::Lang::Jit
       method        = caller_regs[method_reg]
       @block        = @blocks[method.body]
 
+      @registers['method']    = method
+      @registers['hierarchy'] = caller_regs[hierarchy_reg]
+
       @instructions = @block.instructions
       @exec_pos     = 0
       @jumped       = true
