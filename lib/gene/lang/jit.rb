@@ -348,9 +348,12 @@ module Gene::Lang::Jit
     end
 
     instr 'method' do |name, block_id|
-      fn = Gene::Lang::Jit::Function.new name, block_id
       context = @registers['context']
       self_ = context.self
+      if name == 'init' and not self_.is_a? Gene::Lang::Jit::Class
+        raise "init is only allowed in a class."
+      end
+      fn = Gene::Lang::Jit::Function.new name, block_id
       self_.add_method fn
       @registers['default'] = fn
     end
