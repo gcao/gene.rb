@@ -210,23 +210,37 @@ describe "JIT" do
       ((new A) .test)
     " do
       mod = @compiler.parse_and_compile example.description
+      app = Application.new(mod)
+      app.run.should == 1
+    end
+
+    it "
+      (class A
+        (method test _
+          (@a = 1)
+          @a
+        )
+      )
+      ((new A) .test)
+    " do
+      mod = @compiler.parse_and_compile example.description
       p mod
       app = Application.new(mod)
       app.run(debug: true).should == 1
     end
 
     it "
-      (assert false 'Huston, we have a problem')
+      (assert false 'Houston, we have a problem')
     " do
       mod = @compiler.parse_and_compile example.description
       app = Application.new(mod)
       lambda {
         app.run
-      }.should raise_error('Huston, we have a problem')
+      }.should raise_error('Houston, we have a problem')
     end
 
     it "
-      (assert true 'Huston, we have a problem')
+      (assert true 'Houston, we have a problem')
       1
     " do
       mod = @compiler.parse_and_compile example.description

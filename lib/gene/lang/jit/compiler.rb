@@ -96,7 +96,14 @@ module Gene::Lang::Jit
         elsif op == ASSIGN
           compile_ block, source.data[1]
           target = source.type.to_s
-          block.add_instr [SET_MEMBER, target, 'default']
+          if target[0] == '@'
+            value_reg = new_reg
+            block.add_instr [COPY, 'default', value_reg]
+            block.add_instr [CALL_NATIVE, 'context', 'self']
+            block.add_instr [SET, 'default', target[1..-1], value_reg]
+          else
+            block.add_instr [SET_MEMBER, target, 'default']
+          end
 
         elsif op == PLUS_EQ
           compile_ block, source.data[1]
@@ -241,7 +248,7 @@ module Gene::Lang::Jit
 
       args_reg = compile_args block, source
 
-      block.add_instr [CALL_NATIVE, fn_reg, 'body', nil]
+      block.add_instr [CALL_NATIVE, fn_reg, 'body']
 
       block.add_instr [CALL, 'default', {
         'fn_reg'     => fn_reg,
@@ -256,7 +263,13 @@ module Gene::Lang::Jit
     end
 
     def compile_symbol block, source
-      block.add_instr [GET_MEMBER, source.to_s]
+      str = source.to_s
+      if str[0] == '@'
+        block.add_instr [CALL_NATIVE, 'context', 'self']
+        block.add_instr [GET, 'default', str[1..-1], 'default']
+      else
+        block.add_instr [GET_MEMBER, str]
+      end
     end
 
     def compile_statements block, source

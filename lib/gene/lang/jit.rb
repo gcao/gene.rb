@@ -286,7 +286,7 @@ module Gene::Lang::Jit
       @jumped       = true
     end
 
-    instr 'call_native' do |target_reg, method, args_reg|
+    instr 'call_native' do |target_reg, method, args_reg = nil|
       target = @registers[target_reg]
       args   = args_reg ? @registers[args_reg] : []
       result = target.send method, *args
@@ -330,7 +330,7 @@ module Gene::Lang::Jit
       caller_context = caller_regs['context']
       scope   = Gene::Lang::Jit::Scope.new
 
-      context = caller_context.extend scope: scope, self: caller_regs['self_reg']
+      context = caller_context.extend scope: scope, self: caller_regs[self_reg]
       @registers['context']     = context
 
       @registers['return_reg']  = [caller_regs.id, 'default']
