@@ -220,6 +220,11 @@ module Gene::Lang::Jit
     end
 
     # Array instructions
+    # TODO: When dynamic is true, treat index arguments as register names
+    instr 'get_range' do |reg, start_index, end_index, dynamic = false|
+      arr = @registers[reg]
+      @registers['default'] = arr[start_index..end_index]
+    end
 
     # Hash instructions
 

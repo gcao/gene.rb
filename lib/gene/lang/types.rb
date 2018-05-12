@@ -33,7 +33,11 @@ module Gene::Lang
     end
 
     def get name
-      @properties[name]
+      if name.is_a? String
+        @properties[name]
+      else
+        data[name]
+      end
     end
     alias [] get
 

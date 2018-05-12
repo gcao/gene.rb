@@ -223,6 +223,24 @@ describe "JIT" do
     end
 
     it "
+      (fn f [a b] (a + b))
+      (f 1 2)
+    " do
+      mod = @compiler.parse_and_compile example.description
+      app = Application.new(mod)
+      app.run.should == 3
+    end
+
+    it "
+      (fn f a... a)
+      (f 1 2)
+    " do
+      mod = @compiler.parse_and_compile example.description
+      app = Application.new(mod)
+      app.run.should == [1, 2]
+    end
+
+    it "
       (fn f _
         (return 1)
         2

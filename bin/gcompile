@@ -8,7 +8,7 @@ brew install jq
 
 # Compile a file and display the compiled output
 gcompile /tmp/test.gene | jq . |
-ruby -e "puts ARGF.read.gsub(/\n          /, '').gsub(/\n        \\]/, ']').gsub(/,([^\n])/, ', \\1')"
+ruby -e "puts ARGF.read.gsub(/\n          \s*/, '').gsub(/\n        \\]/, ']').gsub(/,([^\n])/, ', \\1')"
 
 =end
 

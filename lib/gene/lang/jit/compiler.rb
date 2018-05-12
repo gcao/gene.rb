@@ -272,7 +272,11 @@ module Gene::Lang::Jit
       # Arguments & default values
       args = source['args']
       args.data_matchers.each do |matcher|
-        body_block.add_instr [GET, 'args', matcher.index, 'default']
+        if matcher.end_index.nil?
+          body_block.add_instr [GET, 'args', matcher.index, 'default']
+        else
+          body_block.add_instr [GET_RANGE, 'args', matcher.index, matcher.end_index]
+        end
         body_block.add_instr [DEF_MEMBER, matcher.name, 'default']
       end
 

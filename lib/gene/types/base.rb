@@ -9,10 +9,10 @@ class Gene::Types::Base
   end
 
   def get name
-    if name.is_a? Fixnum
-      @data[name]
-    else
+    if name.is_a? String
       @properties[name.to_s]
+    else
+      @data[name]
     end
   end
   alias [] get
