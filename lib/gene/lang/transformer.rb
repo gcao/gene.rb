@@ -81,7 +81,7 @@ class Gene::Lang::Transformer
       end
     end
     result['args'] = Gene::Lang::Matcher.from_array args
-    result['body'] = Gene::Lang::Statements.new input.data[2..-1]
+    result['body'] = Gene::Lang::Statements.new input.data[2..-1] || []
     result
   end
 end

@@ -388,6 +388,33 @@ describe "JIT" do
     end
 
     it "
+      # Module should work
+      (module M
+        (method test)
+      )
+    " do
+      mod = @compiler.parse_and_compile example.description
+      app = Application.new(mod)
+      m = app.run
+      m.methods.size.should == 1
+    end
+
+    it "
+      # init is not allowed in a module
+      (module M
+        (init)
+      )
+    " do
+      pending "Ideally this should be caught during the compilation phase. However because Gene is a dynamic and flexible language, it might be too hard to handle all different scenarios."
+      lambda {
+        @compiler.parse_and_compile example.description
+        # mod = @compiler.parse_and_compile example.description
+        # app = Application.new(mod)
+        # app.run
+      }.should raise_error
+    end
+
+    it "
       (assert false 'Houston, we have a problem')
     " do
       mod = @compiler.parse_and_compile example.description

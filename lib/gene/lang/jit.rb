@@ -333,6 +333,10 @@ module Gene::Lang::Jit
       @registers['default'] = Gene::Lang::Jit::Class.new name
     end
 
+    instr 'module' do |name|
+      @registers['default'] = Gene::Lang::Jit::Module.new name
+    end
+
     instr 'get_class' do |reg|
       obj = @registers[reg]
       @registers['default'] = obj.class

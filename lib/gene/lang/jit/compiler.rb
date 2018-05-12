@@ -171,6 +171,8 @@ module Gene::Lang::Jit
           compile_fn block, source
         elsif type == "class"
           compile_class block, source
+        elsif type == "module"
+          compile_module block, source
         elsif type == "method$"
           compile_method block, source
         elsif type == "new"
@@ -400,6 +402,36 @@ module Gene::Lang::Jit
 
       # Create a class object and store in namespace/scope
       block.add_instr [CLASS, name]
+      block.add_instr [DEF_MEMBER, name, 'default']
+      class_reg = new_reg
+      block.add_instr [COPY, 'default', class_reg]
+
+      # Invoke block immediately and remove it to reduce memory usage
+      block.add_instr [DEFAULT, body_block.id]
+      block.add_instr [CALL, 'default', {
+        'inherit_scope' => false,
+        'self_reg' => class_reg,
+      }]
+
+      # Return the class
+      block.add_instr [COPY, class_reg, 'default']
+    end
+
+    def compile_module block, source
+      name = source.data[0].to_s
+      body = source.data[1..-1]
+
+      # Compile body as a block
+      body_block      = CompiledBlock.new
+      body_block.name = name
+
+      compile_ body_block, body
+      body_block.add_instr [CALL_END]
+
+      @mod.add_block body_block
+
+      # Create a class object and store in namespace/scope
+      block.add_instr [MODULE, name]
       block.add_instr [DEF_MEMBER, name, 'default']
       class_reg = new_reg
       block.add_instr [COPY, 'default', class_reg]
