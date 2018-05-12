@@ -262,6 +262,16 @@ describe "JIT" do
     end
 
     it "
+      # varargs should work
+      (fn f [a... b] b)
+      (f 1 2 3)
+    " do
+      mod = @compiler.parse_and_compile example.description
+      app = Application.new(mod)
+      app.run.should == 3
+    end
+
+    it "
       (fn f _
         (return 1)
         2

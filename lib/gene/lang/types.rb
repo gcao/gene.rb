@@ -853,15 +853,21 @@ module Gene::Lang
     private
 
     def calc_indexes
-      return if data_matchers.size == 0
+      matchers_size = data_matchers.size
+      return if matchers_size == 0
+
+      found_expandable = false
 
       data_matchers.each_with_index do |matcher, i|
-        matcher.index = i
-      end
-
-      last = data_matchers[-1]
-      if last.expandable
-        last.end_index = -1
+        if matcher.expandable
+          found_expandable  = true
+          matcher.index     = i
+          matcher.end_index = i - matchers_size
+        elsif found_expandable
+          matcher.index = i - matchers_size
+        else
+          matcher.index = i
+        end
       end
     end
   end
