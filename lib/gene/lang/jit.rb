@@ -169,16 +169,17 @@ module Gene::Lang::Jit
     # 'incr',   # incr "a": increment register "a" by 1
     # 'decr',   # decr "a": decrement register "a" by 1
 
-    instr 'add' do |reg1, reg2|
-      result = @registers[reg1] + @registers[reg2]
-      @registers['default'] = result
-    end
+    # Handled by [binary first op second]
+    # instr 'add' do |reg1, reg2|
+    #   result = @registers[reg1] + @registers[reg2]
+    #   @registers['default'] = result
+    # end
 
     # 'sub',
     # 'mul',
     # 'div',
 
-    instr 'not' do |reg|
+    instr 'invert' do |reg|
       @registers[reg] = !@registers[reg]
     end
 

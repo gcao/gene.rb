@@ -107,6 +107,22 @@ describe "JIT" do
     end
 
     it "
+      (! true)
+    " do
+      mod = @compiler.parse_and_compile example.description
+      app = Application.new(mod)
+      app.run.should == false
+    end
+
+    it "
+      (! false)
+    " do
+      mod = @compiler.parse_and_compile example.description
+      app = Application.new(mod)
+      app.run.should == true
+    end
+
+    it "
       ('' 1 2 '3')
     " do
       mod = @compiler.parse_and_compile example.description

@@ -175,6 +175,8 @@ module Gene::Lang::Jit
           compile_new block, source
         elsif type == "return"
           compile_return block, source
+        elsif type == "!"
+          compile_invert block, source
         elsif type == "assert"
           compile_assert block, source
         elsif type == "print"
@@ -300,6 +302,11 @@ module Gene::Lang::Jit
     def compile_return block, source
       compile_ block, source.data[0]
       block.add_instr [CALL_END]
+    end
+
+    def compile_invert block, source
+      compile_ block, source.data[0]
+      block.add_instr [INVERT, 'default']
     end
 
     def compile_symbol block, source
