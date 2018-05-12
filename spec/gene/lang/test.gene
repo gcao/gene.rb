@@ -4,9 +4,6 @@
 
 (fn test_function)
 
-# Block
-(a => (a + 1))
-
 (module TestModule)
 
 (class TestClass)
