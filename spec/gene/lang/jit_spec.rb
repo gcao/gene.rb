@@ -333,6 +333,21 @@ describe "JIT" do
     end
 
     it "
+      # class initialization should work
+      (class A
+        (init a
+          (@a = a)
+        )
+        (method test _ @a)
+      )
+      ((new A 1) .test)
+    " do
+      mod = @compiler.parse_and_compile example.description
+      app = Application.new(mod)
+      app.run.should == 1
+    end
+
+    it "
       # (.test) should work
       (class A
         (method test _ 1)

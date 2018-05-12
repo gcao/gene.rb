@@ -240,22 +240,22 @@ module Gene::Lang::Jit
     end
     # END
 
-    def handle_method options
-      method_name = options[:method]
-      m = method(method_name)
-      if m
-        m.call options
-      else
-        hierarchy = options[:hierarchy]
-        next_class_or_module = hierarchy.next
-        if next_class_or_module
-          next_class_or_module.handle_method options
-        else
-          #TODO: throw error or invoke method_missing
-          raise "Undefined method #{method} for #{options[:self]}"
-        end
-      end
-    end
+    # def handle_method options
+    #   method_name = options[:method]
+    #   m = method(method_name)
+    #   if m
+    #     m.call options
+    #   else
+    #     hierarchy = options[:hierarchy]
+    #     next_class_or_module = hierarchy.next
+    #     if next_class_or_module
+    #       next_class_or_module.handle_method options
+    #     else
+    #       #TODO: throw error or invoke method_missing
+    #       raise "Undefined method #{method} for #{options[:self]}"
+    #     end
+    #   end
+    # end
   end
 
   # TODO: change to single inheritance and include modules like Ruby
@@ -327,7 +327,7 @@ module Gene::Lang::Jit
     end
 
     # Find method in the hierarchy
-    def method name
+    def method name, options = {}
       while index < hierarchy.length
         module_or_class = hierarchy[index]
         method = module_or_class.method(name)
@@ -337,7 +337,9 @@ module Gene::Lang::Jit
         self.index += 1
       end
 
-      raise "Method \"#{name}\" is not found."
+      if not options[:do_not_throw_error]
+        raise "Method \"#{name}\" is not found."
+      end
     end
   end
 

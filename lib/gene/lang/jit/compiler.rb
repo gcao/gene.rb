@@ -175,6 +175,8 @@ module Gene::Lang::Jit
           compile_method block, source
         elsif type == "new"
           compile_new block, source
+        elsif type == "init"
+          compile_init block, source
         elsif type == "return"
           compile_return block, source
         elsif type == "!"
@@ -413,9 +415,9 @@ module Gene::Lang::Jit
       block.add_instr [COPY, class_reg, 'default']
     end
 
+    # Compile method body as a block
+    # Default args are evaluated in the block as well
     def compile_method block, source
-      # Compile method body as a block
-      # Default args are evaluated in the block as well
       body_block      = CompiledBlock.new
       body_block.name = source['name']
 
@@ -435,9 +437,38 @@ module Gene::Lang::Jit
       block.add_instr [METHOD, source['name'], body_block.id]
     end
 
+    # Compile method body as a block
+    # Default args are evaluated in the block as well
+    def compile_init block, source
+      method_name = 'init'
+
+      body_block      = CompiledBlock.new
+      body_block.name = method_name
+
+      # Arguments & default values
+      args = Gene::Lang::Matcher.from_array source.data.first
+      args.data_matchers.each do |matcher|
+        body_block.add_instr [GET, 'args', matcher.index, 'default']
+        body_block.add_instr [DEF_MEMBER, matcher.name, 'default']
+      end
+
+      compile_ body_block, source.data[1..-1]
+      body_block.add_instr [CALL_END]
+
+      @mod.add_block body_block
+
+      # Create a function object and store in namespace/scope
+      block.add_instr [METHOD, method_name, body_block.id]
+    end
+
     def compile_new block, source
       compile_ block, source.data.first
-      block.add_instr [NEW, 'default']
+      class_reg = new_reg
+      block.add_instr [COPY, 'default', class_reg]
+
+      args_reg = compile_args block, source, true
+
+      block.add_instr [NEW, class_reg, args_reg]
     end
 
     # Get class of object

@@ -294,7 +294,9 @@ module Gene::Lang::Jit
     instr 'call_end' do |*args|
       # Copy the result to the return register
       id, reg = @registers['return_reg']
-      @registers_mgr[id][reg] = @registers['default']
+      if reg
+        @registers_mgr[id][reg] = @registers['default']
+      end
 
       block_id, pos = @registers['return_addr']
 
@@ -349,10 +351,39 @@ module Gene::Lang::Jit
       @registers['default'] = fn
     end
 
-    instr 'new' do |class_reg|
-      klass = @registers[class_reg]
-      instance = Gene::Lang::Object.new klass
+    instr 'new' do |class_reg, args_reg|
+      klass     = @registers[class_reg]
+      instance  = Gene::Lang::Object.new klass
+
       @registers['default'] = instance
+
+      hierarchy = Gene::Lang::Jit::HierarchySearch.new klass.ancestors
+      method    = hierarchy.method 'init', do_not_throw_error: true
+
+      if method
+        # Invoke init method
+        caller_regs = @registers
+        return_addr = [@block.id, @exec_pos + 1]
+
+        @registers  = @registers_mgr.create
+
+        caller_context = caller_regs['context']
+        scope   = Gene::Lang::Jit::Scope.new
+
+        context = caller_context.extend scope: scope, self: instance
+        @registers['context']     = context
+
+        @registers['return_reg']  = [caller_regs.id, nil]
+        @registers['return_addr'] = return_addr
+
+        @registers['args'] = caller_regs[args_reg]
+
+        @block        = @blocks[method.body]
+
+        @instructions = @block.instructions
+        @exec_pos     = 0
+        @jumped       = true
+      end
     end
 
     instr 'call_method' do |self_reg, method_reg, args_reg, hierarchy_reg|
