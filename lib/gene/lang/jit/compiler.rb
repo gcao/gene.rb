@@ -366,30 +366,47 @@ module Gene::Lang::Jit
     end
 
     def compile_new block, source
-      compile_ block, source.data
+      compile_ block, source.data.first
       block.add_instr [NEW, 'default']
     end
 
+    # Get class of object
+    # Get class hierarchy
+    # Get method from hierarchy
+    # If method's eval_arguments option is false, do not eval arguments (same as function)
+    # Call method with self object, arguments, class, hierarchy (is useful when super is invoked)
     def compile_method_invocation block, source
       compile_ block, source.type
 
       self_reg = new_reg
       block.add_instr [COPY, 'default', self_reg]
 
-      method   = source.data.first.to_s[1..-1]
+      block.add_instr [GET_CLASS, self_reg]
 
-      args_reg = compile_args block, source, true
+      # Create a hierarchy for class stored in default register
+      block.add_instr [CREATE_INHERITANCE_HIERARCHY, 'default']
 
-      block.add_instr [CALL_METHOD, self_reg, method, args_reg]
+      hierarchy_reg = new_reg
+      block.add_instr [COPY, 'default', hierarchy_reg]
 
-      # block.add_instr [CALL_NATIVE, fn_reg, 'body', nil]
+      method_name     = source.data.first.to_s[1..-1]
+      method_name_reg = new_reg
 
-      # block.add_instr [CALL, 'default', {
-      #   'self_reg'   => self_reg,
-      #   'fn_reg'     => fn_reg,
-      #   'args_reg'   => args_reg,
-      #   'return_reg' => 'default',
-      # }]
+      block.add_instr [WRITE, method_name_reg, method_name]
+
+      # Get the method object from the hierarchy and save to default register
+      block.add_instr [CALL_NATIVE, 'default', 'method', method_name_reg]
+
+      method_reg = new_reg
+      block.add_instr [COPY, 'default', method_reg]
+
+      args_reg   = compile_args block, source, true
+
+      block.add_instr [CALL_METHOD, self_reg, method_reg, args_reg, hierarchy_reg]
+    end
+
+    # Get hierarchy from hierarchy register (if not found, throw error?)
+    def compile_super block, source
     end
 
     # Compile args

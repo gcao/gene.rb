@@ -437,7 +437,10 @@ module Gene::Lang
   # If the stack is empty, add Object to the hierarchy and mark the hierarchy as complete
   #
   # When do we invalidate the hierarchy?
-  # each class/module store a number and increment when it is extended, included, unincluded
+  # Each class/module store a number that represents number of modifications
+  # When hierarchy is calculated, the number is cached
+  # Increment modifications when the class/module is extended, included, unincluded
+  # If the cached number is smaller than the current modification number, it should be re-calculated
 
   class HierarchySearch < Object
     attr_accessor :hierarchy, :index

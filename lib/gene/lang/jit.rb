@@ -297,6 +297,16 @@ module Gene::Lang::Jit
       @registers['default'] = Gene::Lang::Jit::Class.new name
     end
 
+    instr 'get_class' do |reg|
+      obj = @registers[reg]
+      @registers['default'] = obj.class
+    end
+
+    instr 'create_inheritance_hierarchy' do |reg|
+      klass = @registers[reg]
+      @registers['default'] = Gene::Lang::Jit::HierarchySearch.new(klass.ancestors)
+    end
+
     instr 'method' do |name, block_id|
       fn = Gene::Lang::Jit::Function.new name, block_id
       context = @registers['context']
@@ -311,7 +321,29 @@ module Gene::Lang::Jit
       @registers['default'] = instance
     end
 
-    instr 'call_method' do |self_reg, method, args_reg|
+    instr 'call_method' do |self_reg, method_reg, args_reg, hierarchy_reg|
+      caller_regs = @registers
+      return_addr = [@block.id, @exec_pos + 1]
+
+      @registers  = @registers_mgr.create
+
+      caller_context = caller_regs['context']
+      scope   = Gene::Lang::Jit::Scope.new
+
+      context = caller_context.extend scope: scope, self: caller_regs['self_reg']
+      @registers['context']     = context
+
+      @registers['return_reg']  = [caller_regs.id, 'default']
+      @registers['return_addr'] = return_addr
+
+      @registers['args'] = caller_regs[args_reg]
+
+      method        = caller_regs[method_reg]
+      @block        = @blocks[method.body]
+
+      @instructions = @block.instructions
+      @exec_pos     = 0
+      @jumped       = true
     end
 
     # Control flow instructions

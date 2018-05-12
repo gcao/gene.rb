@@ -269,9 +269,9 @@ module Gene::Lang::Jit
     end
 
     def parent_class
-      return nil if self == Gene::Lang::Object
+      # return nil if self == Gene::Lang::Object
 
-      get('parent_class') || Gene::Lang::Object
+      # get('parent_class') || Gene::Lang::Object
     end
 
     # include myself
@@ -286,6 +286,58 @@ module Gene::Lang::Jit
         @ancestors += parent_class.ancestors
       end
       @ancestors
+    end
+  end
+
+  # An algorithm to lazily calculate a class/module's ancestors hierarchy
+  # Create a new array to store the hierarchy
+  # Push the class itself to the hierarchy
+  # Save the class's parent class and modules in a temporary stack
+  # When trying to access next item in the hierarchy
+  # Check whether the stack is empty
+  # If not, pop up the last item, add to the hierarchy
+  # And push the parent class + modules to the end of the stack
+  # If the stack is empty, add Object to the hierarchy and mark the hierarchy as complete
+  #
+  # When do we invalidate the hierarchy?
+  # Each class/module store a number that represents number of modifications
+  # When hierarchy is calculated, the number is cached
+  # Increment modifications when the class/module is extended, included, unincluded
+  # If the cached number is smaller than the current modification number, it should be re-calculated
+  #
+  # What do we do if one of our parent or grandparent module/class has changed?
+  # In our ancestors cache, store the list of ancestors and their modification number, validate it on use
+
+  class HierarchySearch < Gene::Lang::Object
+    attr_accessor :hierarchy, :index
+
+    def initialize(hierarchy)
+      super(HierarchySearch)
+      set 'hierarchy', hierarchy
+      set 'index', -1
+    end
+
+    def next
+      self.index += 1
+      hierarchy[self.index]
+    end
+
+    def current
+      hierarchy[self.index]
+    end
+
+    # Find method in the hierarchy
+    def method name
+      while index < hierarchy.length
+        module_or_class = hierarchy[index]
+        method = module_or_class.method(name)
+        if method
+          return method
+        end
+        self.index += 1
+      end
+
+      raise "Method \"#{name}\" is not found."
     end
   end
 
