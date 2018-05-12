@@ -146,6 +146,10 @@ module Gene::Lang::Jit
         else
           compile_invocation block, source
         end
+
+      elsif source.type.is_a? String
+        compile_string block, source
+
       else
         compile_unknown block, source
         # compile_ block, source.type
@@ -479,6 +483,16 @@ module Gene::Lang::Jit
       args_reg
     end
 
+    def compile_string block, source
+      reg = new_reg
+      block.add_instr [WRITE, reg, source.type]
+      source.data.each do |item|
+        compile_ block, item
+        block.add_instr [CONCAT, reg, 'default']
+      end
+      block.add_instr [COPY, reg, 'default']
+    end
+
     def compile_literal block, source
       block.add_instr [DEFAULT, source]
     end
@@ -662,17 +676,15 @@ module Gene::Lang::Jit
     alias inspect to_s
 
     def to_json options = {}
-      hash = {
-        type:         "CompiledBlock",
-        id:           id,
-        instructions: instructions,
-      }
-      if name
+      hash = {type: "CompiledBlock"}
+    if name
         hash[:name] = name
       end
       if is_default?
         hash[:default] = true
       end
+      hash[:id] = id
+      hash[:instructions] = instructions
       hash.to_json
     end
 

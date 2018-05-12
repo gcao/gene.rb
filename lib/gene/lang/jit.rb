@@ -208,7 +208,9 @@ module Gene::Lang::Jit
 
     # String instructions
     # 'substr',
-    # 'concat',
+    instr 'concat' do |reg1, reg2|
+      @registers[reg1] += @registers[reg2].to_s
+    end
 
     # Array instructions
 

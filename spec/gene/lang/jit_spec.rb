@@ -91,6 +91,14 @@ describe "JIT" do
     end
 
     it "
+      ('' 1 2 '3')
+    " do
+      mod = @compiler.parse_and_compile example.description
+      app = Application.new(mod)
+      app.run.should == '123'
+    end
+
+    it "
       (var a 1)
       a
     " do
@@ -224,9 +232,8 @@ describe "JIT" do
       ((new A) .test)
     " do
       mod = @compiler.parse_and_compile example.description
-      p mod
       app = Application.new(mod)
-      app.run(debug: true).should == 1
+      app.run.should == 1
     end
 
     it "
