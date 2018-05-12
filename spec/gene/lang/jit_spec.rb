@@ -124,6 +124,26 @@ describe "JIT" do
     end
 
     it "
+      (var a 1)
+      (a += 2)
+      a
+    " do
+      mod = @compiler.parse_and_compile example.description
+      app = Application.new(mod)
+      app.run.should == 3
+    end
+
+    it "
+      (var a 3)
+      (a -= 2)
+      a
+    " do
+      mod = @compiler.parse_and_compile example.description
+      app = Application.new(mod)
+      app.run.should == 1
+    end
+
+    it "
       (if true 1 else 2)
     " do
       mod = @compiler.parse_and_compile example.description

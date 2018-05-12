@@ -189,6 +189,12 @@ module Gene::Lang::Jit
         case type
         when '+'
           first + second
+        when '-'
+          first - second
+        when '*'
+          first * second
+        when '/'
+          first / second
         when '=='
           first == second
         when '<'

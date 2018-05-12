@@ -123,14 +123,32 @@ module Gene::Lang::Jit
             block.add_instr [SET_MEMBER, target, 'default']
           end
 
-        elsif op == PLUS_EQ
+        elsif [PLUS_EQ, MINUS_EQ, MULTI_EQ, DIV_EQ].include? op
           compile_ block, source.data[1]
-          target = source.type.to_s
           value_reg = new_reg
           block.add_instr [COPY, 'default', value_reg]
-          block.add_instr [GET_MEMBER, target]
-          block.add_instr [ADD, 'default', value_reg]
-          block.add_instr [SET_MEMBER, target, 'default']
+
+          target = source.type.to_s
+          if target[0] == '@'
+            # TODO: test this
+            target = target[1..-1]
+            block.add_instr [CALL_NATIVE, 'context', 'self']
+            self_reg = new_reg
+            block.add_instr [COPY, 'default', self_reg]
+
+            # Get @x's value
+            block.add_instr [GET, self_reg, target]
+
+            # @x <op> <right value>
+            block.add_instr [BINARY, 'default', op.to_s[0], value_reg]
+
+            # @x = <new value>
+            block.add_instr [SET, self_reg, target, 'default']
+          else
+            block.add_instr [GET_MEMBER, target]
+            block.add_instr [BINARY, 'default', op.to_s[0], value_reg]
+            block.add_instr [SET_MEMBER, target, 'default']
+          end
 
         else
           compile_unknown block, source
