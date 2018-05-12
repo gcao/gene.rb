@@ -330,6 +330,7 @@ module Gene::Lang::Jit
     def method name
       while index < hierarchy.length
         module_or_class = hierarchy[index]
+        p module_or_class
         method = module_or_class.method(name)
         if method
           return method
