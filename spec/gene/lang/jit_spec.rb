@@ -57,6 +57,17 @@ describe "JIT" do
     end
 
     it "
+      (:a 1)
+    " do
+      pending
+      mod = @compiler.parse_and_compile example.description
+      app = Application.new(mod)
+      result = app.run
+      result.type.should == Gene::Types::Symbol.new('a')
+      result.data.should == [1]
+    end
+
+    it "
       [1 2]
     " do
       mod = @compiler.parse_and_compile example.description

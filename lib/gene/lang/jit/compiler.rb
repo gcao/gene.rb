@@ -159,6 +159,8 @@ module Gene::Lang::Jit
 
         if type[0] == "."
           compile_short_method_invocation block, source
+        elsif type[0] == ":"
+          compile_template block, source
         elsif type == "var"
           compile_var block, source
         elsif type == "if$"
@@ -311,6 +313,21 @@ module Gene::Lang::Jit
         'args_reg'   => args_reg,
         'return_reg' => 'default',
       }]
+    end
+
+    # Compile everything in template mode
+    # Symbols are not dereferenced
+    # Binary or other expressions are not compiled
+    # %x or (%x ...) will be compiled or evaluated when the template is rendered
+    # Templates and code can be nested on multiple levels
+    def compile_template block, source
+      type = Gene::Types::Symbol.new source.type.to_s[1..-1]
+      raise 'TODO'
+    end
+
+    # Process %x and (%x ...) inside template
+    def compile_render block, source
+      raise "TODO: #{source}"
     end
 
     def compile_return block, source
