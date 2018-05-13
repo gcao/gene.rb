@@ -225,6 +225,10 @@ module Gene::Lang::Jit
       @registers['default'] = result
     end
 
+    instr 'symbol' do |s|
+      @registers['default'] = Gene::Types::Symbol.new(s)
+    end
+
     # String instructions
     # 'substr',
     instr 'concat' do |reg1, reg2|

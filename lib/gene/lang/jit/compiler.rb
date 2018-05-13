@@ -328,6 +328,8 @@ module Gene::Lang::Jit
       if str[0] == '@'
         block.add_instr [CALL_NATIVE, 'context', 'self']
         block.add_instr [GET, 'default', str[1..-1], 'default']
+      elsif str[0] == ':'
+        block.add_instr [SYMBOL, str[1..-1]]
       elsif str == "self"
         block.add_instr [CALL_NATIVE, 'context', 'self']
       else
