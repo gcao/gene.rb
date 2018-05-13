@@ -1,4 +1,5 @@
 require 'securerandom'
+require 'gene/lang/jit/utils'
 require 'gene/lang/jit/application'
 require 'gene/lang/jit/compiler'
 

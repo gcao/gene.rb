@@ -3,6 +3,8 @@ require 'json'
 
 module Gene::Lang::Jit
   class Compiler
+    include Utils
+
     def initialize
       @used_registers = []
     end
@@ -23,6 +25,8 @@ module Gene::Lang::Jit
     end
 
     def compile_ block, source
+      source = process_decorators source
+
       if source.is_a? Gene::Types::Base
         compile_object block, source
       elsif source.is_a? Gene::Types::Symbol

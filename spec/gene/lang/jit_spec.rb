@@ -364,6 +364,26 @@ describe "JIT" do
     end
 
     it "
+      # decorator should work
+      (fn f a a)
+      +f 1
+    " do
+      mod = @compiler.parse_and_compile example.description
+      app = Application.new(mod)
+      app.run.should == 1
+    end
+
+    it "
+      # decorator should work
+      (fn f a a)
+      [+f 1 2]
+    " do
+      mod = @compiler.parse_and_compile example.description
+      app = Application.new(mod)
+      app.run.should == [1, 2]
+    end
+
+    it "
       # class/method should work
       (class A
         (method test)
