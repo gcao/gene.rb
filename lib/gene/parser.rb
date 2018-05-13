@@ -66,6 +66,8 @@ module Gene
     SET   = Gene::Types::Symbol.new('#<>')
     END_SYMBOL = Gene::Types::Symbol.new('#END')
 
+    STREAM_TYPE = Gene::Types::Symbol.new('#STREAM')
+
     ENV_TYPE = Gene::Types::Symbol.new('#ENV')
 
     GENE_PI = Gene::Types::Symbol.new('#GENE')
@@ -470,9 +472,16 @@ module Gene
       attribute_for_group.each do |k, v|
         gene.properties[k] = v
       end
-      result = handle_processing_instructions gene
-      result = handle_env result
-      result
+
+      if type == GENE_PI
+        handle_processing_instructions gene
+      elsif type == ENV_TYPE
+        handle_env gene
+      elsif type == STREAM_TYPE
+        handle_stream gene
+      else
+        gene
+      end
     end
 
     def parse_hash
@@ -536,34 +545,30 @@ module Gene
     end
 
     def handle_processing_instructions gene
-      if gene.type == GENE_PI
-        gene.properties.each do |key, value|
-          if DOCUMENT_INSTRUCTIONS.include?(key)
-            send "#{key}=", value
-          end
+      gene.properties.each do |key, value|
+        if DOCUMENT_INSTRUCTIONS.include?(key)
+          send "#{key}=", value
         end
-        result = Gene::UNDEFINED
-        gene.data.each do |item|
-          if DOCUMENT_INSTRUCTIONS.include?(item.to_s)
-            result = send item.to_s
-          end
+      end
+      result = Gene::UNDEFINED
+      gene.data.each do |item|
+        if DOCUMENT_INSTRUCTIONS.include?(item.to_s)
+          result = send item.to_s
         end
-        if result == Gene::UNDEFINED
-          IGNORABLE
-        else
-          result
-        end
+      end
+      if result == Gene::UNDEFINED
+        IGNORABLE
       else
-        gene
+        result
       end
     end
 
     def handle_env gene
-      if gene.is_a? Gene::Types::Base and gene.type == ENV_TYPE
-        env[gene.data.first.to_s]
-      else
-        gene
-      end
+      env[gene.data.first.to_s]
+    end
+
+    def handle_stream gene
+      Gene::Types::Stream.new *gene.data
     end
   end
 end

@@ -60,6 +60,7 @@ describe Gene::Parser do
     # '#""'      => Gene::Types::Symbol.new(''),
     # "#''"      => Gene::Types::Symbol.new(''),
     'a b'      => Gene::Types::Stream.new(Gene::Types::Symbol.new('a'), Gene::Types::Symbol.new('b')),
+    '(#STREAM a)' => Gene::Types::Stream.new(Gene::Types::Symbol.new('a')),
     '\\('      => Gene::Types::Symbol.new('(', true),
     '()'       => Gene::NOOP,
     '1 ()'     => Gene::Types::Stream.new(1, Gene::NOOP),
