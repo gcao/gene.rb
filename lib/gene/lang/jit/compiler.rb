@@ -191,6 +191,8 @@ module Gene::Lang::Jit
           compile_return block, source
         elsif type == "!"
           compile_invert block, source
+        elsif type == "eval"
+          compile_eval block, source
         elsif type == "$invoke"
           compile_invoke block, source
         elsif type == "assert"
@@ -342,6 +344,13 @@ module Gene::Lang::Jit
     def compile_invert block, source
       compile_ block, source.data[0]
       block.add_instr [INVERT, 'default']
+    end
+
+    # Arguments are compiled and processed first
+    # Results are treated as statements
+    # Statements are compiled to a CompiledModule
+    # The default block will be invoked
+    def compile_eval block, source
     end
 
     def compile_symbol block, source

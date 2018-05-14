@@ -529,6 +529,38 @@ describe "JIT" do
       app = Application.new(mod)
       app.run.should == 1
     end
+
+    it "
+      # eval should work
+      (var a 1)
+      # :a => Symbol a => eval-ed to variable a's value
+      (eval :a)
+    " do
+      pending
+      mod = @compiler.parse_and_compile example.description
+      p mod
+      app = Application.new(mod)
+      app.run(debug: true).should == 1
+    end
+
+    it "
+      # eval should work
+      (var a 1)
+      (eval
+        (if true
+          (:var b 2)
+          (:a + :b)
+        else
+          :a
+        )
+      )
+    " do
+      pending
+      mod = @compiler.parse_and_compile example.description
+      p mod
+      app = Application.new(mod)
+      app.run(debug: true).should == 1
+    end
   end
 
   describe "Complex expressions" do
