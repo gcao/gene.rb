@@ -57,6 +57,15 @@ describe "JIT" do
     end
 
     it "
+      (:: 1)
+    " do
+      pending
+      mod = @compiler.parse_and_compile example.description
+      app = Application.new(mod)
+      app.run.should == 1
+    end
+
+    it "
       (:a 1)
     " do
       pending
@@ -536,11 +545,9 @@ describe "JIT" do
       # :a => Symbol a => eval-ed to variable a's value
       (eval :a)
     " do
-      pending
       mod = @compiler.parse_and_compile example.description
-      p mod
       app = Application.new(mod)
-      app.run(debug: true).should == 1
+      app.run.should == 1
     end
 
     it "
@@ -548,8 +555,7 @@ describe "JIT" do
       (var a 1)
       (eval
         (if true
-          (:var b 2)
-          (:a + :b)
+          (:: (var b 2) (a + b))
         else
           :a
         )
@@ -559,7 +565,7 @@ describe "JIT" do
       mod = @compiler.parse_and_compile example.description
       p mod
       app = Application.new(mod)
-      app.run(debug: true).should == 1
+      app.run(debug: true).should == 3
     end
   end
 

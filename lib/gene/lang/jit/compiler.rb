@@ -14,11 +14,15 @@ module Gene::Lang::Jit
       compile parsed
     end
 
+    # Options:
+    #   skip_init: do not add INIT instruction
     # return CompiledModule
-    def compile source
+    def compile source, options = {}
       primary_block = CompiledBlock.new []
       primary_block.is_default = true
-      primary_block.add_instr [INIT]
+      if not options[:skip_init]
+        primary_block.add_instr [INIT]
+      end
       @mod          = CompiledModule.new primary_block
       compile_ primary_block, source
       @mod
@@ -351,6 +355,8 @@ module Gene::Lang::Jit
     # Statements are compiled to a CompiledModule
     # The default block will be invoked
     def compile_eval block, source
+      compile_array block, source.data
+      block.add_instr [COMPILE, 'default']
     end
 
     def compile_symbol block, source

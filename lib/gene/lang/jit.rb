@@ -465,6 +465,36 @@ module Gene::Lang::Jit
 
     # 'if',         # if pos1 pos2: if default register's value is truthy, jump relatively to pos1, otherwise, jump to pos2
 
+    instr 'compile' do |stmts_reg|
+      stmts = Gene::Lang::Statements.new @registers[stmts_reg]
+      mod   = Compiler.new.compile(stmts, skip_init: true)
+      mod.blocks.each do |id, block|
+        @blocks[block.id] = block
+      end
+
+      caller_regs = @registers
+      return_addr = [@block.id, @exec_pos + 1]
+
+      @registers = @registers_mgr.create
+
+      caller_context = caller_regs['context']
+
+      scope = Gene::Lang::Jit::Scope.new caller_context.scope, true
+      self_ = caller_regs['self']
+      context = caller_context.extend scope: scope, self: self_
+      @registers['context']     = context
+
+      @registers['return_reg']  = [caller_regs.id, 'default']
+      @registers['return_addr'] = return_addr
+
+      block_id      = mod.primary_block.id
+      @block        = @blocks[block_id]
+
+      @instructions = @block.instructions
+      @exec_pos     = 0
+      @jumped       = true
+    end
+
     instr 'print' do |reg, new_line, is_error = false|
       if is_error
         if new_line
