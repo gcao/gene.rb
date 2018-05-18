@@ -86,12 +86,10 @@ module Gene::Lang::Jit
 
       if options[:template_mode]
         compile_ block, source.type, options
-        type_reg = new_reg
-        block.add_instr [COPY, 'default', type_reg]
+        type_reg = copy_and_return_reg block
 
         compile_ block, source.properties, options
-        props_reg = new_reg
-        block.add_instr [COPY, 'default', props_reg]
+        props_reg = copy_and_return_reg block
 
         compile_ block, source.properties, options
 
@@ -103,15 +101,15 @@ module Gene::Lang::Jit
       elsif BINARY_OPS.include?(op)
         if [EQ, LT, LE, GT, GE].include? op
           compile_ block, source.type
-          first_reg  = new_reg
-          block.add_instr [COPY, 'default', first_reg]
+          first_reg  = copy_and_return_reg block
+
           compile_ block, source.data[1]
           block.add_instr [BINARY, first_reg, op.to_s, 'default']
 
         elsif [PLUS, MINUS, MULTI, DIV].include? op
           compile_ block, source.type
-          first_reg  = new_reg
-          block.add_instr [COPY, 'default', first_reg]
+          first_reg  = copy_and_return_reg block
+
           compile_ block, source.data[1]
           block.add_instr [BINARY, first_reg, op.to_s, 'default']
 
@@ -133,8 +131,7 @@ module Gene::Lang::Jit
           compile_ block, source.data[1]
           target = source.type.to_s
           if target[0] == '@'
-            value_reg = new_reg
-            block.add_instr [COPY, 'default', value_reg]
+            value_reg = copy_and_return_reg block
             block.add_instr [CALL_NATIVE, 'context', 'self']
             block.add_instr [SET, 'default', target[1..-1], value_reg]
           else
@@ -143,16 +140,14 @@ module Gene::Lang::Jit
 
         elsif [PLUS_EQ, MINUS_EQ, MULTI_EQ, DIV_EQ].include? op
           compile_ block, source.data[1]
-          value_reg = new_reg
-          block.add_instr [COPY, 'default', value_reg]
+          value_reg = copy_and_return_reg block
 
           target = source.type.to_s
           if target[0] == '@'
             # TODO: test this
             target = target[1..-1]
             block.add_instr [CALL_NATIVE, 'context', 'self']
-            self_reg = new_reg
-            block.add_instr [COPY, 'default', self_reg]
+            self_reg = copy_and_return_reg block
 
             # Get @x's value
             block.add_instr [GET, self_reg, target]
@@ -321,8 +316,7 @@ module Gene::Lang::Jit
     def compile_invocation block, source
       compile_symbol block, source.type
 
-      fn_reg = new_reg
-      block.add_instr [COPY, 'default', fn_reg]
+      fn_reg = copy_and_return_reg block
 
       args_reg = compile_args block, source
 
@@ -461,8 +455,7 @@ module Gene::Lang::Jit
       block.add_instr [CLASS, name]
       block.add_instr [DEF_MEMBER, name, 'default']
 
-      class_reg = new_reg
-      block.add_instr [COPY, 'default', class_reg]
+      class_reg = copy_and_return_reg block
 
       if super_class
         compile_ block, super_class
@@ -496,8 +489,7 @@ module Gene::Lang::Jit
       # Create a class object and store in namespace/scope
       block.add_instr [MODULE, name]
       block.add_instr [DEF_MEMBER, name, 'default']
-      class_reg = new_reg
-      block.add_instr [COPY, 'default', class_reg]
+      class_reg = copy_and_return_reg block
 
       # Invoke block immediately and remove it to reduce memory usage
       block.add_instr [DEFAULT, body_block.id]
@@ -558,8 +550,7 @@ module Gene::Lang::Jit
 
     def compile_new block, source
       compile_ block, source.data.first
-      class_reg = new_reg
-      block.add_instr [COPY, 'default', class_reg]
+      class_reg = copy_and_return_reg block
 
       args_reg = compile_args block, source, true
 
@@ -574,16 +565,14 @@ module Gene::Lang::Jit
     def compile_method_invocation block, source
       compile_ block, source.type
 
-      self_reg = new_reg
-      block.add_instr [COPY, 'default', self_reg]
+      self_reg = copy_and_return_reg block
 
       block.add_instr [GET_CLASS, self_reg]
 
       # Create a hierarchy for class stored in default register
       block.add_instr [CREATE_INHERITANCE_HIERARCHY, 'default']
 
-      hierarchy_reg = new_reg
-      block.add_instr [COPY, 'default', hierarchy_reg]
+      hierarchy_reg = copy_and_return_reg block
 
       method_name     = source.data.first.to_s[1..-1]
       method_name_reg = new_reg
@@ -593,8 +582,7 @@ module Gene::Lang::Jit
       # Get the method object from the hierarchy and save to default register
       block.add_instr [CALL_NATIVE, 'default', 'method', method_name_reg]
 
-      method_reg = new_reg
-      block.add_instr [COPY, 'default', method_reg]
+      method_reg = copy_and_return_reg block
 
       args_reg   = compile_args block, source, true
 
@@ -609,16 +597,14 @@ module Gene::Lang::Jit
     def compile_short_method_invocation block, source
       block.add_instr [CALL_NATIVE, 'context', 'self']
 
-      self_reg = new_reg
-      block.add_instr [COPY, 'default', self_reg]
+      self_reg = copy_and_return_reg block
 
       block.add_instr [GET_CLASS, self_reg]
 
       # Create a hierarchy for class stored in default register
       block.add_instr [CREATE_INHERITANCE_HIERARCHY, 'default']
 
-      hierarchy_reg = new_reg
-      block.add_instr [COPY, 'default', hierarchy_reg]
+      hierarchy_reg = copy_and_return_reg block
 
       method_name     = source.type.to_s[1..-1]
       method_name_reg = new_reg
@@ -628,8 +614,7 @@ module Gene::Lang::Jit
       # Get the method object from the hierarchy and save to default register
       block.add_instr [CALL_NATIVE, 'default', 'method', method_name_reg]
 
-      method_reg = new_reg
-      block.add_instr [COPY, 'default', method_reg]
+      method_reg = copy_and_return_reg block
 
       # Treat arguments the same way as function arguments
       args_reg   = compile_args block, source
@@ -647,8 +632,7 @@ module Gene::Lang::Jit
       # Get the method object from the hierarchy and save to default register
       block.add_instr [CALL_NATIVE, hierarchy_reg, 'method', 'default']
 
-      method_reg = new_reg
-      block.add_instr [COPY, 'default', method_reg]
+      method_reg = block.add_instr [COPY, 'default', method_reg]
 
       # TODO: (super!) will re-use the arguments
       args_reg = compile_args block, source, true
@@ -663,18 +647,15 @@ module Gene::Lang::Jit
     # @return the regiser address
     def compile_args block, source, is_method = false
       compile_ block, source.properties
-      props_reg = new_reg
-      block.add_instr [COPY, 'default', props_reg]
+      props_reg = copy_and_return_reg block
 
       args_data = is_method ? source.data[1..-1] : source.data
 
       compile_ block, args_data
-      data_reg = new_reg
-      block.add_instr [COPY, 'default', data_reg]
+      data_reg = copy_and_return_reg block
 
       block.add_instr [CREATE_OBJ, nil, props_reg, data_reg]
-      args_reg = new_reg
-      block.add_instr [COPY, 'default', args_reg]
+      args_reg = copy_and_return_reg block
 
       args_reg
     end
@@ -705,12 +686,10 @@ module Gene::Lang::Jit
       target, method, *args = source.data
 
       compile_ block, target
-      target_reg = new_reg
-      block.add_instr [COPY, 'default', target_reg]
+      target_reg = copy_and_return_reg block
 
       compile_ block, method
-      method_reg = new_reg
-      block.add_instr [COPY, 'default', method_reg]
+      method_reg = copy_and_return_reg block
 
       compile_array block, args
 
@@ -755,6 +734,12 @@ module Gene::Lang::Jit
       else
         true
       end
+    end
+
+    def copy_and_return_reg block
+      reg = new_reg
+      block.add_instr [COPY, 'default', reg]
+      reg
     end
 
     def new_reg
