@@ -28,26 +28,21 @@ module Gene::Lang::Jit
       @mod
     end
 
-    def compile_ block, source
+    def compile_ block, source, options = {}
       source = process_decorators source
 
       if source.is_a? Gene::Types::Base
-        compile_object block, source
+        compile_object block, source, options
       elsif source.is_a? Gene::Types::Symbol
-        value = source.to_s
-        if value == 'break'
-          compile_break block, source
-        else
-          compile_symbol block, source
-        end
+        compile_symbol block, source, options
       elsif source.is_a? Gene::Lang::Statements
         compile_statements block, source
       elsif source.is_a? Gene::Types::Stream
         compile_stream block, source
       elsif source.is_a? Array
-        compile_array block, source
+        compile_array block, source, options
       elsif source.is_a? Hash
-        compile_hash block, source
+        compile_hash block, source, options
       else
         compile_literal block, source
       end
@@ -82,12 +77,27 @@ module Gene::Lang::Jit
       PLUS_EQ, MINUS_EQ, MULTI_EQ, DIV_EQ,
     ]
 
-    def compile_object block, source
-      source = Gene::Lang::Transformer.new.call(source)
+    def compile_object block, source, options = {}
+      if not options[:template_mode]
+        source = Gene::Lang::Transformer.new.call(source)
+      end
 
       op = source.data[0]
 
-      if op.is_a? Gene::Types::Symbol and op.name[0] == '.'
+      if options[:template_mode]
+        compile_ block, source.type, options
+        type_reg = new_reg
+        block.add_instr [COPY, 'default', type_reg]
+
+        compile_ block, source.properties, options
+        props_reg = new_reg
+        block.add_instr [COPY, 'default', props_reg]
+
+        compile_ block, source.properties, options
+
+        block.add_instr [CREATE_OBJ, type_reg, props_reg, 'default']
+
+      elsif op.is_a? Gene::Types::Symbol and op.name[0] == '.'
         compile_method_invocation block, source
 
       elsif BINARY_OPS.include?(op)
@@ -331,8 +341,12 @@ module Gene::Lang::Jit
     # %x or (%x ...) will be compiled or evaluated when the template is rendered
     # Templates and code can be nested on multiple levels
     def compile_template block, source
-      type = Gene::Types::Symbol.new source.type.to_s[1..-1]
-      raise 'TODO'
+      if source.data.length != 1
+        raise 'TODO'
+      else
+        first = source.data[0]
+        compile_ block, first, template_mode: true
+      end
     end
 
     # Process %x and (%x ...) inside template
@@ -359,7 +373,7 @@ module Gene::Lang::Jit
       block.add_instr [COMPILE, 'default']
     end
 
-    def compile_symbol block, source
+    def compile_symbol block, source, options = {}
       str = source.to_s
       if str[0] == '@'
         block.add_instr [CALL_NATIVE, 'context', 'self']
@@ -368,6 +382,8 @@ module Gene::Lang::Jit
         block.add_instr [SYMBOL, str[1..-1]]
       elsif str == "self"
         block.add_instr [CALL_NATIVE, 'context', 'self']
+      elsif str == 'break'
+        compile_break block, source
       else
         block.add_instr [GET_MEMBER, str]
       end
@@ -385,7 +401,7 @@ module Gene::Lang::Jit
       end
     end
 
-    def compile_array block, source
+    def compile_array block, source, options = {}
       if is_literal? source
         block.add_instr [DEFAULT, source]
       else
@@ -406,7 +422,7 @@ module Gene::Lang::Jit
       end
     end
 
-    def compile_hash block, source
+    def compile_hash block, source, options = {}
       if is_literal? source
         block.add_instr [DEFAULT, source]
       else
@@ -646,55 +662,19 @@ module Gene::Lang::Jit
     # Save to a register
     # @return the regiser address
     def compile_args block, source, is_method = false
-      args_reg = new_reg
-
-      if is_literal? source.properties
-        properties = source.properties
-      else
-        properties = {}
-        props_to_process = {}
-        source.properties.each do |key, value|
-          if is_literal? value
-            properties[key] = value
-          else
-            props_to_process[key] = value
-          end
-        end
-      end
+      compile_ block, source.properties
+      props_reg = new_reg
+      block.add_instr [COPY, 'default', props_reg]
 
       args_data = is_method ? source.data[1..-1] : source.data
 
-      if is_literal? args_data
-        data = args_data
-      else
-        data = []
-        data_to_process = []
-        args_data.each_with_index do |item, i|
-          if is_literal? item
-            data << item
-          else
-            data << nil
-            data_to_process << [i, item]
-          end
-        end
-      end
+      compile_ block, args_data
+      data_reg = new_reg
+      block.add_instr [COPY, 'default', data_reg]
 
-      block.add_instr [CREATE_OBJ, args_reg, nil, properties, data]
-
-      if props_to_process
-        props_to_process.each do |key, value|
-          compile_ block, value
-          block.add_instr [SET, args_reg, key, 'default']
-        end
-      end
-
-      if data_to_process
-        data_to_process.each do |pair|
-          index, value = pair
-          compile_ block, value
-          block.add_instr [SET, args_reg, index, 'default']
-        end
-      end
+      block.add_instr [CREATE_OBJ, nil, props_reg, data_reg]
+      args_reg = new_reg
+      block.add_instr [COPY, 'default', args_reg]
 
       args_reg
     end

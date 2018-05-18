@@ -164,11 +164,16 @@ module Gene::Lang::Jit
     instr 'label' do |name|
     end
 
-    instr 'create_obj' do |reg, type, properties, data|
+    instr 'create_obj' do |type_reg, properties_reg, data_reg|
+      type       = @registers[type_reg]
+      properties = @registers[properties_reg]
+      data       = @registers[data_reg]
+
       obj = Gene::Types::Base.new type
       obj.properties = properties
       obj.data       = data
-      @registers[reg]    = obj
+
+      @registers['default'] = obj
     end
 
     instr 'todo' do |code|
