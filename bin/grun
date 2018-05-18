@@ -4,23 +4,50 @@ $LOAD_PATH.unshift(File.join(File.dirname(__FILE__), '..', 'lib'))
 
 require "rubygems"
 require "bundler/setup"
+require 'optparse'
 require "json"
 require "gene"
 
+options = {}
+OptionParser.new do |opts|
+  opts.banner = "Usage: #{__FILE__} [-d] [FILE TO RUN]"
+
+  opts.on("-d", "--debug", "Enable debug mode") do
+    options[:debug] = true
+  end
+end.parse!
+
 if ARGV.length != 1
-  puts "Usage: grun <FILE TO RUN>"
+  puts "Usage: #{__FILE__} [-d] [FILE TO RUN]"
 else
   file = ARGV[0]
 
   if file =~ /\.gmod$/
     mod = Gene::Lang::Jit::CompiledModule.from_json JSON.parse(File.read(file))
     app = Gene::Lang::Jit::Application.new(mod)
-    app.run
+
+    if options[:debug]
+      puts "Running #{file}..."
+    end
+
+    app.run debug: options[:debug]
+
   elsif file =~ /\.gene$/
     compiler = Gene::Lang::Jit::Compiler.new
     mod = compiler.parse_and_compile File.read(file)
+
+    if options[:debug]
+      puts "#{file} is compiled to: #{mod}"
+    end
+
     app = Gene::Lang::Jit::Application.new(mod)
-    app.run
+
+    if options[:debug]
+      puts "Running compiled code..."
+    end
+
+    app.run debug: options[:debug]
+
   else
     raise "Unrecognized file type: #{file}"
   end

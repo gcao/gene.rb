@@ -1,0 +1,3 @@
+#!/usr/bin/env grun
+
+(print 'haha\n')

@@ -167,7 +167,7 @@ module Gene::Lang::Jit
 
         if type[0] == "."
           compile_short_method_invocation block, source
-        elsif type[0] == ":"
+        elsif type == "::"
           compile_template block, source
         elsif type == "var"
           compile_var block, source
