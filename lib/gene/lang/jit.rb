@@ -343,6 +343,10 @@ module Gene::Lang::Jit
       @registers['default'] = result
     end
 
+    instr 'ns' do |name|
+      @registers['default'] = Gene::Lang::Jit::Namespace.new name
+    end
+
     instr 'class' do |name|
       @registers['default'] = Gene::Lang::Jit::Class.new name
     end

@@ -196,6 +196,8 @@ module Gene::Lang::Jit
           compile_init block, source
         elsif type == "super"
           compile_super block, source
+        elsif type == "ns"
+          compile_namespace block, source
         elsif type == "return"
           compile_return block, source
         elsif type == "!"
@@ -663,6 +665,35 @@ module Gene::Lang::Jit
       args_reg = copy_and_return_reg block
 
       args_reg
+    end
+
+    def compile_namespace block, source
+      name = source.data[0].to_s
+      body = source.data[1..-1]
+
+      # Compile body as a block
+      body_block      = CompiledBlock.new
+      body_block.name = name
+
+      compile_ body_block, body
+      body_block.add_instr [CALL_END]
+
+      @mod.add_block body_block
+
+      # Create a class object and store in namespace/scope
+      block.add_instr [NS, name]
+      block.add_instr [DEF_MEMBER, name, 'default']
+      ns_reg = copy_and_return_reg block
+
+      # Invoke block immediately and remove it to reduce memory usage
+      block.add_instr [DEFAULT, body_block.id]
+      block.add_instr [CALL, 'default', {
+        'inherit_scope' => false,
+        'self_reg'      => ns_reg,
+      }]
+
+      # Return the class
+      block.add_instr [COPY, ns_reg, 'default']
     end
 
     def compile_string block, source

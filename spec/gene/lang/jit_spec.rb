@@ -517,6 +517,17 @@ describe "JIT" do
     end
 
     it "
+      # namespace should work
+      (ns N)
+    " do
+      mod = @compiler.parse_and_compile example.description
+      app = Application.new(mod)
+      result = app.run
+      result.class.should == Gene::Lang::Jit::Namespace
+      result.name.should  == "N"
+    end
+
+    it "
       # assert should work
       (assert false 'Houston, we have a problem')
     " do

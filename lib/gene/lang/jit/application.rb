@@ -79,9 +79,11 @@ module Gene::Lang::Jit
   end
 
   class Namespace < Hash
+    attr_reader :name
     attr_reader :parent
 
-    def initialize parent = nil
+    def initialize name = nil, parent = nil
+      @name   = name
       @parent = parent
     end
 
