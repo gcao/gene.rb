@@ -3,6 +3,7 @@ class Gene::Lang::Transformer
     IF ELSE_IF ELSE
     FN
     CLASS EXTEND METHOD
+    IMPORT FROM AS
   ).each do |name|
     const_set name, Gene::Types::Symbol.new("#{name.downcase}")
   end
@@ -20,6 +21,8 @@ class Gene::Lang::Transformer
       transform_method input, options
     elsif input === CLASS
       transform_class input, options
+    elsif input === IMPORT
+      transform_import input, options
     else
       input
     end
@@ -99,6 +102,50 @@ class Gene::Lang::Transformer
       result['body'] = Gene::Lang::Statements.new input.data[1..-1]
     end
 
+    result
+  end
+
+  def transform_import input, options
+    result = Gene::Types::Base.new(Gene::Types::Symbol.new('import$'))
+
+    mappings = {}
+    source   = nil
+
+    state = :mapping_name
+    name  = nil
+    input.data.each do |item|
+      if state == :mapping_name
+        if item == AS
+          raise "Name of the source member is required"
+        elsif item == FROM
+          state = :from
+        else
+          state = :mapping_as
+          name  =  item
+        end
+      elsif state == :mapping_as
+        if item == AS
+          state = :mapping_value
+        elsif item == FROM
+          state = :from
+          mappings[name.to_s] = name.to_s
+        else
+          state = :mapping_as
+          name  = item
+        end
+      elsif state == :mapping_value
+        state = :mapping_name
+        mappings[name.to_s] = item.to_s
+      elsif state == :from
+        state  = :done
+        source = item
+      elsif state == :done
+        raise "Syntax error: no more content is allowed"
+      end
+    end
+
+    result['mappings'] = mappings
+    result['source']   = source
     result
   end
 end
