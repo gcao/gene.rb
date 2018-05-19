@@ -925,7 +925,7 @@ module Gene::Lang::Jit
       s = "\n(CompiledBlock"
       @instructions.each_with_index do |instr, i|
         s << "\n  "
-        s << "#{i}: #{instr[0]} #{instr[1..-1].to_s.gsub(/^\[/, '').gsub(/\]$/, '').gsub(/, /, ' ')}"
+        s << "#{i.to_s.rjust(3)}: #{instr[0]} #{instr[1..-1].to_s.gsub(/^\[/, '').gsub(/\]$/, '').gsub(/, /, ' ')}"
       end
       s << "\n)"
 
@@ -939,7 +939,7 @@ module Gene::Lang::Jit
 
     def to_json options = {}
       hash = {type: "CompiledBlock"}
-    if name
+      if name
         hash[:name] = name
       end
       if is_default?

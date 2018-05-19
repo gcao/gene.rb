@@ -569,7 +569,7 @@ describe "JIT" do
     end
 
     it "
-      # class should work
+      # class as a namespace should work
       (class C
         (fn f _ 1)
       )
@@ -581,7 +581,7 @@ describe "JIT" do
     end
 
     it "
-      # `import` nothing should work
+      # import should work
       (import test_function from 'spec/gene/lang/test')
       (test_function)
     " do
