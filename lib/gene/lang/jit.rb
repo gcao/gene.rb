@@ -54,14 +54,11 @@ module Gene::Lang::Jit
 
       @exec_pos = 0
       @jumped   = false # Set to true if last instruction is a jump
-      if options[:debug]
-        puts
-      end
       while @exec_pos < @instructions.length
         instruction = @instructions[@exec_pos]
         type, arg0, *rest = instruction
         if options[:debug]
-          puts "#{@block.name} #{@exec_pos}: #{type} #{instruction[1..-1].to_s.gsub(/^\[/, '').gsub(/\]$/, '').gsub(/, /, ' ')}"
+          puts "<#{@block.name}>#{@exec_pos.to_s.rjust(4)}: #{type} #{instruction[1..-1].to_s.gsub(/^\[/, '').gsub(/\]$/, '').gsub(/, /, ' ')}"
         end
 
         send "do_#{type}", arg0, *rest
@@ -133,6 +130,12 @@ module Gene::Lang::Jit
       value = @registers[value_reg]
       context.set_member name, value
       @registers['default'] = value
+    end
+
+    # Get member of
+    instr 'get_child_member' do |reg, name|
+      obj = @registers[reg]
+      @registers['default'] = obj.get_member name
     end
 
     # write "a" 1: write to register 'a'

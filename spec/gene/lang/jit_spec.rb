@@ -225,7 +225,7 @@ describe "JIT" do
 
     it "
       # loop...break should work
-      (loop (if true break))
+      (loop (if true (break)))
       1
     " do
       mod = @compiler.parse_and_compile example.description
@@ -525,6 +525,20 @@ describe "JIT" do
       result = app.run
       result.class.should == Gene::Lang::Jit::Namespace
       result.name.should  == "N"
+    end
+
+    it "
+      # namespace should work
+      (ns N
+        (fn f _ 1)
+      )
+      (N/f)
+    " do
+      pending
+      mod = @compiler.parse_and_compile example.description
+      p mod
+      app = Application.new(mod)
+      app.run(debug: true).should == 1
     end
 
     it "

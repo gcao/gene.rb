@@ -200,6 +200,8 @@ module Gene::Lang::Jit
           compile_namespace block, source
         elsif type == "return"
           compile_return block, source
+        elsif type == "break"
+          compile_break block, source
         elsif type == "!"
           compile_invert block, source
         elsif type == "eval"
@@ -281,11 +283,7 @@ module Gene::Lang::Jit
     end
 
     def compile_break block, source
-      if source.is_a? Gene::Types::Base
-        compile_unknown block, source
-      else
-        block.add_instr [JUMP, -1]
-      end
+      block.add_instr [JUMP, -1]
     end
 
     def compile_fn block, source
@@ -383,10 +381,12 @@ module Gene::Lang::Jit
         block.add_instr [SYMBOL, str[1..-1]]
       elsif str == "self"
         block.add_instr [CALL_NATIVE, 'context', 'self']
-      elsif str == 'break'
-        compile_break block, source
       else
-        block.add_instr [GET_MEMBER, str]
+        first, *rest = str.split '/'
+        block.add_instr [GET_MEMBER, first]
+        rest.each do |item|
+          block.add_instr [GET_CHILD_MEMBER, 'default', item]
+        end
       end
     end
 
