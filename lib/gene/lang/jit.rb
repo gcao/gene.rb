@@ -40,6 +40,7 @@ module Gene::Lang::Jit
     def initialize application
       @application   = application
       @registers_mgr = RegistersManager.new
+      @modules       = {}
       @blocks        = {}
     end
 
@@ -477,12 +478,40 @@ module Gene::Lang::Jit
 
     # 'if',         # if pos1 pos2: if default register's value is truthy, jump relatively to pos1, otherwise, jump to pos2
 
+    instr 'load' do |reg|
+      location = @registers[reg]
+      location.sub! /.(gene|gmod)$/, ''
+      if @modules[location]
+        @registers['default'] = @modules[location]
+        return
+      end
+
+      mod_file = "#{location}.gmod"
+      if File.exist? mod_file
+        mod = Gene::Lang::Jit::CompiledModule.from_json File.read(mod_file)
+      else
+        gene_file = "#{location}.gene"
+        compiler  = Gene::Lang::Jit::Compiler.new
+        mod       = compiler.compile File.read(gene_file), skip_init: true
+      end
+
+      @registers['default'] = mod
+
+      do_run 'default'
+    end
+
     instr 'compile' do |stmts_reg|
       stmts = Gene::Lang::Statements.new @registers[stmts_reg]
       mod   = Compiler.new.compile(stmts, skip_init: true)
       mod.blocks.each do |id, block|
         @blocks[block.id] = block
       end
+
+      @registers['default'] = mod
+    end
+
+    instr 'run' do |mod_reg|
+      mod = @registers[mod_reg]
 
       caller_regs = @registers
       return_addr = [@block.id, @exec_pos + 1]

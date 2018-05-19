@@ -582,12 +582,13 @@ describe "JIT" do
 
     it "
       # `import` nothing should work
-      (import test_function from './test')
+      (import test_function from 'spec/gene/lang/test')
       (test_function)
     " do
       mod = @compiler.parse_and_compile example.description
+      p mod
       app = Application.new(mod)
-      app.run.should == 1
+      app.run(debug: true).should == 1
     end
 
     it "

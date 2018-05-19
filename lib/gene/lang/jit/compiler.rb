@@ -367,6 +367,7 @@ module Gene::Lang::Jit
     def compile_eval block, source
       compile_array block, source.data
       block.add_instr [COMPILE, 'default']
+      block.add_instr [RUN, 'default']
     end
 
     def compile_symbol block, source, options = {}
@@ -700,11 +701,22 @@ module Gene::Lang::Jit
 
     # Process source["source"]
     # Load code from location (compie first if necessary)
-    # Call default block of loaded code
-    # Obtain root namespace
+    #   Call default block of loaded code
+    #   Store root namespace of loaded code in default register
     # Define members in current context
     def compile_import block, source
-      compile_unknown block, source
+      compile_ block, source['source']
+      block.add_instr [LOAD, 'default']
+
+      mappings = source['mappings']
+      if mappings.size > 0
+        ns_reg = copy_and_return_reg block
+
+        mappings.each do |name, value|
+          block.add_instr [GET_CHILD_MEMBER, ns_reg, name]
+          block.add_instr [DEF_MEMBER, value, 'default']
+        end
+      end
     end
 
     def compile_string block, source
