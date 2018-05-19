@@ -59,16 +59,14 @@ describe "JIT" do
     it "
       (:: 1)
     " do
-      pending
       mod = @compiler.parse_and_compile example.description
       app = Application.new(mod)
       app.run.should == 1
     end
 
     it "
-      (:a 1)
+      (:: (a 1))
     " do
-      pending
       mod = @compiler.parse_and_compile example.description
       app = Application.new(mod)
       result = app.run
@@ -561,11 +559,9 @@ describe "JIT" do
         )
       )
     " do
-      pending
       mod = @compiler.parse_and_compile example.description
-      p mod
       app = Application.new(mod)
-      app.run(debug: true).should == 3
+      app.run.should == 3
     end
   end
 

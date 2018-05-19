@@ -91,7 +91,7 @@ module Gene::Lang::Jit
         compile_ block, source.properties, options
         props_reg = copy_and_return_reg block
 
-        compile_ block, source.properties, options
+        compile_ block, source.data, options
 
         block.add_instr [CREATE_OBJ, type_reg, props_reg, 'default']
 
@@ -336,7 +336,7 @@ module Gene::Lang::Jit
     # Templates and code can be nested on multiple levels
     def compile_template block, source
       if source.data.length != 1
-        raise 'TODO'
+        compile_ block, Gene::Types::Stream.new(*source.data), template_mode: true
       else
         first = source.data[0]
         compile_ block, first, template_mode: true
@@ -368,6 +368,11 @@ module Gene::Lang::Jit
     end
 
     def compile_symbol block, source, options = {}
+      if options[:template_mode]
+        block.add_instr [SYMBOL, source.to_s]
+        return
+      end
+
       str = source.to_s
       if str[0] == '@'
         block.add_instr [CALL_NATIVE, 'context', 'self']
@@ -407,7 +412,7 @@ module Gene::Lang::Jit
           if is_literal? value
             result[index] = value
           else
-            compile_ block, value
+            compile_ block, value, options
             block.add_instr [SET, reg, index, 'default']
           end
         end
