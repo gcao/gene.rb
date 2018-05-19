@@ -6,7 +6,6 @@ module Gene::Lang::Jit
     include Utils
 
     def initialize
-      @used_registers = []
     end
 
     def parse_and_compile string
@@ -23,7 +22,7 @@ module Gene::Lang::Jit
       if not options[:skip_init]
         primary_block.add_instr [INIT]
       end
-      @mod          = CompiledModule.new primary_block
+      @mod = CompiledModule.new primary_block
       compile_ primary_block, source
       @mod
     end
@@ -706,16 +705,18 @@ module Gene::Lang::Jit
     # Define members in current context
     def compile_import block, source
       compile_ block, source['source']
-      block.add_instr [LOAD, 'default']
 
       mappings = source['mappings']
       if mappings.size > 0
-        ns_reg = copy_and_return_reg block
+        loaded_context_reg = new_reg
+        block.add_instr [LOAD, 'default', loaded_context_reg]
 
         mappings.each do |name, value|
-          block.add_instr [GET_CHILD_MEMBER, ns_reg, name]
+          block.add_instr [GET_CHILD_MEMBER, loaded_context_reg, name]
           block.add_instr [DEF_MEMBER, value, 'default']
         end
+      else
+        block.add_instr [LOAD, 'default', nil]
       end
     end
 
@@ -802,6 +803,10 @@ module Gene::Lang::Jit
     end
 
     def new_reg
+      if not @used_registers
+        @used_registers = []
+      end
+
       # Prevent collision - cache all registers assigned so far and check existance
       reg = nil
       while true

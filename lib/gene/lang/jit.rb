@@ -478,7 +478,7 @@ module Gene::Lang::Jit
 
     # 'if',         # if pos1 pos2: if default register's value is truthy, jump relatively to pos1, otherwise, jump to pos2
 
-    instr 'load' do |reg|
+    instr 'load' do |reg, loaded_context_reg|
       location = @registers[reg]
       location.sub! /.(gene|gmod)$/, ''
       if @modules[location]
@@ -491,13 +491,18 @@ module Gene::Lang::Jit
         mod = Gene::Lang::Jit::CompiledModule.from_json File.read(mod_file)
       else
         gene_file = "#{location}.gene"
+        parsed    = Gene::Parser.parse File.read(gene_file)
         compiler  = Gene::Lang::Jit::Compiler.new
-        mod       = compiler.compile File.read(gene_file), skip_init: true
+        mod       = compiler.compile parsed, skip_init: true
+      end
+
+      mod.blocks.each do |id, block|
+        @blocks[block.id] = block
       end
 
       @registers['default'] = mod
 
-      do_run 'default'
+      do_run 'default', 'save_context_to_reg' => loaded_context_reg
     end
 
     instr 'compile' do |stmts_reg|
@@ -510,7 +515,7 @@ module Gene::Lang::Jit
       @registers['default'] = mod
     end
 
-    instr 'run' do |mod_reg|
+    instr 'run' do |mod_reg, options = {}|
       mod = @registers[mod_reg]
 
       caller_regs = @registers
@@ -524,6 +529,11 @@ module Gene::Lang::Jit
       self_ = caller_regs['self']
       context = caller_context.extend scope: scope, self: self_
       @registers['context']     = context
+
+      save_context_to_reg = options['save_context_to_reg']
+      if save_context_to_reg
+        caller_regs[save_context_to_reg] = context
+      end
 
       @registers['return_reg']  = [caller_regs.id, 'default']
       @registers['return_addr'] = return_addr
