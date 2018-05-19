@@ -174,6 +174,8 @@ module Gene::Lang::Jit
           compile_short_method_invocation block, source
         elsif type == "::"
           compile_template block, source
+        elsif type == "%%" or type == "%="
+          compile_render_obj block, source, options
         elsif type == "var"
           compile_var block, source
         elsif type == "if$"
@@ -371,6 +373,12 @@ module Gene::Lang::Jit
     # Iterate through data
     # Compile with {render_mode: true} option
     def compile_render block, source
+      source.data.each do |item|
+        compile_ block, item, render_mode: true
+      end
+    end
+
+    def compile_render_obj block, source, options = {}
       source.data.each do |item|
         compile_ block, item, render_mode: true
       end

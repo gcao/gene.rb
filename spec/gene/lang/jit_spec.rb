@@ -653,7 +653,6 @@ describe "JIT" do
       (var a 1)
       (render (%= a))
     " do
-      pending
       mod = @compiler.parse_and_compile example.description
       app = Application.new(mod)
       app.run.should == 1
