@@ -698,6 +698,11 @@ module Gene::Lang::Jit
       block.add_instr [COPY, ns_reg, 'default']
     end
 
+    # Process source["source"]
+    # Load code from location (compie first if necessary)
+    # Call default block of loaded code
+    # Obtain root namespace
+    # Define members in current context
     def compile_import block, source
       compile_unknown block, source
     end

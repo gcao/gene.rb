@@ -20,5 +20,21 @@ describe Gene::Lang::Transformer do
       result['mappings'].should == {'a' => 'b', 'c' => 'c'}
       result['source'].should   == 'test'
     end
+
+    it "(import a/b from 'test')" do
+      parsed = Gene::Parser.parse(example.description)
+      result = @transformer.call parsed
+      result['mappings'].should == {'a/b' => 'b'}
+      result['source'].should   == 'test'
+    end
+
+    it "(import a as b, c from 'test' of 'pkg')" do
+      pending
+      parsed = Gene::Parser.parse(example.description)
+      result = @transformer.call parsed
+      result['mappings'].should == {'a' => 'b', 'c' => 'c'}
+      result['source'].should   == 'test'
+      result['package'].should  == 'pkg'
+    end
   end
 end

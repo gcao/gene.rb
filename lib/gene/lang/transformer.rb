@@ -128,14 +128,14 @@ class Gene::Lang::Transformer
           state = :mapping_value
         elsif item == FROM
           state = :from
-          mappings[name.to_s] = name.to_s
+          mappings[name.to_s] = handle_mapping_value(name)
         else
           state = :mapping_as
           name  = item
         end
       elsif state == :mapping_value
         state = :mapping_name
-        mappings[name.to_s] = item.to_s
+        mappings[name.to_s] = handle_mapping_value(item)
       elsif state == :from
         state  = :done
         source = item
@@ -144,8 +144,20 @@ class Gene::Lang::Transformer
       end
     end
 
+    if state != :done
+      raise "Syntax error: import statement is incomplete"
+    end
+
     result['mappings'] = mappings
     result['source']   = source
     result
+  end
+
+  def handle_mapping_value value
+    value = value.to_s
+    if value.index "/"
+      value = value[(value.rindex("/") + 1)..-1]
+    end
+    value
   end
 end
