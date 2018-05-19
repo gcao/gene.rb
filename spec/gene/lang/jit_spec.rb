@@ -540,6 +540,18 @@ describe "JIT" do
     end
 
     it "
+      # class should work
+      (class C
+        (fn f _ 1)
+      )
+      (C/f)
+    " do
+      mod = @compiler.parse_and_compile example.description
+      app = Application.new(mod)
+      app.run.should == 1
+    end
+
+    it "
       # assert should work
       (assert false 'Houston, we have a problem')
     " do

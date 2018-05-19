@@ -49,7 +49,7 @@ module Gene::Lang::Jit
     end
 
     def def_member name, value, options = {}
-      if self.self.is_a? Namespace
+      if self.self.is_a?(Namespace) or self.self.is_a?(Gene::Lang::Jit::Module)
         self.self.def_member name, value
       else
         self.scope.set_member name, value, options
@@ -203,6 +203,7 @@ module Gene::Lang::Jit
       set 'methods', {}
       set 'prop_descriptors', {}
       set 'modules', []
+      set 'scope', Scope.new
     end
 
     def properties_to_hide
