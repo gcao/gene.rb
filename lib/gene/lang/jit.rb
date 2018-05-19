@@ -132,7 +132,7 @@ module Gene::Lang::Jit
       @registers['default'] = value
     end
 
-    # Get member of
+    # Get child member
     instr 'get_child_member' do |reg, name|
       obj = @registers[reg]
       @registers['default'] = obj.get_member name

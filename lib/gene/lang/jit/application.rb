@@ -49,11 +49,11 @@ module Gene::Lang::Jit
     end
 
     def def_member name, value, options = {}
-      # if self.self.is_a? Namespace
-      #   self.self.def_member name, value
-      # else
+      if self.self.is_a? Namespace
+        self.self.def_member name, value
+      else
         self.scope.set_member name, value, options
-      # end
+      end
     end
 
     def get_member name
