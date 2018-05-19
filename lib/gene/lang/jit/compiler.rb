@@ -227,6 +227,9 @@ module Gene::Lang::Jit
       elsif source.type.is_a? String
         compile_string block, source
 
+      elsif source.type.is_a? Gene::Types::Base
+        compile_invocation block, source
+
       else
         compile_unknown block, source
         # compile_ block, source.type
@@ -322,7 +325,7 @@ module Gene::Lang::Jit
     end
 
     def compile_invocation block, source
-      compile_symbol block, source.type
+      compile_ block, source.type
 
       fn_reg = copy_and_return_reg block
 
