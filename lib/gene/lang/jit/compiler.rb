@@ -208,6 +208,8 @@ module Gene::Lang::Jit
           compile_invert block, source
         elsif type == "eval"
           compile_eval block, source
+        elsif type == "render"
+          compile_render block, source
         elsif type == "$invoke"
           compile_invoke block, source
         elsif type == "assert"
@@ -345,11 +347,6 @@ module Gene::Lang::Jit
       end
     end
 
-    # Process %x and (%x ...) inside template
-    def compile_render block, source
-      raise "TODO: #{source}"
-    end
-
     def compile_return block, source
       compile_ block, source.data[0]
       block.add_instr [CALL_END]
@@ -370,25 +367,41 @@ module Gene::Lang::Jit
       block.add_instr [RUN, 'default']
     end
 
+    # Process %x and (%x ...) inside template
+    # Iterate through data
+    # Compile with {render_mode: true} option
+    def compile_render block, source
+      source.data.each do |item|
+        compile_ block, item, render_mode: true
+      end
+    end
+
     def compile_symbol block, source, options = {}
-      if options[:template_mode]
-        block.add_instr [SYMBOL, source.to_s]
-        return
+      if options[:render_mode]
+        str = source.to_s
+        if str[0] == '%'
+          compile_ block, Gene::Types::Symbol.new(str[1..-1])
+          return
+        end
       end
 
-      str = source.to_s
-      if str[0] == '@'
-        block.add_instr [CALL_NATIVE, 'context', 'self']
-        block.add_instr [GET, 'default', str[1..-1], 'default']
-      elsif str[0] == ':'
-        block.add_instr [SYMBOL, str[1..-1]]
-      elsif str == "self"
-        block.add_instr [CALL_NATIVE, 'context', 'self']
+      if options[:template_mode]
+        block.add_instr [SYMBOL, source.to_s]
       else
-        first, *rest = str.split '/'
-        block.add_instr [GET_MEMBER, first]
-        rest.each do |item|
-          block.add_instr [GET_CHILD_MEMBER, 'default', item]
+        str = source.to_s
+        if str[0] == '@'
+          block.add_instr [CALL_NATIVE, 'context', 'self']
+          block.add_instr [GET, 'default', str[1..-1], 'default']
+        elsif str[0] == ':'
+          block.add_instr [SYMBOL, str[1..-1]]
+        elsif str == "self"
+          block.add_instr [CALL_NATIVE, 'context', 'self']
+        else
+          first, *rest = str.split '/'
+          block.add_instr [GET_MEMBER, first]
+          rest.each do |item|
+            block.add_instr [GET_CHILD_MEMBER, 'default', item]
+          end
         end
       end
     end
