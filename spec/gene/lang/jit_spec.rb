@@ -555,11 +555,35 @@ describe "JIT" do
     end
 
     it "
+      # namespace should work
+      (ns N
+        (ns O
+          (fn f _ 1)
+        )
+      )
+      (N/O/f)
+    " do
+      mod = @compiler.parse_and_compile example.description
+      app = Application.new(mod)
+      app.run.should == 1
+    end
+
+    it "
       # class should work
       (class C
         (fn f _ 1)
       )
       (C/f)
+    " do
+      mod = @compiler.parse_and_compile example.description
+      app = Application.new(mod)
+      app.run.should == 1
+    end
+
+    it "
+      # `import` nothing should work
+      (import test_function from './test')
+      (test_function)
     " do
       mod = @compiler.parse_and_compile example.description
       app = Application.new(mod)

@@ -2,7 +2,7 @@
 
 (var ^^export y 200)
 
-(fn test_function)
+(fn test_function _ 1)
 
 (module TestModule)
 

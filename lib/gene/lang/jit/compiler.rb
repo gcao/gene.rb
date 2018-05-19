@@ -198,6 +198,8 @@ module Gene::Lang::Jit
           compile_super block, source
         elsif type == "ns"
           compile_namespace block, source
+        elsif type == "import$"
+          compile_import block, source
         elsif type == "return"
           compile_return block, source
         elsif type == "break"
@@ -694,6 +696,10 @@ module Gene::Lang::Jit
 
       # Return the class
       block.add_instr [COPY, ns_reg, 'default']
+    end
+
+    def compile_import block, source
+      compile_unknown block, source
     end
 
     def compile_string block, source
