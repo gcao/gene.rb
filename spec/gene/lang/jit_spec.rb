@@ -257,6 +257,38 @@ describe "JIT" do
     end
 
     it "
+      # function should work
+      (fnx)
+    " do
+      mod = @compiler.parse_and_compile example.description
+      app = Application.new(mod)
+      result = app.run
+      result.should be_a Gene::Lang::Jit::Function
+    end
+
+    it "
+      # function should work
+      (fnxx)
+    " do
+      mod = @compiler.parse_and_compile example.description
+      app = Application.new(mod)
+      result = app.run
+      result.should be_a Gene::Lang::Jit::Function
+    end
+
+    it "
+      # function should work
+      (fn f _ (fnxx 1))
+      ((f))
+    " do
+      pending
+      mod = @compiler.parse_and_compile example.description
+      p mod
+      app = Application.new(mod)
+      app.run(debug: true).should == 1
+    end
+
+    it "
       # passing argument to function should work
       (fn f a a)
       (f 1)
@@ -371,6 +403,25 @@ describe "JIT" do
     end
 
     it "
+      # fn...loop should work
+      (fn f _
+        (var i 0)
+        (loop
+          (if (i >= 5)
+            (break)
+          )
+          (i += 1)
+        )
+        i
+      )
+      (f)
+    " do
+      mod = @compiler.parse_and_compile example.description
+      app = Application.new(mod)
+      app.run.should == 5
+    end
+
+    it "
       # decorator should work
       (fn f a a)
       +f 1
@@ -378,6 +429,20 @@ describe "JIT" do
       mod = @compiler.parse_and_compile example.description
       app = Application.new(mod)
       app.run.should == 1
+    end
+
+    it "
+      # decorator should work
+      (fn f a
+        (fnx b (a + b))
+      )
+      (+f 1) 2
+    " do
+      pending
+      mod = @compiler.parse_and_compile example.description
+      p mod
+      app = Application.new(mod)
+      app.run(debug: true).should == 3
     end
 
     it "

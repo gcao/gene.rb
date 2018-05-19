@@ -1,7 +1,7 @@
 class Gene::Lang::Transformer
   %W(
     IF ELSE_IF ELSE
-    FN
+    FN FNX FNXX
     CLASS EXTEND METHOD
     IMPORT FROM AS
   ).each do |name|
@@ -15,7 +15,7 @@ class Gene::Lang::Transformer
 
     if input === IF
       transform_if input, options
-    elsif input === FN
+    elsif input === FN or input === FNX or input === FNXX
       transform_fn input, options
     elsif input === METHOD
       transform_method input, options
@@ -60,8 +60,23 @@ class Gene::Lang::Transformer
 
   def transform_fn input, options
     result = Gene::Types::Base.new(Gene::Types::Symbol.new('fn$'))
-    result['name'] = input.data[0]
-    args = input.data[1]
+
+    if input.type == FNX
+      name = nil
+      args = input.data[0]
+      body = input.data[1..-1]
+    elsif input.type == FNXX
+      name = nil
+      args = []
+      body = input.data
+    else
+      name = input.data[0]
+      args = input.data[1]
+      body = input.data[2..-1]
+    end
+
+    result['name'] = name
+
     if args.is_a? Gene::Types::Symbol
       if args.to_s == "_"
         args = []
@@ -69,8 +84,9 @@ class Gene::Lang::Transformer
         args = [args]
       end
     end
+
     result['args'] = Gene::Lang::Matcher.from_array args
-    result['body'] = Gene::Lang::Statements.new input.data[2..-1]
+    result['body'] = Gene::Lang::Statements.new(body || [])
     result
   end
 

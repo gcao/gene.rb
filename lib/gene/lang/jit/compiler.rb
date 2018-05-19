@@ -15,6 +15,8 @@ module Gene::Lang::Jit
 
     # Options:
     #   skip_init: do not add INIT instruction
+    #   render_mode: (%% ...), (%= ...)
+    #   template_mode: (:: ...)
     # return CompiledModule
     def compile source, options = {}
       primary_block = CompiledBlock.new []
