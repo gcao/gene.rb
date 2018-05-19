@@ -540,6 +540,21 @@ describe "JIT" do
     end
 
     it "
+      # namespace should work
+      (ns N
+        (var a 1)
+      )
+      N/a
+    " do
+      pending
+      mod = @compiler.parse_and_compile example.description
+      app = Application.new(mod)
+      lambda {
+        app.run
+      }.should raise_error
+    end
+
+    it "
       # class should work
       (class C
         (fn f _ 1)
