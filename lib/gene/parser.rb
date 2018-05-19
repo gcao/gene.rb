@@ -55,7 +55,7 @@ module Gene
     IGNORE                = %r(
       (?:
        \#($ | \r?\n | \s+[^\n\r]*($|\r?\n) | ![^\n\r]*($|\r?\n))|   # line comments
-       [\s]+             # whitespaces: space, horicontal tab, lf, cr
+       [\s,]+             # whitespaces: space, horicontal tab, lf, cr
       )+
     )mx
 
