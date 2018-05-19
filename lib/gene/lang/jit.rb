@@ -317,6 +317,9 @@ module Gene::Lang::Jit
       end
 
       block_id, pos = @registers['return_addr']
+      if not block_id
+        return
+      end
 
       # Delete the registers of current block
       @registers_mgr.destroy @registers.id

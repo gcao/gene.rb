@@ -586,9 +586,8 @@ describe "JIT" do
       (test_function)
     " do
       mod = @compiler.parse_and_compile example.description
-      p mod
       app = Application.new(mod)
-      app.run(debug: true).should == 1
+      app.run.should == 1
     end
 
     it "

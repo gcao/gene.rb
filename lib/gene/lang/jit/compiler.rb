@@ -24,6 +24,7 @@ module Gene::Lang::Jit
       end
       @mod = CompiledModule.new primary_block
       compile_ primary_block, source
+      primary_block.add_instr [CALL_END]
       @mod
     end
 
