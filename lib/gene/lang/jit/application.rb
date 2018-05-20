@@ -22,18 +22,16 @@ module Gene::Lang::Jit
     end
 
     def create_root_context
-      Context.new nil, Namespace.new(@global_namespace), Scope.new, nil
+      Context.new Namespace.new(@global_namespace), Scope.new, nil
     end
   end
 
   class Context
-    attr_reader :parent
     attr_reader :namespace
     attr_reader :scope
     attr_reader :self
 
-    def initialize parent, namespace, scope, self_
-      @parent    = parent
+    def initialize namespace, scope, self_
       @namespace = namespace
       @scope     = scope
       @self      = self_
@@ -41,7 +39,6 @@ module Gene::Lang::Jit
 
     def extend options = {}
       self.class.new(
-        self,
         options[:namespace] || @namespace,
         options[:scope]     || @scope,
         options[:self]      || @self
@@ -50,9 +47,9 @@ module Gene::Lang::Jit
 
     def def_member name, value, options = {}
       if self.self.is_a?(Namespace) or self.self.is_a?(Gene::Lang::Jit::Module)
-        self.self.def_member name, value
+        self.self.def_member name, value, options
       else
-        self.scope.set_member name, value, options
+        self.scope.def_member name, value, options
       end
     end
 
@@ -67,52 +64,67 @@ module Gene::Lang::Jit
     end
 
     def set_member name, value
-      # if self.self.is_a? Namespace
-      #   self.self.set_member name, value
-      # elsif self.scope.defined? name
-      #   self.scope.let name, value
-      # else
-      #   self.namespace.set_member name, value
-      # end
-      self.scope.let name, value
+      if scope && scope.defined?(name)
+        scope.set_member name, value
+      elsif namespace && namespace.defined?(name)
+        namespace.set_member name, value
+      else
+        raise "#{name} is not defined."
+      end
     end
   end
 
-  class Namespace < Hash
-    attr_reader :name
-    attr_reader :parent
-
-    def initialize name = nil, parent = nil
-      @name   = name
-      @parent = parent
-    end
+  module NamespaceLike
+    attr_accessor :parent_namespace
+    attr_reader :members
 
     def defined? name
-      if include? name
+      if @members.include? name
         return true
+      elsif parent_namespace
+        parent_namespace.defined?(name)
       end
-      if parent
-        parent.defined?(name)
-      end
+    end
+
+    def def_member name, value, options = {}
+      @members[name.to_s] = value
     end
 
     def get_member name
       name = name.to_s
 
-      if include? name
-        self[name]
-      elsif self.parent
-        self.parent.get_member name
+      if @members.include? name
+        @members[name]
+      elsif parent_namespace
+        parent_namespace.get_member name
       else
-        # Gene::UNDEFINED
-        nil
+        raise "#{name} is not defined."
       end
     end
 
     def set_member name, value, options = {}
-      self[name] = value
+      name = name.to_s
+
+      if @members.include? name
+        @members[name] = value
+      elsif parent_namespace
+        parent_namespace.set_member name, value
+      else
+        raise "#{name} is not defined."
+      end
     end
-    alias def_member set_member
+  end
+
+  class Namespace
+    include NamespaceLike
+
+    attr_reader :name
+
+    def initialize name = nil, parent = nil
+      @name    = name
+      @members = {}
+      @parent_namespace  = parent
+    end
   end
 
   class Scope < Hash
@@ -194,8 +206,9 @@ module Gene::Lang::Jit
   # TODO: support meta programming - module_created, module_included
   # TODO: Support prepend like how Ruby does
   class Module < Gene::Lang::Object
+    include NamespaceLike
+
     attr_accessor :name, :methods, :prop_descriptors, :modules
-    attr_accessor :scope
 
     def initialize name
       super(Class)
@@ -203,7 +216,8 @@ module Gene::Lang::Jit
       set 'methods', {}
       set 'prop_descriptors', {}
       set 'modules', []
-      set 'scope', Scope.new
+
+      @members = {}
     end
 
     def properties_to_hide
@@ -228,28 +242,6 @@ module Gene::Lang::Jit
       end
       @ancestors
     end
-
-    # BEGIN: Implement Namespace-like interface
-    def defined? name
-      scope.defined? name
-    end
-
-    def get_member name
-      scope.get_member name
-    end
-
-    def def_member name, value
-      scope.def_member name, value
-    end
-
-    def set_member name, value, options
-      scope.set_member name, value, options
-    end
-
-    def members
-      scope.variables
-    end
-    # END
 
     # def handle_method options
     #   method_name = options[:method]
