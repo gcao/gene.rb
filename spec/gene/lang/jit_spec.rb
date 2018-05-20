@@ -457,11 +457,9 @@ describe "JIT" do
       )
       (+f 1) 2
     " do
-      pending
       mod = @compiler.parse_and_compile example.description
-      p mod
       app = Application.new(mod)
-      app.run(debug: true).should == 3
+      app.run.should == 3
     end
 
     it "

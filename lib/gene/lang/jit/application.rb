@@ -187,15 +187,18 @@ module Gene::Lang::Jit
     attr_reader :inherit_scope
     attr_reader :eval_arguments
 
+    attr_accessor :namespace
+    attr_accessor :scope
+
     def initialize name, body, options = {}
       @name = name
       @body = body
 
       # inherit_scope is true by default
       if options.has_key? :inherit_scope
-        @inherit_scope  = options[:inherit_scope]
+        @inherit_scope = options[:inherit_scope]
       else
-        @inherit_scope  = true
+        @inherit_scope = true
       end
 
       # inherit_scope is false by default

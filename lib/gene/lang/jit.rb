@@ -260,7 +260,13 @@ module Gene::Lang::Jit
 
     # Function instructions
     instr 'fn' do |name, body|
-      @registers['default'] = Gene::Lang::Jit::Function.new name, body
+      context = @registers['context']
+      fn = Gene::Lang::Jit::Function.new name, body
+      fn.namespace = context.namespace
+      if fn.inherit_scope
+        fn.scope = context.scope
+      end
+      @registers['default'] = fn
     end
 
     # call block_id options: initialize a block with options
@@ -271,22 +277,23 @@ module Gene::Lang::Jit
     instr 'call' do |block_id_reg, options|
       caller_regs = @registers
       return_addr = [@block.id, @exec_pos + 1]
+      caller_context = caller_regs['context']
 
       @registers = @registers_mgr.create
 
       inherit_scope = options['inherit_scope']
+      parent_scope  = caller_context.scope
 
       if options['fn_reg']
         fn_reg = options['fn_reg']
         fn     = caller_regs[fn_reg]
         @registers['fn'] = fn
-        inherit_scope ||= fn.inherit_scope
+        inherit_scope = fn.inherit_scope
+        parent_scope  = fn.scope
       end
 
-      caller_context = caller_regs['context']
-
       if inherit_scope
-        scope = Gene::Lang::Jit::Scope.new caller_context.scope, true
+        scope = Gene::Lang::Jit::Scope.new parent_scope, true
       else
         scope = Gene::Lang::Jit::Scope.new
       end
@@ -382,7 +389,8 @@ module Gene::Lang::Jit
       if name == 'init' and not self_.is_a? Gene::Lang::Jit::Class
         raise "init is only allowed in a class."
       end
-      fn = Gene::Lang::Jit::Function.new name, block_id
+      fn = Gene::Lang::Jit::Function.new name, block_id, inherit_scope: false
+      fn.namespace = self_
       self_.add_method fn
       @registers['default'] = fn
     end
