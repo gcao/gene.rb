@@ -800,6 +800,17 @@ describe "JIT" do
       app = Application.new(mod)
       app.run.should == 1
     end
+
+    it "
+      # render should work
+      (var a 1)
+      (fn f b b)
+      (render (f %a))
+    " do
+      mod = @compiler.parse_and_compile example.description
+      app = Application.new(mod)
+      app.run.should == 1
+    end
   end
 
   describe "Complex expressions" do
