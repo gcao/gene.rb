@@ -25,12 +25,12 @@ module Gene::Lang::Jit
         primary_block.add_instr [INIT]
       end
       @mod = CompiledModule.new primary_block
-      compile_ primary_block, source
+      compile_ primary_block, source, options
       primary_block.add_instr [CALL_END]
       @mod
     end
 
-    def compile_ block, source, options = {}
+    def compile_ block, source, options
       source = process_decorators source
 
       if source.is_a? Gene::Types::Base
@@ -38,15 +38,15 @@ module Gene::Lang::Jit
       elsif source.is_a? Gene::Types::Symbol
         compile_symbol block, source, options
       elsif source.is_a? Gene::Lang::Statements
-        compile_statements block, source
+        compile_statements block, source, options
       elsif source.is_a? Gene::Types::Stream
-        compile_stream block, source
+        compile_stream block, source, options
       elsif source.is_a? Array
         compile_array block, source, options
       elsif source.is_a? Hash
         compile_hash block, source, options
       else
-        compile_literal block, source
+        compile_literal block, source, options
       end
     end
 
@@ -79,7 +79,7 @@ module Gene::Lang::Jit
       PLUS_EQ, MINUS_EQ, MULTI_EQ, DIV_EQ,
     ]
 
-    def compile_object block, source, options = {}
+    def compile_object block, source, options
       if not options[:template_mode]
         source = Gene::Lang::Transformer.new.call(source)
       end
@@ -98,39 +98,39 @@ module Gene::Lang::Jit
         block.add_instr [CREATE_OBJ, type_reg, props_reg, 'default']
 
       elsif op.is_a? Gene::Types::Symbol and op.name[0] == '.'
-        compile_method_invocation block, source
+        compile_method_invocation block, source, options
 
       elsif BINARY_OPS.include?(op)
         if [EQ, LT, LE, GT, GE].include? op
-          compile_ block, source.type
+          compile_ block, source.type, options
           first_reg  = copy_and_return_reg block
 
-          compile_ block, source.data[1]
+          compile_ block, source.data[1], options
           block.add_instr [BINARY, first_reg, op.to_s, 'default']
 
         elsif [PLUS, MINUS, MULTI, DIV].include? op
-          compile_ block, source.type
+          compile_ block, source.type, options
           first_reg  = copy_and_return_reg block
 
-          compile_ block, source.data[1]
+          compile_ block, source.data[1], options
           block.add_instr [BINARY, first_reg, op.to_s, 'default']
 
         elsif op == AND
-          compile_ block, source.type
+          compile_ block, source.type, options
           # Skip evaluating second expression if false
           jump = block.add_instr [JUMP_IF_FALSE, nil]
-          compile_ block, source.data[1]
+          compile_ block, source.data[1], options
           jump[1] = block.length
 
         elsif op == OR
-          compile_ block, source.type
+          compile_ block, source.type, options
           # Skip evaluating second expression if false
           jump = block.add_instr [JUMP_IF_TRUE, nil]
-          compile_ block, source.data[1]
+          compile_ block, source.data[1], options
           jump[1] = block.length
 
         elsif op == ASSIGN
-          compile_ block, source.data[1]
+          compile_ block, source.data[1], options
           target = source.type.to_s
           if target[0] == '@'
             value_reg = copy_and_return_reg block
@@ -141,7 +141,7 @@ module Gene::Lang::Jit
           end
 
         elsif [PLUS_EQ, MINUS_EQ, MULTI_EQ, DIV_EQ].include? op
-          compile_ block, source.data[1]
+          compile_ block, source.data[1], options
           value_reg = copy_and_return_reg block
 
           target = source.type.to_s
@@ -166,114 +166,114 @@ module Gene::Lang::Jit
           end
 
         else
-          compile_unknown block, source
+          compile_unknown block, source, options
         end
 
       elsif source.type.is_a? Gene::Types::Symbol
         type = source.type.to_s
 
         if type[0] == "."
-          compile_short_method_invocation block, source
+          compile_short_method_invocation block, source, options
         elsif type == "::"
-          compile_template block, source
+          compile_template block, source, options
         elsif type == "%%" or type == "%="
           compile_render_obj block, source, options
         elsif type == "var"
-          compile_var block, source
+          compile_var block, source, options
         elsif type == "undef"
-          compile_undef block, source
+          compile_undef block, source, options
         elsif type == "if$"
-          compile_if block, source
+          compile_if block, source, options
         elsif type == "loop"
-          compile_loop block, source
+          compile_loop block, source, options
         elsif type == "for"
-          compile_for block, source
+          compile_for block, source, options
         elsif type == "fn$"
-          compile_fn block, source
+          compile_fn block, source, options
         elsif type == "class$"
-          compile_class block, source
+          compile_class block, source, options
         elsif type == "module"
-          compile_module block, source
+          compile_module block, source, options
         elsif type == "method$"
-          compile_method block, source
+          compile_method block, source, options
         elsif type == "new"
-          compile_new block, source
+          compile_new block, source, options
         elsif type == "init"
-          compile_init block, source
+          compile_init block, source, options
         elsif type == "super"
-          compile_super block, source
+          compile_super block, source, options
         elsif type == "ns"
-          compile_namespace block, source
+          compile_namespace block, source, options
         elsif type == "import$"
-          compile_import block, source
+          compile_import block, source, options
         elsif type == "return"
-          compile_return block, source
+          compile_return block, source, options
         elsif type == "break"
-          compile_break block, source
+          compile_break block, source, options
         elsif type == "!"
-          compile_invert block, source
+          compile_invert block, source, options
         elsif type == "eval"
-          compile_eval block, source
+          compile_eval block, source, options
         elsif type == "render"
-          compile_render block, source
+          compile_render block, source, options
         elsif type == "$invoke"
-          compile_invoke block, source
+          compile_invoke block, source, options
         elsif type == "assert"
-          compile_assert block, source
+          compile_assert block, source, options
         elsif type == "print"
-          compile_print block, source
+          compile_print block, source, options
         else
-          compile_invocation block, source
+          compile_invocation block, source, options
         end
 
       elsif source.type.is_a? String
-        compile_string block, source
+        compile_string block, source, options
 
       elsif source.type.is_a? Gene::Types::Base
-        compile_invocation block, source
+        compile_invocation block, source, options
 
       else
-        compile_unknown block, source
+        compile_unknown block, source, options
         # compile_ block, source.type
         # if eval_arguments is true, evaluate arguments
         # invoke function with rest as arguments
       end
     end
 
-    def compile_var block, source, options = {}
+    def compile_var block, source, options
       name = source.data.first.to_s
       if source.data.length == 1
         block.add_instr [DEF_MEMBER, name, nil, {'type' => 'scope'}]
       else
         # TODO: compile value, store in default register, define member with value in default
-        compile_ block, source.data[1]
+        compile_ block, source.data[1], options
         block.add_instr [DEF_MEMBER, name, 'default', {'type' => 'scope'}]
       end
     end
 
-    def compile_undef block, source
+    def compile_undef block, source, options
       name = source.data.first.to_s
       block.add_instr [UNDEF_MEMBER, name]
     end
 
-    def compile_if block, source
-      compile_ block, source['cond']
+    def compile_if block, source, options
+      compile_ block, source['cond'], options
 
       jump1 = block.add_instr [JUMP_IF_FALSE, nil]
 
-      compile_ block, source['then']
+      compile_ block, source['then'], options
       jump2 = block.add_instr [JUMP, nil]
 
       jump1[1] = block.length
 
-      compile_ block, source['else']
+      compile_ block, source['else'], options
 
       jump2[1] = block.length
     end
 
-    def compile_loop block, source
+    def compile_loop block, source, options
       start_pos = block.length
-      compile_statements block, source.data
+      compile_statements block, source.data, options
       block.add_instr [JUMP, start_pos]
       start_pos.upto(block.length - 1) do |i|
         instr = block[i]
@@ -283,28 +283,28 @@ module Gene::Lang::Jit
       end
     end
 
-    def compile_for block, source
+    def compile_for block, source, options
       init, cond, update, *rest = source.data
 
-      compile_ block, init
+      compile_ block, init, options
 
       cond_pos = block.length
-      compile_ block, cond
+      compile_ block, cond, options
       cond_jump = block.add_instr [JUMP_IF_FALSE, nil]
 
-      compile_ block, Gene::Lang::Statements.new(rest)
+      compile_ block, Gene::Lang::Statements.new(rest), options
 
-      compile_ block, update
+      compile_ block, update, options
       block.add_instr [JUMP, cond_pos]
 
       cond_jump[1] = block.length
     end
 
-    def compile_break block, source
+    def compile_break block, source, options
       block.add_instr [JUMP, -1]
     end
 
-    def compile_fn block, source
+    def compile_fn block, source, options
       # Compile function body as a block
       # Function default args are evaluated in the block as well
       body_block      = CompiledBlock.new
@@ -321,7 +321,7 @@ module Gene::Lang::Jit
         body_block.add_instr [DEF_MEMBER, matcher.name, 'default']
       end
 
-      compile_ body_block, source['body']
+      compile_ body_block, source['body'], options
       body_block.add_instr [CALL_END]
 
       @mod.add_block body_block
@@ -331,12 +331,12 @@ module Gene::Lang::Jit
       block.add_instr [DEF_MEMBER, source['name'].to_s, 'default', {'type' => 'namespace'}]
     end
 
-    def compile_invocation block, source
-      compile_ block, source.type
+    def compile_invocation block, source, options
+      compile_ block, source.type, options
 
       fn_reg = copy_and_return_reg block
 
-      args_reg = compile_args block, source
+      args_reg = compile_args block, source, options
 
       block.add_instr [CALL_NATIVE, fn_reg, 'body']
 
@@ -352,7 +352,7 @@ module Gene::Lang::Jit
     # Binary or other expressions are not compiled
     # %x or (%x ...) will be compiled or evaluated when the template is rendered
     # Templates and code can be nested on multiple levels
-    def compile_template block, source
+    def compile_template block, source, options
       if source.data.length != 1
         compile_ block, Gene::Types::Stream.new(*source.data), template_mode: true
       else
@@ -361,13 +361,13 @@ module Gene::Lang::Jit
       end
     end
 
-    def compile_return block, source
-      compile_ block, source.data[0]
+    def compile_return block, source, options
+      compile_ block, source.data[0], options
       block.add_instr [CALL_END]
     end
 
-    def compile_invert block, source
-      compile_ block, source.data[0]
+    def compile_invert block, source, options
+      compile_ block, source.data[0], options
       block.add_instr [INVERT, 'default']
     end
 
@@ -375,8 +375,8 @@ module Gene::Lang::Jit
     # Results are treated as statements
     # Statements are compiled to a CompiledModule
     # The default block will be invoked
-    def compile_eval block, source
-      compile_array block, source.data
+    def compile_eval block, source, options
+      compile_array block, source.data, options
       block.add_instr [COMPILE, 'default']
       block.add_instr [RUN, 'default']
     end
@@ -384,13 +384,13 @@ module Gene::Lang::Jit
     # Process %x and (%x ...) inside template
     # Iterate through data
     # Compile with {render_mode: true} option
-    def compile_render block, source
+    def compile_render block, source, options
       source.data.each do |item|
         compile_ block, item, render_mode: true
       end
     end
 
-    def compile_render_obj block, source, options = {}
+    def compile_render_obj block, source, options
       if options[:render_mode]
         source.data.each do |item|
           compile_ block, item, render_mode: true
@@ -401,11 +401,11 @@ module Gene::Lang::Jit
       end
     end
 
-    def compile_symbol block, source, options = {}
+    def compile_symbol block, source, options
       if options[:render_mode]
         str = source.to_s
         if str[0] == '%'
-          compile_ block, Gene::Types::Symbol.new(str[1..-1])
+          compile_ block, Gene::Types::Symbol.new(str[1..-1]), options
           return
         end
       end
@@ -433,19 +433,19 @@ module Gene::Lang::Jit
       end
     end
 
-    def compile_statements block, source
+    def compile_statements block, source, options
       source.each do |item|
-        compile_ block, item
+        compile_ block, item, options
       end
     end
 
-    def compile_stream block, source
+    def compile_stream block, source, options
       source.each do |item|
-        compile_ block, item
+        compile_ block, item, options
       end
     end
 
-    def compile_array block, source, options = {}
+    def compile_array block, source, options
       if is_literal? source
         block.add_instr [DEFAULT, source]
       else
@@ -466,7 +466,7 @@ module Gene::Lang::Jit
       end
     end
 
-    def compile_hash block, source, options = {}
+    def compile_hash block, source, options
       if is_literal? source
         block.add_instr [DEFAULT, source]
       else
@@ -478,7 +478,7 @@ module Gene::Lang::Jit
           if is_literal? value
             result[key] = value
           else
-            compile_ block, value
+            compile_ block, value, options
             block.add_instr [SET, reg, key, 'default']
           end
         end
@@ -487,7 +487,7 @@ module Gene::Lang::Jit
       end
     end
 
-    def compile_class block, source
+    def compile_class block, source, options
       name        = source['name'].to_s
       body        = source['body']
       super_class = source['super_class']
@@ -496,7 +496,7 @@ module Gene::Lang::Jit
       body_block      = CompiledBlock.new
       body_block.name = name
 
-      compile_ body_block, body
+      compile_ body_block, body, options
       body_block.add_instr [CALL_END]
 
       @mod.add_block body_block
@@ -508,7 +508,7 @@ module Gene::Lang::Jit
       class_reg = copy_and_return_reg block
 
       if super_class
-        compile_ block, super_class
+        compile_ block, super_class, options
         block.add_instr [CALL_NATIVE, class_reg, 'parent_class=', 'default']
       end
 
@@ -524,7 +524,7 @@ module Gene::Lang::Jit
       block.add_instr [COPY, class_reg, 'default']
     end
 
-    def compile_module block, source
+    def compile_module block, source, options
       name = source.data[0].to_s
       body = source.data[1..-1]
 
@@ -532,7 +532,7 @@ module Gene::Lang::Jit
       body_block      = CompiledBlock.new
       body_block.name = name
 
-      compile_ body_block, body
+      compile_ body_block, body, options
       body_block.add_instr [CALL_END]
 
       @mod.add_block body_block
@@ -556,7 +556,7 @@ module Gene::Lang::Jit
 
     # Compile method body as a block
     # Default args are evaluated in the block as well
-    def compile_method block, source
+    def compile_method block, source, options
       body_block      = CompiledBlock.new
       body_block.name = source['name']
 
@@ -567,7 +567,7 @@ module Gene::Lang::Jit
         body_block.add_instr [DEF_MEMBER, matcher.name, 'default']
       end
 
-      compile_ body_block, source['body']
+      compile_ body_block, source['body'], options
       body_block.add_instr [CALL_END]
 
       @mod.add_block body_block
@@ -578,7 +578,7 @@ module Gene::Lang::Jit
 
     # Compile method body as a block
     # Default args are evaluated in the block as well
-    def compile_init block, source
+    def compile_init block, source, options
       method_name = 'init'
 
       body_block      = CompiledBlock.new
@@ -591,7 +591,7 @@ module Gene::Lang::Jit
         body_block.add_instr [DEF_MEMBER, matcher.name, 'default']
       end
 
-      compile_ body_block, source.data[1..-1]
+      compile_ body_block, source.data[1..-1], options
       body_block.add_instr [CALL_END]
 
       @mod.add_block body_block
@@ -600,11 +600,11 @@ module Gene::Lang::Jit
       block.add_instr [METHOD, method_name, body_block.id]
     end
 
-    def compile_new block, source
-      compile_ block, source.data.first
+    def compile_new block, source, options
+      compile_ block, source.data.first, options
       class_reg = copy_and_return_reg block
 
-      args_reg = compile_args block, source, true
+      args_reg = compile_args block, source, options, true
 
       block.add_instr [NEW, class_reg, args_reg]
     end
@@ -614,8 +614,8 @@ module Gene::Lang::Jit
     # Get method from hierarchy
     # If method's eval_arguments option is false, do not eval arguments (same as function)
     # Call method with self object, arguments, class, hierarchy (is useful when super is invoked)
-    def compile_method_invocation block, source
-      compile_ block, source.type
+    def compile_method_invocation block, source, options
+      compile_ block, source.type, options
 
       self_reg = copy_and_return_reg block
 
@@ -636,7 +636,7 @@ module Gene::Lang::Jit
 
       method_reg = copy_and_return_reg block
 
-      args_reg   = compile_args block, source, true
+      args_reg   = compile_args block, source, options, true
 
       block.add_instr [CALL_METHOD, self_reg, method_reg, args_reg, hierarchy_reg]
     end
@@ -646,7 +646,7 @@ module Gene::Lang::Jit
     # Get method from hierarchy
     # If method's eval_arguments option is false, do not eval arguments (same as function)
     # Call method with self object, arguments, class, hierarchy (is useful when super is invoked)
-    def compile_short_method_invocation block, source
+    def compile_short_method_invocation block, source, options
       block.add_instr [CALL_NATIVE, 'context', 'self']
 
       self_reg = copy_and_return_reg block
@@ -669,13 +669,13 @@ module Gene::Lang::Jit
       method_reg = copy_and_return_reg block
 
       # Treat arguments the same way as function arguments
-      args_reg   = compile_args block, source
+      args_reg   = compile_args block, source, options
 
       block.add_instr [CALL_METHOD, self_reg, method_reg, args_reg, hierarchy_reg]
     end
 
     # Get hierarchy from hierarchy register (if not found, throw error?)
-    def compile_super block, source
+    def compile_super block, source, options
       hierarchy_reg   = 'hierarchy'
 
       # Get method name
@@ -687,7 +687,7 @@ module Gene::Lang::Jit
       method_reg = block.add_instr [COPY, 'default', method_reg]
 
       # TODO: (super!) will re-use the arguments
-      args_reg = compile_args block, source, true
+      args_reg = compile_args block, source, options, true
 
       block.add_instr [CALL_NATIVE, 'context', 'self']
 
@@ -697,13 +697,13 @@ module Gene::Lang::Jit
     # Compile args
     # Save to a register
     # @return the regiser address
-    def compile_args block, source, is_method = false
-      compile_ block, source.properties
+    def compile_args block, source, options, is_method = false
+      compile_ block, source.properties, options
       props_reg = copy_and_return_reg block
 
       args_data = is_method ? source.data[1..-1] : source.data
 
-      compile_ block, args_data
+      compile_ block, args_data, options
       data_reg = copy_and_return_reg block
 
       block.add_instr [CREATE_OBJ, nil, props_reg, data_reg]
@@ -712,7 +712,7 @@ module Gene::Lang::Jit
       args_reg
     end
 
-    def compile_namespace block, source
+    def compile_namespace block, source, options
       name = source.data[0].to_s
       body = source.data[1..-1]
 
@@ -720,7 +720,7 @@ module Gene::Lang::Jit
       body_block      = CompiledBlock.new
       body_block.name = name
 
-      compile_ body_block, body
+      compile_ body_block, body, options
       body_block.add_instr [CALL_END]
 
       @mod.add_block body_block
@@ -747,8 +747,8 @@ module Gene::Lang::Jit
     #   Call default block of loaded code
     #   Store root namespace of loaded code in default register
     # Define members in current context
-    def compile_import block, source
-      compile_ block, source['source']
+    def compile_import block, source, options
+      compile_ block, source['source'], options
 
       mappings = source['mappings']
       if mappings.size > 0
@@ -764,49 +764,49 @@ module Gene::Lang::Jit
       end
     end
 
-    def compile_string block, source
+    def compile_string block, source, options
       reg = new_reg
       block.add_instr [WRITE, reg, source.type]
       source.data.each do |item|
-        compile_ block, item
+        compile_ block, item, options
         block.add_instr [CONCAT, reg, 'default']
       end
       block.add_instr [COPY, reg, 'default']
     end
 
-    def compile_literal block, source
+    def compile_literal block, source, options
       block.add_instr [DEFAULT, source]
     end
 
-    def compile_print block, source
+    def compile_print block, source, options
       source.data.each do |item|
-        compile_ block, source.data[0]
+        compile_ block, source.data[0], options
         block.add_instr [PRINT, 'default', false]
       end
       block.add_instr [DEFAULT, nil]
     end
 
-    def compile_invoke block, source
+    def compile_invoke block, source, options
       target, method, *args = source.data
 
-      compile_ block, target
+      compile_ block, target, options
       target_reg = copy_and_return_reg block
 
-      compile_ block, method
+      compile_ block, method, options
       method_reg = copy_and_return_reg block
 
-      compile_array block, args
+      compile_array block, args, options
 
       block.add_instr [CALL_NATIVE_DYNAMIC, target_reg, method_reg, 'default']
     end
 
-    def compile_assert block, source
+    def compile_assert block, source, options
       expr = source.data[0]
-      compile_ block, expr
+      compile_ block, expr, options
       jump = block.add_instr [JUMP_IF_TRUE, nil]
 
       if source.data.length > 1
-        compile_ block, source.data[1]
+        compile_ block, source.data[1], options
       else
         block.add_instr [DEFAULT, "AssertionError: #{expr}"]
       end
@@ -815,7 +815,7 @@ module Gene::Lang::Jit
       jump[1] = block.length
     end
 
-    def compile_unknown block, source
+    def compile_unknown block, source, options
       block.add_instr [TODO, source.inspect]
     end
 
