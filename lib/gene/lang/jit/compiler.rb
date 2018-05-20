@@ -5,6 +5,9 @@ module Gene::Lang::Jit
   class Compiler
     include Utils
 
+    TEMPLATE_MODE = 'template'
+    RENDER_MODE   = 'render'
+
     def initialize
     end
 
@@ -15,8 +18,8 @@ module Gene::Lang::Jit
 
     # Options:
     #   skip_init: do not add INIT instruction
-    #   render_mode: (%% ...), (%= ...)
-    #   template_mode: (:: ...)
+    #   mode = render: (%% ...), (%= ...)
+    #   mode = template: (:: ...)
     # return CompiledModule
     def compile source, options = {}
       primary_block = CompiledBlock.new []
@@ -80,13 +83,13 @@ module Gene::Lang::Jit
     ]
 
     def compile_object block, source, options
-      if not options[:template_mode]
+      if options[:mode] != TEMPLATE_MODE
         source = Gene::Lang::Transformer.new.call(source)
       end
 
       op = source.data[0]
 
-      if options[:template_mode]
+      if options[:mode] == TEMPLATE_MODE
         compile_ block, source.type, options
         type_reg = copy_and_return_reg block
 
@@ -353,11 +356,13 @@ module Gene::Lang::Jit
     # %x or (%x ...) will be compiled or evaluated when the template is rendered
     # Templates and code can be nested on multiple levels
     def compile_template block, source, options
+      options = options.clone
+      options[:mode] = TEMPLATE_MODE
       if source.data.length != 1
-        compile_ block, Gene::Types::Stream.new(*source.data), template_mode: true
+        compile_ block, Gene::Types::Stream.new(*source.data), options
       else
         first = source.data[0]
-        compile_ block, first, template_mode: true
+        compile_ block, first, options
       end
     end
 
@@ -383,26 +388,29 @@ module Gene::Lang::Jit
 
     # Process %x and (%x ...) inside template
     # Iterate through data
-    # Compile with {render_mode: true} option
+    # Compile with {mode: render} option
     def compile_render block, source, options
+      options = options.clone
+      options[:mode] = RENDER_MODE
       source.data.each do |item|
-        compile_ block, item, render_mode: true
+        compile_ block, item, options
       end
     end
 
     def compile_render_obj block, source, options
-      if options[:render_mode]
+      if options[:mode] == RENDER_MODE
         source.data.each do |item|
-          compile_ block, item, render_mode: true
+          compile_ block, item, options
         end
       else
-        options[:template_mode] = true
+        options = options.clone
+        options[:mode] = TEMPLATE_MODE
         compile_ block, source, options
       end
     end
 
     def compile_symbol block, source, options
-      if options[:render_mode]
+      if options[:mode] = RENDER_MODE
         str = source.to_s
         if str[0] == '%'
           compile_ block, Gene::Types::Symbol.new(str[1..-1]), options
@@ -410,7 +418,7 @@ module Gene::Lang::Jit
         end
       end
 
-      if options[:template_mode]
+      if options[:mode] == TEMPLATE_MODE
         block.add_instr [SYMBOL, source.to_s]
       else
         str = source.to_s
