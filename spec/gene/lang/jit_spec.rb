@@ -724,6 +724,16 @@ describe "JIT" do
     end
 
     it "
+      # global should work
+      (fn global/f _ 1)
+      (global/f)
+    " do
+      mod = @compiler.parse_and_compile example.description
+      app = Application.new(mod)
+      app.run.should == 1
+    end
+
+    it "
       # import should work
       (import test_function from 'spec/gene/lang/test')
       (test_function)

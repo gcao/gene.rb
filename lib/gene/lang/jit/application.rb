@@ -3,13 +3,13 @@ module Gene::Lang::Jit
     attr_reader :modules
     attr_reader :primary_module
 
-    attr_reader :global_namespace
+    attr_reader :global
     attr_reader :context
 
     def initialize primary_module
-      @modules          = []
-      @primary_module   = primary_module
-      @global_namespace = Namespace.new
+      @modules        = []
+      @primary_module = primary_module
+      @global         = Global.new
     end
 
     def run options = {}
@@ -131,6 +131,40 @@ module Gene::Lang::Jit
       @name    = name
       @members = {}
       @parent_namespace  = parent
+    end
+  end
+
+  class Global
+    def initialize
+      @members = {}
+    end
+
+    def defined? name
+      @members.include? name
+    end
+
+    def def_member name, value, options = {}
+      @members[name.to_s] = value
+    end
+
+    def get_member name
+      name = name.to_s
+
+      if @members.include? name
+        @members[name]
+      else
+        raise "#{name} is not defined."
+      end
+    end
+
+    def set_member name, value, options = {}
+      name = name.to_s
+
+      if @members.include? name
+        @members[name] = value
+      else
+        raise "#{name} is not defined."
+      end
     end
   end
 

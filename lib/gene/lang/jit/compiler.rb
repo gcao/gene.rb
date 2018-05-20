@@ -329,9 +329,29 @@ module Gene::Lang::Jit
 
       @mod.add_block body_block
 
+      name = source['name'].to_s
+
       # Create a function object and store in namespace/scope
-      block.add_instr [FN, source['name'], body_block.id]
-      block.add_instr [DEF_MEMBER, source['name'].to_s, 'default', {'type' => 'namespace'}]
+      block.add_instr [FN, name, body_block.id]
+
+      if name.include? '/'
+        value_reg = copy_and_return_reg block
+
+        first, *rest, last = name.split("/")
+        if first == 'global'
+          block.add_instr [GLOBAL]
+        else
+          block.add_instr [GET_MEMBER, first]
+        end
+
+        rest.each do |item|
+          block.add_instr [GET_CHILD_MEMBER, 'default', item]
+        end
+
+        block.add_instr [DEF_CHILD_MEMBER, 'default', last, value_reg]
+      else
+        block.add_instr [DEF_MEMBER, name, 'default', {'type' => 'namespace'}]
+      end
     end
 
     def compile_invocation block, source, options
@@ -433,7 +453,11 @@ module Gene::Lang::Jit
           block.add_instr [CALL_NATIVE, 'context', 'self']
         else
           first, *rest = str.split '/'
-          block.add_instr [GET_MEMBER, first]
+          if first == 'global'
+            block.add_instr [GLOBAL]
+          else
+            block.add_instr [GET_MEMBER, first]
+          end
           rest.each do |item|
             block.add_instr [GET_CHILD_MEMBER, 'default', item]
           end

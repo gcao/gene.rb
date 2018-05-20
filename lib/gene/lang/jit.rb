@@ -104,6 +104,10 @@ module Gene::Lang::Jit
       end
     end
 
+    instr 'global' do |_|
+      @registers['default'] = @application.global
+    end
+
     # Define a variable in current context
     instr 'def_member' do |name, value_reg, options = {}|
       context = @registers['context']
@@ -137,10 +141,19 @@ module Gene::Lang::Jit
       @registers['default'] = value
     end
 
-    # Get child member
+    instr 'def_child_member' do |reg, name, value_reg|
+      obj = @registers[reg]
+      obj.def_member name, @registers[value_reg]
+    end
+
     instr 'get_child_member' do |reg, name|
       obj = @registers[reg]
       @registers['default'] = obj.get_member name
+    end
+
+    instr 'set_child_member' do |reg, name, value_reg|
+      obj = @registers[reg]
+      obj.set_member name, @registers[value_reg]
     end
 
     # write "a" 1: write to register 'a'
