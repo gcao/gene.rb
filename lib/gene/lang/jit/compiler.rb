@@ -410,7 +410,7 @@ module Gene::Lang::Jit
     end
 
     def compile_symbol block, source, options
-      if options[:mode] = RENDER_MODE
+      if options[:mode] == RENDER_MODE
         str = source.to_s
         if str[0] == '%'
           compile_ block, Gene::Types::Symbol.new(str[1..-1]), options
