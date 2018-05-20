@@ -391,8 +391,13 @@ module Gene::Lang::Jit
     end
 
     def compile_render_obj block, source, options = {}
-      source.data.each do |item|
-        compile_ block, item, render_mode: true
+      if options[:render_mode]
+        source.data.each do |item|
+          compile_ block, item, render_mode: true
+        end
+      else
+        options[:template_mode] = true
+        compile_ block, source, options
       end
     end
 
@@ -414,6 +419,8 @@ module Gene::Lang::Jit
           block.add_instr [GET, 'default', str[1..-1], 'default']
         elsif str[0] == ':'
           block.add_instr [SYMBOL, str[1..-1]]
+        elsif str[0] == '%'
+          block.add_instr [SYMBOL, str]
         elsif str == "self"
           block.add_instr [CALL_NATIVE, 'context', 'self']
         else

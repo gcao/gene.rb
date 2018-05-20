@@ -75,6 +75,24 @@ describe "JIT" do
     end
 
     it "
+      %a
+    " do
+      mod = @compiler.parse_and_compile example.description
+      app = Application.new(mod)
+      app.run.should == Gene::Types::Symbol.new('%a')
+    end
+
+    it "
+      (%= 1)
+    " do
+      mod = @compiler.parse_and_compile example.description
+      app = Application.new(mod)
+      result = app.run
+      result.type.should == Gene::Types::Symbol.new('%=')
+      result.data.should == [1]
+    end
+
+    it "
       [1 2]
     " do
       mod = @compiler.parse_and_compile example.description
@@ -419,6 +437,20 @@ describe "JIT" do
       mod = @compiler.parse_and_compile example.description
       app = Application.new(mod)
       app.run.should == 10
+    end
+
+    it "
+      # fn...loop should work
+      (fn f _
+        (loop
+          (return 1)
+        )
+      )
+      (f)
+    " do
+      mod = @compiler.parse_and_compile example.description
+      app = Application.new(mod)
+      app.run.should == 1
     end
 
     it "
