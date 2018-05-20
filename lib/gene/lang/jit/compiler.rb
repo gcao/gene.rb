@@ -328,7 +328,7 @@ module Gene::Lang::Jit
 
       # Create a function object and store in namespace/scope
       block.add_instr [FN, source['name'], body_block.id]
-      block.add_instr [DEF_MEMBER, source['name'].to_s, 'default']
+      block.add_instr [DEF_MEMBER, source['name'].to_s, 'default', {'type' => 'namespace'}]
     end
 
     def compile_invocation block, source
@@ -496,7 +496,7 @@ module Gene::Lang::Jit
 
       # Create a class object and store in namespace/scope
       block.add_instr [CLASS, name]
-      block.add_instr [DEF_MEMBER, name, 'default']
+      block.add_instr [DEF_MEMBER, name, 'default', {'type' => 'namespace'}]
 
       class_reg = copy_and_return_reg block
 
@@ -532,7 +532,7 @@ module Gene::Lang::Jit
 
       # Create a class object and store in namespace/scope
       block.add_instr [MODULE, name]
-      block.add_instr [DEF_MEMBER, name, 'default']
+      block.add_instr [DEF_MEMBER, name, 'default', {'type' => 'namespace'}]
       class_reg = copy_and_return_reg block
 
       # Invoke block immediately and remove it to reduce memory usage
@@ -720,7 +720,7 @@ module Gene::Lang::Jit
 
       # Create a class object and store in namespace/scope
       block.add_instr [NS, name]
-      block.add_instr [DEF_MEMBER, name, 'default']
+      block.add_instr [DEF_MEMBER, name, 'default', {'type' => 'namespace'}]
       ns_reg = copy_and_return_reg block
 
       # Invoke block immediately and remove it to reduce memory usage
@@ -750,7 +750,7 @@ module Gene::Lang::Jit
 
         mappings.each do |name, value|
           block.add_instr [GET_CHILD_MEMBER, loaded_context_reg, name]
-          block.add_instr [DEF_MEMBER, value, 'default']
+          block.add_instr [DEF_MEMBER, value, 'default', {'type' => 'namespace'}]
         end
       else
         block.add_instr [LOAD, 'default', nil]

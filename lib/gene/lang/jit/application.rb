@@ -49,6 +49,8 @@ module Gene::Lang::Jit
       type = options['type']
       if type == 'scope'
         self.scope.def_member name, value, options
+      elsif type == 'namespace'
+        self.namespace.def_member name, value, options
       elsif self.self.is_a?(NamespaceLike)
         self.self.def_member name, value, options
       else

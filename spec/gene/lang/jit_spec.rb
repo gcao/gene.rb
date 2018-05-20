@@ -667,6 +667,21 @@ describe "JIT" do
         (module M
           (fn f _ (g))
         )
+      )
+      (fn g _ 1)
+      (N/M/f)
+    " do
+      mod = @compiler.parse_and_compile example.description
+      app = Application.new(mod)
+      app.run.should == 1
+    end
+
+    it "
+      # namespace should work
+      (ns N
+        (module M
+          (fn f _ (g))
+        )
         (fn g _ 1)
       )
       (N/M/f)
