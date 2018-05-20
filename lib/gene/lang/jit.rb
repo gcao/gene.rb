@@ -105,14 +105,18 @@ module Gene::Lang::Jit
     end
 
     # Define a variable in current context
-    instr 'def_member' do |name, value_reg|
+    instr 'def_member' do |name, value_reg, options = {}|
       context = @registers['context']
       if value_reg
         value = @registers[value_reg]
-        context.def_member name, value
+        context.def_member name, value, options
       else
-        context.def_member name
+        context.def_member name, nil, options
       end
+    end
+
+    instr 'undef_member' do |name|
+      context.undef_member name
     end
 
     # Get value of a variable in current context

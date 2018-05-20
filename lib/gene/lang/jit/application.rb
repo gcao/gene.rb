@@ -46,7 +46,10 @@ module Gene::Lang::Jit
     end
 
     def def_member name, value, options = {}
-      if self.self.is_a?(Namespace) or self.self.is_a?(Gene::Lang::Jit::Module)
+      type = options['type']
+      if type == 'scope'
+        self.scope.def_member name, value, options
+      elsif self.self.is_a?(Namespace) or self.self.is_a?(Gene::Lang::Jit::Module)
         self.self.def_member name, value, options
       else
         self.scope.def_member name, value, options

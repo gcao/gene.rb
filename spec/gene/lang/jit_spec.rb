@@ -84,6 +84,27 @@ describe "JIT" do
 
     it "
       (var a 1)
+      a
+    " do
+      mod = @compiler.parse_and_compile example.description
+      app = Application.new(mod)
+      app.run.should == 1
+    end
+
+    it "
+      (var a 1)
+      (undef a)
+      a
+    " do
+      mod = @compiler.parse_and_compile example.description
+      app = Application.new(mod)
+      lambda {
+        app.run
+      }.should raise_error
+    end
+
+    it "
+      (var a 1)
       [a 2]
     " do
       mod = @compiler.parse_and_compile example.description
@@ -609,7 +630,6 @@ describe "JIT" do
       )
       N/a
     " do
-      pending
       mod = @compiler.parse_and_compile example.description
       app = Application.new(mod)
       lambda {

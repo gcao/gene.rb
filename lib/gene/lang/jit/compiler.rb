@@ -180,6 +180,8 @@ module Gene::Lang::Jit
           compile_render_obj block, source, options
         elsif type == "var"
           compile_var block, source
+        elsif type == "undef"
+          compile_undef block, source
         elsif type == "if$"
           compile_if block, source
         elsif type == "loop"
@@ -241,12 +243,17 @@ module Gene::Lang::Jit
     def compile_var block, source, options = {}
       name = source.data.first.to_s
       if source.data.length == 1
-        block.add_instr [DEF_MEMBER, name]
+        block.add_instr [DEF_MEMBER, name, nil, {'type' => 'scope'}]
       else
         # TODO: compile value, store in default register, define member with value in default
         compile_ block, source.data[1]
-        block.add_instr [DEF_MEMBER, name, 'default']
+        block.add_instr [DEF_MEMBER, name, 'default', {'type' => 'scope'}]
       end
+    end
+
+    def compile_undef block, source
+      name = source.data.first.to_s
+      block.add_instr [UNDEF_MEMBER, name]
     end
 
     def compile_if block, source
