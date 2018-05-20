@@ -297,10 +297,20 @@ module Gene::Lang::Jit
       else
         scope = Gene::Lang::Jit::Scope.new
       end
+
       if options['self_reg']
         self_ = caller_regs[options['self_reg']]
       end
-      context = caller_context.extend scope: scope, self: self_
+
+      if fn
+        namespace = fn.namespace
+      elsif options['namespace_reg']
+        namespace = caller_regs[options['namespace_reg']]
+      else
+        namespace = caller_context.namespace
+      end
+
+      context = Gene::Lang::Jit::Context.new namespace, scope, self_
       @registers['context']     = context
 
       @registers['return_reg']  = [caller_regs.id, options['return_reg']]
@@ -362,15 +372,23 @@ module Gene::Lang::Jit
     end
 
     instr 'ns' do |name|
-      @registers['default'] = Gene::Lang::Jit::Namespace.new name
+      context = @registers['context']
+      ns = Gene::Lang::Jit::Namespace.new name, context.namespace
+      @registers['default'] = ns
     end
 
     instr 'class' do |name|
-      @registers['default'] = Gene::Lang::Jit::Class.new name
+      context = @registers['context']
+      klass = Gene::Lang::Jit::Class.new name
+      klass.parent_namespace = context.namespace
+      @registers['default'] = klass
     end
 
     instr 'module' do |name|
-      @registers['default'] = Gene::Lang::Jit::Module.new name
+      context = @registers['context']
+      mod = Gene::Lang::Jit::Module.new name
+      mod.parent_namespace = context.namespace
+      @registers['default'] = mod
     end
 
     instr 'get_class' do |reg|

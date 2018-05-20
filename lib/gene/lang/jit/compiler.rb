@@ -509,7 +509,8 @@ module Gene::Lang::Jit
       block.add_instr [DEFAULT, body_block.id]
       block.add_instr [CALL, 'default', {
         'inherit_scope' => false,
-        'self_reg' => class_reg,
+        'self_reg'      => class_reg,
+        'namespace_reg' => class_reg,
       }]
 
       # Return the class
@@ -538,7 +539,8 @@ module Gene::Lang::Jit
       block.add_instr [DEFAULT, body_block.id]
       block.add_instr [CALL, 'default', {
         'inherit_scope' => false,
-        'self_reg' => class_reg,
+        'self_reg'      => class_reg,
+        'namespace_reg' => class_reg,
       }]
 
       # Return the class
@@ -726,6 +728,7 @@ module Gene::Lang::Jit
       block.add_instr [CALL, 'default', {
         'inherit_scope' => false,
         'self_reg'      => ns_reg,
+        'namespace_reg' => ns_reg,
       }]
 
       # Return the class

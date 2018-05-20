@@ -22,7 +22,7 @@ module Gene::Lang::Jit
     end
 
     def create_root_context
-      Context.new Namespace.new(@global_namespace), Scope.new, nil
+      Context.new Namespace.new, Scope.new, nil
     end
   end
 
@@ -49,7 +49,7 @@ module Gene::Lang::Jit
       type = options['type']
       if type == 'scope'
         self.scope.def_member name, value, options
-      elsif self.self.is_a?(Namespace) or self.self.is_a?(Gene::Lang::Jit::Module)
+      elsif self.self.is_a?(NamespaceLike)
         self.self.def_member name, value, options
       else
         self.scope.def_member name, value, options
@@ -57,7 +57,9 @@ module Gene::Lang::Jit
     end
 
     def get_member name
-      if scope && scope.defined?(name)
+      if self.self.is_a?(NamespaceLike)
+        self.self.get_member name
+      elsif scope && scope.defined?(name)
         scope.get_member name
       elsif namespace && namespace.defined?(name)
         namespace.get_member name
@@ -269,12 +271,6 @@ module Gene::Lang::Jit
   # TODO: support meta programming - class_created, class_extended
   class Class < Module
     attr_accessor :parent_class
-
-    # def parent_class
-    #   return nil if self == Gene::Lang::Object
-
-    #   get('parent_class') || Gene::Lang::Object
-    # end
 
     # include myself
     def ancestors
