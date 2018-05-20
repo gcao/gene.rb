@@ -205,18 +205,16 @@ module Gene::Lang::Jit
   # TODO: support meta programming - method_added, method_removed, method_missing
   # TODO: support meta programming - module_created, module_included
   # TODO: Support prepend like how Ruby does
-  class Module < Gene::Lang::Object
+  class Module
     include NamespaceLike
 
     attr_accessor :name, :methods, :prop_descriptors, :modules
 
     def initialize name
-      super(Class)
-      set 'name', name
-      set 'methods', {}
-      set 'prop_descriptors', {}
-      set 'modules', []
-
+      @name    = name
+      @methods = {}
+      @prop_descriptors = {}
+      @modules = []
       @members = {}
     end
 
@@ -266,11 +264,6 @@ module Gene::Lang::Jit
   class Class < Module
     attr_accessor :parent_class
 
-    def initialize name
-      super(name)
-      self.class = Class
-    end
-
     # def parent_class
     #   return nil if self == Gene::Lang::Object
 
@@ -311,13 +304,12 @@ module Gene::Lang::Jit
   # What do we do if one of our parent or grandparent module/class has changed?
   # In our ancestors cache, store the list of ancestors and their modification number, validate it on use
 
-  class HierarchySearch < Gene::Lang::Object
+  class HierarchySearch
     attr_accessor :hierarchy, :index
 
     def initialize(hierarchy)
-      super(HierarchySearch)
-      set 'hierarchy', hierarchy
-      set 'index', -1
+      @hierarchy = hierarchy
+      @index     = -1
     end
 
     def next
@@ -346,12 +338,11 @@ module Gene::Lang::Jit
     end
   end
 
-  class Expandable < Gene::Lang::Object
+  class Expandable
     attr_reader :value
 
     def initialize value = Gene::UNDEFINED
-      super(Expandable)
-      set 'value', value
+      @value = value
     end
   end
 

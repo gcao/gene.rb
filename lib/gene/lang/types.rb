@@ -235,12 +235,8 @@ module Gene::Lang
     end
   end
 
-  class Context < Object
+  class Context
     attr_accessor :global_namespace, :namespace, :scope, :self
-
-    def initialize
-      super(Context)
-    end
 
     def extend options
       new_context             = Context.new
