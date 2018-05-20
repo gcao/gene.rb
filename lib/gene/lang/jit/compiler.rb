@@ -448,8 +448,24 @@ module Gene::Lang::Jit
     end
 
     def compile_stream block, source, options
-      source.each do |item|
-        compile_ block, item, options
+      if options[:mode] == TEMPLATE_MODE
+        block.add_instr [STREAM]
+        reg = copy_and_return_reg block
+
+        source.each_with_index do |value, index|
+          if is_literal? value
+            result[index] = value
+          else
+            compile_ block, value, options
+            block.add_instr [SET, reg, index, 'default']
+          end
+        end
+
+        block.add_instr [COPY, reg, 'default']
+      else
+        source.each do |item|
+          compile_ block, item, options
+        end
       end
     end
 

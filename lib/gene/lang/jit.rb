@@ -243,6 +243,10 @@ module Gene::Lang::Jit
       @registers['default'] = Gene::Types::Symbol.new(s)
     end
 
+    instr 'stream' do |_|
+      @registers['default'] = Gene::Types::Stream.new
+    end
+
     # String instructions
     # 'substr',
     instr 'concat' do |reg1, reg2|
