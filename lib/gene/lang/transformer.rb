@@ -4,6 +4,7 @@ class Gene::Lang::Transformer
     FN FNX FNXX
     CLASS EXTEND METHOD
     IMPORT FROM AS
+    TRY CATCH
   ).each do |name|
     const_set name, Gene::Types::Symbol.new("#{name.downcase}")
   end

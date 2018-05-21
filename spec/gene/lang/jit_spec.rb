@@ -821,6 +821,32 @@ describe "JIT" do
       app = Application.new(mod)
       app.run.should == 1
     end
+
+    it "
+      # throw should work
+      (throw 'error')
+    " do
+      mod = @compiler.parse_and_compile example.description
+      app = Application.new(mod)
+      lambda {
+        app.run
+      }.should raise_error('error')
+    end
+
+    it "
+      # try...catch should work
+      (try
+        (throw 'error')
+      catch Exception
+        # TODO
+      )
+    " do
+      pending
+      mod = @compiler.parse_and_compile example.description
+      p mod
+      app = Application.new(mod)
+      app.run(debug: true).should == 'error'
+    end
   end
 
   describe "Complex expressions" do

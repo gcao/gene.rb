@@ -37,4 +37,22 @@ describe Gene::Lang::Transformer do
       result['package'].should  == 'pkg'
     end
   end
+
+  describe "try" do
+    it "
+      (try
+        1
+        2
+      catch SomeException
+        (e => 'We got some error')
+      catch GenericException
+        (e => 'We got error')
+      )
+    " do
+      pending
+      parsed = Gene::Parser.parse(example.description)
+      result = @transformer.call parsed
+      result['body'].should is_a Gene::Lang::Statements
+    end
+  end
 end

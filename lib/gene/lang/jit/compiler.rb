@@ -221,6 +221,8 @@ module Gene::Lang::Jit
           compile_render block, source, options
         elsif type == "$invoke"
           compile_invoke block, source, options
+        elsif type == "throw"
+          compile_throw block, source, options
         elsif type == "assert"
           compile_assert block, source, options
         elsif type == "print"
@@ -846,6 +848,11 @@ module Gene::Lang::Jit
       compile_array block, args, options
 
       block.add_instr [CALL_NATIVE_DYNAMIC, target_reg, method_reg, 'default']
+    end
+
+    def compile_throw block, source, options
+      compile_ block, source.data[0], options
+      block.add_instr [THROW, 'default']
     end
 
     def compile_assert block, source, options
