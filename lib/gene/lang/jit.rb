@@ -276,9 +276,9 @@ module Gene::Lang::Jit
     # Hash instructions
 
     # Function instructions
-    instr 'fn' do |name, body|
+    instr 'fn' do |name, body, options|
       context = @registers['context']
-      fn = Gene::Lang::Jit::Function.new name, body
+      fn = Gene::Lang::Jit::Function.new name, body, options
       fn.namespace = context.namespace
       if fn.inherit_scope
         fn.scope = context.scope

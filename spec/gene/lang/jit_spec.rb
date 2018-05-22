@@ -297,6 +297,19 @@ describe "JIT" do
 
     it "
       # function should work
+      (fn f a
+        ^!eval_arguments
+        a
+      )
+      (f b)
+    " do
+      mod = @compiler.parse_and_compile example.description
+      app = Application.new(mod)
+      app.run.should == Gene::Types::Symbol.new('b')
+    end
+
+    it "
+      # function should work
       (fnx)
     " do
       mod = @compiler.parse_and_compile example.description

@@ -332,7 +332,7 @@ module Gene::Lang::Jit
       name = source['name'].to_s
 
       # Create a function object and store in namespace/scope
-      block.add_instr [FN, name, body_block.id]
+      block.add_instr [FN, name, body_block.id, source['options']]
 
       if name.include? '/'
         value_reg = copy_and_return_reg block
@@ -359,7 +359,7 @@ module Gene::Lang::Jit
 
       fn_reg = copy_and_return_reg block
 
-      args_reg = compile_args block, source, options
+      args_reg = compile_fn_args block, source, options, fn_reg
 
       block.add_instr [CALL_NATIVE, fn_reg, 'body']
 
@@ -740,6 +740,53 @@ module Gene::Lang::Jit
       block.add_instr [CALL_NATIVE, 'context', 'self']
 
       block.add_instr [CALL_METHOD, 'default', method_reg, args_reg, hierarchy_reg]
+    end
+
+    # Compile args
+    # Save to a register
+    # @return the regiser address
+    def compile_fn_args block, source, options, fn_reg
+      props = source.properties
+      data  = source.data
+
+      if is_literal?(props) and is_literal?(data)
+        compile_ block, props, options
+        props_reg = copy_and_return_reg block
+        compile_ block, data, options
+        data_reg = copy_and_return_reg block
+        block.add_instr [CREATE_OBJ, nil, props_reg, data_reg]
+      else
+        block.add_instr [CALL_NATIVE, fn_reg, 'eval_arguments']
+        jump = block.add_instr [JUMP_IF_TRUE, nil]
+
+        options = options.clone
+        options[:mode] = TEMPLATE_MODE
+
+        compile_hash block, props, options
+        props_reg = copy_and_return_reg block
+
+        compile_array block, data, options
+        data_reg = copy_and_return_reg block
+
+        block.add_instr [CREATE_OBJ, nil, props_reg, data_reg]
+
+        jump2 = block.add_instr [JUMP, nil]
+
+        jump[1] = block.length
+        compile_ block, source.properties, options
+        props_reg = copy_and_return_reg block
+
+        args_data = source.data
+
+        compile_ block, args_data, options
+        data_reg = copy_and_return_reg block
+
+        block.add_instr [CREATE_OBJ, nil, props_reg, data_reg]
+
+        jump2[1] = block.length
+      end
+
+      copy_and_return_reg block
     end
 
     # Compile args

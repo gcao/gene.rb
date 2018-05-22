@@ -233,14 +233,14 @@ module Gene::Lang::Jit
       @body = body
 
       # inherit_scope is true by default
-      if options.has_key? :inherit_scope
-        @inherit_scope = options[:inherit_scope]
+      if options.has_key? 'inherit_scope'
+        @inherit_scope = options['inherit_scope']
       else
         @inherit_scope = true
       end
 
       # inherit_scope is false by default
-      @eval_arguments = options[:eval_arguments]
+      @eval_arguments = options['eval_arguments']
     end
   end
 
