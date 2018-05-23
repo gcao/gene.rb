@@ -759,13 +759,13 @@ module Gene::Lang::Jit
         block.add_instr [CALL_NATIVE, fn_reg, 'eval_arguments']
         jump = block.add_instr [JUMP_IF_TRUE, nil]
 
-        options = options.clone
-        options[:mode] = TEMPLATE_MODE
+        new_options = options.clone
+        new_options[:mode] = TEMPLATE_MODE
 
-        compile_hash block, props, options
+        compile_hash block, props, new_options
         props_reg = copy_and_return_reg block
 
-        compile_array block, data, options
+        compile_array block, data, new_options
         data_reg = copy_and_return_reg block
 
         block.add_instr [CREATE_OBJ, nil, props_reg, data_reg]
@@ -777,7 +777,6 @@ module Gene::Lang::Jit
         props_reg = copy_and_return_reg block
 
         args_data = source.data
-
         compile_ block, args_data, options
         data_reg = copy_and_return_reg block
 

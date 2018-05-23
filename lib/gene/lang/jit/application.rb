@@ -239,8 +239,12 @@ module Gene::Lang::Jit
         @inherit_scope = true
       end
 
-      # inherit_scope is false by default
-      @eval_arguments = options['eval_arguments']
+      # eval_arguments is true by default
+      if options.has_key? 'eval_arguments'
+        @eval_arguments = options['eval_arguments']
+      else
+        @eval_arguments = true
+      end
     end
   end
 
