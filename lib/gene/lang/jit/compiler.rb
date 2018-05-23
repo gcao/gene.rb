@@ -5,8 +5,8 @@ module Gene::Lang::Jit
   class Compiler
     include Utils
 
-    TEMPLATE_MODE = 'template'
-    RENDER_MODE   = 'render'
+    TEMPLATE_MODE = 'template_mode'
+    RENDER_MODE   = 'render_mode'
 
     def initialize
     end
@@ -83,13 +83,13 @@ module Gene::Lang::Jit
     ]
 
     def compile_object block, source, options
-      if options[:mode] != TEMPLATE_MODE
+      if not options[TEMPLATE_MODE]
         source = Gene::Lang::Transformer.new.call(source)
       end
 
       op = source.data[0]
 
-      if options[:mode] == TEMPLATE_MODE
+      if options[TEMPLATE_MODE]
         compile_ block, source.type, options
         type_reg = copy_and_return_reg block
 
@@ -377,7 +377,7 @@ module Gene::Lang::Jit
     # Templates and code can be nested on multiple levels
     def compile_template block, source, options
       options = options.clone
-      options[:mode] = TEMPLATE_MODE
+      options[TEMPLATE_MODE] = true
       if source.data.length != 1
         compile_ block, Gene::Types::Stream.new(*source.data), options
       else
@@ -411,26 +411,26 @@ module Gene::Lang::Jit
     # Compile with {mode: render} option
     def compile_render block, source, options
       options = options.clone
-      options[:mode] = RENDER_MODE
+      options[RENDER_MODE] = true
       source.data.each do |item|
         compile_ block, item, options
       end
     end
 
     def compile_render_obj block, source, options
-      if options[:mode] == RENDER_MODE
+      if options[RENDER_MODE]
         source.data.each do |item|
           compile_ block, item, options
         end
       else
         options = options.clone
-        options[:mode] = TEMPLATE_MODE
+        options[TEMPLATE_MODE] = true
         compile_ block, source, options
       end
     end
 
     def compile_symbol block, source, options
-      if options[:mode] == RENDER_MODE
+      if options[RENDER_MODE]
         str = source.to_s
         if str[0] == '%'
           compile_ block, Gene::Types::Symbol.new(str[1..-1]), options
@@ -438,7 +438,7 @@ module Gene::Lang::Jit
         end
       end
 
-      if options[:mode] == TEMPLATE_MODE
+      if options[TEMPLATE_MODE]
         block.add_instr [SYMBOL, source.to_s]
       else
         str = source.to_s
@@ -472,7 +472,7 @@ module Gene::Lang::Jit
     end
 
     def compile_stream block, source, options
-      if options[:mode] == TEMPLATE_MODE
+      if options[TEMPLATE_MODE]
         block.add_instr [STREAM]
         reg = copy_and_return_reg block
 
@@ -760,7 +760,7 @@ module Gene::Lang::Jit
         jump = block.add_instr [JUMP_IF_TRUE, nil]
 
         new_options = options.clone
-        new_options[:mode] = TEMPLATE_MODE
+        new_options[TEMPLATE_MODE] = true
 
         compile_hash block, props, new_options
         props_reg = copy_and_return_reg block
