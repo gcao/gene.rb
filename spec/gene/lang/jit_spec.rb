@@ -49,6 +49,14 @@ describe "JIT" do
     end
 
     it "
+      undefined
+    " do
+      mod = @compiler.parse_and_compile example.description
+      app = Application.new(mod)
+      app.run.should == Gene::UNDEFINED
+    end
+
+    it "
       :a
     " do
       mod = @compiler.parse_and_compile example.description
