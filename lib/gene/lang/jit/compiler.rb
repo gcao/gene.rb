@@ -334,6 +334,12 @@ module Gene::Lang::Jit
       # Create a function object and store in namespace/scope
       block.add_instr [FN, name, body_block.id, source['options']]
 
+      compile_name block, name, {'type' => 'namespace'}
+    end
+
+    # Options: type = namespace or scope
+    def compile_name block, name, options
+
       if name.include? '/'
         value_reg = copy_and_return_reg block
 
@@ -350,7 +356,7 @@ module Gene::Lang::Jit
 
         block.add_instr [DEF_CHILD_MEMBER, 'default', last, value_reg]
       else
-        block.add_instr [DEF_MEMBER, name, 'default', {'type' => 'namespace'}]
+        block.add_instr [DEF_MEMBER, name, 'default', options]
       end
     end
 
@@ -821,8 +827,8 @@ module Gene::Lang::Jit
 
       # Create a class object and store in namespace/scope
       block.add_instr [NS, name]
-      block.add_instr [DEF_MEMBER, name, 'default', {'type' => 'namespace'}]
       ns_reg = copy_and_return_reg block
+      compile_name block, name, {'type' => 'namespace'}
 
       # Invoke block immediately and remove it to reduce memory usage
       block.add_instr [DEFAULT, body_block.id]
