@@ -5,8 +5,8 @@ module Gene::Lang::Jit
   class Compiler
     include Utils
 
-    TEMPLATE_MODE = 'template'
-    RENDER_MODE   = 'render'
+    TEMPLATE_MODE = 'template_mode'
+    RENDER_MODE   = 'render_mode'
 
     def initialize
     end
@@ -83,13 +83,13 @@ module Gene::Lang::Jit
     ]
 
     def compile_object block, source, options
-      if options[:mode] != TEMPLATE_MODE
+      if not options[TEMPLATE_MODE]
         source = Gene::Lang::Transformer.new.call(source)
       end
 
       op = source.data[0]
 
-      if options[:mode] == TEMPLATE_MODE
+      if options[TEMPLATE_MODE]
         compile_ block, source.type, options
         type_reg = copy_and_return_reg block
 
@@ -334,7 +334,13 @@ module Gene::Lang::Jit
       name = source['name'].to_s
 
       # Create a function object and store in namespace/scope
-      block.add_instr [FN, name, body_block.id]
+      block.add_instr [FN, name, body_block.id, source['options']]
+
+      compile_name block, name, {'type' => 'namespace'}
+    end
+
+    # Options: type = namespace or scope
+    def compile_name block, name, options
 
       if name.include? '/'
         value_reg = copy_and_return_reg block
@@ -352,7 +358,7 @@ module Gene::Lang::Jit
 
         block.add_instr [DEF_CHILD_MEMBER, 'default', last, value_reg]
       else
-        block.add_instr [DEF_MEMBER, name, 'default', {'type' => 'namespace'}]
+        block.add_instr [DEF_MEMBER, name, 'default', options]
       end
     end
 
@@ -361,7 +367,7 @@ module Gene::Lang::Jit
 
       fn_reg = copy_and_return_reg block
 
-      args_reg = compile_args block, source, options
+      args_reg = compile_fn_args block, source, options, fn_reg
 
       block.add_instr [CALL_NATIVE, fn_reg, 'body']
 
@@ -379,7 +385,7 @@ module Gene::Lang::Jit
     # Templates and code can be nested on multiple levels
     def compile_template block, source, options
       options = options.clone
-      options[:mode] = TEMPLATE_MODE
+      options[TEMPLATE_MODE] = true
       if source.data.length != 1
         compile_ block, Gene::Types::Stream.new(*source.data), options
       else
@@ -413,26 +419,26 @@ module Gene::Lang::Jit
     # Compile with {mode: render} option
     def compile_render block, source, options
       options = options.clone
-      options[:mode] = RENDER_MODE
+      options[RENDER_MODE] = true
       source.data.each do |item|
         compile_ block, item, options
       end
     end
 
     def compile_render_obj block, source, options
-      if options[:mode] == RENDER_MODE
+      if options[RENDER_MODE]
         source.data.each do |item|
           compile_ block, item, options
         end
       else
         options = options.clone
-        options[:mode] = TEMPLATE_MODE
+        options[TEMPLATE_MODE] = true
         compile_ block, source, options
       end
     end
 
     def compile_symbol block, source, options
-      if options[:mode] == RENDER_MODE
+      if options[RENDER_MODE]
         str = source.to_s
         if str[0] == '%'
           compile_ block, Gene::Types::Symbol.new(str[1..-1]), options
@@ -440,7 +446,7 @@ module Gene::Lang::Jit
         end
       end
 
-      if options[:mode] == TEMPLATE_MODE
+      if options[TEMPLATE_MODE]
         block.add_instr [SYMBOL, source.to_s]
       else
         str = source.to_s
@@ -474,7 +480,7 @@ module Gene::Lang::Jit
     end
 
     def compile_stream block, source, options
-      if options[:mode] == TEMPLATE_MODE
+      if options[TEMPLATE_MODE]
         block.add_instr [STREAM]
         reg = copy_and_return_reg block
 
@@ -747,6 +753,52 @@ module Gene::Lang::Jit
     # Compile args
     # Save to a register
     # @return the regiser address
+    def compile_fn_args block, source, options, fn_reg
+      props = source.properties
+      data  = source.data
+
+      if is_literal?(props) and is_literal?(data)
+        compile_ block, props, options
+        props_reg = copy_and_return_reg block
+        compile_ block, data, options
+        data_reg = copy_and_return_reg block
+        block.add_instr [CREATE_OBJ, nil, props_reg, data_reg]
+      else
+        block.add_instr [CALL_NATIVE, fn_reg, 'eval_arguments']
+        jump = block.add_instr [JUMP_IF_TRUE, nil]
+
+        new_options = options.clone
+        new_options[TEMPLATE_MODE] = true
+
+        compile_hash block, props, new_options
+        props_reg = copy_and_return_reg block
+
+        compile_array block, data, new_options
+        data_reg = copy_and_return_reg block
+
+        block.add_instr [CREATE_OBJ, nil, props_reg, data_reg]
+
+        jump2 = block.add_instr [JUMP, nil]
+
+        jump[1] = block.length
+        compile_ block, source.properties, options
+        props_reg = copy_and_return_reg block
+
+        args_data = source.data
+        compile_ block, args_data, options
+        data_reg = copy_and_return_reg block
+
+        block.add_instr [CREATE_OBJ, nil, props_reg, data_reg]
+
+        jump2[1] = block.length
+      end
+
+      copy_and_return_reg block
+    end
+
+    # Compile args
+    # Save to a register
+    # @return the regiser address
     def compile_args block, source, options, is_method = false
       compile_ block, source.properties, options
       props_reg = copy_and_return_reg block
@@ -777,8 +829,8 @@ module Gene::Lang::Jit
 
       # Create a class object and store in namespace/scope
       block.add_instr [NS, name]
-      block.add_instr [DEF_MEMBER, name, 'default', {'type' => 'namespace'}]
       ns_reg = copy_and_return_reg block
+      compile_name block, name, {'type' => 'namespace'}
 
       # Invoke block immediately and remove it to reduce memory usage
       block.add_instr [DEFAULT, body_block.id]

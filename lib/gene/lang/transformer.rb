@@ -61,6 +61,7 @@ class Gene::Lang::Transformer
 
   def transform_fn input, options
     result = Gene::Types::Base.new(Gene::Types::Symbol.new('fn$'))
+    result['options'] = input.properties
 
     if input.type == FNX
       name = nil

@@ -6,23 +6,42 @@ module Gene::Lang::Jit
     attr_reader :global
     attr_reader :context
 
-    def initialize primary_module
+    def initialize primary_module = nil
       @modules        = []
-      @primary_module = primary_module
       @global         = Global.new
+      if primary_module
+        self.primary_module = primary_module
+      end
+      @vm = VirtualMachine.new(self)
+    end
+
+    def primary_module= primary_module
+      @primary_module = primary_module
+      @modules << primary_module
     end
 
     def run options = {}
-      vm      = VirtualMachine.new(self)
-      primary_module.blocks.each do |_, block|
-        vm.add_block block
-      end
-      block   = primary_module.primary_block
-      vm.process block, options
+      @vm.load_module primary_module, options
     end
 
     def create_root_context
       Context.new Namespace.new, Scope.new, nil
+    end
+
+    def load_core_lib
+      core_lib = "#{File.dirname(__FILE__)}/core"
+      mod_file = "#{core_lib}.gmod"
+      if File.exist? mod_file
+        mod = Gene::Lang::Jit::CompiledModule.from_json File.read(mod_file)
+      else
+        gene_file = "#{core_lib}.gene"
+        parsed    = Gene::Parser.parse File.read(gene_file)
+        compiler  = Gene::Lang::Jit::Compiler.new
+        mod       = compiler.compile parsed
+      end
+
+      @modules << mod
+      @vm.load_module mod
     end
   end
 
@@ -233,14 +252,18 @@ module Gene::Lang::Jit
       @body = body
 
       # inherit_scope is true by default
-      if options.has_key? :inherit_scope
-        @inherit_scope = options[:inherit_scope]
+      if options.has_key? 'inherit_scope'
+        @inherit_scope = options['inherit_scope']
       else
         @inherit_scope = true
       end
 
-      # inherit_scope is false by default
-      @eval_arguments = options[:eval_arguments]
+      # eval_arguments is true by default
+      if options.has_key? 'eval_arguments'
+        @eval_arguments = options['eval_arguments']
+      else
+        @eval_arguments = true
+      end
     end
   end
 

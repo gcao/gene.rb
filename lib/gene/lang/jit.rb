@@ -48,6 +48,14 @@ module Gene::Lang::Jit
       @blocks[block.id] = block
     end
 
+    def load_module mod, options = {}
+      mod.blocks.each do |_, block|
+        add_block block
+      end
+
+      process mod.primary_block, options
+    end
+
     def process block, options
       @block        = block
       @registers    = @registers_mgr.create
@@ -72,7 +80,9 @@ module Gene::Lang::Jit
       end
 
       # Result should always be stored in the default register
-      @registers['default']
+      result = @registers['default']
+      # TODO: clean up
+      result
     end
 
     def self.instr name, &block
@@ -128,6 +138,8 @@ module Gene::Lang::Jit
       context = @registers['context']
       if name[-3..-1] == '...'
         @registers['default'] = Gene::Lang::Jit::Expandable.new context.get_member(name[0..-4])
+      elsif name == 'gene'
+        @registers['default'] = @application.global.get_member 'gene'
       else
         @registers['default'] = context.get_member name
       end
@@ -276,9 +288,9 @@ module Gene::Lang::Jit
     # Hash instructions
 
     # Function instructions
-    instr 'fn' do |name, body|
+    instr 'fn' do |name, body, options|
       context = @registers['context']
-      fn = Gene::Lang::Jit::Function.new name, body
+      fn = Gene::Lang::Jit::Function.new name, body, options
       fn.namespace = context.namespace
       if fn.inherit_scope
         fn.scope = context.scope

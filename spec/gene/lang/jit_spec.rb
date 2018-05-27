@@ -49,6 +49,14 @@ describe "JIT" do
     end
 
     it "
+      undefined
+    " do
+      mod = @compiler.parse_and_compile example.description
+      app = Application.new(mod)
+      app.run.should == Gene::UNDEFINED
+    end
+
+    it "
       :a
     " do
       mod = @compiler.parse_and_compile example.description
@@ -293,6 +301,19 @@ describe "JIT" do
       mod = @compiler.parse_and_compile example.description
       app = Application.new(mod)
       app.run.should == 1
+    end
+
+    it "
+      # function should work
+      (fn f a
+        ^!eval_arguments
+        a
+      )
+      (f b)
+    " do
+      mod = @compiler.parse_and_compile example.description
+      app = Application.new(mod)
+      app.run.should == Gene::Types::Symbol.new('b')
     end
 
     it "
