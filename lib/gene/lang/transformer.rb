@@ -4,7 +4,7 @@ class Gene::Lang::Transformer
     FN FNX FNXX
     CLASS EXTEND METHOD
     IMPORT FROM AS
-    TRY CATCH
+    TRY CATCH ENSURE
   ).each do |name|
     const_set name, Gene::Types::Symbol.new("#{name.downcase}")
   end
@@ -24,6 +24,8 @@ class Gene::Lang::Transformer
       transform_class input, options
     elsif input === IMPORT
       transform_import input, options
+    elsif input === TRY
+      transform_try input, options
     else
       input
     end
@@ -118,6 +120,46 @@ class Gene::Lang::Transformer
       result['body'] = Gene::Lang::Statements.new input.data[3..-1]
     else
       result['body'] = Gene::Lang::Statements.new input.data[1..-1]
+    end
+
+    result
+  end
+
+  def transform_try input, options
+    result = Gene::Types::Base.new(Gene::Types::Symbol.new('try$'))
+    result['try']    = Gene::Lang::Statements.new
+    result['catch']  = []
+    result['ensure'] = Gene::Lang::Statements.new 
+
+    state      = :try
+    0.upto(input.data.length) do |i|
+      item = input.data[i]
+      if item == CATCH
+        if state == :ensure
+          raise 'ensure clause is not allowed before catch clause'
+        end
+        state = :catch
+
+        catch_pair = []
+        i += 1
+        catch_pair[0] = input.data[i]
+        catch_pair[1] = Gene::Lang::Statements.new
+        result['catch'] << catch_pair
+
+      elsif item == ENSURE
+        if state == :ensure
+          raise 'Two ensure clauses are not allowed'
+        end
+        state = :ensure
+      else
+        if state == :try
+          result['try'] << item
+        elsif state == :catch
+          result['catch'][-1][1] << item
+        else # state == :ensure
+          result['ensure'] << item
+        end
+      end
     end
 
     result

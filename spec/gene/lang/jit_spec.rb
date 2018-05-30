@@ -859,14 +859,14 @@ describe "JIT" do
       (try
         (throw 'error')
       catch Exception
-        # TODO
+        # TODO: thrown exception can be accessed as $error
+        1
       )
     " do
-      pending
       mod = @compiler.parse_and_compile example.description
       p mod
       app = Application.new(mod)
-      app.run(debug: true).should == 'error'
+      app.run(debug: true).should == 1
     end
   end
 
