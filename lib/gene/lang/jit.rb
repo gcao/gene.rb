@@ -528,8 +528,9 @@ module Gene::Lang::Jit
     end
 
     instr 'throw' do |error_reg|
-      message = error_reg ? @registers[error_reg] : "Unknown error"
-      raise message
+      @error = error_reg ? @registers[error_reg] : "Unknown error"
+      @error_handled = false
+      handle_exception
     end
 
     instr 'add_catches' do |catches|
@@ -542,9 +543,23 @@ module Gene::Lang::Jit
     # If yes, mark the exception as caught/handled and continue
     # If not, jump to next catch block or out of current block
     instr 'check_exception' do |_|
+      if true
+        @error_handled = true
+        # Clear catches for current try statement
+      else
+        @error_handled = false
+        # Clear current catch and continue
+        handle_exception
+      end
     end
 
     instr 'clear_exception' do |_|
+      @error = nil
+    end
+
+    # trigger error handling logic in current block, or end the call
+    def handle_exception
+      raise @error
     end
 
     # 'jump_rel',   # jump_rel -1 result: jump back by 1

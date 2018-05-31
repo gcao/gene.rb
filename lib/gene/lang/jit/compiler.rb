@@ -926,11 +926,12 @@ module Gene::Lang::Jit
         jumpes << block.add_instr([JUMP, nil])
       end
 
-      # TODO: ensure
-
+      # Jump to before ensure block
       jumpes.each do |jump|
         jump[1] = block.length
       end
+
+      # TODO: ensure
 
       #block.add_instr [COMMENT, id, 'end']
     end
