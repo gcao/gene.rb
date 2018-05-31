@@ -131,9 +131,10 @@ class Gene::Lang::Transformer
     result['catch']  = []
     result['ensure'] = Gene::Lang::Statements.new 
 
-    state      = :try
-    0.upto(input.data.length) do |i|
-      item = input.data[i]
+    state = :try
+    index = 0
+    while index < input.data.length
+      item = input.data[index]
       if item == CATCH
         if state == :ensure
           raise 'ensure clause is not allowed before catch clause'
@@ -141,8 +142,8 @@ class Gene::Lang::Transformer
         state = :catch
 
         catch_pair = []
-        i += 1
-        catch_pair[0] = input.data[i]
+        index += 1
+        catch_pair[0] = input.data[index]
         catch_pair[1] = Gene::Lang::Statements.new
         result['catch'] << catch_pair
 
@@ -160,6 +161,8 @@ class Gene::Lang::Transformer
           result['ensure'] << item
         end
       end
+
+      index += 1
     end
 
     result

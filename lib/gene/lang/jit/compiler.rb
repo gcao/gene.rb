@@ -905,7 +905,34 @@ module Gene::Lang::Jit
     end
 
     def compile_try block, source, options
-      compile_unknown block, source, options
+      #id = rand(10000) + 100000
+      #block.add_instr [COMMENT, id, 'begin', source.to_s]
+
+      catches = block.add_instr [ADD_CATCHES,  []]
+      jumpes = []
+
+      compile_ block, source['try'], options
+      jumpes << block.add_instr([JUMP, nil])
+
+      source['catch'].each do |pair|
+        catches[1] << block.length
+        exception, logic = pair
+        compile_ block, exception, options
+        block.add_instr [CHECK_EXCEPTION]
+
+        compile_ block, logic, options
+        block.add_instr [CLEAR_EXCEPTION]
+
+        jumpes << block.add_instr([JUMP, nil])
+      end
+
+      # TODO: ensure
+
+      jumpes.each do |jump|
+        jump[1] = block.length
+      end
+
+      #block.add_instr [COMMENT, id, 'end']
     end
 
     def compile_throw block, source, options

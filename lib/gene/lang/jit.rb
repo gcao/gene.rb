@@ -532,6 +532,21 @@ module Gene::Lang::Jit
       raise message
     end
 
+    instr 'add_catches' do |catches|
+    end
+
+    instr 'remove_catch' do |katch|
+    end
+
+    # Check whether the thrown exception is handled by the object in default register
+    # If yes, mark the exception as caught/handled and continue
+    # If not, jump to next catch block or out of current block
+    instr 'check_exception' do |_|
+    end
+
+    instr 'clear_exception' do |_|
+    end
+
     # 'jump_rel',   # jump_rel -1 result: jump back by 1
     # 'jump_out',   # jump_out 'block' 123 result: jump to instruction in another block
 
@@ -622,6 +637,10 @@ module Gene::Lang::Jit
           print @registers[reg]
         end
       end
+    end
+
+    # Help to understand how instructions are related
+    instr 'comment' do |_|
     end
 
     # # Get information by name, save result to reg
