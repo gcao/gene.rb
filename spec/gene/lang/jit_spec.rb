@@ -856,17 +856,17 @@ describe "JIT" do
 
     it "
       # try...catch should work
+      (class Error) # Error is the ancestor of all error types
       (try
         (throw 'error')
-      catch Exception
-        # TODO: thrown exception can be accessed as $error
+      catch Error
+        # TODO: thrown error can be accessed as $error
         1
       )
     " do
       mod = @compiler.parse_and_compile example.description
-      p mod
       app = Application.new(mod)
-      app.run(debug: true).should == 1
+      app.run.should == 1
     end
   end
 

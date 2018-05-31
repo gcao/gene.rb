@@ -908,7 +908,7 @@ module Gene::Lang::Jit
       #id = rand(10000) + 100000
       #block.add_instr [COMMENT, id, 'begin', source.to_s]
 
-      catches = block.add_instr [ADD_CATCHES,  []]
+      catches = block.add_instr [ADD_ERROR_HANDLERS,  []]
       jumpes = []
 
       compile_ block, source['try'], options

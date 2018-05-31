@@ -533,10 +533,13 @@ module Gene::Lang::Jit
       handle_exception
     end
 
-    instr 'add_catches' do |catches|
-    end
-
-    instr 'remove_catch' do |katch|
+    instr 'add_error_handlers' do |handlers|
+      groups = @registers['error_handlers']
+      if not groups
+        groups = ErrorHandlerGroups.new
+        @registers['error_handlers'] = groups
+      end
+      groups << handlers
     end
 
     # Check whether the thrown exception is handled by the object in default register
@@ -546,9 +549,11 @@ module Gene::Lang::Jit
       if true
         @error_handled = true
         # Clear catches for current try statement
+        @registers['error_handlers'].pop
       else
         @error_handled = false
         # Clear current catch and continue
+        @registers['error_handlers'].pop_handler
         handle_exception
       end
     end
@@ -558,8 +563,41 @@ module Gene::Lang::Jit
     end
 
     # trigger error handling logic in current block, or end the call
+    # or raise error if at the root level
     def handle_exception
-      raise @error
+      if not @error
+        return
+      end
+
+      error_handlers = @registers['error_handlers']
+
+      if error_handlers and not error_handlers.empty?
+        @exec_pos = error_handlers.pop_handler
+        @jumped   = true
+      elsif @registers['return_addr']
+        # go up and try handle_exception again
+        block_id, pos = @registers['return_addr']
+        if not block_id
+          raise @error
+        end
+
+        # Delete the registers of current block
+        @registers_mgr.destroy @registers.id
+
+        # Switch to the caller's registers
+        @registers = @registers_mgr[id]
+
+        # Change block and set the position
+        @block        = @blocks[block_id]
+
+        @instructions = @block.instructions
+        @exec_pos     = pos
+        @jumped       = true
+
+        handle_exception
+      else
+        raise @error
+      end
     end
 
     # 'jump_rel',   # jump_rel -1 result: jump back by 1
@@ -666,5 +704,19 @@ module Gene::Lang::Jit
     #     raise "TODO: info_to_reg #{name} #{reg}"
     #   end
     # end
+  end
+
+  class ErrorHandlerGroups < Array
+    def pop_handler
+      if empty?
+        return
+      end
+
+      handler = last.pop
+      if last.empty?
+        pop
+      end
+      handler
+    end
   end
 end
