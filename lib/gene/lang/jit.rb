@@ -189,9 +189,9 @@ module Gene::Lang::Jit
       @registers[reg2]   = value
     end
 
-    # copy "a" "b": copy from a to b and release a
-    instr 'copy_release' do
-    end
+    # # copy "a" "b": copy from a to b and release a
+    # instr 'copy_release' do
+    # end
 
     # label "abc": do nothing, act like an anchor
     instr 'label' do |name|
@@ -359,7 +359,7 @@ module Gene::Lang::Jit
       @jumped       = true
     end
 
-    instr 'call_end' do |*args|
+    instr 'call_end' do |_|
       # Copy the result to the return register
       id, reg = @registers['return_reg']
       if reg

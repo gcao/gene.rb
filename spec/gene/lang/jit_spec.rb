@@ -328,12 +328,32 @@ describe "JIT" do
 
     it "
       # function should work
+      ((fnx a a) 1)
+    " do
+      mod = @compiler.parse_and_compile example.description
+      app = Application.new(mod)
+      result = app.run
+      result.should == 1
+    end
+
+    it "
+      # function should work
       (fnxx)
     " do
       mod = @compiler.parse_and_compile example.description
       app = Application.new(mod)
       result = app.run
       result.should be_a Gene::Lang::Jit::Function
+    end
+
+    it "
+      # function should work
+      ((fnxx 1))
+    " do
+      mod = @compiler.parse_and_compile example.description
+      app = Application.new(mod)
+      result = app.run
+      result.should == 1
     end
 
     it "
