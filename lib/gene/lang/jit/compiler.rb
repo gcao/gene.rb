@@ -225,6 +225,10 @@ module Gene::Lang::Jit
           compile_try block, source, options
         elsif type == "throw"
           compile_throw block, source, options
+        elsif type == "label"
+          compile_label block, source, options
+        elsif type == "goto"
+          compile_goto block, source, options
         elsif type == "assert"
           compile_assert block, source, options
         elsif type == "print"
@@ -309,6 +313,15 @@ module Gene::Lang::Jit
 
     def compile_break block, source, options
       block.add_instr [JUMP, -1]
+    end
+
+    # Save registers, block, position to register
+    def compile_label block, source, options
+      block.add_instr [LABEL, source.data[0].to_s]
+    end
+
+    def compile_goto block, source, options
+      block.add_instr [GOTO, source.data[0].to_s]
     end
 
     def compile_fn block, source, options

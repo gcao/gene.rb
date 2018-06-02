@@ -888,6 +888,23 @@ describe "JIT" do
       app = Application.new(mod)
       app.run.should == 1
     end
+
+    it "
+      # label/goto should work
+      # TODO: goto is only allowed to jump to same block
+      # TODO: label has to be defined before goto
+      (var a 0)
+      (label x)
+      (if (a < 5)
+        (a += 1)
+        (goto x)
+      )
+      a
+    " do
+      mod = @compiler.parse_and_compile example.description
+      app = Application.new(mod)
+      app.run.should == 5
+    end
   end
 
   describe "Complex expressions" do

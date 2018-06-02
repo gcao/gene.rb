@@ -193,10 +193,6 @@ module Gene::Lang::Jit
     # instr 'copy_release' do
     # end
 
-    # label "abc": do nothing, act like an anchor
-    instr 'label' do |name|
-    end
-
     instr 'create_obj' do |type_reg, properties_reg, data_reg|
       type       = @registers[type_reg]
       properties = @registers[properties_reg]
@@ -383,6 +379,19 @@ module Gene::Lang::Jit
       @instructions = @block.instructions
       @exec_pos     = pos
       @jumped       = true
+    end
+
+    instr 'label' do |name|
+      labels = @registers['labels'] ||= {}
+      labels[name] = {
+        pos: @exec_pos,
+      }
+    end
+
+    instr 'goto' do |name|
+      label = @registers['labels'][name]
+      @exec_pos = label[:pos]
+      @jumped   = true
     end
 
     instr 'call_native' do |target_reg, method, args_reg = nil|
