@@ -905,6 +905,26 @@ describe "JIT" do
       app = Application.new(mod)
       app.run.should == 5
     end
+
+    it "
+      (fn f [a b]
+        (yield a)
+        (var c (yield b))
+        (yield c)
+      )
+      (var x (callcc f))
+      (var first  (x 1 2))  # => 1
+      (var second (x))      # => 2
+      # (x .done?) => false
+      (var third  (x 3))    # => 3
+      # (x .done?) => true
+      (first + second + third)
+    " do
+      pending
+      mod = @compiler.parse_and_compile example.description
+      app = Application.new(mod)
+      app.run.should == 6
+    end
   end
 
   describe "Complex expressions" do
