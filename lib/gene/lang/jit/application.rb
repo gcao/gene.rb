@@ -267,6 +267,24 @@ module Gene::Lang::Jit
     end
   end
 
+  class Continuation
+    attr_accessor :function
+    attr_accessor :next_pos
+    attr_accessor :registers
+
+    def initialize function
+      @function = function
+    end
+
+    def done?
+      @done
+    end
+
+    def done= done
+      @done = done
+    end
+  end
+
   # Module is like Class, except it doesn't include init and parent class
   # TODO: support aspects - before, after, when - works like  before -> when -> method -> when -> after
   # TODO: support meta programming - method_added, method_removed, method_missing

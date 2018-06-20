@@ -394,6 +394,16 @@ module Gene::Lang::Jit
       @jumped   = true
     end
 
+    instr 'callcc' do |reg|
+      fn = @registers[reg]
+      @registers['default'] = Gene::Lang::Jit::Continuation.new fn
+    end
+
+    instr 'yield' do |value_reg|
+      # Copy value in caller's default register
+      # Update continuation's execution position
+    end
+
     instr 'call_native' do |target_reg, method, args_reg = nil|
       target = @registers[target_reg]
       args   = args_reg ? @registers[args_reg] : []

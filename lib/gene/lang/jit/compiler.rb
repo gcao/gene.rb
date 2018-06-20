@@ -229,6 +229,8 @@ module Gene::Lang::Jit
           compile_label block, source, options
         elsif type == "goto"
           compile_goto block, source, options
+        elsif type == "callcc"
+          compile_callcc block, source, options
         elsif type == "assert"
           compile_assert block, source, options
         elsif type == "print"
@@ -322,6 +324,16 @@ module Gene::Lang::Jit
 
     def compile_goto block, source, options
       block.add_instr [GOTO, source.data[0].to_s]
+    end
+
+    def compile_callcc block, source, options
+      compile_ block, source.data[0], options
+      block.add_instr [CALLCC, 'default']
+    end
+
+    def compile_yield block, source, options
+      compile_ block, source.data[0], options
+      block.add_instr [YIELD, 'default']
     end
 
     def compile_fn block, source, options

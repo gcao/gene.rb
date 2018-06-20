@@ -910,7 +910,7 @@ describe "JIT" do
       (fn f [a b]
         (yield a)
         (var c (yield b))
-        (yield c)
+        (yield ^^last c)
       )
       (var x (callcc f))
       (var first  (x 1 2))  # => 1
@@ -918,7 +918,7 @@ describe "JIT" do
       # (x .done?) => false
       (var third  (x 3))    # => 3
       # (x .done?) => true
-      (first + second + third)
+      ((first + second) + third)
     " do
       pending
       mod = @compiler.parse_and_compile example.description
