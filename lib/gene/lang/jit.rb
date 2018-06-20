@@ -401,6 +401,10 @@ module Gene::Lang::Jit
 
     instr 'yield' do |value_reg|
       # Copy value in caller's default register
+      id, reg = @registers['return_reg']
+      if reg
+        @registers_mgr[id][reg] = @registers['default']
+      end
       # Update continuation's execution position
     end
 
