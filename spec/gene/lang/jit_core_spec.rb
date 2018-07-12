@@ -42,5 +42,13 @@ describe "JIT Core Lib" do
       mod = @compiler.parse_and_compile example.description
       @app.run_module(mod).should == ENV['HOME']
     end
+
+    it "
+      (gene/Env/set 'TEST' 'haha')
+      (gene/Env 'TEST')
+    " do
+      mod = @compiler.parse_and_compile example.description
+      @app.run_module(mod).should == 'haha'
+    end
   end
 end

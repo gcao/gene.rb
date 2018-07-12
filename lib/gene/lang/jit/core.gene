@@ -13,7 +13,11 @@
   )
 
   (fn Env name
-    (gene_env_read name)
+    (gene_env_get name)
+  )
+
+  (fn Env/set [name value]
+    (gene_env_set name value)
   )
 )
 
