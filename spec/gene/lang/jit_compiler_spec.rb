@@ -4,7 +4,6 @@ include Gene::Lang::Jit
 
 describe "JIT Compiler" do
   before do
-    pending
     @compiler = Compiler.new
   end
 
@@ -13,7 +12,9 @@ describe "JIT Compiler" do
   " do
     result = @compiler.parse_and_compile example.description
     result.primary_block.instructions.should == [
-      [DEFINE, 'a'],
+      [INIT],
+      [DEF_MEMBER, 'a', nil, {'type' => 'scope'}],
+      [CALL_END],
     ]
   end
 
@@ -22,7 +23,9 @@ describe "JIT Compiler" do
   " do
     result = @compiler.parse_and_compile example.description
     result.primary_block.instructions.should == [
-      [READ, 'a'],
+      [INIT],
+      [GET_MEMBER, 'a'],
+      [CALL_END],
     ]
   end
 end
