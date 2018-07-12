@@ -765,6 +765,29 @@ describe "JIT" do
     end
 
     it "
+      # define variable on namespace
+      (ns N
+        (var self/a 1)
+      )
+      N/a
+    " do
+      mod = @compiler.parse_and_compile example.description
+      app = Application.new(mod)
+      app.run.should == 1
+    end
+
+    it "
+      # define variable on namespace
+      (ns N)
+      (var N/a 1)
+      N/a
+    " do
+      mod = @compiler.parse_and_compile example.description
+      app = Application.new(mod)
+      app.run.should == 1
+    end
+
+    it "
       # global should work
       (fn global/f _ 1)
       (global/f)

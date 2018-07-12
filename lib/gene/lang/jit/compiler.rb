@@ -259,10 +259,20 @@ module Gene::Lang::Jit
 
     def compile_var block, source, options
       name = source.data.first.to_s
-      if source.data.length == 1
+      if name.include? '/'
+        namespace, _, name = name.rpartition '/'
+        compile_symbol block, namespace, options
+        ns_reg = copy_and_return_reg block
+        if source.data.length == 1
+          block.add_instr [DEF_CHILD_MEMBER, ns_reg, name, nil]
+        else
+          compile_ block, source.data[1], options
+          block.add_instr [DEF_CHILD_MEMBER, ns_reg, name, 'default']
+        end
+
+      elsif source.data.length == 1
         block.add_instr [DEF_MEMBER, name, nil, {'type' => 'scope'}]
       else
-        # TODO: compile value, store in default register, define member with value in default
         compile_ block, source.data[1], options
         block.add_instr [DEF_MEMBER, name, 'default', {'type' => 'scope'}]
       end
@@ -372,7 +382,6 @@ module Gene::Lang::Jit
 
     # Options: type = namespace or scope
     def compile_name block, name, options
-
       if name.include? '/'
         value_reg = copy_and_return_reg block
 
