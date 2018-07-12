@@ -68,6 +68,7 @@ describe Gene::Parser do
     '(a)'      => Gene::Types::Base.new(Gene::Types::Symbol.new('a')),
     '(a b)'    => Gene::Types::Base.new(Gene::Types::Symbol.new('a'), Gene::Types::Symbol.new('b')),
     '(a, b,)'  => Gene::Types::Base.new(Gene::Types::Symbol.new('a'), Gene::Types::Symbol.new('b')),
+    '((a).b)'  => Gene::Types::Base.new(Gene::Types::Base.new(Gene::Types::Symbol.new('a')), Gene::Types::Symbol.new('.b')),
     '(#.. 1 2)'  => 1..2,
     '(#<> 1 2)'  => Set.new([1, 2]),
 
