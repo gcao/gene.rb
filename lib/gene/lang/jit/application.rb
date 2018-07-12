@@ -246,6 +246,8 @@ module Gene::Lang::Jit
   end
 
   class Function
+    include NamespaceLike
+
     # args are processed in the function body
     attr_reader :name, :body
     attr_reader :inherit_scope
@@ -271,6 +273,18 @@ module Gene::Lang::Jit
       else
         @eval_arguments = true
       end
+
+      # Required by NamespaceLike
+      @members = {}
+    end
+
+    # Re-define NamespaceLike methods
+    def parent_namespace
+      @namespace
+    end
+
+    def parent_namespace= namespace
+      @namespace = namespace
     end
   end
 

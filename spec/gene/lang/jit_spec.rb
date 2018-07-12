@@ -788,6 +788,17 @@ describe "JIT" do
     end
 
     it "
+      # function can be used as a namespace
+      (fn f)
+      (var f/a 1)
+      f/a
+    " do
+      mod = @compiler.parse_and_compile example.description
+      app = Application.new(mod)
+      app.run.should == 1
+    end
+
+    it "
       # global should work
       (fn global/f _ 1)
       (global/f)
