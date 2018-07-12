@@ -752,6 +752,20 @@ describe "JIT" do
     it "
       # namespace should work
       (ns N
+        (ns M)
+      )
+      (class N/M/C)
+      N/M/C
+    " do
+      pending
+      mod = @compiler.parse_and_compile example.description
+      app = Application.new(mod)
+      app.run.should_not be_nil
+    end
+
+    it "
+      # namespace should work
+      (ns N
         (module M
           (fn f _ (g))
         )
