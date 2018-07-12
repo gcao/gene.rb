@@ -12,6 +12,12 @@
     )
   )
 
+  (class String
+    (method length _
+      ($invoke self 'length')
+    )
+  )
+
   (fn Env name
     (gene_env_get name)
   )

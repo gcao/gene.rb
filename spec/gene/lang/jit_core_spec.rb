@@ -51,4 +51,14 @@ describe "JIT Core Lib" do
       @app.run_module(mod).should == 'haha'
     end
   end
+
+  describe "String" do
+    it "
+      ('abc' .length)
+    " do
+      mod = @compiler.parse_and_compile example.description
+      p mod
+      @app.run_module(mod, debug: true).should == 3
+    end
+  end
 end

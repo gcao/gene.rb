@@ -514,7 +514,12 @@ module Gene::Lang::Jit
 
     instr 'get_class' do |reg|
       obj = @registers[reg]
-      @registers['default'] = obj.class
+      # @registers['default'] = obj.class
+      cls = obj.class
+      if cls == String
+        cls = @application.global.get_member('gene').get_member('String')
+      end
+      @registers['default'] = cls
     end
 
     instr 'create_inheritance_hierarchy' do |reg|
