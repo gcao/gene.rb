@@ -1,6 +1,16 @@
 (ns global/gene
   (class Object
   )
+
+  (class File
+    (fn read file
+      (gene_file_read file)
+    )
+
+    (fn write [file content]
+      (gene_file_write file content)
+    )
+  )
 )
 
 undefined

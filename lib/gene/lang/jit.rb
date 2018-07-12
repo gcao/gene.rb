@@ -470,6 +470,22 @@ module Gene::Lang::Jit
       @registers['default'] = result
     end
 
+    instr 'call_internal' do |name|
+      result = Gene::UNDEFINED
+
+      if name == 'gene_file_read'
+        file   = @registers['default'][0]
+        result = File.read file
+      elsif name == 'gene_file_write'
+        file, content = @registers['default']
+        File.write file, content
+      else
+        raise "NOT IMPLEMENTED: #{name}"
+      end
+
+      @registers['default'] = result
+    end
+
     instr 'ns' do |name|
       context = @registers['context']
       ns = Gene::Lang::Jit::Namespace.new name, context.namespace

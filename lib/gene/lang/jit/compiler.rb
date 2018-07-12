@@ -237,6 +237,8 @@ module Gene::Lang::Jit
           compile_assert block, source, options
         elsif type == "print"
           compile_print block, source, options
+        elsif type.is_a?(String) && type =~ /^gene_.*/
+          compile_internal block, source, options
         else
           compile_invocation block, source, options
         end
@@ -389,6 +391,12 @@ module Gene::Lang::Jit
       else
         block.add_instr [DEF_MEMBER, name, 'default', options]
       end
+    end
+
+    def compile_internal block, source, options
+      compile_ block, source.data, options
+
+      block.add_instr [CALL_INTERNAL, source.type.to_s]
     end
 
     def compile_invocation block, source, options
