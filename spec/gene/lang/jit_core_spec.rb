@@ -67,4 +67,32 @@ describe "JIT Core Lib" do
       @app.run_module(mod).should == 3
     end
   end
+
+  describe "Array" do
+    it "
+      ([3] .length)
+    " do
+      mod = @compiler.parse_and_compile example.description
+      @app.run_module(mod).should == 1
+    end
+
+    it "
+      (var sum 0)
+      ([1 2] .each (fnx item (sum += item)))
+      sum
+    " do
+      pending
+      mod = @compiler.parse_and_compile example.description
+      @app.run_module(mod).should == 3
+    end
+  end
+
+  describe "Hash" do
+    it "
+      ({^^a} .size)
+    " do
+      mod = @compiler.parse_and_compile example.description
+      @app.run_module(mod).should == 1
+    end
+  end
 end

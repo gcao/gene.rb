@@ -22,6 +22,28 @@
     )
   )
 
+  (class Array
+    (method length _
+      ($invoke self 'length')
+    )
+
+    (method get i
+      ($invoke self '[]' i)
+    )
+
+    (method each f
+      (for (var i 0) (i < (.length)) (i ++)
+        (f (.get i))
+      )
+    )
+  )
+
+  (class Hash
+    (method size _
+      ($invoke self 'size')
+    )
+  )
+
   (fn Env name
     (gene_env_get name)
   )

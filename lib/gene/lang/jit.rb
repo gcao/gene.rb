@@ -521,6 +521,10 @@ module Gene::Lang::Jit
       cls = obj.class
       if cls == String
         cls = @application.global.get_member('gene').get_member('String')
+      elsif cls == Array
+        cls = @application.global.get_member('gene').get_member('Array')
+      elsif cls == Hash
+        cls = @application.global.get_member('gene').get_member('Hash')
       end
       @registers['default'] = cls
     end
