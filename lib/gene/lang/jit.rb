@@ -476,6 +476,9 @@ module Gene::Lang::Jit
       if name == 'gene_file_read'
         file   = @registers['default'][0]
         result = File.read file
+      elsif name == 'gene_file_read_lines'
+        file   = @registers['default'][0]
+        result = File.readlines file
       elsif name == 'gene_file_write'
         file, content = @registers['default']
         File.write file, content

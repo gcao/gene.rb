@@ -33,6 +33,13 @@ describe "JIT Core Lib" do
       mod = @compiler.parse_and_compile example.description
       @app.run_module(mod).should == "test"
     end
+
+    it "
+      (gene/File/read_lines 'spec/data/test.txt')
+    " do
+      mod = @compiler.parse_and_compile example.description
+      @app.run_module(mod).should == ["Test\n", "Test 2"]
+    end
   end
 
   describe "Env" do
@@ -57,8 +64,7 @@ describe "JIT Core Lib" do
       ('abc' .length)
     " do
       mod = @compiler.parse_and_compile example.description
-      p mod
-      @app.run_module(mod, debug: true).should == 3
+      @app.run_module(mod).should == 3
     end
   end
 end

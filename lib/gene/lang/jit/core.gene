@@ -7,6 +7,10 @@
       (gene_file_read file)
     )
 
+    (fn read_lines [file callback]
+      (gene_file_read_lines file)
+    )
+
     (fn write [file content]
       (gene_file_write file content)
     )
