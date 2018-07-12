@@ -13,26 +13,34 @@ describe "JIT Core Lib" do
     gene/Object
   " do
     mod = @compiler.parse_and_compile example.description
-    @app.primary_module = mod
-    @app.run.should_not be_nil
+    @app.run_module(mod).should_not be_nil
   end
 
-  it "
-    # Read file
-    (gene/File/read 'spec/data/test.txt')
-  " do
-    mod = @compiler.parse_and_compile example.description
-    @app.primary_module = mod
-    @app.run.should == "Test\nTest 2"
+  describe "File" do
+    it "
+      # Read file
+      (gene/File/read 'spec/data/test.txt')
+    " do
+      mod = @compiler.parse_and_compile example.description
+      @app.run_module(mod).should == "Test\nTest 2"
+    end
+
+    it "
+      # Write file
+      (gene/File/write '/tmp/test.txt' 'test')
+      (gene/File/read  '/tmp/test.txt')
+    " do
+      mod = @compiler.parse_and_compile example.description
+      @app.run_module(mod).should == "test"
+    end
   end
 
-  it "
-    # Write file
-    (gene/File/write '/tmp/test.txt' 'test')
-    (gene/File/read  '/tmp/test.txt')
-  " do
-    mod = @compiler.parse_and_compile example.description
-    @app.primary_module = mod
-    @app.run.should == "test"
+  describe "Env" do
+    it "
+      (gene/Env 'HOME')
+    " do
+      mod = @compiler.parse_and_compile example.description
+      @app.run_module(mod).should == ENV['HOME']
+    end
   end
 end

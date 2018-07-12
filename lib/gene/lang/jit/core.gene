@@ -11,6 +11,10 @@
       (gene_file_write file content)
     )
   )
+
+  (fn Env name
+    (gene_env_read name)
+  )
 )
 
 undefined

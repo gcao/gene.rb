@@ -479,6 +479,9 @@ module Gene::Lang::Jit
       elsif name == 'gene_file_write'
         file, content = @registers['default']
         File.write file, content
+      elsif name == 'gene_env_read'
+        name   = @registers['default'][0]
+        result = ENV[name]
       else
         raise "NOT IMPLEMENTED: #{name}"
       end

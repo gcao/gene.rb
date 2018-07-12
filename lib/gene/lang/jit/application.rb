@@ -23,7 +23,12 @@ module Gene::Lang::Jit
     end
 
     def run options = {}
-      @vm.load_module primary_module, options
+      # @vm.load_module primary_module, options
+      run_module primary_module, options
+    end
+
+    def run_module mod, options = {}
+      @vm.load_module mod, options
     end
 
     def create_root_context
