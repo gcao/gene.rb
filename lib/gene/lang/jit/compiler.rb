@@ -231,6 +231,8 @@ module Gene::Lang::Jit
           compile_goto block, source, options
         elsif type == "callcc"
           compile_callcc block, source, options
+        elsif type == "yield"
+          compile_yield block, source, options
         elsif type == "assert"
           compile_assert block, source, options
         elsif type == "print"

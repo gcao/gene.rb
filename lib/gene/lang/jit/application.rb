@@ -1,3 +1,5 @@
+require 'forwardable'
+
 module Gene::Lang::Jit
   class Application
     attr_reader :modules
@@ -268,12 +270,33 @@ module Gene::Lang::Jit
   end
 
   class Continuation
+    include Forwardable
+
     attr_accessor :function
     attr_accessor :next_pos
     attr_accessor :registers
 
+    # TODO: fix this
+    # def_delegators :@function, :body
+
     def initialize function
       @function = function
+    end
+
+    def body
+      @function.body
+    end
+
+    def inherit_scope
+      @function.inherit_scope
+    end
+
+    def scope
+      @function.scope
+    end
+
+    def namespace
+      @function.namespace
     end
 
     def done?

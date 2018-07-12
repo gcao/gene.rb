@@ -920,7 +920,6 @@ describe "JIT" do
       # (x .done?) => true
       ((first + second) + third)
     " do
-      pending
       mod = @compiler.parse_and_compile example.description
       app = Application.new(mod)
       app.run.should == 6

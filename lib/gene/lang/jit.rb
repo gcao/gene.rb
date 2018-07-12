@@ -17,6 +17,10 @@ module Gene::Lang::Jit
       @store = {}
     end
 
+    def add register
+      @store[register.id] = register
+    end
+
     def create
       registers = Registers.new
       @store[registers.id] = registers
@@ -315,6 +319,34 @@ module Gene::Lang::Jit
         @registers['fn'] = fn
         inherit_scope = fn.inherit_scope
         parent_scope  = fn.scope
+
+        if fn.is_a? Gene::Lang::Jit::Continuation
+          # Restore or save the registers in the continuation object
+          if fn.registers
+            # Discard the newly-created registers
+            @registers_mgr.destroy @registers
+
+            @registers = fn.registers
+            @registers_mgr.add @registers
+
+            @registers['return_addr'] = return_addr
+
+            # Only one argument is accepted
+            args_reg    = options['args_reg']
+            args        = caller_regs[args_reg]
+            @registers['default'] = args[0]
+
+            block_id      = caller_regs[block_id_reg]
+            @block        = @blocks[block_id]
+
+            @instructions = @block.instructions
+            @exec_pos     = fn.next_pos
+            @jumped       = true
+            return
+          else
+            fn.registers = @registers
+          end
+        end
       end
 
       if inherit_scope
@@ -402,10 +434,25 @@ module Gene::Lang::Jit
     instr 'yield' do |value_reg|
       # Copy value in caller's default register
       id, reg = @registers['return_reg']
-      if reg
-        @registers_mgr[id][reg] = @registers['default']
-      end
+      caller_registers = @registers_mgr[id]
+      caller_registers[reg] = @registers['default']
+
       # Update continuation's execution position
+      continuation = @registers['fn']
+      continuation.next_pos = @exec_pos + 1
+
+      # Switch to caller's block
+      caller_block_id, pos = @registers['return_addr']
+      @block        = @blocks[caller_block_id]
+      @instructions = @block.instructions
+      @exec_pos     = pos
+      @jumped       = true
+
+      # Delete the registers of current block
+      @registers_mgr.destroy @registers.id
+
+      # Switch to the caller's registers
+      @registers = caller_registers
     end
 
     instr 'call_native' do |target_reg, method, args_reg = nil|
