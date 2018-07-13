@@ -81,7 +81,6 @@ describe "JIT Core Lib" do
       ([1 2] .each (fnx item (sum += item)))
       sum
     " do
-      pending
       mod = @compiler.parse_and_compile example.description
       @app.run_module(mod).should == 3
     end
