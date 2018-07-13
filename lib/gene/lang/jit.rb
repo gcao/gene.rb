@@ -462,18 +462,13 @@ module Gene::Lang::Jit
       @registers['default'] = result
     end
 
-    instr 'call_native_dynamic' do |target_reg, method_reg, args_reg = nil|
-      target = @registers[target_reg]
-      method = @registers[method_reg]
-      args   = args_reg ? @registers[args_reg] : []
-      result = target.send method, *args
-      @registers['default'] = result
-    end
-
     instr 'call_internal' do |name|
       result = Gene::UNDEFINED
 
-      if name == 'gene_file_read'
+      if name == 'gene_invoke'
+        target, method, *args = @registers['default']
+        result = target.send method, *args
+      elsif name == 'gene_file_read'
         file   = @registers['default'][0]
         result = File.read file
       elsif name == 'gene_file_read_lines'

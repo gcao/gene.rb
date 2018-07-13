@@ -235,8 +235,6 @@ module Gene::Lang::Jit
           compile_assert block, source, options
         elsif type == "print"
           compile_print block, source, options
-        elsif type == "gene_invoke"
-          compile_invoke block, source, options
         elsif type.is_a?(String) && type =~ /^gene_.*/
           compile_internal block, source, options
         else
@@ -932,20 +930,6 @@ module Gene::Lang::Jit
         block.add_instr [PRINT, 'default', false]
       end
       block.add_instr [DEFAULT, nil]
-    end
-
-    def compile_invoke block, source, options
-      target, method, *args = source.data
-
-      compile_ block, target, options
-      target_reg = copy_and_return_reg block
-
-      compile_ block, method, options
-      method_reg = copy_and_return_reg block
-
-      compile_array block, args, options
-
-      block.add_instr [CALL_NATIVE_DYNAMIC, target_reg, method_reg, 'default']
     end
 
     def compile_try block, source, options
