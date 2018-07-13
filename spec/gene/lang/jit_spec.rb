@@ -196,7 +196,7 @@ describe "JIT" do
     end
 
     it "
-      ($invoke 'abc' '[]' 1)
+      (gene_invoke 'abc' '[]' 1)
     " do
       mod = @compiler.parse_and_compile example.description
       app = Application.new(mod)

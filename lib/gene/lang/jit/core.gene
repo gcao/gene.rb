@@ -18,17 +18,17 @@
 
   (class String
     (method length _
-      ($invoke self 'length')
+      (gene_invoke self 'length')
     )
   )
 
   (class Array
     (method length _
-      ($invoke self 'length')
+      (gene_invoke self 'length')
     )
 
     (method get i
-      ($invoke self '[]' i)
+      (gene_invoke self '[]' i)
     )
 
     (method each f
@@ -40,7 +40,7 @@
 
   (class Hash
     (method size _
-      ($invoke self 'size')
+      (gene_invoke self 'size')
     )
   )
 

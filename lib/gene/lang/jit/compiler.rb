@@ -219,8 +219,6 @@ module Gene::Lang::Jit
           compile_eval block, source, options
         elsif type == "render"
           compile_render block, source, options
-        elsif type == "$invoke"
-          compile_invoke block, source, options
         elsif type == "try$"
           compile_try block, source, options
         elsif type == "throw"
@@ -237,6 +235,8 @@ module Gene::Lang::Jit
           compile_assert block, source, options
         elsif type == "print"
           compile_print block, source, options
+        elsif type == "gene_invoke"
+          compile_invoke block, source, options
         elsif type.is_a?(String) && type =~ /^gene_.*/
           compile_internal block, source, options
         else
