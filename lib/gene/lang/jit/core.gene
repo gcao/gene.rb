@@ -42,6 +42,19 @@
     (method size _
       (gene_invoke self 'size')
     )
+
+    (method get key
+      (gene_invoke self '[]' key)
+    )
+
+    (method each f
+      (var keys (gene_invoke self 'keys'))
+      (for (var i 0) (i < (.size)) (i += 1)
+        (var key (keys .get i))
+        (var val (.get key))
+        (f key val)
+      )
+    )
   )
 
   (fn Env name

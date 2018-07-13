@@ -93,5 +93,16 @@ describe "JIT Core Lib" do
       mod = @compiler.parse_and_compile example.description
       @app.run_module(mod).should == 1
     end
+
+    it "
+      (var result '')
+      ({^a '1' ^b '2'} .each
+        (fnx [key val] (result += (key + val)))
+      )
+      result
+    " do
+      mod = @compiler.parse_and_compile example.description
+      @app.run_module(mod).should == "a1b2"
+    end
   end
 end
