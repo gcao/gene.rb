@@ -20,6 +20,15 @@
     (method length _
       (gene_invoke self 'length')
     )
+
+    (method substr [start end]
+      (if (! end) (end = ((.length) - start)))
+      (gene_invoke self '[]' start end)
+    )
+
+    (method split sep
+      (gene_invoke self 'split' sep)
+    )
   )
 
   (class Array

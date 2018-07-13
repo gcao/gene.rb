@@ -66,6 +66,20 @@ describe "JIT Core Lib" do
       mod = @compiler.parse_and_compile example.description
       @app.run_module(mod).should == 3
     end
+
+    it "
+      ('a,b' .split ',')
+    " do
+      mod = @compiler.parse_and_compile example.description
+      @app.run_module(mod).should == ['a', 'b']
+    end
+
+    it "
+      ('abc' .substr 1)
+    " do
+      mod = @compiler.parse_and_compile example.description
+      @app.run_module(mod).should == 'bc'
+    end
   end
 
   describe "Array" do
