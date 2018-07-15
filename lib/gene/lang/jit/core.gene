@@ -73,6 +73,23 @@
   (fn Env/set [name value]
     (gene_env_set name value)
   )
+
+  (class Http
+    (fn get url
+      (Response .new "200" '{}')
+    )
+
+    (class Response
+      (init [status body]
+        (@status = status)
+        (@body   = body)
+      )
+
+      (method status _
+        @status
+      )
+    )
+  )
 )
 
 undefined

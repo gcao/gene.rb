@@ -119,4 +119,14 @@ describe "JIT Core Lib" do
       @app.run_module(mod).should == "a1b2"
     end
   end
+
+  describe "Http" do
+    it "
+      ((gene/Http/get 'https://github.com') .status)
+    " do
+      mod = @compiler.parse_and_compile example.description
+      p mod
+      @app.run_module(mod, debug: true).should == '200'
+    end
+  end
 end
