@@ -437,9 +437,11 @@ module Gene::Lang::Jit
       caller_registers = @registers_mgr[id]
       caller_registers[reg] = @registers['default']
 
-      # Update continuation's execution position
       continuation = @registers['fn']
-      continuation.next_pos = @exec_pos + 1
+      if continuation.is_a? Gene::Lang::Jit::Continuation
+        # Update continuation's execution position
+        continuation.next_pos = @exec_pos + 1
+      end
 
       # Switch to caller's block
       caller_block_id, pos = @registers['return_addr']

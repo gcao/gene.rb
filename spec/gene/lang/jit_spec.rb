@@ -972,6 +972,18 @@ describe "JIT" do
       app = Application.new(mod)
       app.run.should == 6
     end
+
+    it "
+      (fn f _
+        (yield 1)
+        (yield 2)
+      )
+      (f)
+    " do
+      mod = @compiler.parse_and_compile example.description
+      app = Application.new(mod)
+      app.run.should == 1
+    end
   end
 
   describe "Complex expressions" do
