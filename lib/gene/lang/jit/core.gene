@@ -76,7 +76,7 @@
 
   (class Http
     (fn get url
-      (Response .new "200" '{}')
+      (new Response '200' '{}')
     )
 
     (class Response
@@ -87,6 +87,10 @@
 
       (method status _
         @status
+      )
+
+      (method body _
+        @body
       )
     )
   )

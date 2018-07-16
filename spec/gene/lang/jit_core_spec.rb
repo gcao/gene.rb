@@ -125,8 +125,14 @@ describe "JIT Core Lib" do
       ((gene/Http/get 'https://github.com') .status)
     " do
       mod = @compiler.parse_and_compile example.description
-      p mod
-      @app.run_module(mod, debug: true).should == '200'
+      @app.run_module(mod).should == '200'
+    end
+
+    it "
+      ((gene/Http/get 'https://github.com') .body)
+    " do
+      mod = @compiler.parse_and_compile example.description
+      @app.run_module(mod).should == '{}'
     end
   end
 end
