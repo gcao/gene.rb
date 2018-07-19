@@ -974,6 +974,7 @@ describe "JIT" do
     end
 
     it "
+      # TODO: should we allow generator functions be called like regular functions?
       (fn f _
         (yield 1)
         (yield 2)
@@ -983,6 +984,16 @@ describe "JIT" do
       mod = @compiler.parse_and_compile example.description
       app = Application.new(mod)
       app.run.should == 1
+    end
+
+    it "
+      ((a -> (a + 1)) 1)
+    " do
+      pending
+      mod = @compiler.parse_and_compile example.description
+      p mod
+      app = Application.new(mod)
+      app.run(debug: true).should == 2
     end
   end
 
