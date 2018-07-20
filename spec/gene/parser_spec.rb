@@ -124,6 +124,7 @@ describe Gene::Parser do
     end
 
     it '{a : b}' do
+      #TODO: remove support of this
       result = Gene::Parser.parse(example.description)
       result.keys.first.should == 'a'
       result.values.first.should == Gene::Types::Symbol.new('b')
@@ -135,9 +136,29 @@ describe Gene::Parser do
       result.values.first.should == Gene::Types::Symbol.new('b')
     end
 
+    it '
+      (#SUPPORT non_string_hash_key)
+      {^ a b}
+    ' do
+      pending
+      result = Gene::Parser.parse(example.description)
+      result.keys.first.should   == Gene::Types::Symbol.new('a')
+      result.values.first.should == Gene::Types::Symbol.new('b')
+    end
+
     it '{^^a}' do
       result = Gene::Parser.parse(example.description)
       result.keys.first.should == 'a'
+      result.values.first.should == true
+    end
+
+    it '
+      (#SUPPORT non_string_hash_key)
+      {^^ a}
+    ' do
+      pending
+      result = Gene::Parser.parse(example.description)
+      result.keys.first.should   == Gene::Types::Symbol.new('a')
       result.values.first.should == true
     end
 
@@ -147,7 +168,18 @@ describe Gene::Parser do
       result.values.first.should == false
     end
 
-    ['{a : b c : d}', '{a : b, c : d}', '{,a : b, c : d,}'].each do |input|
+    it '
+      (#SUPPORT non_string_hash_key)
+      {^! a}
+    ' do
+      pending
+      result = Gene::Parser.parse(example.description)
+      result.keys.first.should   == Gene::Types::Symbol.new('a')
+      result.values.first.should == false
+    end
+
+    # ['{a : b c : d}', '{a : b, c : d}', '{,a : b, c : d,}'].each do |input|
+    ['{^a b ^c d}', '{^a b, ^c d}', '{,^a b, ^c d,}'].each do |input|
       it input do
         result = Gene::Parser.parse(example.description)
         result.keys.should include('a')
@@ -244,12 +276,29 @@ describe Gene::Parser do
       result = Gene::Parser.parse(example.description)
       result.should == "1.0"
     end
+
+    it '
+      (#SUPPORT non_string_hash_key) 1
+    ' do
+      pending
+      result = Gene::Parser.parse(example.description)
+      result.should == 1
+    end
+
+    it '
+      (#SUPPORT? non_string_hash_key)
+    ' do
+      pending
+      result = Gene::Parser.parse(example.description)
+      result.should == false
+    end
   end
 
   # An optional readonly environment hash is passed in to the parser
   # By default it'll be the environment a process is attached to
   # However a custom environment can be passed in too
   # When a custom environment is passed in, what restriction do we need on its values?
+  #   value can be any Gene data
   describe 'Environment' do
     it '(#ENV "USER")' do
       result = Gene::Parser.parse(example.description)
