@@ -993,6 +993,42 @@ describe "JIT" do
       app = Application.new(mod)
       app.run.should == 2
     end
+
+    it "
+      (var a (-> 1))
+      (a)
+    " do
+      mod = @compiler.parse_and_compile example.description
+      app = Application.new(mod)
+      app.run.should == 1
+    end
+
+    it "
+      (var a (-> (var b 1) (var c 2) (b + c)))
+      (a)
+    " do
+      mod = @compiler.parse_and_compile example.description
+      app = Application.new(mod)
+      app.run.should == 3
+    end
+
+    it "
+      (var a (b -> b))
+      (a 1)
+    " do
+      mod = @compiler.parse_and_compile example.description
+      app = Application.new(mod)
+      app.run.should == 1
+    end
+
+    it "
+      (var a ([b c] -> (b + c)))
+      (a 1 2)
+    " do
+      mod = @compiler.parse_and_compile example.description
+      app = Application.new(mod)
+      app.run.should == 3
+    end
   end
 
   describe "Complex expressions" do
