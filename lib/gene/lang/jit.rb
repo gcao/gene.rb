@@ -298,6 +298,15 @@ module Gene::Lang::Jit
       @registers['default'] = fn
     end
 
+    instr 'block' do |body|
+      context = @registers['context']
+      block = Gene::Lang::Jit::Block.new body
+      block.namespace = context.namespace
+      block.scope = context.scope
+      # TODO: set return address, break address and continue address
+      @registers['default'] = block
+    end
+
     # call block_id options: initialize a block with options
     # options : a hash that contains below keys / values
     #   return_addr: caller block id, next pos

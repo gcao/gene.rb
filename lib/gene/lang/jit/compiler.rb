@@ -193,6 +193,8 @@ module Gene::Lang::Jit
           compile_for block, source, options
         elsif type == "fn$"
           compile_fn block, source, options
+        elsif type == "block$"
+          compile_block block, source, options
         elsif type == "class$"
           compile_class block, source, options
         elsif type == "module"
@@ -376,6 +378,31 @@ module Gene::Lang::Jit
       block.add_instr [FN, name, body_block.id, source['options']]
 
       compile_name block, name, {'type' => 'namespace'}
+    end
+
+    def compile_block block, source, options
+      # Compile function body as a block
+      # Function default args are evaluated in the block as well
+      body_block      = CompiledBlock.new
+      body_block.name = 'block'
+
+      # Arguments & default values
+      args = source['args']
+      args.data_matchers.each do |matcher|
+        if matcher.end_index.nil?
+          body_block.add_instr [GET, 'args', matcher.index, 'default']
+        else
+          body_block.add_instr [GET_RANGE, 'args', matcher.index, matcher.end_index]
+        end
+        body_block.add_instr [DEF_MEMBER, matcher.name, 'default']
+      end
+
+      compile_ body_block, source['body'], options
+      body_block.add_instr [CALL_END]
+
+      @mod.add_block body_block
+
+      block.add_instr [BLOCK, body_block.id]
     end
 
     # Options: type = namespace or scope

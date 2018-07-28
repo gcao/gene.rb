@@ -989,11 +989,9 @@ describe "JIT" do
     it "
       ((a -> (a + 1)) 1)
     " do
-      pending
       mod = @compiler.parse_and_compile example.description
-      p mod
       app = Application.new(mod)
-      app.run(debug: true).should == 2
+      app.run.should == 2
     end
   end
 

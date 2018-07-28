@@ -326,6 +326,22 @@ module Gene::Lang::Jit
     end
   end
 
+  class Block
+    attr_reader :body
+    # TODO: store execution context: registers, return addr (can be found in registers), break address, continue address
+
+    attr_accessor :namespace
+    attr_accessor :scope
+
+    def initialize body, options = {}
+      @body = body
+    end
+
+    def inherit_scope
+      false
+    end
+  end
+
   # Module is like Class, except it doesn't include init and parent class
   # TODO: support aspects - before, after, when - works like  before -> when -> method -> when -> after
   # TODO: support meta programming - method_added, method_removed, method_missing

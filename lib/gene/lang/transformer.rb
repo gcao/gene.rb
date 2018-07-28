@@ -9,12 +9,16 @@ class Gene::Lang::Transformer
     const_set name, Gene::Types::Symbol.new("#{name.downcase}")
   end
 
+  BLOCK = Gene::Types::Symbol.new("->")
+
   def call input, options = {}
     if not input.is_a? Gene::Types::Base
       return input
     end
 
-    if input === IF
+    if input === BLOCK or input[0] == BLOCK
+      transform_block input, options
+    elsif input === IF
       transform_if input, options
     elsif input === FN or input === FNX or input === FNXX
       transform_fn input, options
@@ -29,6 +33,26 @@ class Gene::Lang::Transformer
     else
       input
     end
+  end
+
+  def transform_block input, options
+    result = Gene::Types::Base.new(Gene::Types::Symbol.new('block$'))
+
+    if input === BLOCK
+      args = []
+      body = input.data
+    else
+      if input.type.is_a? Array
+        args = input.type
+      else
+        args = [input.type]
+      end
+      body = input.data[1..-1]
+    end
+
+    result['args'] = Gene::Lang::Matcher.from_array args
+    result['body'] = Gene::Lang::Statements.new(body || [])
+    result
   end
 
   def transform_if input, options
@@ -106,7 +130,7 @@ class Gene::Lang::Transformer
       end
     end
     result['args'] = Gene::Lang::Matcher.from_array args
-    result['body'] = Gene::Lang::Statements.new input.data[2..-1] || []
+    result['body'] = Gene::Lang::Statements.new(input.data[2..-1] || [])
     result
   end
 
@@ -129,7 +153,7 @@ class Gene::Lang::Transformer
     result = Gene::Types::Base.new(Gene::Types::Symbol.new('try$'))
     result['try']    = Gene::Lang::Statements.new
     result['catch']  = []
-    result['ensure'] = Gene::Lang::Statements.new 
+    result['ensure'] = Gene::Lang::Statements.new
 
     state = :try
     index = 0
