@@ -287,6 +287,33 @@ module Gene::Lang::Jit
     end
   end
 
+  class Macro
+    include NamespaceLike
+
+    # args are processed in the function body
+    attr_reader :name, :body
+
+    attr_accessor :namespace
+    attr_accessor :scope
+
+    def initialize name, body, options = {}
+      @name = name
+      @body = body
+
+      # Required by NamespaceLike
+      @members = {}
+    end
+
+    # Re-define NamespaceLike methods
+    def parent_namespace
+      @namespace
+    end
+
+    def parent_namespace= namespace
+      @namespace = namespace
+    end
+  end
+
   class Continuation
     include Forwardable
 

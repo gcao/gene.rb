@@ -317,6 +317,22 @@ describe "JIT" do
     end
 
     it "
+      # macro should work
+      (macro m [a b c]
+        (if a then b else c)
+      )
+      (var x 1)
+      (var y 100)
+      (m true x (y += 1))  # (y += 1) shoud not be executed
+      y
+    " do
+      pending
+      mod = @compiler.parse_and_compile example.description
+      app = Application.new(mod)
+      app.run(debug: true).should == 100
+    end
+
+    it "
       # function should work
       (fnx)
     " do

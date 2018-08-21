@@ -75,4 +75,15 @@
   )
 )
 
+# Mimic how ruby runs code when this file is invoked directly
+# (if ($0 == __FILE__)
+# )
+# Or
+# (main
+# )
+
+# Mimic main() in C/C++
+# (fn main []
+# )
+
 undefined
