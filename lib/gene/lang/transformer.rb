@@ -2,6 +2,7 @@ class Gene::Lang::Transformer
   %W(
     IF ELSE_IF ELSE
     FN FNX FNXX
+    MACRO
     CLASS EXTEND METHOD
     IMPORT FROM AS
     TRY CATCH ENSURE
@@ -18,6 +19,8 @@ class Gene::Lang::Transformer
       transform_if input, options
     elsif input === FN or input === FNX or input === FNXX
       transform_fn input, options
+    elsif input === MACRO
+      transform_macro input, options
     elsif input === METHOD
       transform_method input, options
     elsif input === CLASS
@@ -94,6 +97,29 @@ class Gene::Lang::Transformer
     result
   end
 
+  def transform_macro input, options
+    result = Gene::Types::Base.new(Gene::Types::Symbol.new('macro$'))
+    result['options'] = input.properties
+
+    name = input.data[0]
+    args = input.data[1]
+    body = input.data[2..-1]
+
+    result['name'] = name
+
+    if args.is_a? Gene::Types::Symbol
+      if args.to_s == "_"
+        args = []
+      else
+        args = [args]
+      end
+    end
+
+    result['args'] = Gene::Lang::Matcher.from_array args
+    result['body'] = Gene::Lang::Statements.new(body || [])
+    result
+  end
+
   def transform_method input, options
     result = Gene::Types::Base.new(Gene::Types::Symbol.new('method$'))
     result['name'] = input.data[0]
@@ -129,7 +155,7 @@ class Gene::Lang::Transformer
     result = Gene::Types::Base.new(Gene::Types::Symbol.new('try$'))
     result['try']    = Gene::Lang::Statements.new
     result['catch']  = []
-    result['ensure'] = Gene::Lang::Statements.new 
+    result['ensure'] = Gene::Lang::Statements.new
 
     state = :try
     index = 0

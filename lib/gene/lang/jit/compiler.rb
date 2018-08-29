@@ -193,6 +193,8 @@ module Gene::Lang::Jit
           compile_for block, source, options
         elsif type == "fn$"
           compile_fn block, source, options
+        elsif type == "macro$"
+          compile_macro block, source, options
         elsif type == "class$"
           compile_class block, source, options
         elsif type == "module"
@@ -374,6 +376,36 @@ module Gene::Lang::Jit
 
       # Create a function object and store in namespace/scope
       block.add_instr [FN, name, body_block.id, source['options']]
+
+      compile_name block, name, {'type' => 'namespace'}
+    end
+
+    def compile_macro block, source, options
+      # Compile macro body as a block
+      # Function default args are evaluated in the block as well
+      body_block      = CompiledBlock.new
+      body_block.name = source['name']
+
+      # Arguments & default values
+      args = source['args']
+      args.data_matchers.each do |matcher|
+        if matcher.end_index.nil?
+          body_block.add_instr [GET, 'args', matcher.index, 'default']
+        else
+          body_block.add_instr [GET_RANGE, 'args', matcher.index, matcher.end_index]
+        end
+        body_block.add_instr [DEF_MEMBER, matcher.name, 'default']
+      end
+
+      compile_ body_block, source['body'], options
+      body_block.add_instr [CALL_END]
+
+      @mod.add_block body_block
+
+      name = source['name'].to_s
+
+      # Create a function object and store in namespace/scope
+      block.add_instr [MACRO, name, body_block.id, source['options']]
 
       compile_name block, name, {'type' => 'namespace'}
     end

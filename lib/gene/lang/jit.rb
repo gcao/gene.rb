@@ -298,6 +298,14 @@ module Gene::Lang::Jit
       @registers['default'] = fn
     end
 
+    # Macro instructions
+    instr 'macro' do |name, body, options|
+      context = @registers['context']
+      macro = Gene::Lang::Jit::Macro.new name, body, options
+      macro.namespace = context.namespace
+      @registers['default'] = macro
+    end
+
     # call block_id options: initialize a block with options
     # options : a hash that contains below keys / values
     #   return_addr: caller block id, next pos

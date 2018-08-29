@@ -326,8 +326,8 @@ describe "JIT" do
       (m true x (y += 1))  # (y += 1) shoud not be executed
       y
     " do
-      pending
       mod = @compiler.parse_and_compile example.description
+      p mod
       app = Application.new(mod)
       app.run(debug: true).should == 100
     end
