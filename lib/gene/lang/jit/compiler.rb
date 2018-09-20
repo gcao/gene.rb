@@ -97,8 +97,9 @@ module Gene::Lang::Jit
         props_reg = copy_and_return_reg block
 
         compile_ block, source.data, options
+        data_reg = 'default'
 
-        block.add_instr [CREATE_OBJ, type_reg, props_reg, 'default']
+        block.add_instr [CREATE_OBJ, type_reg, props_reg, data_reg]
 
       elsif op.is_a? Gene::Types::Symbol and op.name[0] == '.'
         compile_method_invocation block, source, options
@@ -417,7 +418,7 @@ module Gene::Lang::Jit
 
       fn_reg = copy_and_return_reg block
 
-      args_reg = compile_fn_args block, source, options, fn_reg
+      args_reg = compile_args block, source, options
 
       block.add_instr [CALL_NATIVE, fn_reg, 'body']
 
@@ -798,60 +799,22 @@ module Gene::Lang::Jit
     # Compile args
     # Save to a register
     # @return the regiser address
-    def compile_fn_args block, source, options, fn_reg
-      props = source.properties
-      data  = source.data
-
-      if is_literal?(props) and is_literal?(data)
-        compile_ block, props, options
-        props_reg = copy_and_return_reg block
-        compile_ block, data, options
-        data_reg = copy_and_return_reg block
-        block.add_instr [CREATE_OBJ, nil, props_reg, data_reg]
-      else
-        # block.add_instr [CALL_NATIVE, fn_reg, 'eval_arguments']
-        # jump = block.add_instr [JUMP_IF_TRUE, nil]
-
-        # new_options = options.clone
-        # new_options[TEMPLATE_MODE] = true
-
-        # compile_hash block, props, new_options
-        # props_reg = copy_and_return_reg block
-
-        # compile_array block, data, new_options
-        # data_reg = copy_and_return_reg block
-
-        # block.add_instr [CREATE_OBJ, nil, props_reg, data_reg]
-
-        # jump2 = block.add_instr [JUMP, nil]
-
-        # jump[1] = block.length
+    def compile_args block, source, options, is_method = false
+      if source.properties and not is_literal?(source.properties)
         compile_ block, source.properties, options
         props_reg = copy_and_return_reg block
-
-        args_data = source.data
-        compile_ block, args_data, options
-        data_reg = copy_and_return_reg block
-
-        block.add_instr [CREATE_OBJ, nil, props_reg, data_reg]
-
-        # jump2[1] = block.length
+      else
+        props_reg = source.properties
       end
-
-      copy_and_return_reg block
-    end
-
-    # Compile args
-    # Save to a register
-    # @return the regiser address
-    def compile_args block, source, options, is_method = false
-      compile_ block, source.properties, options
-      props_reg = copy_and_return_reg block
 
       args_data = is_method ? source.data[1..-1] : source.data
 
-      compile_ block, args_data, options
-      data_reg = copy_and_return_reg block
+      if args_data and not is_literal?(args_data)
+        compile_ block, args_data, options
+        data_reg = copy_and_return_reg block
+      else
+        data_reg = args_data
+      end
 
       block.add_instr [CREATE_OBJ, nil, props_reg, data_reg]
       args_reg = copy_and_return_reg block

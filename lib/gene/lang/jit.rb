@@ -199,8 +199,16 @@ module Gene::Lang::Jit
 
     instr 'create_obj' do |type_reg, properties_reg, data_reg|
       type       = @registers[type_reg]
-      properties = @registers[properties_reg]
-      data       = @registers[data_reg]
+      if properties_reg.is_a? String
+        properties = @registers[properties_reg]
+      else
+        properties = properties_reg
+      end
+      if data_reg.is_a? String
+        data       = @registers[data_reg]
+      else
+        data       = data_reg
+      end
 
       obj = Gene::Types::Base.new type
       obj.properties = properties
