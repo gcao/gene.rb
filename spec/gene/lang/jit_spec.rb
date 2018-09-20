@@ -253,6 +253,15 @@ describe "JIT" do
     end
 
     it "
+      # do should work
+      (do 1 2)
+    " do
+      mod = @compiler.parse_and_compile example.description
+      app = Application.new(mod)
+      app.run.should == 2
+    end
+
+    it "
       # if should work
       (if true 1 else 2)
     " do
@@ -869,7 +878,7 @@ describe "JIT" do
       (var a 1)
       (eval
         (if true
-          `(#STREAM (var b 2) (a + b))
+          `(do (var b 2) (a + b))
         else
           `a
         )

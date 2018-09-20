@@ -185,6 +185,8 @@ module Gene::Lang::Jit
           compile_var block, source, options
         elsif type == "undef"
           compile_undef block, source, options
+        elsif type == "do"
+          compile_do block, source, options
         elsif type == "if"
           compile_if block, source, options
         elsif type == "loop"
@@ -279,6 +281,10 @@ module Gene::Lang::Jit
     def compile_undef block, source, options
       name = source.data.first.to_s
       block.add_instr [UNDEF_MEMBER, name]
+    end
+
+    def compile_do block, source, options
+      compile_statements block, source.data, options
     end
 
     def compile_if block, source, options
