@@ -56,8 +56,34 @@ describe "JIT" do
       app.run.should == Gene::UNDEFINED
     end
 
+    # it "
+    #   :a
+    # " do
+    #   mod = @compiler.parse_and_compile example.description
+    #   app = Application.new(mod)
+    #   app.run.should == Gene::Types::Symbol.new('a')
+    # end
+
+    # it "
+    #   (:: 1)
+    # " do
+    #   mod = @compiler.parse_and_compile example.description
+    #   app = Application.new(mod)
+    #   app.run.should == 1
+    # end
+
+    # it "
+    #   (:: (a 1))
+    # " do
+    #   mod = @compiler.parse_and_compile example.description
+    #   app = Application.new(mod)
+    #   result = app.run
+    #   result.type.should == Gene::Types::Symbol.new('a')
+    #   result.data.should == [1]
+    # end
+
     it "
-      :a
+      `a
     " do
       mod = @compiler.parse_and_compile example.description
       app = Application.new(mod)
@@ -65,7 +91,7 @@ describe "JIT" do
     end
 
     it "
-      (:: 1)
+      `1
     " do
       mod = @compiler.parse_and_compile example.description
       app = Application.new(mod)
@@ -73,7 +99,7 @@ describe "JIT" do
     end
 
     it "
-      (:: (a 1))
+      `(a 1)
     " do
       mod = @compiler.parse_and_compile example.description
       app = Application.new(mod)
@@ -857,7 +883,9 @@ describe "JIT" do
       # eval should work
       (var a 1)
       # :a => Symbol a => eval-ed to variable a's value
-      (eval :a)
+      # (eval :a)
+      # `a => Symbol a => eval-ed to variable a's value
+      (eval `a)
     " do
       mod = @compiler.parse_and_compile example.description
       app = Application.new(mod)
@@ -869,9 +897,11 @@ describe "JIT" do
       (var a 1)
       (eval
         (if true
-          (:: (var b 2) (a + b))
+          # (:: (var b 2) (a + b))
+          `(#STREAM (var b 2) (a + b))
         else
-          :a
+          # :a
+          `a
         )
       )
     " do

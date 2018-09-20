@@ -177,7 +177,9 @@ module Gene::Lang::Jit
 
         if type[0] == "."
           compile_short_method_invocation block, source, options
-        elsif type == "::"
+        # elsif type == "::"
+        #   compile_template block, source, options
+        elsif type == "#QUOTE"
           compile_template block, source, options
         elsif type == "%%" or type == "%="
           compile_render_obj block, source, options
