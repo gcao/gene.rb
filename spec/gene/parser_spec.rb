@@ -216,6 +216,43 @@ describe Gene::Parser do
     end
   end
 
+  describe "quote" do
+    it '`a' do
+      result = Gene::Parser.parse(example.description)
+      result.class.should   == Gene::Types::Base
+      result.type.should    == Gene::Types::Symbol.new('#QUOTE')
+      result.data[0].should == Gene::Types::Symbol.new('a')
+    end
+
+    it '`(a)' do
+      result = Gene::Parser.parse(example.description)
+      result.class.should   == Gene::Types::Base
+      result.type.should    == Gene::Types::Symbol.new('#QUOTE')
+      result.data[0].should == Gene::Types::Base.new(Gene::Types::Symbol.new('a'))
+    end
+
+    it '`[1]' do
+      result = Gene::Parser.parse(example.description)
+      result.class.should   == Gene::Types::Base
+      result.type.should    == Gene::Types::Symbol.new('#QUOTE')
+      result.data[0].should == [1]
+    end
+
+    it '`{^a 1}' do
+      result = Gene::Parser.parse(example.description)
+      result.class.should   == Gene::Types::Base
+      result.type.should    == Gene::Types::Symbol.new('#QUOTE')
+      result.data[0].should == {'a' => 1}
+    end
+
+    it '`true' do
+      result = Gene::Parser.parse(example.description)
+      result.class.should   == Gene::Types::Base
+      result.type.should    == Gene::Types::Symbol.new('#QUOTE')
+      result.data[0].should == true
+    end
+  end
+
   # (#GENE ^version 1.0) sets the version of the document but does NOT insert anything in the document
   # (#GENE version) inserts the version into the document
   # (#GENE (do_this) (do_that) void) if the last value returns undefined, it'll not be inserted

@@ -37,6 +37,10 @@ module Gene
     COMMENT               = /#<(?=[,\s\(\)\[\]\{\}]|$)/
     COMMENT_END           = />#(?=[,\s\(\)\[\]\{\}]|$)/
     COMMENT_NEXT          = /##(?=[,\s\(\)\[\]\{\}]|$)/
+
+    QUOTE                 = /`/
+    QUOTE_SYMBOL          = Gene::Types::Symbol.new('#QUOTE')
+
     GROUP_OPEN            = /\(/
     GROUP_CLOSE           = /\)/
     HASH_OPEN             = /\{/
@@ -113,6 +117,8 @@ module Gene
         case
         when skip(IGNORE)
           ;
+        when (value = parse_quote) != UNPARSED
+          result << value
         when (value = parse_string) != UNPARSED
           result << value
         when (value = parse_float) != UNPARSED
@@ -227,6 +233,8 @@ module Gene
       skip(IGNORE)
 
       case
+      when (value = parse_quote) != UNPARSED
+        value
       when (value = parse_string) != UNPARSED
         value
       when (value = parse_float) != UNPARSED
@@ -262,6 +270,14 @@ module Gene
         else
           raise ParseError, "unexpected token at '#{peek(20)}'!"
         end
+      end
+    end
+
+    def parse_quote
+      if scan(QUOTE)
+        return Gene::Types::Base.new(QUOTE_SYMBOL, parse_value)
+      else
+        return UNPARSED
       end
     end
 
