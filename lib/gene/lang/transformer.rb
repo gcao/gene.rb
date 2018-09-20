@@ -1,4 +1,5 @@
 class Gene::Lang::Transformer
+  NORMALIZED = "#normalized"
   %W(
     IF ELSE_IF ELSE
     FN FNX FNXX
@@ -14,7 +15,9 @@ class Gene::Lang::Transformer
       return input
     end
 
-    if input === IF
+    if input[NORMALIZED]
+      input
+    elsif input === IF
       transform_if input, options
     elsif input === FN or input === FNX or input === FNXX
       transform_fn input, options
@@ -32,7 +35,8 @@ class Gene::Lang::Transformer
   end
 
   def transform_if input, options
-    result = Gene::Types::Base.new(Gene::Types::Symbol.new('if$'))
+    result = Gene::Types::Base.new(Gene::Types::Symbol.new('if'))
+    result[NORMALIZED] = true
 
     if_expr = result
     status  = :if
@@ -45,7 +49,9 @@ class Gene::Lang::Transformer
         if item == ELSE_IF
           # TODO
           # status = :if
-          # new_if_expr = Gene::Types::Base.new('if$')
+          # new_if_expr = Gene::Types::Base.new('if')
+          # new_if_expr[NORMALIZED] = true
+          # ...
           # if_expr['else'] = new_if_expr
         elsif item == ELSE
           status = :else
@@ -62,7 +68,8 @@ class Gene::Lang::Transformer
   end
 
   def transform_fn input, options
-    result = Gene::Types::Base.new(Gene::Types::Symbol.new('fn$'))
+    result = Gene::Types::Base.new(Gene::Types::Symbol.new('fn'))
+    result[NORMALIZED] = true
     result['options'] = input.properties
 
     if input.type == FNX
@@ -95,7 +102,8 @@ class Gene::Lang::Transformer
   end
 
   def transform_method input, options
-    result = Gene::Types::Base.new(Gene::Types::Symbol.new('method$'))
+    result = Gene::Types::Base.new(Gene::Types::Symbol.new('method'))
+    result[NORMALIZED] = true
     result['name'] = input.data[0]
     args = input.data[1]
     if args.is_a? Gene::Types::Symbol
@@ -111,8 +119,9 @@ class Gene::Lang::Transformer
   end
 
   def transform_class input, options
-    result = Gene::Types::Base.new(Gene::Types::Symbol.new('class$'))
+    result = Gene::Types::Base.new(Gene::Types::Symbol.new('class'))
 
+    result[NORMALIZED] = true
     result['name'] = input.data[0]
 
     if input.data[1] == EXTEND
@@ -126,10 +135,11 @@ class Gene::Lang::Transformer
   end
 
   def transform_try input, options
-    result = Gene::Types::Base.new(Gene::Types::Symbol.new('try$'))
+    result = Gene::Types::Base.new(Gene::Types::Symbol.new('try'))
+    result[NORMALIZED] = true
     result['try']    = Gene::Lang::Statements.new
     result['catch']  = []
-    result['ensure'] = Gene::Lang::Statements.new 
+    result['ensure'] = Gene::Lang::Statements.new
 
     state = :try
     index = 0
@@ -169,7 +179,8 @@ class Gene::Lang::Transformer
   end
 
   def transform_import input, options
-    result = Gene::Types::Base.new(Gene::Types::Symbol.new('import$'))
+    result = Gene::Types::Base.new(Gene::Types::Symbol.new('import'))
+    result[NORMALIZED] = true
 
     mappings = {}
     source   = nil

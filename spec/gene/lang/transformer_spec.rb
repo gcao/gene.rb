@@ -10,6 +10,7 @@ describe Gene::Lang::Transformer do
     it "(import a from 'test')" do
       parsed = Gene::Parser.parse(example.description)
       result = @transformer.call parsed
+      result[Gene::Lang::Transformer::NORMALIZED].should == true
       result['mappings'].should == {'a' => 'a'}
       result['source'].should   == 'test'
     end
@@ -17,6 +18,7 @@ describe Gene::Lang::Transformer do
     it "(import a as b, c from 'test')" do
       parsed = Gene::Parser.parse(example.description)
       result = @transformer.call parsed
+      result[Gene::Lang::Transformer::NORMALIZED].should == true
       result['mappings'].should == {'a' => 'b', 'c' => 'c'}
       result['source'].should   == 'test'
     end
@@ -24,6 +26,7 @@ describe Gene::Lang::Transformer do
     it "(import a/b from 'test')" do
       parsed = Gene::Parser.parse(example.description)
       result = @transformer.call parsed
+      result[Gene::Lang::Transformer::NORMALIZED].should == true
       result['mappings'].should == {'a/b' => 'b'}
       result['source'].should   == 'test'
     end
@@ -32,6 +35,7 @@ describe Gene::Lang::Transformer do
       pending
       parsed = Gene::Parser.parse(example.description)
       result = @transformer.call parsed
+      result[Gene::Lang::Transformer::NORMALIZED].should == true
       result['mappings'].should == {'a' => 'b', 'c' => 'c'}
       result['source'].should   == 'test'
       result['package'].should  == 'pkg'
@@ -52,6 +56,7 @@ describe Gene::Lang::Transformer do
       pending
       parsed = Gene::Parser.parse(example.description)
       result = @transformer.call parsed
+      result[Gene::Lang::Transformer::NORMALIZED].should == true
       result['body'].should is_a Gene::Lang::Statements
     end
   end

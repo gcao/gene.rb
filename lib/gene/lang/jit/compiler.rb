@@ -185,19 +185,19 @@ module Gene::Lang::Jit
           compile_var block, source, options
         elsif type == "undef"
           compile_undef block, source, options
-        elsif type == "if$"
+        elsif type == "if"
           compile_if block, source, options
         elsif type == "loop"
           compile_loop block, source, options
         elsif type == "for"
           compile_for block, source, options
-        elsif type == "fn$"
+        elsif type == "fn"
           compile_fn block, source, options
-        elsif type == "class$"
+        elsif type == "class"
           compile_class block, source, options
         elsif type == "module"
           compile_module block, source, options
-        elsif type == "method$"
+        elsif type == "method"
           compile_method block, source, options
         elsif type == "new"
           compile_new block, source, options
@@ -207,7 +207,7 @@ module Gene::Lang::Jit
           compile_super block, source, options
         elsif type == "ns"
           compile_namespace block, source, options
-        elsif type == "import$"
+        elsif type == "import"
           compile_import block, source, options
         elsif type == "return"
           compile_return block, source, options
@@ -219,7 +219,7 @@ module Gene::Lang::Jit
           compile_eval block, source, options
         elsif type == "render"
           compile_render block, source, options
-        elsif type == "try$"
+        elsif type == "try"
           compile_try block, source, options
         elsif type == "throw"
           compile_throw block, source, options
