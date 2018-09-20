@@ -177,10 +177,8 @@ module Gene::Lang::Jit
 
         if type[0] == "."
           compile_short_method_invocation block, source, options
-        # elsif type == "::"
-        #   compile_template block, source, options
         elsif type == "#QUOTE"
-          compile_template block, source, options
+          compile_template block, source.data[0], options
         elsif type == "%%" or type == "%="
           compile_render_obj block, source, options
         elsif type == "var"
@@ -432,12 +430,7 @@ module Gene::Lang::Jit
     def compile_template block, source, options
       options = options.clone
       options[TEMPLATE_MODE] = true
-      if source.data.length != 1
-        compile_ block, Gene::Types::Stream.new(*source.data), options
-      else
-        first = source.data[0]
-        compile_ block, first, options
-      end
+      compile_ block, source, options
     end
 
     def compile_return block, source, options
