@@ -809,23 +809,23 @@ module Gene::Lang::Jit
         data_reg = copy_and_return_reg block
         block.add_instr [CREATE_OBJ, nil, props_reg, data_reg]
       else
-        block.add_instr [CALL_NATIVE, fn_reg, 'eval_arguments']
-        jump = block.add_instr [JUMP_IF_TRUE, nil]
+        # block.add_instr [CALL_NATIVE, fn_reg, 'eval_arguments']
+        # jump = block.add_instr [JUMP_IF_TRUE, nil]
 
-        new_options = options.clone
-        new_options[TEMPLATE_MODE] = true
+        # new_options = options.clone
+        # new_options[TEMPLATE_MODE] = true
 
-        compile_hash block, props, new_options
-        props_reg = copy_and_return_reg block
+        # compile_hash block, props, new_options
+        # props_reg = copy_and_return_reg block
 
-        compile_array block, data, new_options
-        data_reg = copy_and_return_reg block
+        # compile_array block, data, new_options
+        # data_reg = copy_and_return_reg block
 
-        block.add_instr [CREATE_OBJ, nil, props_reg, data_reg]
+        # block.add_instr [CREATE_OBJ, nil, props_reg, data_reg]
 
-        jump2 = block.add_instr [JUMP, nil]
+        # jump2 = block.add_instr [JUMP, nil]
 
-        jump[1] = block.length
+        # jump[1] = block.length
         compile_ block, source.properties, options
         props_reg = copy_and_return_reg block
 
@@ -835,7 +835,7 @@ module Gene::Lang::Jit
 
         block.add_instr [CREATE_OBJ, nil, props_reg, data_reg]
 
-        jump2[1] = block.length
+        # jump2[1] = block.length
       end
 
       copy_and_return_reg block

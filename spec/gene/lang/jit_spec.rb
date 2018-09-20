@@ -313,13 +313,14 @@ describe "JIT" do
     end
 
     it "
-      # function should work
+      # When function name is prefixed with '$', arguments are not evaluated
+      # Is this a good idea?
       (fn f a
-        ^!eval_arguments
         a
       )
-      (f b)
+      ($f b)
     " do
+      pending
       mod = @compiler.parse_and_compile example.description
       app = Application.new(mod)
       app.run.should == Gene::Types::Symbol.new('b')
