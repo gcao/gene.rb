@@ -1,0 +1,15 @@
+(#PATH #type #data #properties #first #second 0 1 -2 -1 #last 'key')
+#root
+#type
+#data
+#properties
+-3, -2, -1, 0, 1, 2: individual data item
+Ranges: e.g. 1..2, range of data items
+Regular expression: e.g. /^a.*/, match subset of properties
+Functions:
+(#f (#PATH #first)) apply #f on the first data item
+(#expand (#PATH /^a.*/))
+
+(x
+  (#expand (#PATH /^a.*/))
+)
