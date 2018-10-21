@@ -3,6 +3,10 @@ require 'strscan'
 # This is copied and modified from the pure Ruby JSON parser that can be found on below page
 # https://github.com/flori/json/blob/master/lib/json/pure/parser.rb
 module Gene
+  # parsing mode
+  #   default:  if there is one entry in the document, return it, otherwise return a stream
+  #   document: return a document
+  #   stream:   return a stream object
   class Parser < StringScanner
     SEPARATOR             = /[\s()\[\]{},;]/
     SEP_OR_END            = /(?=#{SEPARATOR}|$)/
@@ -75,6 +79,10 @@ module Gene
     ENV_TYPE = Gene::Types::Symbol.new('#ENV')
 
     GENE_PI = Gene::Types::Symbol.new('#GENE')
+    PI_MODE               = Gene::Types::Symbol.new('mode')
+    DEFAULT_MODE          = :default
+    STREAM_MODE           = :stream
+    DOCUMENT_MODE         = :document
 
     # Document level instructions
     DOCUMENT_INSTRUCTIONS = %w(version)
@@ -111,7 +119,10 @@ module Gene
       @logger.debug 'parse'
       reset
 
-      result = Gene::Types::Stream.new
+      @parsing_mode = DEFAULT_MODE
+
+      attributes = {}
+      result = []
 
       until eos?
         case
@@ -138,8 +149,8 @@ module Gene
         # when (value = parse_ref) != UNPARSED
         #   result << value
         # Attribute should not appear on top level
-        # when (value = parse_attribute) != UNPARSED
-        #   result << value
+        when (value = parse_attribute(attributes)) != UNPARSED
+          next
         when (value = parse_regexp) != UNPARSED
           result << value
         when (value = parse_symbol) != UNPARSED
@@ -156,10 +167,19 @@ module Gene
         end
       end
 
-      if result.size == 1
-        result[0]
+      if @parsing_mode == DOCUMENT_MODE
+        document = Gene::Types::Document.new
+        document.properties = attributes
+        document.data = result
+        document
+      elsif @parsing_mode == STREAM_MODE
+        Gene::Types::Stream.new(*result)
       else
-        result
+        if result.size == 1
+          result[0]
+        else
+          result
+        end
       end
     end
 
@@ -561,6 +581,11 @@ module Gene
     end
 
     def handle_processing_instructions gene
+      if gene.data.first == PI_MODE
+        @parsing_mode = gene.data[1].to_s.to_sym
+        return IGNORABLE
+      end
+
       gene.properties.each do |key, value|
         if DOCUMENT_INSTRUCTIONS.include?(key)
           send "#{key}=", value
