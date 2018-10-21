@@ -605,7 +605,14 @@ module Gene
     end
 
     def handle_env gene
-      env[gene.data.first.to_s]
+      result = env[gene.data.first.to_s]
+      depth = gene.data.size
+      if depth > 1
+        1.upto(depth - 1) do |i|
+          result = result[gene.data[i]]
+        end
+      end
+      result
     end
 
     def handle_stream gene
