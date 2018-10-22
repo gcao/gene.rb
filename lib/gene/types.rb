@@ -5,7 +5,6 @@ end
 
 require 'gene/types/array'
 require 'gene/types/hash'
-require 'gene/types/document'
 require 'gene/types/stream'
 require 'gene/types/noop'
 require 'gene/types/undefined'

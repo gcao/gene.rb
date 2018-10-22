@@ -259,7 +259,7 @@ describe Gene::Parser do
   describe 'Processing instructions' do
     it '
       # Gene version the document conforms to. The parser must be able to parse. If not, throw error
-      (#GENE ^version "1.1")
+      (#GENE ^version "1.0")
       123
     ' do
       result = Gene::Parser.parse(example.description)
@@ -267,11 +267,11 @@ describe Gene::Parser do
     end
 
     it '
-      (#GENE ^version "1.1")
+      (#GENE ^version "1.0")
       (#GENE version)
     ' do
       result = Gene::Parser.parse(example.description)
-      result.should == "1.1"
+      result.should == "1.0"
     end
 
     it '
@@ -281,48 +281,12 @@ describe Gene::Parser do
       result = Gene::Parser.parse(example.description)
       result.should == "1.0"
     end
-
-    it '
-      # Set mode to document
-      (#GENE mode document)
-      1
-    ' do
-      result = Gene::Parser.parse(example.description)
-      result.class.should == Gene::Types::Document
-      result.data.should == [1]
-    end
-  end
-
-  describe 'Parsing modes' do
-    it '
-      # Set mode to stream
-      (#GENE mode stream)
-      1
-    ' do
-      result = Gene::Parser.parse(example.description)
-      result.class.should == Gene::Types::Stream
-      result[0].should == 1
-    end
-
-    it '
-      # Set mode to document
-      (#GENE mode document)
-      ^test 100
-      1
-    ' do
-      result = Gene::Parser.parse(example.description)
-      result.class.should == Gene::Types::Document
-      result.properties['test'].should == 100
-      result.data.should == [1]
-    end
   end
 
   # An optional readonly environment hash is passed in to the parser
   # By default it'll be the environment a process is attached to
   # However a custom environment can be passed in too
   # When a custom environment is passed in, what restriction do we need on its values?
-  # TODO: support default value, e.g. (#ENV "test" ^default true)
-  # TODO: support hash of hashes, and access like (#ENV "parent_key" "child_key")
   describe 'Environment' do
     it '(#ENV "USER")' do
       result = Gene::Parser.parse(example.description)
