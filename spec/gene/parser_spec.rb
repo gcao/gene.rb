@@ -334,12 +334,6 @@ describe Gene::Parser do
       result = Gene::Parser.parse(example.description, 'env' => env)
       result.should == env['test']
     end
-
-    it '(#ENV "parent" "child")' do
-      env = {'parent' => {'child' => 123}}
-      result = Gene::Parser.parse(example.description, 'env' => env)
-      result.should == env['parent']['child']
-    end
   end
 
   [
