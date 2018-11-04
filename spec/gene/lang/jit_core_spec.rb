@@ -2,6 +2,14 @@ require File.expand_path(File.dirname(__FILE__) + '/../../spec_helper')
 
 include Gene::Lang::Jit
 
+# TODO: File, directory
+# TODO: Net, http, socket
+# TODO: Html
+# TODO: Math, rand
+# TODO: Date, time
+# TODO: Regular expression
+# TODO: Thread
+# TODO: execute external command
 describe "JIT Core Lib" do
   before do
     @compiler = Compiler.new
@@ -79,6 +87,13 @@ describe "JIT Core Lib" do
     " do
       mod = @compiler.parse_and_compile example.description
       @app.run_module(mod).should == 'bc'
+    end
+
+    it "
+      ('abc' .substr 1 1)
+    " do
+      mod = @compiler.parse_and_compile example.description
+      @app.run_module(mod).should == 'b'
     end
   end
 
