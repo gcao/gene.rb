@@ -36,7 +36,6 @@ module Gene
     # REF                   = /#(?=[a-z])/
     COMMENT               = /#<(?=[,\s\(\)\[\]\{\}]|$)/
     COMMENT_END           = />#(?=[,\s\(\)\[\]\{\}]|$)/
-    COMMENT_NEXT          = /##(?=[,\s\(\)\[\]\{\}]|$)/
 
     QUOTE                 = /`/
     QUOTE_SYMBOL          = Gene::Types::Symbol.new('#QUOTE')
@@ -46,7 +45,6 @@ module Gene
     HASH_OPEN             = /\{/
     HASH_CLOSE            = /\}/
     ATTRIBUTE             = /\^(?=[+\-]?)/
-    PAIR_DELIMITER        = /:/
     COMMA                 = /,/
     ARRAY_OPEN            = /\[/
     ARRAY_CLOSE           = /\]/
@@ -243,8 +241,6 @@ module Gene
         value
       when (value = parse_keywords) != UNPARSED
         value
-      when (value = parse_comment_next) != UNPARSED
-        value
       when (value = parse_placeholder) != UNPARSED
         value
       when (value = parse_group) != UNPARSED
@@ -352,12 +348,6 @@ module Gene
       else
         return UNPARSED
       end
-    end
-
-    def parse_comment_next
-      return UNPARSED unless scan(COMMENT_NEXT)
-
-      Gene::COMMENT_NEXT
     end
 
     def parse_placeholder
@@ -524,53 +514,17 @@ module Gene
       result = {}
       closed = false
 
-      expects = %w(key delimiter value)
-      expect_index = 0
-
       until eos?
         skip_whitespace_or_comments
 
-        case expects[expect_index % expects.size]
-        when 'key'
-          if scan(HASH_CLOSE)
-            closed = true
-            break
-          elsif scan(COMMA)
-            next
-          elsif scan(COMMENT_NEXT)
-            raise ParseError, "unexpected token at '#{peek(20)}'!"
-          elsif (parsed = parse_attribute(result)) != UNPARSED
-            next
-          elsif (parsed = parse_value) == UNPARSED
-            raise ParseError, "unexpected token at '#{peek(20)}'!"
-          elsif parsed == IGNORABLE
-            # TODO: in order to support processing instructions which returns IGNORABLE in hash
-            # process it and call 'next' here
-            raise ParseError, "error at '#{peek(20)}'!"
-          else
-            key = parsed.to_s
-          end
-        when 'delimiter'
-          if !scan(PAIR_DELIMITER)
-            raise ParseError, "unexpected token at '#{peek(20)}'!"
-          end
-        when 'value'
-          if scan(HASH_CLOSE)
-            raise ParseError, "unexpected token at '#{peek(20)}'!"
-          elsif scan(COMMENT_NEXT)
-            raise ParseError, "unexpected token at '#{peek(20)}'!"
-          elsif (parsed = parse_value) == UNPARSED
-            raise ParseError, "unexpected token at '#{peek(20)}'!"
-          elsif parsed == IGNORABLE
-            raise ParseError, "error at '#{peek(20)}'!"
-          else
-            value = parsed
-            result[key] = value
-          end
+        if scan(HASH_CLOSE)
+          closed = true
+          break
+        elsif (parsed = parse_attribute(result)) != UNPARSED
+          next
         else
           raise ParseError, "unexpected token at '#{peek(20)}'!"
         end
-        expect_index += 1
       end
 
       raise PrematureEndError, "Incomplete content" unless closed

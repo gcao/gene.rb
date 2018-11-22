@@ -75,9 +75,6 @@ describe Gene::Parser do
     # Below two should be handled by the parser
     # # line comment
     # #< comment out up to >#
-    # Below two should be handled by the core interpreter
-    # ## comment out next item (structural)
-    # ##< comment out up to >## or end of group/array/hash (structural)
     # TODO need to add more tests espectially for structural comments
     "#!/usr/bin/env glang\n 1"    => 1,  # Special case: treat unix shebang as comment
     "(a # b\n)"                   => Gene::Types::Base.new(Gene::Types::Symbol.new('a')),
@@ -86,10 +83,6 @@ describe Gene::Parser do
     "[a #< this is a test >#]"    => [Gene::Types::Symbol.new('a')],
     "{^a 1 #< this is a test >#}" => {'a' => 1},
     "(a #< this is a test ># b)"  => Gene::Types::Base.new(Gene::Types::Symbol.new('a'), Gene::Types::Symbol.new('b')),
-    "(a ## b c)"                  => Gene::Types::Base.new(Gene::Types::Symbol.new('a'), Gene::COMMENT_NEXT, Gene::Types::Symbol.new('b'), Gene::Types::Symbol.new('c')),
-    "(a ##(b))"                   => Gene::Types::Base.new(Gene::Types::Symbol.new('a'), Gene::COMMENT_NEXT, Gene::Types::Base.new(Gene::Types::Symbol.new('b'))),
-    #"(a ##< b c)"                 => Gene::Types::Base.new(Gene::Types::Symbol.new('a')),
-    #"(a ##< b >## c)"             => Gene::Types::Base.new(Gene::Types::Symbol.new('a'), Gene::Types::Symbol.new('c')),
 
     '(a (b))'  => Gene::Types::Base.new(Gene::Types::Symbol.new('a'), Gene::Types::Base.new(Gene::Types::Symbol.new('b'))),
     '[a]'      => [Gene::Types::Symbol.new('a')],
@@ -126,12 +119,6 @@ describe Gene::Parser do
       result.should == {}
     end
 
-    it '{a : b}' do
-      result = Gene::Parser.parse(example.description)
-      result.keys.first.should == 'a'
-      result.values.first.should == Gene::Types::Symbol.new('b')
-    end
-
     it '{^a b}' do
       result = Gene::Parser.parse(example.description)
       result.keys.first.should == 'a'
@@ -148,16 +135,6 @@ describe Gene::Parser do
       result = Gene::Parser.parse(example.description)
       result.keys.first.should == 'a'
       result.values.first.should == false
-    end
-
-    ['{a : b c : d}', '{a : b, c : d}', '{,a : b, c : d,}'].each do |input|
-      it input do
-        result = Gene::Parser.parse(example.description)
-        result.keys.should include('a')
-        result.keys.should include('c')
-        result.values.should include(Gene::Types::Symbol.new('b'))
-        result.values.should include(Gene::Types::Symbol.new('d'))
-      end
     end
   end
 
@@ -309,13 +286,10 @@ describe Gene::Parser do
     '(a',
     '[(]',
     '[)]',
-    '{:}',
+    '{',
+    '{^a}',
     '{a}',
     '{a b}',
-    '{##}',
-    '{## : b}',
-    '{a : ##}',
-    '{a :}',
     '(a # b)',
     '(a ^b)',
     '[#END]', # #END is only allowed on the top level
@@ -338,10 +312,10 @@ describe Gene::Parser do
     '(a',
     "(a # b)",
     "(a ^b",
+    "(a ^b c",
     '{',
-    '{a',
-    '{a :',
-    '{a : b',
+    '{^a',
+    '{^a b',
     '[',
     '[a',
   ].each do |input|
