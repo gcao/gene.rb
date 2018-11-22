@@ -18,7 +18,7 @@ class Gene::Types::Base
   alias [] get
 
   def set name, value
-    if name.is_a? Fixnum
+    if name.is_a? Integer
       @data[name] = value
     else
       @properties[name.to_s] = value

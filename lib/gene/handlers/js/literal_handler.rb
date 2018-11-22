@@ -8,7 +8,7 @@ module Gene
 
         def call context, data
           case data
-          when String, Integer, Fixnum, true, false
+          when String, Integer, true, false
             @logger.debug('call', data)
             data.inspect
           when nil

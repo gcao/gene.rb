@@ -78,7 +78,7 @@
       else
         cls
       )
-    else_if ($invoke self 'is_a?' (get_native_class 'Fixnum'))
+    else_if ($invoke self 'is_a?' (get_native_class 'Integer'))
       Int
     else_if ([true false] .include self)
       Boolean

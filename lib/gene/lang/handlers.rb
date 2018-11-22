@@ -81,7 +81,7 @@ module Gene::Lang::Handlers
         context.get_member("Object")
       elsif obj.is_a? String
         context.get_member("String")
-      elsif obj.is_a? Fixnum
+      elsif obj.is_a? Integer
         context.get_member("Int")
       elsif obj.is_a? Regexp
         context.get_member("Regexp")
