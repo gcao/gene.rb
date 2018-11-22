@@ -9,6 +9,16 @@
       "program": "${workspaceRoot}/main.rb"
     },
     {
+      "name": "Debug web_app.gene",
+      "type": "Ruby",
+      "request": "launch",
+      "cwd": "${workspaceRoot}",
+      "program": "${workspaceRoot}/bin/grun",
+      "args": [
+        "examples/web_app.gene"
+      ]
+    },
+    {
       "name": "Listen for rdebug-ide",
       "type": "Ruby",
       "request": "attach",

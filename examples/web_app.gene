@@ -1,5 +1,19 @@
 #!/usr/bin/env grun
 
-# [_] Start a http server
-# [_] Serve static content
-# [_] Serve dynamic content
+#< compile code and prettify compiled code
+gcompile examples/web_app.gene |jq . | ruby -e "puts ARGF.read.gsub(/\n          \s*/, '').gsub(/\n        \\]/, ']').gsub(/,([^\n])/, ', \\1')"
+>#
+
+# Start a http server
+(var server (new gene/net/HttpServer 8085))
+
+# Serve static content
+(server .serve_static {^readme "README.md"})
+
+# Server whole directory
+# (server .serve_static {^/ "."})
+
+# TODO: Serve dynamic content
+
+# Start server
+(server .start)

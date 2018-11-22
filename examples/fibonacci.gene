@@ -1,7 +1,8 @@
 #!/usr/bin/env grun
 
-# Use below command to compare performance against fibonacci in Ruby
-# time examples/fibonacci.gene ; time examples/fibonacci.rb 20
+#< Use below command to compare performance against fibonacci in Ruby
+time examples/fibonacci.gene ; time examples/fibonacci.rb 20
+>#
 
 (fn fibonacci n
   (if (n < 2)

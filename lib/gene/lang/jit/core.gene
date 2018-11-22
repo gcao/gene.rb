@@ -80,6 +80,9 @@
         (@port = port)
       )
 
+      (method serve_static mappings
+      )
+
       (method start _
       )
     )
