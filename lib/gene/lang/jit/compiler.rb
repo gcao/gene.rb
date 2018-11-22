@@ -890,7 +890,7 @@ module Gene::Lang::Jit
 
     def compile_print block, source, options
       source.data.each do |item|
-        compile_ block, source.data[0], options
+        compile_ block, item, options
         block.add_instr [PRINT, 'default', false]
       end
       block.add_instr [DEFAULT, nil]

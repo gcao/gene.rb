@@ -73,6 +73,17 @@
   (fn Env/set [name value]
     (gene_env_set name value)
   )
+
+  (ns net
+    (class HttpServer
+      (init port
+        (@port = port)
+      )
+
+      (method start _
+      )
+    )
+  )
 )
 
 undefined
