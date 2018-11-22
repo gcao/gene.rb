@@ -76,6 +76,8 @@
 
   (ns net
     (class HttpServer
+      # See https://practicingruby.com/articles/implementing-an-http-file-server
+
       (init port
         (@port = port)
       )
@@ -84,6 +86,23 @@
       )
 
       (method start _
+        (var server (gene_invoke (gene_get_class "TCPServer") "new" "localhost" @port))
+        (loop
+          (var socket (gene_invoke server "accept"))
+          (var req (gene_invoke socket "gets"))
+          (var resp "Hello world!")
+          (gene_invoke socket "print"
+            (
+              "HTTP/1.1 200 OK\r\n"
+              "Content-Type: text/plain\r\n"
+              "Content-Length: " (gene_invoke resp "bytesize") "\r\n"
+              "Connection: close\r\n"
+              "\r\n"
+              resp
+            )
+          )
+          (gene_invoke socket "close")
+        )
       )
     )
   )

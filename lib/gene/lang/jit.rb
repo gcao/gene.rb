@@ -3,6 +3,8 @@ require 'gene/lang/jit/utils'
 require 'gene/lang/jit/application'
 require 'gene/lang/jit/compiler'
 
+require 'socket'
+
 module Gene::Lang::Jit
   class Registers < Hash
     attr_reader :id
@@ -475,7 +477,14 @@ module Gene::Lang::Jit
 
       if name == 'gene_invoke'
         target, method, *args = @registers['default']
-        result = target.send method, *args
+        if target.is_a?(TCPServer) or target.is_a?(TCPSocket)
+          result = Object.instance_method(:send).bind(target).call method, *args
+        else
+          result = target.send method, *args
+        end
+      elsif name == 'gene_get_class'
+        class_name   = @registers['default'][0]
+        result = Class.const_get(class_name)
       elsif name == 'gene_file_read'
         file   = @registers['default'][0]
         result = File.read file

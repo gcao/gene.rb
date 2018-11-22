@@ -1,8 +1,7 @@
-#!/usr/bin/env grun
+#!/usr/bin/env grun --debug
 
-#< compile code and prettify compiled code
-gcompile examples/web_app.gene |jq . | ruby -e "puts ARGF.read.gsub(/\n          \s*/, '').gsub(/\n        \\]/, ']').gsub(/,([^\n])/, ', \\1')"
->#
+# compile code and prettify compiled code
+# gcompile examples/web_app.gene |jq . | ruby -e "puts ARGF.read.gsub(/\n          \s*/, '').gsub(/\n        \\]/, ']').gsub(/,([^\n])/, ', \\1')"
 
 # Start a http server
 (var server (new gene/net/HttpServer 8085))

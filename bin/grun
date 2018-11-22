@@ -46,6 +46,7 @@ else
       puts "Running compiled code..."
     end
 
+    app.load_core_lib
     app.run debug: options[:debug]
 
   else
