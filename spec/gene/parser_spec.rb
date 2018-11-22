@@ -81,8 +81,11 @@ describe Gene::Parser do
     # TODO need to add more tests espectially for structural comments
     "#!/usr/bin/env glang\n 1"    => 1,  # Special case: treat unix shebang as comment
     "(a # b\n)"                   => Gene::Types::Base.new(Gene::Types::Symbol.new('a')),
+    "a #< this is a test >#"      => Gene::Types::Symbol.new('a'),
+    "#< this is a test ># a"      => Gene::Types::Symbol.new('a'),
+    "[a #< this is a test >#]"    => [Gene::Types::Symbol.new('a')],
+    "{^a 1 #< this is a test >#}" => {'a' => 1},
     "(a #< this is a test ># b)"  => Gene::Types::Base.new(Gene::Types::Symbol.new('a'), Gene::Types::Symbol.new('b')),
-    "(a #< this is a test)"       => Gene::Types::Base.new(Gene::Types::Symbol.new('a')),
     "(a ## b c)"                  => Gene::Types::Base.new(Gene::Types::Symbol.new('a'), Gene::COMMENT_NEXT, Gene::Types::Symbol.new('b'), Gene::Types::Symbol.new('c')),
     "(a ##(b))"                   => Gene::Types::Base.new(Gene::Types::Symbol.new('a'), Gene::COMMENT_NEXT, Gene::Types::Base.new(Gene::Types::Symbol.new('b'))),
     #"(a ##< b c)"                 => Gene::Types::Base.new(Gene::Types::Symbol.new('a')),
