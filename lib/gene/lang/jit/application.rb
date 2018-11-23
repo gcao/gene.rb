@@ -466,4 +466,92 @@ module Gene::Lang::Jit
     end
   end
 
+  class Iterator
+    def has_next?
+    end
+
+    # Parameters for callback vary based on iterator type
+    # Array iterator: one arg
+    # Map iterator: two args (key, value)
+    # Aggregator: two args
+    # Throws error has_next? returns false
+    def next callback
+    end
+
+    # Move forward without invoking callback
+    def skip number = 1
+    end
+
+    # Can look into what is upcoming
+    def can_peek?
+    end
+
+    # Use next_index to obtain next value
+    # Throw error if can_peek? returns false
+    def peek
+    end
+
+    # Throws error has_next? returns false
+    def next_index
+    end
+
+    # Increment an internal index whenever next is called
+    # Return current index
+    def index
+    end
+
+    # Current value
+    # Throws error if not started
+    def value
+    end
+
+    # Return -1 if size is unknown
+    # Return -2 if there is no end
+    def size
+    end
+
+    # call self.next(callback) until the end
+    def run callback
+    end
+
+    # find first item that callback() returns true
+    def find callback
+    end
+
+    # find first item that callback() returns false
+    def find_not callback
+    end
+
+    # return values that callback() return true
+    def filter callback
+    end
+    alias select filter
+
+    # return values that callback() return false
+    def filter_not callback
+    end
+    alias reject filter_not
+
+    # callback takes two arguments, aggregated value, item value
+    #   and returns new aggregated value
+    def reduce initial_value, callback
+    end
+
+    def map callback
+    end
+
+    def can_rewind?
+    end
+
+    # If next_index is not provided, rewind one step (same as self.rewind(self.index))
+    # rewind(0), rewind(-1) will rewind to the beginnig
+    # Return true if rewind succeeded
+    def rewind next_index = nil
+    end
+
+    def restart
+      rewind(0)
+    end
+  end
+
 end

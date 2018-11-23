@@ -290,6 +290,17 @@ describe "JIT" do
     end
 
     it "
+      # loop...(fn...break) should work
+      (loop ((fnxx (break))))
+      1
+    " do
+      pending
+      mod = @compiler.parse_and_compile example.description
+      app = Application.new(mod)
+      app.run.should == 1
+    end
+
+    it "
       # for should work
       (var sum 0)
       (for (var i 0) (i <= 4) (i += 1)
@@ -965,6 +976,7 @@ describe "JIT" do
     end
 
     it "
+      # callcc should work
       (fn f [a b]
         (yield a)
         (var c (yield b))
@@ -982,6 +994,26 @@ describe "JIT" do
       app = Application.new(mod)
       app.run.should == 6
     end
+
+    it "
+      # iterator should work
+      (var sum 0)
+      (var itr ([1 2] .each))
+      (var callback (fnx i (sum += i)))
+      # (assert (itr .has_next))
+      (itr .next callback)
+      # (assert (itr .has_next))
+      (itr .next callback)
+      # (assert_not (itr .has_next))
+      # (itr .next callback) # should throw error
+      sum
+    " do
+      pending
+      mod = @compiler.parse_and_compile example.description
+      app = Application.new(mod)
+      app.run.should == 3
+    end
+
   end
 
   describe "Complex expressions" do
