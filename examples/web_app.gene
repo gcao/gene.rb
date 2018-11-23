@@ -7,11 +7,11 @@ gcompile examples/web_app.gene |jq . | ruby -e "puts ARGF.read.gsub(/\n         
 # Start a http server
 (var server (new gene/net/HttpServer 8085))
 
-# Serve static content
-(server .serve_static {^readme "README.md"})
+# TODO: Serve static content
+# (server .serve_static "README.md" "README.md")
 
-# Server whole directory
-# (server .serve_static {^/ "."})
+# TODO: Server whole directory
+# (server .serve_static "" "examples/www"})
 
 # TODO: Serve dynamic content
 

@@ -80,9 +80,11 @@
 
       (init port
         (@port = port)
+        (@mappings = [])
       )
 
-      (method serve_static mappings
+      (method serve_static [url path]
+        (@mappings .push {^url url ^path path})
       )
 
       (method start _
