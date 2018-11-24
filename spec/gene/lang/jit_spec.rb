@@ -1018,6 +1018,19 @@ describe "JIT" do
 
     it "
       # FFI (Foreign Function Interface)
+      # Gene function to proc
+      (fn f a
+        (a + 1)
+      )
+    " do
+      mod = @compiler.parse_and_compile example.description
+      app = Application.new(mod)
+      f = app.run
+      [1, 2].map(&f).should == [2, 3]
+    end
+
+    it "
+      # FFI (Foreign Function Interface)
       # Passing global parameters to Gene program should work
       global/params/test
     " do

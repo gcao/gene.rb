@@ -307,6 +307,12 @@ module Gene::Lang::Jit
       @app.vm.process_function self, args
     end
 
+    def to_proc
+      Proc.new do |*args|
+        self.call *args
+      end
+    end
+
     def to_s
       "#<#{self.class.name} @name=\"#{name}\" ...>"
     end
