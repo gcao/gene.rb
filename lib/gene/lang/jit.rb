@@ -308,12 +308,63 @@ module Gene::Lang::Jit
       @registers['default'] = fn
     end
 
+    # TCO (Tail Call Optimization)
+    # Check whether next instruction is call_end
+    #   or if next instruction is jump
+    #     if yes, repeat above check
+    # If it's a tail call
+    #   re-use registers object
+    #   TODO: clear temporary registers
+
     # call block_id options: initialize a block with options
     # options : a hash that contains below keys / values
     #   return_addr: caller block id, next pos
     #   return_reg: caller registers id, register name
     #   args_reg: caller registers id, register name
     instr 'call' do |block_id_reg, options|
+      if self.is_tail_call?(options)
+        if not @registers['return_reg']
+          @registers['return_reg'] = [@registers.id, options['return_reg']]
+        end
+        if not @registers['return_addr']
+          @registers['return_addr'] = [@block.id, @exec_pos + 1]
+        end
+
+        fn_reg = options['fn_reg']
+        fn     = @registers[fn_reg]
+        @registers['fn'] = fn
+        inherit_scope = fn.inherit_scope
+        parent_scope  = fn.scope
+
+        if inherit_scope
+          scope = Gene::Lang::Jit::Scope.new parent_scope, true
+        else
+          scope = Gene::Lang::Jit::Scope.new
+        end
+
+        if options['self_reg']
+          self_ = @registers[options['self_reg']]
+        end
+
+        namespace = fn.namespace
+        context = Gene::Lang::Jit::Context.new namespace, scope, self_
+        @registers['context']     = context
+
+        if options['args_reg']
+          args_reg    = options['args_reg']
+          args        = @registers[args_reg]
+          @registers['args'] = args
+        end
+
+        block_id      = @registers[block_id_reg]
+        @block        = @blocks[block_id]
+
+        @instructions = @block.instructions
+        @exec_pos     = 0
+        @jumped       = true
+        break
+      end
+
       caller_regs = @registers
       return_addr = [@block.id, @exec_pos + 1]
       caller_context = caller_regs['context']
@@ -397,6 +448,22 @@ module Gene::Lang::Jit
       @jumped       = true
     end
 
+    def is_tail_call? options
+      if options['fn_reg']
+        pos = @exec_pos + 1
+        instr = @instructions[pos]
+
+        while instr && instr[0] == 'jump'
+          pos = instr[1] + 1
+          instr = @instructions[pos]
+        end
+
+        return instr && instr[0] == 'call_end'
+      end
+
+      false
+    end
+
     instr 'call_end' do |_|
       # Copy the result to the return register
       id, reg = @registers['return_reg']
@@ -409,11 +476,19 @@ module Gene::Lang::Jit
         return
       end
 
-      # Delete the registers of current block
-      @registers_mgr.destroy @registers.id
+      # Special case for tail call
+      if id != @registers.id
+        # Delete the registers of current block
+        @registers_mgr.destroy @registers.id
 
-      # Switch to the caller's registers
-      @registers = @registers_mgr[id]
+        # Switch to the caller's registers
+        @registers = @registers_mgr[id]
+      end
+
+      # Special case for tail call
+      if block_id == @block.id and pos == @exec_pos
+        break
+      end
 
       # Change block and set the position
       @block        = @blocks[block_id]

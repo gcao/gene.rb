@@ -888,6 +888,8 @@ module Gene::Lang::Jit
       block.add_instr [DEFAULT, source]
     end
 
+    # TODO: print should be changed to a macro
+    #   so that it can print content even if later arguments throw error
     def compile_print block, source, options
       source.data.each do |item|
         compile_ block, item, options
