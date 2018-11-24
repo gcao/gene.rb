@@ -454,7 +454,7 @@ module Gene::Lang::Jit
         instr = @instructions[pos]
 
         while instr && instr[0] == 'jump'
-          pos = instr[1] + 1
+          pos = instr[1]
           instr = @instructions[pos]
         end
 

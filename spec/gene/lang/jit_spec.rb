@@ -405,6 +405,50 @@ describe "JIT" do
     end
 
     it "
+      # TCO (tail call optimization) should work
+      # Q: How do we verify?
+      # A: Add (debug: true) to app.run and check output
+      (fn f n
+        (if (n > 0)
+          (f (n - 1))
+        else
+          0
+        )
+      )
+      (f 1000)
+    " do
+      mod = @compiler.parse_and_compile example.description
+      app = Application.new(mod)
+      app.run.should == 0
+    end
+
+    it "
+      # TCO (tail call optimization) should work
+      # Q: How do we verify?
+      # A: Add (debug: true) to app.run and check output
+      (fn f n
+        (if (n == 0)
+          0
+        else
+          (f2 (n - 1))
+        )
+      )
+      (fn f2 n
+        (if (n > 0)
+          (f (n - 1))
+        else
+          0
+        )
+      )
+
+      (f 1000)
+    " do
+      mod = @compiler.parse_and_compile example.description
+      app = Application.new(mod)
+      app.run.should == 0
+    end
+
+    it "
       # Passing multiple arguments should work
       (fn f [a b] (a + b))
       (f 1 2)
