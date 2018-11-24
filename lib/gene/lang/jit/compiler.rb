@@ -234,7 +234,7 @@ module Gene::Lang::Jit
           compile_callcc block, source, options
         elsif type == "yield"
           compile_yield block, source, options
-        elsif type == "assert"
+        elsif type == "assert" || type == "assert_not"
           compile_assert block, source, options
         elsif type == "print"
           compile_print block, source, options
@@ -939,7 +939,10 @@ module Gene::Lang::Jit
     def compile_assert block, source, options
       expr = source.data[0]
       compile_ block, expr, options
-      jump = block.add_instr [JUMP_IF_TRUE, nil]
+
+      is_assert_not = source.type.name == 'assert_not'
+      instr_type = is_assert_not ? JUMP_IF_FALSE : JUMP_IF_TRUE
+      jump = block.add_instr [instr_type, nil]
 
       if source.data.length > 1
         compile_ block, source.data[1], options

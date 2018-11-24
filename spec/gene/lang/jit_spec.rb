@@ -864,6 +864,27 @@ describe "JIT" do
     end
 
     it "
+      # assert_not should work
+      (assert_not true 'Houston, we have a problem')
+    " do
+      mod = @compiler.parse_and_compile example.description
+      app = Application.new(mod)
+      lambda {
+        app.run
+      }.should raise_error('Houston, we have a problem')
+    end
+
+    it "
+      # assert_not should work
+      (assert_not false 'Houston, we have a problem')
+      1
+    " do
+      mod = @compiler.parse_and_compile example.description
+      app = Application.new(mod)
+      app.run.should == 1
+    end
+
+    it "
       # eval should work
       (var a 1)
       # `a => Symbol a => eval-ed to variable a's value
