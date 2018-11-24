@@ -250,6 +250,9 @@ module Gene::Lang::Jit
       elsif source.type.is_a? Gene::Types::Base
         compile_invocation block, source, options
 
+      elsif source.type.is_a? Gene::Lang::Jit::Function
+        compile_invocation block, source, options
+
       else
         compile_unknown block, source, options
         # compile_ block, source.type

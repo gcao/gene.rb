@@ -982,6 +982,18 @@ describe "JIT" do
       app = Application.new(mod)
       app.run.should == 6
     end
+
+    it "
+      # FFI (Foreign Function Interface) should work
+      (fn f a
+        (a + 1)
+      )
+    " do
+      mod = @compiler.parse_and_compile example.description
+      app = Application.new(mod)
+      f = app.run
+      f.call(1).should == 2
+    end
   end
 
   describe "Complex expressions" do

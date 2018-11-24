@@ -88,7 +88,20 @@ module Gene::Lang::Jit
       # Result should always be stored in the default register
       result = @registers['default']
       # TODO: clean up
+
+      if result.is_a? Function
+        # Save application object to allow invocation from Ruby code
+        result.app = @application
+      end
+
       result
+    end
+
+    def process_function f, args, options = {}
+      # Create a temporary module to mimic function call
+      code = Gene::Types::Base.new(f, *args)
+      mod = Gene::Lang::Jit::Compiler.new.compile(code)
+      load_module(mod, options)
     end
 
     def self.instr name, &block

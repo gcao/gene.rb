@@ -8,6 +8,8 @@ module Gene::Lang::Jit
     attr_reader :global
     attr_reader :context
 
+    attr_reader :vm
+
     def initialize primary_module = nil
       @modules        = []
       @global         = Global.new
@@ -255,6 +257,8 @@ module Gene::Lang::Jit
     attr_accessor :namespace
     attr_accessor :scope
 
+    attr_accessor :app
+
     def initialize name, body, options = {}
       @name = name
       @body = body
@@ -285,6 +289,20 @@ module Gene::Lang::Jit
     def parent_namespace= namespace
       @namespace = namespace
     end
+
+    def call *args
+      if not @app
+        raise "Illegal invocation"
+      end
+
+      @app.vm.process_function self, args
+    end
+
+    def to_s
+      "#<#{self.class.name} @name=\"#{name}\" ...>"
+    end
+    alias inspect to_s
+
   end
 
   class Continuation
