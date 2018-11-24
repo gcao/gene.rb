@@ -994,6 +994,17 @@ describe "JIT" do
       f = app.run
       f.call(1).should == 2
     end
+
+    it "
+      # FFI (Foreign Function Interface)
+      # Passing global parameters to Gene program should work
+      global/params/test
+    " do
+      mod = @compiler.parse_and_compile example.description
+      app = Application.new(mod)
+      app.set_param 'test', 1
+      app.run.should == 1
+    end
   end
 
   describe "Complex expressions" do

@@ -19,6 +19,10 @@ module Gene::Lang::Jit
       @vm = VirtualMachine.new(self)
     end
 
+    def set_param name, value
+      @global.params.def_member name.to_s, value
+    end
+
     def primary_module= primary_module
       @primary_module = primary_module
       @modules << primary_module
@@ -165,6 +169,11 @@ module Gene::Lang::Jit
   class Global
     def initialize
       @members = {}
+      @members['params'] = Namespace.new
+    end
+
+    def params
+      @members['params']
     end
 
     def defined? name
