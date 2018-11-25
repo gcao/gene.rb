@@ -1012,6 +1012,7 @@ describe "JIT" do
       # FFI (Foreign Function Interface)
       # Wrap up native class
       # Implicitly extend RubyObject
+      # (class A = ruby/A extend B # B must be a decendant of RubyObject
       (class MyString = ruby/String # Or ruby/A::B
 
         # If a class = a native class
