@@ -115,7 +115,7 @@ describe "JIT Core Lib" do
     end
   end
 
-  describe "Hash" do
+  describe "Map" do
     it "
       ({^^a} .size)
     " do

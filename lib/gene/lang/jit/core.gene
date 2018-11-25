@@ -47,7 +47,7 @@
     )
   )
 
-  (class Hash
+  (class Map
     (method size _
       (gene_invoke self 'size')
     )

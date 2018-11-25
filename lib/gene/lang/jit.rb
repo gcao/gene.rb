@@ -549,7 +549,7 @@ module Gene::Lang::Jit
       elsif cls == Array
         cls = @application.global.get_member('gene').get_member('Array')
       elsif cls == Hash
-        cls = @application.global.get_member('gene').get_member('Hash')
+        cls = @application.global.get_member('gene').get_member('Map')
       end
       @registers['default'] = cls
     end
