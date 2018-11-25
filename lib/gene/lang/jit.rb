@@ -43,6 +43,10 @@ module Gene::Lang::Jit
   class VirtualMachine
     attr_reader :application
 
+    def self.code_manager
+      @code_manager ||= CodeManager.new
+    end
+
     def initialize application
       @application   = application
       @registers_mgr = RegistersManager.new
@@ -833,6 +837,49 @@ module Gene::Lang::Jit
     #     raise "TODO: info_to_reg #{name} #{reg}"
     #   end
     # end
+  end
+
+  # Code Manager that manages loading and resolving of modules and blocks
+  # When needed, it can be asked to free up all cached modules blocks etc
+  class CodeManager
+    # The modules can be cleaned up to save memory
+    # Context is saved if the module may potentially be reloaded (e.g. thru importing)
+    # key: module id
+    # val: [path, module, context]
+    attr_reader :module_mappings
+    # The blocks can be cleaned up to save memory
+    # key: block id
+    # val: [module id, block]
+    attr_reader :block_mappings
+    # key: module path
+    # val: module id
+    attr_reader :path_to_module_mappings
+
+    def initialize
+      @module_mappings = {}
+      @block_mappings = {}
+      @path_to_module_mappings = {}
+    end
+
+    # Load from path, e.g. a/b.gene, a/b.gmod
+    def load_from_path path
+      mod = Gene::Lang::Jit::Compiler.new.compile File.read(path)
+      @module_mappings[mod.id] = mod
+      @path_to_module_mappings[path] = mod
+    end
+
+    # # Load compiled module object, map to path if provided
+    # def load_compiled_module mod, path = nil
+    # end
+
+    # Compile String input and load
+    def compile_and_load input
+      mod = Gene::Lang::Jit::Compiler.new.compile input
+      @module_mappings[mod.id] = mod
+    end
+
+    def get_block id
+    end
   end
 
   class ErrorHandlerGroups < Array
