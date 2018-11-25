@@ -1010,6 +1010,34 @@ describe "JIT" do
 
     it "
       # FFI (Foreign Function Interface)
+      # Wrap up native class
+      # Implicitly extend RubyObject
+      (class MyString = ruby/String # Or ruby/A::B
+
+        # If a class = a native class
+        #   the instance is result of (init)
+        # Else
+        #   instance is created internally
+        (init arg
+          (gene_invoke ruby/String 'new' arg)
+        )
+
+        (method_missing [method args...]
+          # Call native method
+          (gene_invoke self method args...)
+        )
+      )
+      (new MyString 'hello')
+    " do
+      pending
+      mod = @compiler.parse_and_compile example.description
+      p mod
+      app = Application.new(mod)
+      app.run(debug: true).should == "hello"
+    end
+
+    it "
+      # FFI (Foreign Function Interface)
       # Passing global parameters to Gene program should work
       global/params/test
     " do
