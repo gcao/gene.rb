@@ -29,7 +29,17 @@ module Gene
     def find_all_in data
     end
 
-    class Item
+    class ItemBase
+      def find_in data
+        raise NotImplementedError
+      end
+
+      def find_all_in data
+        raise NotImplementedError
+      end
+    end
+
+    class Item < ItemBase
       attr_reader :value
 
       def initialize value
@@ -59,8 +69,25 @@ module Gene
         end
       end
 
+      def find_all_in data
+      end
+
       def self.from value
         self.new(value)
+      end
+    end
+
+    class Type < ItemBase
+      def find_in data
+        case data
+        when Gene::Types::Base
+          data.type
+        else
+          Gene::Types::Symbol.new(data.class.to_s)
+        end
+      end
+
+      def find_all_in data
       end
     end
   end
