@@ -3,6 +3,8 @@ require 'logem'
 require 'gene/types'
 require 'gene/handlers'
 
+require 'gene/path'
+
 require 'gene/parse_error'
 require 'gene/parser'
 

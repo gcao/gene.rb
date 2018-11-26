@@ -10,5 +10,5 @@ end
 # end
 
 guard :shell do
-  watch(%r{^(lib|spec)/.+\.(rb|treetop|gene)$}) {|m| `rspec spec/gene/lang/jit_* spec/gene/parser_spec.rb` }
+  watch(%r{^(lib|spec)/.+\.(rb|treetop|gene)$}) {|m| `rspec spec/gene/lang/jit_* spec/gene/parser_spec.rb spec/gene/path_spec.rb` }
 end
