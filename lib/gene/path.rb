@@ -5,7 +5,21 @@ module Gene
 
     NOT_FOUND = Object.new
 
+    attr_accessor :name
+    attr_accessor :desc
     attr_reader :items
+
+    # (#Path ^name "test"
+    #   (child ^guard (> (self) 1)
+    #     *
+    #   )
+    # )
+    # Input: (a 0 1 2 3)
+    # After applying above path on the input,
+    #   find_in(input) should return 2
+    #   find_all_in(input) should return [2, 3]
+    def self.from_gene
+    end
 
     def initialize *items
       @items = items.map {|item| Item.from(item) }
@@ -30,6 +44,10 @@ module Gene
     end
 
     class ItemBase
+      def guards
+        @guards ||= []
+      end
+
       def find_in data
         raise NotImplementedError
       end
@@ -70,10 +88,25 @@ module Gene
       end
 
       def find_all_in data
+        case value
+        when String, Integer
+          result = find_in data
+          if result == NOT_FOUND
+            []
+          else
+            [result]
+          end
+        else
+          []
+        end
       end
 
       def self.from value
-        self.new(value)
+        if value.is_a? ItemBase
+          value
+        else
+          self.new(value)
+        end
       end
     end
 
@@ -88,6 +121,24 @@ module Gene
       end
 
       def find_all_in data
+        [find_in(data)]
+      end
+    end
+
+    TYPE = Type.new
+
+    class Guard
+      attr_reader :type
+      attr_reader :sub_path
+      attr_reader :value
+
+      def initialize type, sub_path, value
+        @type = type
+        @sub_path = sub_path
+        @value = value
+      end
+
+      def check
       end
     end
   end

@@ -39,24 +39,35 @@ def test_data
 
       "third"
       "fourth"
+      5
+      6
     )
   INPUT
 end
 
 describe Gene::Path do
-  tests = [
-    ["", ["k01"], test_data.get("k01")],
-    ["", [2], test_data.get(2)],
-  ]
+  it "property key should work" do
+    path = Gene::Path.new("k01")
+    path.find_in(test_data).should == test_data.get("k01")
+  end
 
-  tests.each do |description, path, result|
-    if description.empty?
-      description = path.inspect
-    end
+  it "array index should work" do
+    path = Gene::Path.new(0)
+    path.find_in(test_data).should == test_data.get(0)
+  end
 
-    it "#{description} should work" do
-      path = Gene::Path.new("k01")
-      path.find_in(test_data).should == test_data.get("k01")
-    end
+  it "type should work" do
+    path = Gene::Path.new(Gene::Path::TYPE)
+    path.find_in(test_data).should == test_data.type
+  end
+
+  it "key+index should work" do
+    path = Gene::Path.new(0, "k11")
+    path.find_in(test_data).should == test_data.get(0).get("k11")
+  end
+
+  it "index+index should work" do
+    path = Gene::Path.new(0, 0)
+    path.find_in(test_data).should == test_data.get(0).get(0)
   end
 end
