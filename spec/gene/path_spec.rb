@@ -1,5 +1,9 @@
 require File.expand_path(File.dirname(__FILE__) + '/../spec_helper')
 
+Path = Gene::Path
+TYPE = Gene::Path::TYPE
+OR   = Gene::Path::OR
+
 def test_data
   @test_data ||= Gene::Parser.parse <<-INPUT
     (root
@@ -47,27 +51,33 @@ end
 
 describe Gene::Path do
   it "property key should work" do
-    path = Gene::Path.new("k01")
-    path.find_in(test_data).should == test_data.get("k01")
+    path = Path.new("k01")
+    path.find(test_data).should == test_data.get("k01")
   end
 
   it "array index should work" do
-    path = Gene::Path.new(0)
-    path.find_in(test_data).should == test_data.get(0)
+    path = Path.new(0)
+    path.find(test_data).should == test_data.get(0)
   end
 
   it "type should work" do
-    path = Gene::Path.new(Gene::Path::TYPE)
-    path.find_in(test_data).should == test_data.type
+    path = Path.new(TYPE)
+    path.find(test_data).should == test_data.type
   end
 
   it "key+index should work" do
-    path = Gene::Path.new(0, "k11")
-    path.find_in(test_data).should == test_data.get(0).get("k11")
+    path = Path.new(0, "k11")
+    path.find(test_data).should == test_data.get(0).get("k11")
   end
 
   it "index+index should work" do
-    path = Gene::Path.new(0, 0)
-    path.find_in(test_data).should == test_data.get(0).get(0)
+    path = Path.new(0, 0)
+    path.find(test_data).should == test_data.get(0).get(0)
+  end
+
+  it "choices should work" do
+    path = Path.new(0, OR, 2)
+    path.find(test_data).should == test_data.get(0)
+    path.find_all(test_data).should == [test_data.get(0), test_data.get(2)]
   end
 end
