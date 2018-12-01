@@ -6,6 +6,90 @@ require 'gene/lang/jit/compiler'
 require 'socket'
 
 module Gene::Lang::Jit
+  # Code Manager that manages loading and resolving of modules and blocks
+  # When needed, it can be asked to free up all cached modules blocks etc
+  class CodeManager
+    # The modules can be cleaned up to save memory
+    # Context is saved if the module may potentially be reloaded (e.g. thru importing)
+    # key: module id
+    # val: [path, module]
+    attr_reader :module_mappings
+    # The blocks can be cleaned up to save memory
+    # key: block id
+    # val: [module id, block]
+    attr_reader :block_mappings
+    # key: module path
+    # val: module id
+    attr_reader :path_to_module_mappings
+
+    def initialize
+      @module_mappings = {}
+      @block_mappings = {}
+      @path_to_module_mappings = {}
+    end
+
+    # Load from path, e.g. a/b.gene, a/b.gmod
+    def load_from_path path
+      path.sub! /.(gene|gmod)$/, ''
+      module_id = @path_to_module_mappings[path]
+      if module_id
+        return @module_mappings[module_id]
+      end
+
+      mod_file = "#{path}.gmod"
+      if File.exist? mod_file
+        mod = Gene::Lang::Jit::CompiledModule.from_json File.read(mod_file)
+      else
+        gene_file = "#{path}.gene"
+        parsed    = Gene::Parser.parse File.read(gene_file)
+        compiler  = Gene::Lang::Jit::Compiler.new
+        mod       = compiler.compile parsed, skip_init: true
+      end
+
+      @module_mappings[mod.id] = mod
+      @path_to_module_mappings[path] = mod
+      add_blocks_from_module mod
+
+      mod
+    end
+
+    # # Load compiled module object, map to path if provided
+    # def load_compiled_module mod, path = nil
+    # end
+
+    # Compile String input and load
+    def compile_and_load input
+      mod = Gene::Lang::Jit::Compiler.new.compile input
+
+      @module_mappings[mod.id] = mod
+      add_blocks_from_module mod
+
+      mod
+    end
+
+    def load mod, path = nil
+      @module_mappings[mod.id] = mod
+
+      if path
+        @path_to_module_mappings[path] = mod
+      end
+
+      add_blocks_from_module mod
+    end
+
+    def get_block id
+      @block_mappings[id]
+    end
+
+    private
+
+    def add_blocks_from_module mod
+      mod.blocks.each do |id, block|
+        @block_mappings[id] = block
+      end
+    end
+  end
+
   class Registers < Hash
     attr_reader :id
 
@@ -43,25 +127,24 @@ module Gene::Lang::Jit
   class VirtualMachine
     attr_reader :application
 
-    def self.code_manager
-      @code_manager ||= CodeManager.new
-    end
+    CODE_MGR = CodeManager.new
 
     def initialize application
       @application   = application
       @registers_mgr = RegistersManager.new
-      @modules       = {}
-      @blocks        = {}
+      # @modules       = {}
+      # @blocks        = {}
     end
 
-    def add_block block
-      @blocks[block.id] = block
-    end
+    # def add_block block
+    #   @blocks[block.id] = block
+    # end
 
     def load_module mod, options = {}
-      mod.blocks.each do |_, block|
-        add_block block
-      end
+      CODE_MGR.load mod
+      # mod.blocks.each do |_, block|
+      #   add_block block
+      # end
 
       process mod.primary_block, options
     end
@@ -364,7 +447,8 @@ module Gene::Lang::Jit
             @registers['default'] = args[0]
 
             block_id      = caller_regs[block_id_reg]
-            @block        = @blocks[block_id]
+            # @block        = @blocks[block_id]
+            @block        = CODE_MGR.get_block(block_id)
 
             @instructions = @block.instructions
             @exec_pos     = fn.next_pos
@@ -407,7 +491,8 @@ module Gene::Lang::Jit
       end
 
       block_id      = caller_regs[block_id_reg]
-      @block        = @blocks[block_id]
+      # @block        = @blocks[block_id]
+      @block        = CODE_MGR.get_block(block_id)
 
       @instructions = @block.instructions
       @exec_pos     = 0
@@ -433,7 +518,8 @@ module Gene::Lang::Jit
       @registers = @registers_mgr[id]
 
       # Change block and set the position
-      @block        = @blocks[block_id]
+      # @block        = @blocks[block_id]
+      @block        = CODE_MGR.get_block(block_id)
 
       @instructions = @block.instructions
       @exec_pos     = pos
@@ -470,7 +556,8 @@ module Gene::Lang::Jit
 
       # Switch to caller's block
       caller_block_id, pos = @registers['return_addr']
-      @block        = @blocks[caller_block_id]
+      # @block        = @blocks[caller_block_id]
+      @block        = CODE_MGR.get_block(caller_block_id)
       @instructions = @block.instructions
       @exec_pos     = pos
       @jumped       = true
@@ -602,7 +689,8 @@ module Gene::Lang::Jit
 
         @registers['args'] = caller_regs[args_reg]
 
-        @block        = @blocks[method.body]
+        # @block        = @blocks[method.body]
+        @block        = CODE_MGR.get_block(method.body)
 
         @instructions = @block.instructions
         @exec_pos     = 0
@@ -628,7 +716,8 @@ module Gene::Lang::Jit
       @registers['args'] = caller_regs[args_reg]
 
       method        = caller_regs[method_reg]
-      @block        = @blocks[method.body]
+      # @block        = @blocks[method.body]
+      @block        = CODE_MGR.get_block(method.body)
 
       @registers['method']    = method
       @registers['hierarchy'] = caller_regs[hierarchy_reg]
@@ -721,7 +810,8 @@ module Gene::Lang::Jit
         @registers = @registers_mgr[id]
 
         # Change block and set the position
-        @block        = @blocks[block_id]
+        # @block        = @blocks[block_id]
+        @block        = CODE_MGR.get_block(block_id)
 
         @instructions = @block.instructions
         @exec_pos     = pos
@@ -742,28 +832,8 @@ module Gene::Lang::Jit
     # 'if',         # if pos1 pos2: if default register's value is truthy, jump relatively to pos1, otherwise, jump to pos2
 
     instr 'load' do |reg, loaded_context_reg|
-      location = @registers[reg]
-      location.sub! /.(gene|gmod)$/, ''
-      if @modules[location]
-        @registers['default'] = @modules[location]
-        return
-      end
-
-      mod_file = "#{location}.gmod"
-      if File.exist? mod_file
-        mod = Gene::Lang::Jit::CompiledModule.from_json File.read(mod_file)
-      else
-        gene_file = "#{location}.gene"
-        parsed    = Gene::Parser.parse File.read(gene_file)
-        compiler  = Gene::Lang::Jit::Compiler.new
-        mod       = compiler.compile parsed, skip_init: true
-      end
-
-      mod.blocks.each do |id, block|
-        @blocks[block.id] = block
-      end
-
-      @registers['default'] = mod
+      path = @registers[reg]
+      @registers['default'] = CODE_MGR.load_from_path path
 
       do_run 'default', 'save_context_to_reg' => loaded_context_reg
     end
@@ -771,9 +841,10 @@ module Gene::Lang::Jit
     instr 'compile' do |stmts_reg|
       stmts = Gene::Lang::Statements.new @registers[stmts_reg]
       mod   = Compiler.new.compile(stmts, skip_init: true)
-      mod.blocks.each do |id, block|
-        @blocks[block.id] = block
-      end
+      # mod.blocks.each do |id, block|
+      #   @blocks[block.id] = block
+      # end
+      CODE_MGR.load mod
 
       @registers['default'] = mod
     end
@@ -802,7 +873,8 @@ module Gene::Lang::Jit
       @registers['return_addr'] = return_addr
 
       block_id      = mod.primary_block.id
-      @block        = @blocks[block_id]
+      # @block        = @blocks[block_id]
+      @block        = CODE_MGR.get_block(block_id)
 
       @instructions = @block.instructions
       @exec_pos     = 0
@@ -837,49 +909,6 @@ module Gene::Lang::Jit
     #     raise "TODO: info_to_reg #{name} #{reg}"
     #   end
     # end
-  end
-
-  # Code Manager that manages loading and resolving of modules and blocks
-  # When needed, it can be asked to free up all cached modules blocks etc
-  class CodeManager
-    # The modules can be cleaned up to save memory
-    # Context is saved if the module may potentially be reloaded (e.g. thru importing)
-    # key: module id
-    # val: [path, module, context]
-    attr_reader :module_mappings
-    # The blocks can be cleaned up to save memory
-    # key: block id
-    # val: [module id, block]
-    attr_reader :block_mappings
-    # key: module path
-    # val: module id
-    attr_reader :path_to_module_mappings
-
-    def initialize
-      @module_mappings = {}
-      @block_mappings = {}
-      @path_to_module_mappings = {}
-    end
-
-    # Load from path, e.g. a/b.gene, a/b.gmod
-    def load_from_path path
-      mod = Gene::Lang::Jit::Compiler.new.compile File.read(path)
-      @module_mappings[mod.id] = mod
-      @path_to_module_mappings[path] = mod
-    end
-
-    # # Load compiled module object, map to path if provided
-    # def load_compiled_module mod, path = nil
-    # end
-
-    # Compile String input and load
-    def compile_and_load input
-      mod = Gene::Lang::Jit::Compiler.new.compile input
-      @module_mappings[mod.id] = mod
-    end
-
-    def get_block id
-    end
   end
 
   class ErrorHandlerGroups < Array

@@ -1010,12 +1010,15 @@ module Gene::Lang::Jit
   end
 
   class CompiledModule
+    attr_reader :id
     attr_reader :blocks
     attr_reader :primary_block
 
     def initialize primary_block = nil
+      @id     = SecureRandom.uuid
       @blocks = {}
       if primary_block
+        add_block primary_block
         self.primary_block = primary_block
       end
     end
@@ -1075,7 +1078,7 @@ module Gene::Lang::Jit
   end
 
   class CompiledBlock
-    attr_accessor :id
+    attr_reader :id
     attr_accessor :name
     attr_writer :is_default
     attr_reader :instructions
