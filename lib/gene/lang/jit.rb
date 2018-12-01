@@ -132,19 +132,10 @@ module Gene::Lang::Jit
     def initialize application
       @application   = application
       @registers_mgr = RegistersManager.new
-      # @modules       = {}
-      # @blocks        = {}
     end
-
-    # def add_block block
-    #   @blocks[block.id] = block
-    # end
 
     def load_module mod, options = {}
       CODE_MGR.load mod
-      # mod.blocks.each do |_, block|
-      #   add_block block
-      # end
 
       process mod.primary_block, options
     end
@@ -447,7 +438,6 @@ module Gene::Lang::Jit
             @registers['default'] = args[0]
 
             block_id      = caller_regs[block_id_reg]
-            # @block        = @blocks[block_id]
             @block        = CODE_MGR.get_block(block_id)
 
             @instructions = @block.instructions
@@ -491,7 +481,6 @@ module Gene::Lang::Jit
       end
 
       block_id      = caller_regs[block_id_reg]
-      # @block        = @blocks[block_id]
       @block        = CODE_MGR.get_block(block_id)
 
       @instructions = @block.instructions
@@ -518,7 +507,6 @@ module Gene::Lang::Jit
       @registers = @registers_mgr[id]
 
       # Change block and set the position
-      # @block        = @blocks[block_id]
       @block        = CODE_MGR.get_block(block_id)
 
       @instructions = @block.instructions
@@ -556,7 +544,6 @@ module Gene::Lang::Jit
 
       # Switch to caller's block
       caller_block_id, pos = @registers['return_addr']
-      # @block        = @blocks[caller_block_id]
       @block        = CODE_MGR.get_block(caller_block_id)
       @instructions = @block.instructions
       @exec_pos     = pos
@@ -689,7 +676,6 @@ module Gene::Lang::Jit
 
         @registers['args'] = caller_regs[args_reg]
 
-        # @block        = @blocks[method.body]
         @block        = CODE_MGR.get_block(method.body)
 
         @instructions = @block.instructions
@@ -716,7 +702,6 @@ module Gene::Lang::Jit
       @registers['args'] = caller_regs[args_reg]
 
       method        = caller_regs[method_reg]
-      # @block        = @blocks[method.body]
       @block        = CODE_MGR.get_block(method.body)
 
       @registers['method']    = method
@@ -810,7 +795,6 @@ module Gene::Lang::Jit
         @registers = @registers_mgr[id]
 
         # Change block and set the position
-        # @block        = @blocks[block_id]
         @block        = CODE_MGR.get_block(block_id)
 
         @instructions = @block.instructions
@@ -841,9 +825,6 @@ module Gene::Lang::Jit
     instr 'compile' do |stmts_reg|
       stmts = Gene::Lang::Statements.new @registers[stmts_reg]
       mod   = Compiler.new.compile(stmts, skip_init: true)
-      # mod.blocks.each do |id, block|
-      #   @blocks[block.id] = block
-      # end
       CODE_MGR.load mod
 
       @registers['default'] = mod
@@ -873,7 +854,6 @@ module Gene::Lang::Jit
       @registers['return_addr'] = return_addr
 
       block_id      = mod.primary_block.id
-      # @block        = @blocks[block_id]
       @block        = CODE_MGR.get_block(block_id)
 
       @instructions = @block.instructions
