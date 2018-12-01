@@ -29,7 +29,7 @@ module Gene::Lang::Jit
     end
 
     # Load from path, e.g. a/b.gene, a/b.gmod
-    def load_from_path path
+    def load_from_path path, options = {}
       path.sub! /.(gene|gmod)$/, ''
       module_id = @path_to_module_mappings[path]
       if module_id
@@ -43,11 +43,11 @@ module Gene::Lang::Jit
         gene_file = "#{path}.gene"
         parsed    = Gene::Parser.parse File.read(gene_file)
         compiler  = Gene::Lang::Jit::Compiler.new
-        mod       = compiler.compile parsed, skip_init: true
+        mod       = compiler.compile parsed, options
       end
 
       @module_mappings[mod.id] = mod
-      @path_to_module_mappings[path] = mod
+      @path_to_module_mappings[path] = mod.id
       add_blocks_from_module mod
 
       mod
@@ -71,7 +71,7 @@ module Gene::Lang::Jit
       @module_mappings[mod.id] = mod
 
       if path
-        @path_to_module_mappings[path] = mod
+        @path_to_module_mappings[path] = mod.id
       end
 
       add_blocks_from_module mod
@@ -89,6 +89,8 @@ module Gene::Lang::Jit
       end
     end
   end
+
+  CODE_MGR = CodeManager.new
 
   class Registers < Hash
     attr_reader :id
@@ -126,8 +128,6 @@ module Gene::Lang::Jit
   # the instructions and hold the application state
   class VirtualMachine
     attr_reader :application
-
-    CODE_MGR = CodeManager.new
 
     def initialize application
       @application   = application
@@ -817,7 +817,7 @@ module Gene::Lang::Jit
 
     instr 'load' do |reg, loaded_context_reg|
       path = @registers[reg]
-      @registers['default'] = CODE_MGR.load_from_path path
+      @registers['default'] = CODE_MGR.load_from_path path, skip_init: true
 
       do_run 'default', 'save_context_to_reg' => loaded_context_reg
     end
