@@ -234,7 +234,7 @@ module Gene::Lang::Jit
           compile_callcc block, source, options
         elsif type == "yield"
           compile_yield block, source, options
-        elsif type == "assert"
+        elsif type == "assert" || type == "assert_not"
           compile_assert block, source, options
         elsif type == "print"
           compile_print block, source, options
@@ -939,7 +939,10 @@ module Gene::Lang::Jit
     def compile_assert block, source, options
       expr = source.data[0]
       compile_ block, expr, options
-      jump = block.add_instr [JUMP_IF_TRUE, nil]
+
+      is_assert_not = source.type.name == 'assert_not'
+      instr_type = is_assert_not ? JUMP_IF_FALSE : JUMP_IF_TRUE
+      jump = block.add_instr [instr_type, nil]
 
       if source.data.length > 1
         compile_ block, source.data[1], options
@@ -1007,12 +1010,15 @@ module Gene::Lang::Jit
   end
 
   class CompiledModule
+    attr_reader :id
     attr_reader :blocks
     attr_reader :primary_block
 
     def initialize primary_block = nil
+      @id     = SecureRandom.uuid
       @blocks = {}
       if primary_block
+        add_block primary_block
         self.primary_block = primary_block
       end
     end
@@ -1072,7 +1078,7 @@ module Gene::Lang::Jit
   end
 
   class CompiledBlock
-    attr_accessor :id
+    attr_reader :id
     attr_accessor :name
     attr_writer :is_default
     attr_reader :instructions

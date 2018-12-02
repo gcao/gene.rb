@@ -2,39 +2,19 @@ require 'forwardable'
 
 module Gene::Lang::Jit
   class Application
-    attr_reader :modules
-    attr_reader :primary_module
-
     attr_reader :global
     attr_reader :context
 
-    attr_reader :vm
-
-    def initialize primary_module = nil
-      @modules        = []
-      @global         = Global.new
-      if primary_module
-        self.primary_module = primary_module
-      end
-      @vm = VirtualMachine.new(self)
+    def initialize
+      @global = Global.new
     end
 
     def set_param name, value
       @global.params.def_member name.to_s, value
     end
 
-    def primary_module= primary_module
-      @primary_module = primary_module
-      @modules << primary_module
-    end
-
-    def run options = {}
-      # @vm.load_module primary_module, options
-      run_module primary_module, options
-    end
-
-    def run_module mod, options = {}
-      @vm.load_module mod, options
+    def run mod, options = {}
+      VirtualMachine.new(self).load_module mod, options
     end
 
     def create_root_context
@@ -43,18 +23,8 @@ module Gene::Lang::Jit
 
     def load_core_lib
       core_lib = "#{File.dirname(__FILE__)}/core"
-      mod_file = "#{core_lib}.gmod"
-      if File.exist? mod_file
-        mod = Gene::Lang::Jit::CompiledModule.from_json File.read(mod_file)
-      else
-        gene_file = "#{core_lib}.gene"
-        parsed    = Gene::Parser.parse File.read(gene_file)
-        compiler  = Gene::Lang::Jit::Compiler.new
-        mod       = compiler.compile parsed
-      end
-
-      @modules << mod
-      @vm.load_module mod
+      mod = CODE_MGR.load_from_path core_lib
+      VirtualMachine.new(self).load_module mod
     end
   end
 
@@ -304,7 +274,7 @@ module Gene::Lang::Jit
         raise "Illegal invocation"
       end
 
-      @app.vm.process_function self, args
+      VirtualMachine.new(@app).process_function self, args
     end
 
     def to_proc
