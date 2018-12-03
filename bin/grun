@@ -24,13 +24,13 @@ else
 
   if file =~ /\.gmod$/
     mod = Gene::Lang::Jit::CompiledModule.from_json JSON.parse(File.read(file))
-    app = Gene::Lang::Jit::Application.new(mod)
+    app = Gene::Lang::Jit::Application.new
 
     if options[:debug]
       puts "Running #{file}..."
     end
 
-    app.run debug: options[:debug]
+    app.run mod, debug: options[:debug]
 
   elsif file =~ /\.gene$/
     compiler = Gene::Lang::Jit::Compiler.new
@@ -40,14 +40,14 @@ else
       puts "#{file} is compiled to: #{mod}"
     end
 
-    app = Gene::Lang::Jit::Application.new(mod)
+    app = Gene::Lang::Jit::Application.new
 
     if options[:debug]
       puts "Running compiled code..."
     end
 
     app.load_core_lib
-    app.run debug: options[:debug]
+    app.run mod, debug: options[:debug]
 
   else
     raise "Unrecognized file type: #{file}"

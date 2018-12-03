@@ -1,7 +1,7 @@
 #!/usr/bin/env grun
 
 #< Use below command to compare performance against fibonacci in Ruby
-time examples/fibonacci.gene ; time examples/fibonacci.rb 20
+examples/fibonacci.gene ; examples/fibonacci.rb 20
 >#
 
 (fn fibonacci n
@@ -12,4 +12,9 @@ time examples/fibonacci.gene ; time examples/fibonacci.rb 20
   )
 )
 
+(var before (gene_invoke (gene_get_class "Time") "now"))
 (print "fibonacci.gene: " (fibonacci 20) "\n")
+(print "Used time: "
+  ((gene_invoke (gene_get_class "Time") "now") - before)
+  "\n"
+)
