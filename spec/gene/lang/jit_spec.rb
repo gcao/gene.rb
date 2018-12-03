@@ -408,8 +408,8 @@ describe "JIT" do
       (f 1000)
     " do
       mod = @compiler.parse_and_compile example.description
-      app = Application.new(mod)
-      app.run.should == 0
+      app = Application.new
+      app.run(mod).should == 0
     end
 
     it "
@@ -426,8 +426,8 @@ describe "JIT" do
       (f 1000)
     " do
       mod = @compiler.parse_and_compile example.description
-      app = Application.new(mod)
-      app.run.should == 0
+      app = Application.new
+      app.run(mod).should == 0
     end
 
     it "
@@ -452,8 +452,8 @@ describe "JIT" do
       (f 1000)
     " do
       mod = @compiler.parse_and_compile example.description
-      app = Application.new(mod)
-      app.run.should == 0
+      app = Application.new
+      app.run(mod).should == 0
     end
 
     it "

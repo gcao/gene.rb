@@ -479,7 +479,7 @@ module Gene::Lang::Jit
         end
 
         block_id      = @registers[block_id_reg]
-        @block        = @blocks[block_id]
+        @block        = CODE_MGR.get_block(block_id)
 
         @instructions = @block.instructions
         @exec_pos     = 0
