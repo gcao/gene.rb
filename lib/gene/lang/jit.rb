@@ -298,7 +298,12 @@ module Gene::Lang::Jit
 
     instr 'get_child_member' do |reg, name|
       obj = @registers[reg]
-      @registers['default'] = obj.get_member name
+      if obj.is_a? ::Module
+        child = obj.const_get name
+      else
+        child = obj.get_member name
+      end
+      @registers['default'] = child
     end
 
     instr 'set_child_member' do |reg, name, value_reg|
