@@ -1,0 +1,25 @@
+#!/usr/bin/env grun
+
+#< Use below command to compare performance against dummy in Ruby
+examples/tco-test.rb 10000 ; examples/tco-test.gene 10000
+>#
+
+(fn dummy n
+  (if (n == 0)
+    0
+  else
+    (dummy (n - 1))
+  )
+)
+
+(if ((ARGV .length) > 0)
+  (var n ((ARGV .get 0) .to_i))
+  (var before (gene_invoke (gene_get_class "Time") "now"))
+  (print "dummy.gene: " (dummy n) "\n")
+  (print "Used time: "
+    ((gene_invoke (gene_get_class "Time") "now") - before)
+    "\n"
+  )
+else
+  (print "Usage: dummy.gene <number>\n")
+)
