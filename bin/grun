@@ -17,10 +17,10 @@ OptionParser.new do |opts|
   end
 end.parse!
 
-if ARGV.length != 1
+if ARGV.length == 0
   puts "Usage: #{__FILE__} [-d] [FILE TO RUN]"
 else
-  file = ARGV[0]
+  file = ARGV.shift
 
   if file =~ /\.gmod$/
     mod = Gene::Lang::Jit::CompiledModule.from_json JSON.parse(File.read(file))

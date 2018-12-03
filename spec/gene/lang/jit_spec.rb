@@ -109,6 +109,14 @@ describe "JIT" do
     end
 
     it "
+      ARGV
+    " do
+      mod = @compiler.parse_and_compile example.description
+      app = Application.new
+      app.run(mod).should be_kind_of Array
+    end
+
+    it "
       (var a 1)
       a
     " do

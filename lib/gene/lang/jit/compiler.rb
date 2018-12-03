@@ -508,6 +508,8 @@ module Gene::Lang::Jit
           block.add_instr [SYMBOL, str]
         elsif str == "self"
           block.add_instr [CALL_NATIVE, 'context', 'self']
+        elsif str == "ARGV"
+          block.add_instr [ARGS]
         else
           first, *rest = str.split '/'
           if first == 'global'

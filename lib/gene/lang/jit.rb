@@ -242,6 +242,10 @@ module Gene::Lang::Jit
       @registers['default'] = @application.global
     end
 
+    instr 'args' do |_|
+      @registers['default'] = ARGV
+    end
+
     # Define a variable in current context
     instr 'def_member' do |name, value_reg, options = {}|
       context = @registers['context']
