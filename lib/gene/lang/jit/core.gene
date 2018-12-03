@@ -17,8 +17,6 @@
   )
 
   (class Dir
-    (fn member_resolver name
-    )
   )
 
   (class String
@@ -125,10 +123,6 @@
   )
 )
 
-(ns global/fs
-  (fn member_resolver name
-    (gene_invoke rb/Dir 'new' ("/" name))
-  )
-)
+(var global/fs (gene_invoke rb/Gene::Lang::Jit::FileSystemObject "new" ""))
 
 undefined

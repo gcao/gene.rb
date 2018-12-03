@@ -32,6 +32,28 @@ module Gene::Lang::Jit
       mod = CODE_MGR.load_from_path core_lib
       VirtualMachine.new.load_module mod
     end
+
+    def get_class obj
+      case obj
+      when String
+        gene.get_member('String')
+      when Array
+        gene.get_member('Array')
+      when Hash
+        gene.get_member('Map')
+      when File
+        gene.get_member('File')
+      when Dir
+        gene.get_member('Dir')
+      else
+        obj.class
+      end
+    end
+
+    # Cache gene object
+    def gene
+      @gene ||= global.get_member('gene')
+    end
   end
 
   class Context
@@ -483,6 +505,40 @@ module Gene::Lang::Jit
 
     def initialize value = Gene::UNDEFINED
       @value = value
+    end
+  end
+
+  class FileSystemObject
+    DIR  = "DIR"
+    FILE = "FILE"
+
+    attr_accessor :type
+    attr_reader :path
+
+    def initialize path
+      @path = path
+    end
+
+    # Mimic readonly namespace
+    def get_member name
+      if file?
+        raise "File object can not have child members: #{path}"
+      else
+        new_path = path + '/' + name
+        self.class.new new_path
+      end
+    end
+
+    def exist?
+      File.exist?(path)
+    end
+
+    def file?
+      File.file?(path)
+    end
+
+    def directory?
+      File.directory?(path)
     end
   end
 

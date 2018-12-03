@@ -155,7 +155,6 @@ describe "JIT Core Lib" do
     it "
       fs/usr/bin
     " do
-      pending
       mod = @compiler.parse_and_compile example.description
       @app.run(mod).path.should == '/usr/bin'
     end

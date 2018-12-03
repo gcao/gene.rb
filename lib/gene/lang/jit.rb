@@ -661,16 +661,7 @@ module Gene::Lang::Jit
 
     instr 'get_class' do |reg|
       obj = @registers[reg]
-      # @registers['default'] = obj.class
-      cls = obj.class
-      if cls == String
-        cls = APP.global.get_member('gene').get_member('String')
-      elsif cls == Array
-        cls = APP.global.get_member('gene').get_member('Array')
-      elsif cls == Hash
-        cls = APP.global.get_member('gene').get_member('Map')
-      end
-      @registers['default'] = cls
+      @registers['default'] = APP.get_class obj
     end
 
     instr 'create_inheritance_hierarchy' do |reg|
