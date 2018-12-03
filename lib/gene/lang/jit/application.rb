@@ -20,7 +20,7 @@ module Gene::Lang::Jit
     end
 
     def run mod, options = {}
-      VirtualMachine.new(self).load_module mod, options
+      VirtualMachine.new.load_module mod, options
     end
 
     def create_root_context
@@ -30,7 +30,29 @@ module Gene::Lang::Jit
     def load_core_lib
       core_lib = "#{File.dirname(__FILE__)}/core"
       mod = CODE_MGR.load_from_path core_lib
-      VirtualMachine.new(self).load_module mod
+      VirtualMachine.new.load_module mod
+    end
+
+    def get_class obj
+      case obj
+      when String
+        gene.get_member('String')
+      when Array
+        gene.get_member('Array')
+      when Hash
+        gene.get_member('Map')
+      when File
+        gene.get_member('File')
+      when Dir
+        gene.get_member('Dir')
+      else
+        obj.class
+      end
+    end
+
+    # Cache gene object
+    def gene
+      @gene ||= global.get_member('gene')
     end
   end
 
@@ -110,11 +132,17 @@ module Gene::Lang::Jit
 
       if @members.include? name
         @members[name]
+      elsif member_resolver and found = member_resolver.call_with_self(self, name)
+        found
       elsif parent_namespace
         parent_namespace.get_member name
       else
         raise "#{name} is not defined."
       end
+    end
+
+    def member_resolver
+      @member_resolver ||= @members['member_resolver']
     end
 
     def set_member name, value, options = {}
@@ -276,11 +304,11 @@ module Gene::Lang::Jit
     end
 
     def call *args
-      if not @app
-        raise "Illegal invocation"
-      end
+      VirtualMachine.new.process_function self, args
+    end
 
-      VirtualMachine.new(@app).process_function self, args
+    def call_with_self _self, *args
+      VirtualMachine.new.process_function self, args, self: _self
     end
 
     def to_proc
@@ -294,6 +322,11 @@ module Gene::Lang::Jit
     end
     alias inspect to_s
 
+  end
+
+  # A function bounded to a self object
+  # TODO
+  class BoundedFunction
   end
 
   class Continuation
@@ -472,6 +505,40 @@ module Gene::Lang::Jit
 
     def initialize value = Gene::UNDEFINED
       @value = value
+    end
+  end
+
+  class FileSystemObject
+    DIR  = "DIR"
+    FILE = "FILE"
+
+    attr_accessor :type
+    attr_reader :path
+
+    def initialize path
+      @path = path
+    end
+
+    # Mimic readonly namespace
+    def get_member name
+      if file?
+        raise "File object can not have child members: #{path}"
+      else
+        new_path = path + '/' + name
+        self.class.new new_path
+      end
+    end
+
+    def exist?
+      File.exist?(path)
+    end
+
+    def file?
+      File.file?(path)
+    end
+
+    def directory?
+      File.directory?(path)
     end
   end
 

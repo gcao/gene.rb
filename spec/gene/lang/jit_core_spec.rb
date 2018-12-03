@@ -134,4 +134,60 @@ describe "JIT Core Lib" do
       @app.run(mod).should == "a1b2"
     end
   end
+
+  describe "Ruby native class" do
+    it "
+      rb/Gene
+    " do
+      mod = @compiler.parse_and_compile example.description
+      @app.run(mod).should == Gene
+    end
+
+    it "
+      rb/Gene::Lang
+    " do
+      mod = @compiler.parse_and_compile example.description
+      @app.run(mod).should == Gene::Lang
+    end
+
+    it "
+      rb/Gene/Lang
+    " do
+      mod = @compiler.parse_and_compile example.description
+      @app.run(mod).should == Gene::Lang
+    end
+
+    it "
+      (var temp rb/Gene)
+      temp/Lang
+    " do
+      mod = @compiler.parse_and_compile example.description
+      @app.run(mod).should == Gene::Lang
+    end
+  end
+
+  describe "File system" do
+    it "
+      fs/usr
+    " do
+      mod = @compiler.parse_and_compile example.description
+      @app.run(mod).path.should == '/usr'
+    end
+
+    it "
+      fs/usr/bin
+    " do
+      mod = @compiler.parse_and_compile example.description
+      @app.run(mod).path.should == '/usr/bin'
+    end
+
+    it "
+      (var temp fs/usr)
+      temp/bin
+    " do
+      mod = @compiler.parse_and_compile example.description
+      @app.run(mod).path.should == '/usr/bin'
+    end
+  end
+
 end

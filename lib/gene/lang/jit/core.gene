@@ -16,6 +16,9 @@
     )
   )
 
+  (class Dir
+  )
+
   (class String
     (method length _
       (gene_invoke self 'length')
@@ -113,5 +116,13 @@
     )
   )
 )
+
+(ns global/rb
+  (fn member_resolver name
+    (gene_get_class name)
+  )
+)
+
+(var global/fs (gene_invoke rb/Gene::Lang::Jit::FileSystemObject "new" ""))
 
 undefined

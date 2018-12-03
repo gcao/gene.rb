@@ -131,10 +131,7 @@ module Gene::Lang::Jit
   # Represents a complete virtual machine that will be used to run
   # the instructions and hold the application state
   class VirtualMachine
-    attr_reader :application
-
-    def initialize application
-      @application   = application
+    def initialize
       @registers_mgr = RegistersManager.new
     end
 
@@ -171,11 +168,6 @@ module Gene::Lang::Jit
       result = @registers['default']
       # TODO: clean up
 
-      if result.is_a? Function
-        # Save application object to allow invocation from Ruby code
-        result.app = @application
-      end
-
       result
     end
 
@@ -185,12 +177,17 @@ module Gene::Lang::Jit
     #    constructed from those automatically by 'call'
     def process_function f, args, options = {}
       fn_reg   = 'temp1'
-      args_reg = 'temp2'
+      self_reg = 'temp2'
+      args_reg = 'temp3'
 
       block = CompiledBlock.new
       CODE_MGR.add_block block
       block.add_instr [INIT]
       block.add_instr [WRITE, fn_reg, f]
+
+      if options[:self]
+        block.add_instr [WRITE, self_reg, options[:self]]
+      end
 
       # Create argument object and add to a register
       args_obj = Gene::Lang::Object.new
@@ -200,11 +197,20 @@ module Gene::Lang::Jit
       block.add_instr [DEFAULT, f.body]
 
       # Call function
-      block.add_instr [CALL, 'default', {
-        'fn_reg'     => fn_reg,
-        'args_reg'   => args_reg,
-        'return_reg' => 'default',
-      }]
+      if options[:self]
+        block.add_instr [CALL, 'default', {
+          'fn_reg'     => fn_reg,
+          'self_reg'   => self_reg,
+          'args_reg'   => args_reg,
+          'return_reg' => 'default',
+        }]
+      else
+        block.add_instr [CALL, 'default', {
+          'fn_reg'     => fn_reg,
+          'args_reg'   => args_reg,
+          'return_reg' => 'default',
+        }]
+      end
 
       process block, options
     end
@@ -215,7 +221,7 @@ module Gene::Lang::Jit
     end
 
     instr 'init' do |options = {}|
-      @registers['context'] = @application.create_root_context
+      @registers['context'] = APP.create_root_context
     end
 
     instr 'get' do |reg, path, target_reg|
@@ -239,7 +245,7 @@ module Gene::Lang::Jit
     end
 
     instr 'global' do |_|
-      @registers['default'] = @application.global
+      @registers['default'] = APP.global
     end
 
     instr 'args' do |_|
@@ -267,7 +273,11 @@ module Gene::Lang::Jit
       if name[-3..-1] == '...'
         @registers['default'] = Gene::Lang::Jit::Expandable.new context.get_member(name[0..-4])
       elsif name == 'gene'
-        @registers['default'] = @application.global.get_member 'gene'
+        @registers['default'] = APP.global.get_member 'gene'
+      elsif name == 'rb'
+        @registers['default'] = APP.global.get_member 'rb'
+      elsif name == 'fs'
+        @registers['default'] = APP.global.get_member 'fs'
       else
         @registers['default'] = context.get_member name
       end
@@ -288,7 +298,12 @@ module Gene::Lang::Jit
 
     instr 'get_child_member' do |reg, name|
       obj = @registers[reg]
-      @registers['default'] = obj.get_member name
+      if obj.is_a? ::Module
+        child = obj.const_get name
+      else
+        child = obj.get_member name
+      end
+      @registers['default'] = child
     end
 
     instr 'set_child_member' do |reg, name, value_reg|
@@ -726,16 +741,7 @@ module Gene::Lang::Jit
 
     instr 'get_class' do |reg|
       obj = @registers[reg]
-      # @registers['default'] = obj.class
-      cls = obj.class
-      if cls == String
-        cls = @application.global.get_member('gene').get_member('String')
-      elsif cls == Array
-        cls = @application.global.get_member('gene').get_member('Array')
-      elsif cls == Hash
-        cls = @application.global.get_member('gene').get_member('Map')
-      end
-      @registers['default'] = cls
+      @registers['default'] = APP.get_class obj
     end
 
     instr 'create_inheritance_hierarchy' do |reg|
