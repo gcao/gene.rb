@@ -6,6 +6,12 @@ module Gene::Lang::Jit
     attr_reader :context
 
     def initialize
+      reset
+    end
+
+    # Application can be reset to initial state.
+    # This is mainly created for unit tests.
+    def reset
       @global = Global.new
     end
 
@@ -469,4 +475,6 @@ module Gene::Lang::Jit
     end
   end
 
+  # The global application object
+  APP = Gene::Lang::Jit::Application.new
 end

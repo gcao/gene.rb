@@ -81,6 +81,10 @@ module Gene::Lang::Jit
       @block_mappings[id]
     end
 
+    def add_block block
+      @block_mappings[block.id] = block
+    end
+
     private
 
     def add_blocks_from_module mod
@@ -175,11 +179,34 @@ module Gene::Lang::Jit
       result
     end
 
+    # No need to compile, manually create registers, store arguments and invoke call instruction
+    # Q: how about context?
+    # A: function should have a reference to the namespace and scope it inherits, a context will be
+    #    constructed from those automatically by 'call'
     def process_function f, args, options = {}
-      # Create a temporary module to mimic function call
-      code = Gene::Types::Base.new(f, *args)
-      mod = Gene::Lang::Jit::Compiler.new.compile(code)
-      load_module(mod, options)
+      fn_reg   = 'temp1'
+      args_reg = 'temp2'
+
+      block = CompiledBlock.new
+      CODE_MGR.add_block block
+      block.add_instr [INIT]
+      block.add_instr [WRITE, fn_reg, f]
+
+      # Create argument object and add to a register
+      args_obj = Gene::Lang::Object.new
+      args_obj.data = args
+      block.add_instr [WRITE, args_reg, args_obj]
+
+      block.add_instr [DEFAULT, f.body]
+
+      # Call function
+      block.add_instr [CALL, 'default', {
+        'fn_reg'     => fn_reg,
+        'args_reg'   => args_reg,
+        'return_reg' => 'default',
+      }]
+
+      process block, options
     end
 
     def self.instr name, &block
