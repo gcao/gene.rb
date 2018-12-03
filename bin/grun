@@ -17,6 +17,8 @@ OptionParser.new do |opts|
   end
 end.parse!
 
+options[:debug] ||= !ENV['debug'].to_s.empty?
+
 if ARGV.length == 0
   puts "Usage: #{__FILE__} [-d] [FILE TO RUN]"
 else
