@@ -140,8 +140,24 @@ describe "JIT Core Lib" do
       rb/String
     " do
       mod = @compiler.parse_and_compile example.description
-      p mod
-      @app.run(mod, debug: true).should == String
+      @app.run(mod).should == String
+    end
+  end
+
+  describe "File system" do
+    it "
+      fs/usr
+    " do
+      mod = @compiler.parse_and_compile example.description
+      @app.run(mod).path.should == '/usr'
+    end
+
+    it "
+      fs/usr/bin
+    " do
+      pending
+      mod = @compiler.parse_and_compile example.description
+      @app.run(mod).path.should == '/usr/bin'
     end
   end
 

@@ -110,7 +110,7 @@ module Gene::Lang::Jit
 
       if @members.include? name
         @members[name]
-      elsif member_resolver and found = member_resolver.call(name)
+      elsif member_resolver and found = member_resolver.call_with_self(self, name)
         found
       elsif parent_namespace
         parent_namespace.get_member name
@@ -285,6 +285,10 @@ module Gene::Lang::Jit
       VirtualMachine.new.process_function self, args
     end
 
+    def call_with_self _self, *args
+      VirtualMachine.new.process_function self, args, self: _self
+    end
+
     def to_proc
       Proc.new do |*args|
         self.call *args
@@ -296,6 +300,11 @@ module Gene::Lang::Jit
     end
     alias inspect to_s
 
+  end
+
+  # A function bounded to a self object
+  # TODO
+  class BoundedFunction
   end
 
   class Continuation

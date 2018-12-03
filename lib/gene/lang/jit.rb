@@ -177,12 +177,17 @@ module Gene::Lang::Jit
     #    constructed from those automatically by 'call'
     def process_function f, args, options = {}
       fn_reg   = 'temp1'
-      args_reg = 'temp2'
+      self_reg = 'temp2'
+      args_reg = 'temp3'
 
       block = CompiledBlock.new
       CODE_MGR.add_block block
       block.add_instr [INIT]
       block.add_instr [WRITE, fn_reg, f]
+
+      if options[:self]
+        block.add_instr [WRITE, self_reg, options[:self]]
+      end
 
       # Create argument object and add to a register
       args_obj = Gene::Lang::Object.new
@@ -192,11 +197,20 @@ module Gene::Lang::Jit
       block.add_instr [DEFAULT, f.body]
 
       # Call function
-      block.add_instr [CALL, 'default', {
-        'fn_reg'     => fn_reg,
-        'args_reg'   => args_reg,
-        'return_reg' => 'default',
-      }]
+      if options[:self]
+        block.add_instr [CALL, 'default', {
+          'fn_reg'     => fn_reg,
+          'self_reg'   => self_reg,
+          'args_reg'   => args_reg,
+          'return_reg' => 'default',
+        }]
+      else
+        block.add_instr [CALL, 'default', {
+          'fn_reg'     => fn_reg,
+          'args_reg'   => args_reg,
+          'return_reg' => 'default',
+        }]
+      end
 
       process block, options
     end
@@ -262,6 +276,8 @@ module Gene::Lang::Jit
         @registers['default'] = APP.global.get_member 'gene'
       elsif name == 'rb'
         @registers['default'] = APP.global.get_member 'rb'
+      elsif name == 'fs'
+        @registers['default'] = APP.global.get_member 'fs'
       else
         @registers['default'] = context.get_member name
       end

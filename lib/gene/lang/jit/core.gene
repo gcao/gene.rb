@@ -16,6 +16,11 @@
     )
   )
 
+  (class Dir
+    (fn member_resolver name
+    )
+  )
+
   (class String
     (method length _
       (gene_invoke self 'length')
@@ -117,6 +122,12 @@
 (ns global/rb
   (fn member_resolver name
     (gene_get_class name)
+  )
+)
+
+(ns global/fs
+  (fn member_resolver name
+    (gene_invoke rb/Dir 'new' ("/" name))
   )
 )
 
