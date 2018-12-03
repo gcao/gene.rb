@@ -29,6 +29,10 @@
     (method split sep
       (gene_invoke self 'split' sep)
     )
+
+    (method to_i _
+      (gene_invoke self 'to_i')
+    )
   )
 
   (class Array
@@ -47,7 +51,7 @@
     )
   )
 
-  (class Hash
+  (class Map
     (method size _
       (gene_invoke self 'size')
     )

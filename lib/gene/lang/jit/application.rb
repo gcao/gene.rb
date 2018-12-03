@@ -2,33 +2,25 @@ require 'forwardable'
 
 module Gene::Lang::Jit
   class Application
-    attr_reader :modules
-    attr_reader :primary_module
-
     attr_reader :global
     attr_reader :context
 
-    def initialize primary_module = nil
-      @modules        = []
-      @global         = Global.new
-      if primary_module
-        self.primary_module = primary_module
-      end
-      @vm = VirtualMachine.new(self)
+    def initialize
+      reset
     end
 
-    def primary_module= primary_module
-      @primary_module = primary_module
-      @modules << primary_module
+    # Application can be reset to initial state.
+    # This is mainly created for unit tests.
+    def reset
+      @global = Global.new
     end
 
-    def run options = {}
-      # @vm.load_module primary_module, options
-      run_module primary_module, options
+    def set_param name, value
+      @global.params.def_member name.to_s, value
     end
 
-    def run_module mod, options = {}
-      @vm.load_module mod, options
+    def run mod, options = {}
+      VirtualMachine.new(self).load_module mod, options
     end
 
     def create_root_context
@@ -37,18 +29,8 @@ module Gene::Lang::Jit
 
     def load_core_lib
       core_lib = "#{File.dirname(__FILE__)}/core"
-      mod_file = "#{core_lib}.gmod"
-      if File.exist? mod_file
-        mod = Gene::Lang::Jit::CompiledModule.from_json File.read(mod_file)
-      else
-        gene_file = "#{core_lib}.gene"
-        parsed    = Gene::Parser.parse File.read(gene_file)
-        compiler  = Gene::Lang::Jit::Compiler.new
-        mod       = compiler.compile parsed
-      end
-
-      @modules << mod
-      @vm.load_module mod
+      mod = CODE_MGR.load_from_path core_lib
+      VirtualMachine.new(self).load_module mod
     end
   end
 
@@ -163,6 +145,11 @@ module Gene::Lang::Jit
   class Global
     def initialize
       @members = {}
+      @members['params'] = Namespace.new
+    end
+
+    def params
+      @members['params']
     end
 
     def defined? name
@@ -255,6 +242,8 @@ module Gene::Lang::Jit
     attr_accessor :namespace
     attr_accessor :scope
 
+    attr_accessor :app
+
     def initialize name, body, options = {}
       @name = name
       @body = body
@@ -285,6 +274,26 @@ module Gene::Lang::Jit
     def parent_namespace= namespace
       @namespace = namespace
     end
+
+    def call *args
+      if not @app
+        raise "Illegal invocation"
+      end
+
+      VirtualMachine.new(@app).process_function self, args
+    end
+
+    def to_proc
+      Proc.new do |*args|
+        self.call *args
+      end
+    end
+
+    def to_s
+      "#<#{self.class.name} @name=\"#{name}\" ...>"
+    end
+    alias inspect to_s
+
   end
 
   class Continuation
@@ -466,4 +475,6 @@ module Gene::Lang::Jit
     end
   end
 
+  # The global application object
+  APP = Gene::Lang::Jit::Application.new
 end

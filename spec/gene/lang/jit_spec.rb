@@ -12,72 +12,72 @@ describe "JIT" do
       1
     " do
       mod = @compiler.parse_and_compile example.description
-      app = Application.new(mod)
-      app.run.should == 1
+      app = Application.new
+      app.run(mod).should == 1
     end
 
     it "
       'hello world'
     " do
       mod = @compiler.parse_and_compile example.description
-      app = Application.new(mod)
-      app.run.should == 'hello world'
+      app = Application.new
+      app.run(mod).should == 'hello world'
     end
 
     it "
       true
     " do
       mod = @compiler.parse_and_compile example.description
-      app = Application.new(mod)
-      app.run.should be_true
+      app = Application.new
+      app.run(mod).should be_true
     end
 
     it "
       false
     " do
       mod = @compiler.parse_and_compile example.description
-      app = Application.new(mod)
-      app.run.should be_false
+      app = Application.new
+      app.run(mod).should be_false
     end
 
     it "
       null
     " do
       mod = @compiler.parse_and_compile example.description
-      app = Application.new(mod)
-      app.run.should be_nil
+      app = Application.new
+      app.run(mod).should be_nil
     end
 
     it "
       undefined
     " do
       mod = @compiler.parse_and_compile example.description
-      app = Application.new(mod)
-      app.run.should == Gene::UNDEFINED
+      app = Application.new
+      app.run(mod).should == Gene::UNDEFINED
     end
 
     it "
       `a
     " do
       mod = @compiler.parse_and_compile example.description
-      app = Application.new(mod)
-      app.run.should == Gene::Types::Symbol.new('a')
+      app = Application.new
+      app.run(mod).should == Gene::Types::Symbol.new('a')
     end
 
     it "
       `1
     " do
       mod = @compiler.parse_and_compile example.description
-      app = Application.new(mod)
-      app.run.should == 1
+      app = Application.new
+      app.run(mod).should == 1
     end
 
     it "
       `(a 1)
     " do
       mod = @compiler.parse_and_compile example.description
-      app = Application.new(mod)
-      result = app.run
+      app = Application.new
+      result = app.run(mod)
       result.type.should == Gene::Types::Symbol.new('a')
       result.data.should == [1]
     end
@@ -86,16 +86,16 @@ describe "JIT" do
       %a
     " do
       mod = @compiler.parse_and_compile example.description
-      app = Application.new(mod)
-      app.run.should == Gene::Types::Symbol.new('%a')
+      app = Application.new
+      app.run(mod).should == Gene::Types::Symbol.new('%a')
     end
 
     it "
       (%= 1)
     " do
       mod = @compiler.parse_and_compile example.description
-      app = Application.new(mod)
-      result = app.run
+      app = Application.new
+      result = app.run(mod)
       result.type.should == Gene::Types::Symbol.new('%=')
       result.data.should == [1]
     end
@@ -104,8 +104,16 @@ describe "JIT" do
       [1 2]
     " do
       mod = @compiler.parse_and_compile example.description
-      app = Application.new(mod)
-      app.run.should == [1, 2]
+      app = Application.new
+      app.run(mod).should == [1, 2]
+    end
+
+    it "
+      ARGV
+    " do
+      mod = @compiler.parse_and_compile example.description
+      app = Application.new
+      app.run(mod).should be_kind_of Array
     end
 
     it "
@@ -113,8 +121,8 @@ describe "JIT" do
       a
     " do
       mod = @compiler.parse_and_compile example.description
-      app = Application.new(mod)
-      app.run.should == 1
+      app = Application.new
+      app.run(mod).should == 1
     end
 
     it "
@@ -123,9 +131,9 @@ describe "JIT" do
       a
     " do
       mod = @compiler.parse_and_compile example.description
-      app = Application.new(mod)
+      app = Application.new
       lambda {
-        app.run
+        app.run(mod)
       }.should raise_error
     end
 
@@ -134,16 +142,16 @@ describe "JIT" do
       [a 2]
     " do
       mod = @compiler.parse_and_compile example.description
-      app = Application.new(mod)
-      app.run.should == [1, 2]
+      app = Application.new
+      app.run(mod).should == [1, 2]
     end
 
     it "
       {^a 1 ^b 2}
     " do
       mod = @compiler.parse_and_compile example.description
-      app = Application.new(mod)
-      app.run.should == {'a' => 1, 'b' => 2}
+      app = Application.new
+      app.run(mod).should == {'a' => 1, 'b' => 2}
     end
 
     it "
@@ -151,64 +159,64 @@ describe "JIT" do
       {^a a ^b 2}
     " do
       mod = @compiler.parse_and_compile example.description
-      app = Application.new(mod)
-      app.run.should == {'a' => 1, 'b' => 2}
+      app = Application.new
+      app.run(mod).should == {'a' => 1, 'b' => 2}
     end
 
     it "
       (1 + 2)
     " do
       mod = @compiler.parse_and_compile example.description
-      app = Application.new(mod)
-      app.run.should == 3
+      app = Application.new
+      app.run(mod).should == 3
     end
 
     it "
       (true || false)
     " do
       mod = @compiler.parse_and_compile example.description
-      app = Application.new(mod)
-      app.run.should == true
+      app = Application.new
+      app.run(mod).should == true
     end
 
     it "
       (true && false)
     " do
       mod = @compiler.parse_and_compile example.description
-      app = Application.new(mod)
-      app.run.should == false
+      app = Application.new
+      app.run(mod).should == false
     end
 
     it "
       (! true)
     " do
       mod = @compiler.parse_and_compile example.description
-      app = Application.new(mod)
-      app.run.should == false
+      app = Application.new
+      app.run(mod).should == false
     end
 
     it "
       (! false)
     " do
       mod = @compiler.parse_and_compile example.description
-      app = Application.new(mod)
-      app.run.should == true
+      app = Application.new
+      app.run(mod).should == true
     end
 
     it "
       (gene_invoke 'abc' '[]' 1)
     " do
       mod = @compiler.parse_and_compile example.description
-      app = Application.new(mod)
-      app.run.should == 'b'
+      app = Application.new
+      app.run(mod).should == 'b'
     end
 
     it "
       ('' 1 2 '3')
     " do
       mod = @compiler.parse_and_compile example.description
-      app = Application.new(mod)
-      app.run.should == '123'
+      app = Application.new
+      app.run(mod).should == '123'
     end
 
     it "
@@ -216,8 +224,8 @@ describe "JIT" do
       a
     " do
       mod = @compiler.parse_and_compile example.description
-      app = Application.new(mod)
-      app.run.should == 1
+      app = Application.new
+      app.run(mod).should == 1
     end
 
     it "
@@ -226,8 +234,8 @@ describe "JIT" do
       [a... 3]
     " do
       mod = @compiler.parse_and_compile example.description
-      app = Application.new(mod)
-      app.run.should == [1, 2, 3]
+      app = Application.new
+      app.run(mod).should == [1, 2, 3]
     end
 
     it "
@@ -237,8 +245,8 @@ describe "JIT" do
       a
     " do
       mod = @compiler.parse_and_compile example.description
-      app = Application.new(mod)
-      app.run.should == 3
+      app = Application.new
+      app.run(mod).should == 3
     end
 
     it "
@@ -248,8 +256,8 @@ describe "JIT" do
       a
     " do
       mod = @compiler.parse_and_compile example.description
-      app = Application.new(mod)
-      app.run.should == 1
+      app = Application.new
+      app.run(mod).should == 1
     end
 
     it "
@@ -257,8 +265,8 @@ describe "JIT" do
       (do 1 2)
     " do
       mod = @compiler.parse_and_compile example.description
-      app = Application.new(mod)
-      app.run.should == 2
+      app = Application.new
+      app.run(mod).should == 2
     end
 
     it "
@@ -266,8 +274,8 @@ describe "JIT" do
       (if true 1 else 2)
     " do
       mod = @compiler.parse_and_compile example.description
-      app = Application.new(mod)
-      app.run.should == 1
+      app = Application.new
+      app.run(mod).should == 1
     end
 
     it "
@@ -275,8 +283,8 @@ describe "JIT" do
       (if false 1 else 2)
     " do
       mod = @compiler.parse_and_compile example.description
-      app = Application.new(mod)
-      app.run.should == 2
+      app = Application.new
+      app.run(mod).should == 2
     end
 
     it "
@@ -285,8 +293,8 @@ describe "JIT" do
       1
     " do
       mod = @compiler.parse_and_compile example.description
-      app = Application.new(mod)
-      app.run.should == 1
+      app = Application.new
+      app.run(mod).should == 1
     end
 
     it "
@@ -298,8 +306,8 @@ describe "JIT" do
       sum
     " do
       mod = @compiler.parse_and_compile example.description
-      app = Application.new(mod)
-      app.run.should == 10
+      app = Application.new
+      app.run(mod).should == 10
     end
 
     it "
@@ -308,8 +316,8 @@ describe "JIT" do
       (f)
     " do
       mod = @compiler.parse_and_compile example.description
-      app = Application.new(mod)
-      app.run.should == 1
+      app = Application.new
+      app.run(mod).should == 1
     end
 
     it "
@@ -322,8 +330,8 @@ describe "JIT" do
     " do
       pending
       mod = @compiler.parse_and_compile example.description
-      app = Application.new(mod)
-      app.run.should == Gene::Types::Symbol.new('b')
+      app = Application.new
+      app.run(mod).should == Gene::Types::Symbol.new('b')
     end
 
     it "
@@ -331,8 +339,8 @@ describe "JIT" do
       (fnx)
     " do
       mod = @compiler.parse_and_compile example.description
-      app = Application.new(mod)
-      result = app.run
+      app = Application.new
+      result = app.run(mod)
       result.should be_a Gene::Lang::Jit::Function
     end
 
@@ -341,8 +349,8 @@ describe "JIT" do
       ((fnx a a) 1)
     " do
       mod = @compiler.parse_and_compile example.description
-      app = Application.new(mod)
-      result = app.run
+      app = Application.new
+      result = app.run(mod)
       result.should == 1
     end
 
@@ -351,8 +359,8 @@ describe "JIT" do
       (fnxx)
     " do
       mod = @compiler.parse_and_compile example.description
-      app = Application.new(mod)
-      result = app.run
+      app = Application.new
+      result = app.run(mod)
       result.should be_a Gene::Lang::Jit::Function
     end
 
@@ -361,8 +369,8 @@ describe "JIT" do
       ((fnxx 1))
     " do
       mod = @compiler.parse_and_compile example.description
-      app = Application.new(mod)
-      result = app.run
+      app = Application.new
+      result = app.run(mod)
       result.should == 1
     end
 
@@ -372,8 +380,8 @@ describe "JIT" do
       ((f))
     " do
       mod = @compiler.parse_and_compile example.description
-      app = Application.new(mod)
-      app.run.should == 1
+      app = Application.new
+      app.run(mod).should == 1
     end
 
     it "
@@ -382,8 +390,8 @@ describe "JIT" do
       (f 1)
     " do
       mod = @compiler.parse_and_compile example.description
-      app = Application.new(mod)
-      app.run.should == 1
+      app = Application.new
+      app.run(mod).should == 1
     end
 
     it "
@@ -454,8 +462,8 @@ describe "JIT" do
       (f 1 2)
     " do
       mod = @compiler.parse_and_compile example.description
-      app = Application.new(mod)
-      app.run.should == 3
+      app = Application.new
+      app.run(mod).should == 3
     end
 
     it "
@@ -465,8 +473,8 @@ describe "JIT" do
       (f)
     " do
       mod = @compiler.parse_and_compile example.description
-      app = Application.new(mod)
-      app.run.should == 1
+      app = Application.new
+      app.run(mod).should == 1
     end
 
     it "
@@ -475,8 +483,8 @@ describe "JIT" do
       (f 1 2)
     " do
       mod = @compiler.parse_and_compile example.description
-      app = Application.new(mod)
-      app.run.should == [1, 2]
+      app = Application.new
+      app.run(mod).should == [1, 2]
     end
 
     it "
@@ -485,8 +493,8 @@ describe "JIT" do
       (f 1 2 3)
     " do
       mod = @compiler.parse_and_compile example.description
-      app = Application.new(mod)
-      app.run.should == [2, 3]
+      app = Application.new
+      app.run(mod).should == [2, 3]
     end
 
     it "
@@ -495,8 +503,8 @@ describe "JIT" do
       (f 1 2 3)
     " do
       mod = @compiler.parse_and_compile example.description
-      app = Application.new(mod)
-      app.run.should == 3
+      app = Application.new
+      app.run(mod).should == 3
     end
 
     it "
@@ -508,8 +516,8 @@ describe "JIT" do
       (f)
     " do
       mod = @compiler.parse_and_compile example.description
-      app = Application.new(mod)
-      app.run.should == 1
+      app = Application.new
+      app.run(mod).should == 1
     end
 
     it "
@@ -520,8 +528,8 @@ describe "JIT" do
       (f true 1 2)
     " do
       mod = @compiler.parse_and_compile example.description
-      app = Application.new(mod)
-      app.run.should == 1
+      app = Application.new
+      app.run(mod).should == 1
     end
 
     it "
@@ -532,8 +540,8 @@ describe "JIT" do
       (f false 1 2)
     " do
       mod = @compiler.parse_and_compile example.description
-      app = Application.new(mod)
-      app.run.should == 2
+      app = Application.new
+      app.run(mod).should == 2
     end
 
     it "
@@ -548,8 +556,8 @@ describe "JIT" do
       (f 4)
     " do
       mod = @compiler.parse_and_compile example.description
-      app = Application.new(mod)
-      app.run.should == 10
+      app = Application.new
+      app.run(mod).should == 10
     end
 
     it "
@@ -562,8 +570,8 @@ describe "JIT" do
       (f)
     " do
       mod = @compiler.parse_and_compile example.description
-      app = Application.new(mod)
-      app.run.should == 1
+      app = Application.new
+      app.run(mod).should == 1
     end
 
     it "
@@ -581,8 +589,8 @@ describe "JIT" do
       (f)
     " do
       mod = @compiler.parse_and_compile example.description
-      app = Application.new(mod)
-      app.run.should == 5
+      app = Application.new
+      app.run(mod).should == 5
     end
 
     it "
@@ -591,8 +599,8 @@ describe "JIT" do
       +f 1
     " do
       mod = @compiler.parse_and_compile example.description
-      app = Application.new(mod)
-      app.run.should == 1
+      app = Application.new
+      app.run(mod).should == 1
     end
 
     it "
@@ -603,8 +611,8 @@ describe "JIT" do
       (+f 1) 2
     " do
       mod = @compiler.parse_and_compile example.description
-      app = Application.new(mod)
-      app.run.should == 3
+      app = Application.new
+      app.run(mod).should == 3
     end
 
     it "
@@ -613,8 +621,8 @@ describe "JIT" do
       [+f 1 2]
     " do
       mod = @compiler.parse_and_compile example.description
-      app = Application.new(mod)
-      app.run.should == [1, 2]
+      app = Application.new
+      app.run(mod).should == [1, 2]
     end
 
     it "
@@ -624,8 +632,8 @@ describe "JIT" do
       )
     " do
       mod = @compiler.parse_and_compile example.description
-      app = Application.new(mod)
-      klass = app.run
+      app = Application.new
+      klass = app.run(mod)
       klass.methods.size.should == 1
     end
 
@@ -637,8 +645,8 @@ describe "JIT" do
       ((new A) .test)
     " do
       mod = @compiler.parse_and_compile example.description
-      app = Application.new(mod)
-      app.run.should == 1
+      app = Application.new
+      app.run(mod).should == 1
     end
 
     it "
@@ -652,8 +660,8 @@ describe "JIT" do
       ((new A 1) .test)
     " do
       mod = @compiler.parse_and_compile example.description
-      app = Application.new(mod)
-      app.run.should == 1
+      app = Application.new
+      app.run(mod).should == 1
     end
 
     it "
@@ -665,8 +673,8 @@ describe "JIT" do
       ((new A) .test2)
     " do
       mod = @compiler.parse_and_compile example.description
-      app = Application.new(mod)
-      app.run.should == 1
+      app = Application.new
+      app.run(mod).should == 1
     end
 
     it "
@@ -678,8 +686,8 @@ describe "JIT" do
       (a == (a .test))
     " do
       mod = @compiler.parse_and_compile example.description
-      app = Application.new(mod)
-      app.run.should == true
+      app = Application.new
+      app.run(mod).should == true
     end
 
     it "
@@ -693,8 +701,8 @@ describe "JIT" do
       ((new A) .test)
     " do
       mod = @compiler.parse_and_compile example.description
-      app = Application.new(mod)
-      app.run.should == 1
+      app = Application.new
+      app.run(mod).should == 1
     end
 
     it "
@@ -712,8 +720,8 @@ describe "JIT" do
       ((new B) .test)
     " do
       mod = @compiler.parse_and_compile example.description
-      app = Application.new(mod)
-      app.run.should == 1
+      app = Application.new
+      app.run(mod).should == 1
     end
 
     it "
@@ -723,8 +731,8 @@ describe "JIT" do
       )
     " do
       mod = @compiler.parse_and_compile example.description
-      app = Application.new(mod)
-      m = app.run
+      app = Application.new
+      m = app.run(mod)
       m.methods.size.should == 1
     end
 
@@ -738,8 +746,8 @@ describe "JIT" do
     " do
       lambda {
         mod = @compiler.parse_and_compile example.description
-        app = Application.new(mod)
-        app.run
+        app = Application.new
+        app.run(mod)
       }.should raise_error
     end
 
@@ -748,8 +756,8 @@ describe "JIT" do
       (ns N)
     " do
       mod = @compiler.parse_and_compile example.description
-      app = Application.new(mod)
-      result = app.run
+      app = Application.new
+      result = app.run(mod)
       result.class.should == Gene::Lang::Jit::Namespace
       result.name.should  == "N"
     end
@@ -762,8 +770,8 @@ describe "JIT" do
       (N/f)
     " do
       mod = @compiler.parse_and_compile example.description
-      app = Application.new(mod)
-      app.run.should == 1
+      app = Application.new
+      app.run(mod).should == 1
     end
 
     it "
@@ -774,9 +782,9 @@ describe "JIT" do
       N/a
     " do
       mod = @compiler.parse_and_compile example.description
-      app = Application.new(mod)
+      app = Application.new
       lambda {
-        app.run
+        app.run(mod)
       }.should raise_error
     end
 
@@ -790,8 +798,8 @@ describe "JIT" do
       (N/O/f)
     " do
       mod = @compiler.parse_and_compile example.description
-      app = Application.new(mod)
-      app.run.should == 1
+      app = Application.new
+      app.run(mod).should == 1
     end
 
     it "
@@ -802,8 +810,8 @@ describe "JIT" do
       (C/f)
     " do
       mod = @compiler.parse_and_compile example.description
-      app = Application.new(mod)
-      app.run.should == 1
+      app = Application.new
+      app.run(mod).should == 1
     end
 
     it "
@@ -817,8 +825,8 @@ describe "JIT" do
       (N/M/f)
     " do
       mod = @compiler.parse_and_compile example.description
-      app = Application.new(mod)
-      app.run.should == 1
+      app = Application.new
+      app.run(mod).should == 1
     end
 
     it "
@@ -831,8 +839,8 @@ describe "JIT" do
     " do
       pending
       mod = @compiler.parse_and_compile example.description
-      app = Application.new(mod)
-      app.run.should_not be_nil
+      app = Application.new
+      app.run(mod).should_not be_nil
     end
 
     it "
@@ -846,8 +854,8 @@ describe "JIT" do
       (N/M/f)
     " do
       mod = @compiler.parse_and_compile example.description
-      app = Application.new(mod)
-      app.run.should == 1
+      app = Application.new
+      app.run(mod).should == 1
     end
 
     it "
@@ -858,8 +866,8 @@ describe "JIT" do
       N/a
     " do
       mod = @compiler.parse_and_compile example.description
-      app = Application.new(mod)
-      app.run.should == 1
+      app = Application.new
+      app.run(mod).should == 1
     end
 
     it "
@@ -869,8 +877,8 @@ describe "JIT" do
       N/a
     " do
       mod = @compiler.parse_and_compile example.description
-      app = Application.new(mod)
-      app.run.should == 1
+      app = Application.new
+      app.run(mod).should == 1
     end
 
     it "
@@ -880,8 +888,8 @@ describe "JIT" do
       f/a
     " do
       mod = @compiler.parse_and_compile example.description
-      app = Application.new(mod)
-      app.run.should == 1
+      app = Application.new
+      app.run(mod).should == 1
     end
 
     it "
@@ -890,8 +898,8 @@ describe "JIT" do
       (global/f)
     " do
       mod = @compiler.parse_and_compile example.description
-      app = Application.new(mod)
-      app.run.should == 1
+      app = Application.new
+      app.run(mod).should == 1
     end
 
     it "
@@ -900,8 +908,8 @@ describe "JIT" do
       (test_function)
     " do
       mod = @compiler.parse_and_compile example.description
-      app = Application.new(mod)
-      app.run.should == 1
+      app = Application.new
+      app.run(mod).should == 1
     end
 
     it "
@@ -909,9 +917,9 @@ describe "JIT" do
       (assert false 'Houston, we have a problem')
     " do
       mod = @compiler.parse_and_compile example.description
-      app = Application.new(mod)
+      app = Application.new
       lambda {
-        app.run
+        app.run(mod)
       }.should raise_error('Houston, we have a problem')
     end
 
@@ -921,8 +929,29 @@ describe "JIT" do
       1
     " do
       mod = @compiler.parse_and_compile example.description
-      app = Application.new(mod)
-      app.run.should == 1
+      app = Application.new
+      app.run(mod).should == 1
+    end
+
+    it "
+      # assert_not should work
+      (assert_not true 'Houston, we have a problem')
+    " do
+      mod = @compiler.parse_and_compile example.description
+      app = Application.new
+      lambda {
+        app.run(mod)
+      }.should raise_error('Houston, we have a problem')
+    end
+
+    it "
+      # assert_not should work
+      (assert_not false 'Houston, we have a problem')
+      1
+    " do
+      mod = @compiler.parse_and_compile example.description
+      app = Application.new
+      app.run(mod).should == 1
     end
 
     it "
@@ -932,8 +961,8 @@ describe "JIT" do
       (eval `a)
     " do
       mod = @compiler.parse_and_compile example.description
-      app = Application.new(mod)
-      app.run.should == 1
+      app = Application.new
+      app.run(mod).should == 1
     end
 
     it "
@@ -948,8 +977,8 @@ describe "JIT" do
       )
     " do
       mod = @compiler.parse_and_compile example.description
-      app = Application.new(mod)
-      app.run.should == 3
+      app = Application.new
+      app.run(mod).should == 3
     end
 
     it "
@@ -958,8 +987,8 @@ describe "JIT" do
       (render %a)
     " do
       mod = @compiler.parse_and_compile example.description
-      app = Application.new(mod)
-      app.run.should == 1
+      app = Application.new
+      app.run(mod).should == 1
     end
 
     it "
@@ -968,8 +997,8 @@ describe "JIT" do
       (render (%= a))
     " do
       mod = @compiler.parse_and_compile example.description
-      app = Application.new(mod)
-      app.run.should == 1
+      app = Application.new
+      app.run(mod).should == 1
     end
 
     it "
@@ -979,8 +1008,8 @@ describe "JIT" do
       (render (f %a))
     " do
       mod = @compiler.parse_and_compile example.description
-      app = Application.new(mod)
-      app.run.should == 1
+      app = Application.new
+      app.run(mod).should == 1
     end
 
     it "
@@ -988,9 +1017,9 @@ describe "JIT" do
       (throw 'error')
     " do
       mod = @compiler.parse_and_compile example.description
-      app = Application.new(mod)
+      app = Application.new
       lambda {
-        app.run
+        app.run(mod)
       }.should raise_error('error')
     end
 
@@ -1005,8 +1034,8 @@ describe "JIT" do
       )
     " do
       mod = @compiler.parse_and_compile example.description
-      app = Application.new(mod)
-      app.run.should == 1
+      app = Application.new
+      app.run(mod).should == 1
     end
 
     it "
@@ -1022,8 +1051,8 @@ describe "JIT" do
       a
     " do
       mod = @compiler.parse_and_compile example.description
-      app = Application.new(mod)
-      app.run.should == 5
+      app = Application.new
+      app.run(mod).should == 5
     end
 
     it "
@@ -1041,8 +1070,73 @@ describe "JIT" do
       ((first + second) + third)
     " do
       mod = @compiler.parse_and_compile example.description
+      app = Application.new
+      app.run(mod).should == 6
+    end
+
+    it "
+      # FFI (Foreign Function Interface) should work
+      (fn f a
+        (a + 1)
+      )
+    " do
+      mod = @compiler.parse_and_compile example.description
+      app = Application.new
+      f = app.run(mod)
+      f.call(1).should == 2
+    end
+
+    it "
+      # FFI (Foreign Function Interface)
+      # Gene function to proc
+      (fn f a
+        (a + 1)
+      )
+    " do
+      mod = @compiler.parse_and_compile example.description
+      app = Application.new
+      f = app.run(mod)
+      [1, 2].map(&f).should == [2, 3]
+    end
+
+    it "
+      # FFI (Foreign Function Interface)
+      # Wrap up native class
+      # Implicitly extend RubyObject
+      # (class A = ruby/A extend B # B must be a decendant of RubyObject
+      (class MyString = ruby/String # Or ruby/A::B
+
+        # If a class = a native class
+        #   the instance is result of (init)
+        # Else
+        #   instance is created internally
+        (init arg
+          (gene_invoke ruby/String 'new' arg)
+        )
+
+        (method_missing [method args...]
+          # Call native method
+          (gene_invoke self method args...)
+        )
+      )
+      (new MyString 'hello')
+    " do
+      pending
+      mod = @compiler.parse_and_compile example.description
+      p mod
       app = Application.new(mod)
-      app.run.should == 6
+      app.run(debug: true).should == "hello"
+    end
+
+    it "
+      # FFI (Foreign Function Interface)
+      # Passing global parameters to Gene program should work
+      global/params/test
+    " do
+      mod = @compiler.parse_and_compile example.description
+      app = Application.new
+      app.set_param 'test', 1
+      app.run(mod).should == 1
     end
   end
 
@@ -1063,8 +1157,8 @@ describe "JIT" do
         pending if testcase.index('!pending!') and not testcase.include? '!focus!'
 
         mod = @compiler.parse_and_compile testcase
-        app = Application.new(mod)
-        app.run
+        app = Application.new
+        app.run(mod)
       end
     end
   end
