@@ -20,7 +20,7 @@ module Gene::Lang::Jit
     end
 
     def run mod, options = {}
-      VirtualMachine.new(self).load_module mod, options
+      VirtualMachine.new.load_module mod, options
     end
 
     def create_root_context
@@ -30,7 +30,7 @@ module Gene::Lang::Jit
     def load_core_lib
       core_lib = "#{File.dirname(__FILE__)}/core"
       mod = CODE_MGR.load_from_path core_lib
-      VirtualMachine.new(self).load_module mod
+      VirtualMachine.new.load_module mod
     end
   end
 
@@ -110,11 +110,17 @@ module Gene::Lang::Jit
 
       if @members.include? name
         @members[name]
+      elsif member_resolver and found = member_resolver.call(name)
+        found
       elsif parent_namespace
         parent_namespace.get_member name
       else
         raise "#{name} is not defined."
       end
+    end
+
+    def member_resolver
+      @member_resolver ||= @members['member_resolver']
     end
 
     def set_member name, value, options = {}
@@ -276,11 +282,7 @@ module Gene::Lang::Jit
     end
 
     def call *args
-      if not @app
-        raise "Illegal invocation"
-      end
-
-      VirtualMachine.new(@app).process_function self, args
+      VirtualMachine.new.process_function self, args
     end
 
     def to_proc

@@ -131,10 +131,7 @@ module Gene::Lang::Jit
   # Represents a complete virtual machine that will be used to run
   # the instructions and hold the application state
   class VirtualMachine
-    attr_reader :application
-
-    def initialize application
-      @application   = application
+    def initialize
       @registers_mgr = RegistersManager.new
     end
 
@@ -170,11 +167,6 @@ module Gene::Lang::Jit
       # Result should always be stored in the default register
       result = @registers['default']
       # TODO: clean up
-
-      if result.is_a? Function
-        # Save application object to allow invocation from Ruby code
-        result.app = @application
-      end
 
       result
     end
@@ -215,7 +207,7 @@ module Gene::Lang::Jit
     end
 
     instr 'init' do |options = {}|
-      @registers['context'] = @application.create_root_context
+      @registers['context'] = APP.create_root_context
     end
 
     instr 'get' do |reg, path, target_reg|
@@ -239,7 +231,7 @@ module Gene::Lang::Jit
     end
 
     instr 'global' do |_|
-      @registers['default'] = @application.global
+      @registers['default'] = APP.global
     end
 
     instr 'args' do |_|
@@ -267,7 +259,9 @@ module Gene::Lang::Jit
       if name[-3..-1] == '...'
         @registers['default'] = Gene::Lang::Jit::Expandable.new context.get_member(name[0..-4])
       elsif name == 'gene'
-        @registers['default'] = @application.global.get_member 'gene'
+        @registers['default'] = APP.global.get_member 'gene'
+      elsif name == 'rb'
+        @registers['default'] = APP.global.get_member 'rb'
       else
         @registers['default'] = context.get_member name
       end
@@ -654,11 +648,11 @@ module Gene::Lang::Jit
       # @registers['default'] = obj.class
       cls = obj.class
       if cls == String
-        cls = @application.global.get_member('gene').get_member('String')
+        cls = APP.global.get_member('gene').get_member('String')
       elsif cls == Array
-        cls = @application.global.get_member('gene').get_member('Array')
+        cls = APP.global.get_member('gene').get_member('Array')
       elsif cls == Hash
-        cls = @application.global.get_member('gene').get_member('Map')
+        cls = APP.global.get_member('gene').get_member('Map')
       end
       @registers['default'] = cls
     end

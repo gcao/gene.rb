@@ -114,4 +114,10 @@
   )
 )
 
+(ns global/rb
+  (fn member_resolver name
+    (gene_get_class name)
+  )
+)
+
 undefined

@@ -134,4 +134,15 @@ describe "JIT Core Lib" do
       @app.run(mod).should == "a1b2"
     end
   end
+
+  describe "Ruby native class" do
+    it "
+      rb/String
+    " do
+      mod = @compiler.parse_and_compile example.description
+      p mod
+      @app.run(mod, debug: true).should == String
+    end
+  end
+
 end
