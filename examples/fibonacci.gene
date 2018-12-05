@@ -17,7 +17,7 @@ examples/fibonacci.gene 25 ; examples/fibonacci.rb 25
   (var before (gene_invoke (gene_get_class "Time") "now"))
   (print "fibonacci.gene: " (fibonacci n) "\n")
   (print "Used time: "
-    ((gene_invoke (gene_get_class "Time") "now") - before)
+    ((gene_invoke ruby/Time "now") - before)
     "\n"
   )
 else
