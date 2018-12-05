@@ -531,6 +531,21 @@ describe "JIT" do
     end
 
     it "
+      # method_resolver should work
+      (class A
+        (method_resolver [method props args]
+          [method props args]
+        )
+      )
+      ((new A) .test ^key 'val' 1 2)
+    " do
+      pending
+      mod = @compiler.parse_and_compile example.description
+      p mod
+      APP.run(mod, debug: true).should == ['method', {'key' => 'val'}, [1, 2]]
+    end
+
+    it "
       # class initialization should work
       (class A
         (init a
@@ -950,7 +965,7 @@ describe "JIT" do
       # Wrap up native class
       # Implicitly extend RubyObject
       # (class A = ruby/A extend B # B must be a decendant of RubyObject
-      (class MyString = ruby/String # Or ruby/A::B
+      (class MyString = rb/String # Or rb/A::B
 
         # If a class = a native class
         #   the instance is result of (init)
