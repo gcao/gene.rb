@@ -137,28 +137,28 @@ describe "JIT Core Lib" do
 
   describe "Ruby native class" do
     it "
-      rb/Gene
+      ruby/Gene
     " do
       mod = @compiler.parse_and_compile example.description
       @app.run(mod).should == Gene
     end
 
     it "
-      rb/Gene::Lang
+      ruby/Gene::Lang
     " do
       mod = @compiler.parse_and_compile example.description
       @app.run(mod).should == Gene::Lang
     end
 
     it "
-      rb/Gene/Lang
+      ruby/Gene/Lang
     " do
       mod = @compiler.parse_and_compile example.description
       @app.run(mod).should == Gene::Lang
     end
 
     it "
-      (var temp rb/Gene)
+      (var temp ruby/Gene)
       temp/Lang
     " do
       mod = @compiler.parse_and_compile example.description
