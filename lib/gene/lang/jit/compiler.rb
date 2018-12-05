@@ -805,26 +805,19 @@ module Gene::Lang::Jit
     # Save to a register
     # @return the regiser address
     def compile_args block, source, options, is_method = false
-      if source.properties and not is_literal?(source.properties)
-        compile_ block, source.properties, options
-        props_reg = copy_and_return_reg block
-      else
-        props_reg = source.properties
-      end
-
       args_data = is_method ? source.data[1..-1] : source.data
 
-      if args_data and not is_literal?(args_data)
+      if not args_data or args_data.length == 0
+        return
+      elsif args_data and not is_literal?(args_data)
         compile_ block, args_data, options
         data_reg = copy_and_return_reg block
       else
-        data_reg = args_data
+        data_reg = new_reg
+        block.add_instr [WRITE, data_reg, args_data]
       end
 
-      block.add_instr [CREATE_OBJ, nil, props_reg, data_reg]
-      args_reg = copy_and_return_reg block
-
-      args_reg
+      data_reg
     end
 
     def compile_namespace block, source, options

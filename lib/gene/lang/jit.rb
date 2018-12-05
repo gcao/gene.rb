@@ -481,7 +481,9 @@ module Gene::Lang::Jit
             # Only one argument is accepted
             args_reg    = options['args_reg']
             args        = caller_regs[args_reg]
-            @registers['default'] = args[0]
+            if args
+              @registers['default'] = args[0]
+            end
 
             block_id      = caller_regs[block_id_reg]
             @block        = CODE_MGR.get_block(block_id)
