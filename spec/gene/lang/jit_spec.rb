@@ -975,6 +975,34 @@ describe "JIT" do
 
     it "
       # FFI (Foreign Function Interface)
+      (class A
+        (method add [a b]
+          (a + b)
+        )
+      )
+      (new A)
+    " do
+      mod = @compiler.parse_and_compile example.description
+      a = APP.run(mod)
+      a.add(1, 2).should == 3
+    end
+
+    it "
+      # FFI (Foreign Function Interface)
+      (fnx [a b]
+        (a + b)
+      )
+    " do
+      mod = @compiler.parse_and_compile example.description
+      callback = APP.run(mod)
+      def testFFI a, b
+        yield a, b
+      end
+      testFFI(1, 2, &callback).should == 3
+    end
+
+    it "
+      # FFI (Foreign Function Interface)
       # Passing global parameters to Gene program should work
       global/params/test
     " do

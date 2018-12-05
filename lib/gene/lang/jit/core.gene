@@ -117,12 +117,12 @@
   )
 )
 
-(ns global/rb
+(ns global/ruby
   (fn member_resolver name
     (gene_get_class name)
   )
 )
 
-(var global/fs (gene_invoke rb/Gene::Lang::Jit::FileSystemObject "new" ""))
+(var global/fs (gene_invoke ruby/Gene::Lang::Jit::FileSystemObject "new" ""))
 
 undefined

@@ -274,8 +274,8 @@ module Gene::Lang::Jit
         @registers['default'] = Gene::Lang::Jit::Expandable.new context.get_member(name[0..-4])
       elsif name == 'gene'
         @registers['default'] = APP.global.get_member 'gene'
-      elsif name == 'rb'
-        @registers['default'] = APP.global.get_member 'rb'
+      elsif name == 'ruby'
+        @registers['default'] = APP.global.get_member 'ruby'
       elsif name == 'fs'
         @registers['default'] = APP.global.get_member 'fs'
       else
