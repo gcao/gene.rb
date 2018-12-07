@@ -671,6 +671,8 @@ module Gene::Lang::Jit
       @registers['default'] = APP.get_class obj
     end
 
+    # First check whether klass is a Gene Module
+    # If not, return null
     instr 'create_inheritance_hierarchy' do |reg|
       klass = @registers[reg]
       @registers['default'] = Gene::Lang::Jit::HierarchySearch.new(klass.ancestors)
@@ -723,8 +725,26 @@ module Gene::Lang::Jit
       end
     end
 
-    instr 'call_method' do |self_reg, method_reg, args_reg, hierarchy_reg|
+    instr 'call_method' do |self_reg, method_name, args_reg, hierarchy_reg|
       caller_regs = @registers
+      self_       = caller_regs[self_reg]
+      hierarchy   = caller_regs[hierarchy_reg]
+      @registers['hierarchy'] = hierarchy
+      method      = hierarchy.method method_name, do_not_throw_error: true
+      args        = caller_regs[args_reg]
+
+      if not method
+        # Invoke native method
+        if args
+          result = self_.send method_name, *args
+        else
+          result = self_.send method_name
+        end
+        caller_regs['default'] = result
+
+        next
+      end
+
       return_addr = [@block.id, @exec_pos + 1]
 
       @registers  = @registers_mgr.create
@@ -732,7 +752,7 @@ module Gene::Lang::Jit
       caller_context = caller_regs['context']
       scope   = Gene::Lang::Jit::Scope.new
 
-      context = caller_context.extend scope: scope, self: caller_regs[self_reg]
+      context = caller_context.extend scope: scope, self: self_
       @registers['context']     = context
 
       @registers['return_reg']  = [caller_regs.id, 'default']
@@ -740,11 +760,9 @@ module Gene::Lang::Jit
 
       @registers['args'] = caller_regs[args_reg]
 
-      method        = caller_regs[method_reg]
-      @block        = CODE_MGR.get_block(method.body)
-
       @registers['method']    = method
-      @registers['hierarchy'] = caller_regs[hierarchy_reg]
+
+      @block        = CODE_MGR.get_block(method.body)
 
       @instructions = @block.instructions
       @exec_pos     = 0

@@ -733,19 +733,10 @@ module Gene::Lang::Jit
 
       hierarchy_reg = copy_and_return_reg block
 
-      method_name     = source.data.first.to_s[1..-1]
-      method_name_reg = new_reg
+      method_name    = source.data.first.to_s[1..-1]
+      args_reg       = compile_args block, source, options, true
 
-      block.add_instr [WRITE, method_name_reg, method_name]
-
-      # Get the method object from the hierarchy and save to default register
-      block.add_instr [CALL_NATIVE, 'default', 'method', method_name_reg]
-
-      method_reg = copy_and_return_reg block
-
-      args_reg   = compile_args block, source, options, true
-
-      block.add_instr [CALL_METHOD, self_reg, method_reg, args_reg, hierarchy_reg]
+      block.add_instr [CALL_METHOD, self_reg, method_name, args_reg, hierarchy_reg]
     end
 
     # Get class of object
@@ -765,20 +756,10 @@ module Gene::Lang::Jit
 
       hierarchy_reg = copy_and_return_reg block
 
-      method_name     = source.type.to_s[1..-1]
-      method_name_reg = new_reg
+      method_name   = source.type.to_s[1..-1]
+      args_reg      = compile_args block, source, options
 
-      block.add_instr [WRITE, method_name_reg, method_name]
-
-      # Get the method object from the hierarchy and save to default register
-      block.add_instr [CALL_NATIVE, 'default', 'method', method_name_reg]
-
-      method_reg = copy_and_return_reg block
-
-      # Treat arguments the same way as function arguments
-      args_reg   = compile_args block, source, options
-
-      block.add_instr [CALL_METHOD, self_reg, method_reg, args_reg, hierarchy_reg]
+      block.add_instr [CALL_METHOD, self_reg, method_name, args_reg, hierarchy_reg]
     end
 
     # Get hierarchy from hierarchy register (if not found, throw error?)

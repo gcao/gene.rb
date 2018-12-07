@@ -13,7 +13,7 @@
       "type": "Ruby",
       "request": "launch",
       "cwd": "${workspaceRoot}",
-      "program": "${workspaceRoot}/bin/grun",
+      "program": "${workspaceRoot}/bin/gene",
       "args": [
         "examples/web_app.gene"
       ]
@@ -69,7 +69,7 @@
       "args": [
         "-I",
         "${workspaceRoot}",
-        "spec/gene/lang/jit_spec.rb:993"
+        "spec/gene/lang/jit_spec.rb:938"
       ]
     },
     {
