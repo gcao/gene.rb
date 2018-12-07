@@ -13,15 +13,15 @@ include Gene::Lang::Jit
 describe "JIT Core Lib" do
   before do
     @compiler = Compiler.new
-    @app      = Application.new
-    @app.load_core_lib
+    APP.reset
+    APP.load_core_lib
   end
 
   it "
     gene/Object
   " do
     mod = @compiler.parse_and_compile example.description
-    @app.run(mod).should_not be_nil
+    APP.run(mod).should_not be_nil
   end
 
   describe "File" do
@@ -30,7 +30,7 @@ describe "JIT Core Lib" do
       (gene/File/read 'spec/data/test.txt')
     " do
       mod = @compiler.parse_and_compile example.description
-      @app.run(mod).should == "Test\nTest 2"
+      APP.run(mod).should == "Test\nTest 2"
     end
 
     it "
@@ -39,14 +39,14 @@ describe "JIT Core Lib" do
       (gene/File/read  '/tmp/test.txt')
     " do
       mod = @compiler.parse_and_compile example.description
-      @app.run(mod).should == "test"
+      APP.run(mod).should == "test"
     end
 
     it "
       (gene/File/read_lines 'spec/data/test.txt')
     " do
       mod = @compiler.parse_and_compile example.description
-      @app.run(mod).should == ["Test\n", "Test 2"]
+      APP.run(mod).should == ["Test\n", "Test 2"]
     end
   end
 
@@ -55,7 +55,7 @@ describe "JIT Core Lib" do
       (gene/Env 'HOME')
     " do
       mod = @compiler.parse_and_compile example.description
-      @app.run(mod).should == ENV['HOME']
+      APP.run(mod).should == ENV['HOME']
     end
 
     it "
@@ -63,7 +63,7 @@ describe "JIT Core Lib" do
       (gene/Env 'TEST')
     " do
       mod = @compiler.parse_and_compile example.description
-      @app.run(mod).should == 'haha'
+      APP.run(mod).should == 'haha'
     end
   end
 
@@ -72,28 +72,28 @@ describe "JIT Core Lib" do
       ('abc' .length)
     " do
       mod = @compiler.parse_and_compile example.description
-      @app.run(mod).should == 3
+      APP.run(mod).should == 3
     end
 
     it "
       ('a,b' .split ',')
     " do
       mod = @compiler.parse_and_compile example.description
-      @app.run(mod).should == ['a', 'b']
+      APP.run(mod).should == ['a', 'b']
     end
 
     it "
       ('abc' .substr 1)
     " do
       mod = @compiler.parse_and_compile example.description
-      @app.run(mod).should == 'bc'
+      APP.run(mod).should == 'bc'
     end
 
     it "
       ('abc' .substr 1 1)
     " do
       mod = @compiler.parse_and_compile example.description
-      @app.run(mod).should == 'b'
+      APP.run(mod).should == 'b'
     end
   end
 
@@ -102,7 +102,7 @@ describe "JIT Core Lib" do
       ([3] .length)
     " do
       mod = @compiler.parse_and_compile example.description
-      @app.run(mod).should == 1
+      APP.run(mod).should == 1
     end
 
     it "
@@ -111,7 +111,7 @@ describe "JIT Core Lib" do
       sum
     " do
       mod = @compiler.parse_and_compile example.description
-      @app.run(mod).should == 3
+      APP.run(mod).should == 3
     end
   end
 
@@ -120,7 +120,7 @@ describe "JIT Core Lib" do
       ({^^a} .size)
     " do
       mod = @compiler.parse_and_compile example.description
-      @app.run(mod).should == 1
+      APP.run(mod).should == 1
     end
 
     it "
@@ -131,7 +131,7 @@ describe "JIT Core Lib" do
       result
     " do
       mod = @compiler.parse_and_compile example.description
-      @app.run(mod).should == "a1b2"
+      APP.run(mod).should == "a1b2"
     end
   end
 
@@ -140,21 +140,21 @@ describe "JIT Core Lib" do
       ruby/Gene
     " do
       mod = @compiler.parse_and_compile example.description
-      @app.run(mod).should == Gene
+      APP.run(mod).should == Gene
     end
 
     it "
       ruby/Gene::Lang
     " do
       mod = @compiler.parse_and_compile example.description
-      @app.run(mod).should == Gene::Lang
+      APP.run(mod).should == Gene::Lang
     end
 
     it "
       ruby/Gene/Lang
     " do
       mod = @compiler.parse_and_compile example.description
-      @app.run(mod).should == Gene::Lang
+      APP.run(mod).should == Gene::Lang
     end
 
     it "
@@ -162,7 +162,7 @@ describe "JIT Core Lib" do
       temp/Lang
     " do
       mod = @compiler.parse_and_compile example.description
-      @app.run(mod).should == Gene::Lang
+      APP.run(mod).should == Gene::Lang
     end
   end
 
@@ -171,14 +171,14 @@ describe "JIT Core Lib" do
       fs/usr
     " do
       mod = @compiler.parse_and_compile example.description
-      @app.run(mod).path.should == '/usr'
+      APP.run(mod).path.should == '/usr'
     end
 
     it "
       fs/usr/bin
     " do
       mod = @compiler.parse_and_compile example.description
-      @app.run(mod).path.should == '/usr/bin'
+      APP.run(mod).path.should == '/usr/bin'
     end
 
     it "
@@ -186,7 +186,7 @@ describe "JIT Core Lib" do
       temp/bin
     " do
       mod = @compiler.parse_and_compile example.description
-      @app.run(mod).path.should == '/usr/bin'
+      APP.run(mod).path.should == '/usr/bin'
     end
   end
 
