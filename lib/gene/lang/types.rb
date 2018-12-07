@@ -71,7 +71,7 @@ module Gene::Lang
     # Not supported: keyword arguments
     def method_missing method_name, *args
       hierarchy = Gene::Lang::Jit::HierarchySearch.new(self.class.ancestors)
-      method = hierarchy.method(method_name.to_s)
+      method = hierarchy.get_method(method_name.to_s)
       VirtualMachine.new.process_function method, args, self: self
     end
 

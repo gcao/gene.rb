@@ -675,7 +675,11 @@ module Gene::Lang::Jit
     # If not, return null
     instr 'create_inheritance_hierarchy' do |reg|
       klass = @registers[reg]
-      @registers['default'] = Gene::Lang::Jit::HierarchySearch.new(klass.ancestors)
+      if klass.is_a? Gene::Lang::Jit::Module
+        @registers['default'] = Gene::Lang::Jit::HierarchySearch.new(klass.ancestors)
+      else
+        @registers['default'] = Gene::Lang::Jit::HierarchySearch.new([])
+      end
     end
 
     instr 'method' do |name, block_id|
@@ -697,7 +701,7 @@ module Gene::Lang::Jit
       @registers['default'] = instance
 
       hierarchy = Gene::Lang::Jit::HierarchySearch.new klass.ancestors
-      method    = hierarchy.method 'init', do_not_throw_error: true
+      method    = hierarchy.get_method 'init', do_not_throw_error: true
 
       if method
         # Invoke init method
@@ -725,18 +729,28 @@ module Gene::Lang::Jit
       end
     end
 
+    instr 'call_dynamic_method' do |self_reg, method_name_reg, args_reg, hierarchy_reg|
+      method_name = @registers[method_name_reg].to_s
+      do_call_method self_reg, method_name, args_reg, hierarchy_reg
+    end
+
     instr 'call_method' do |self_reg, method_name, args_reg, hierarchy_reg|
       caller_regs = @registers
       self_       = caller_regs[self_reg]
       hierarchy   = caller_regs[hierarchy_reg]
-      @registers['hierarchy'] = hierarchy
-      method      = hierarchy.method method_name, do_not_throw_error: true
+      method      = hierarchy.get_method method_name, do_not_throw_error: true
       args        = caller_regs[args_reg]
 
       if not method
         # Invoke native method
         if args
-          result = self_.send method_name, *args
+          if args.last.is_a? Gene::Lang::Jit::Function
+            # Convert last function to block
+            block  = args.pop
+            result = self_.send method_name, *args, &block
+          else
+            result = self_.send method_name, *args
+          end
         else
           result = self_.send method_name
         end
@@ -760,6 +774,7 @@ module Gene::Lang::Jit
 
       @registers['args'] = caller_regs[args_reg]
 
+      @registers['hierarchy'] = hierarchy
       @registers['method']    = method
 
       @block        = CODE_MGR.get_block(method.body)

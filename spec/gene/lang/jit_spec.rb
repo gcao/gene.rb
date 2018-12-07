@@ -1021,8 +1021,17 @@ describe "JIT" do
       ('a' .size)
     " do
       mod = @compiler.parse_and_compile example.description
-      p mod
-      APP.run(mod, debug: true).should == 1
+      APP.run(mod).should == 1
+    end
+
+    it "
+      # FFI (Foreign Function Interface)
+      (var sum 0)
+      (4 .times (fnx i (sum += i)))
+      sum # should be like 0 + 1 + 2 + 3 => 6
+    " do
+      mod = @compiler.parse_and_compile example.description
+      APP.run(mod).should == 6
     end
 
     it "

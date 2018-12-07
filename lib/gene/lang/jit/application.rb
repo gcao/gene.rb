@@ -31,20 +31,25 @@ module Gene::Lang::Jit
       core_lib = "#{File.dirname(__FILE__)}/core"
       mod = CODE_MGR.load_from_path core_lib
       VirtualMachine.new.load_module mod
+      @core_lib_loaded = true
     end
 
     def get_class obj
-      case obj
-      when String
-        gene.get_member('String')
-      when Array
-        gene.get_member('Array')
-      when Hash
-        gene.get_member('Map')
-      when File
-        gene.get_member('File')
-      when Dir
-        gene.get_member('Dir')
+      if @core_lib_loaded
+        case obj
+        when String
+          gene.get_member('String')
+        when Array
+          gene.get_member('Array')
+        when Hash
+          gene.get_member('Map')
+        when File
+          gene.get_member('File')
+        when Dir
+          gene.get_member('Dir')
+        else
+          obj.class
+        end
       else
         obj.class
       end
@@ -394,7 +399,7 @@ module Gene::Lang::Jit
       methods[method.name.to_s] = method
     end
 
-    def method name
+    def get_method name
       methods[name]
     end
 
@@ -471,7 +476,7 @@ module Gene::Lang::Jit
 
     def initialize(hierarchy)
       @hierarchy = hierarchy
-      @index     = -1
+      @index     = 0
     end
 
     def next
@@ -484,10 +489,10 @@ module Gene::Lang::Jit
     end
 
     # Find method in the hierarchy
-    def method name, options = {}
+    def get_method name, options = {}
       while index < hierarchy.length
         module_or_class = hierarchy[index]
-        method = module_or_class.method(name)
+        method = module_or_class.get_method(name)
         if method
           return method
         end

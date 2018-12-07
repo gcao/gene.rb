@@ -765,21 +765,19 @@ module Gene::Lang::Jit
     # Get hierarchy from hierarchy register (if not found, throw error?)
     def compile_super block, source, options
       hierarchy_reg   = 'hierarchy'
+      # Advance the hierarch search object
+      block.add_instr [CALL_NATIVE, hierarchy_reg, 'next']
 
       # Get method name
       block.add_instr [CALL_NATIVE, 'method', 'name']
-
-      # Get the method object from the hierarchy and save to default register
-      block.add_instr [CALL_NATIVE, hierarchy_reg, 'method', 'default']
-
-      method_reg = block.add_instr [COPY, 'default', method_reg]
+      method_name_reg = copy_and_return_reg block
 
       # TODO: (super!) will re-use the arguments
       args_reg = compile_args block, source, options, true
 
       block.add_instr [CALL_NATIVE, 'context', 'self']
 
-      block.add_instr [CALL_METHOD, 'default', method_reg, args_reg, hierarchy_reg]
+      block.add_instr [CALL_DYNAMIC_METHOD, 'default', method_name_reg, args_reg, hierarchy_reg]
     end
 
     # Compile args
