@@ -13,5 +13,5 @@ if ARGV.length != 1
 else
   before = Time.now
   puts "#{File.basename(__FILE__)}: #{fibonacci(ARGV[0].to_i)}"
-  puts"Used time: #{Time.now - before})"
+  puts"Used time: #{Time.now - before}"
 end

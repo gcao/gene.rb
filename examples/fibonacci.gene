@@ -14,10 +14,10 @@ examples/fibonacci.gene 25 ; examples/fibonacci.rb 25
 
 (if ((ARGV .length) > 0)
   (var n ((ARGV .get 0) .to_i))
-  (var before (gene_invoke ruby/Time "now"))
+  (var before (ruby/Time .now))
   (print "fibonacci.gene: " (fibonacci n) "\n")
   (print "Used time: "
-    ((gene_invoke ruby/Time "now") - before)
+    ((ruby/Time .now) - before)
     "\n"
   )
 else

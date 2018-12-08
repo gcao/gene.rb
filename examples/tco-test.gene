@@ -14,10 +14,10 @@ examples/tco-test.rb 10000 ; examples/tco-test.gene 10000
 
 (if ((ARGV .length) > 0)
   (var n ((ARGV .get 0) .to_i))
-  (var before (gene_invoke ruby/Time "now"))
+  (var before (ruby/Time .now))
   (print "dummy.gene: " (dummy n) "\n")
   (print "Used time: "
-    ((gene_invoke ruby/Time "now") - before)
+    ((ruby/Time .now) - before)
     "\n"
   )
 else

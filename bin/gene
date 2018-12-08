@@ -30,6 +30,8 @@ else
       puts "Running #{file}..."
     end
 
+    app = Gene::Lang::Jit::APP
+    app.load_core_lib
     app.run mod, debug: options[:debug]
 
   elsif file =~ /\.gene$/
@@ -40,13 +42,13 @@ else
       puts "#{file} is compiled to: #{mod}"
     end
 
-    app = Gene::Lang::Jit::Application.new
+    app = Gene::Lang::Jit::APP
+    app.load_core_lib
 
     if options[:debug]
       puts "Running compiled code..."
     end
 
-    app.load_core_lib
     app.run mod, debug: options[:debug]
 
   else
