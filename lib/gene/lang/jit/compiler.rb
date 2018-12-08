@@ -876,9 +876,6 @@ module Gene::Lang::Jit
     end
 
     def compile_try block, source, options
-      #id = rand(10000) + 100000
-      #block.add_instr [COMMENT, id, 'begin', source.to_s]
-
       catches = block.add_instr [ADD_ERROR_HANDLERS,  []]
       jumpes = []
 
@@ -931,7 +928,7 @@ module Gene::Lang::Jit
     end
 
     def compile_unknown block, source, options
-      block.add_instr [TODO, source.inspect]
+      raise "Not implemented: #{source.inspect}"
     end
 
     def is_literal? source

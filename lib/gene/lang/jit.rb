@@ -356,10 +356,6 @@ module Gene::Lang::Jit
       @registers['default'] = obj
     end
 
-    instr 'todo' do |code|
-      raise "TODO: #{code}"
-    end
-
     # 'start_scope',# start_scope parent: start a new scope, save to a register
     # 'end_scope',  # End/close the current scope
 
@@ -947,10 +943,6 @@ module Gene::Lang::Jit
           print @registers[reg]
         end
       end
-    end
-
-    # Help to understand how instructions are related
-    instr 'comment' do |_|
     end
 
     instr 'last_result' do |_|
