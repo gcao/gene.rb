@@ -19,4 +19,15 @@ describe "JIT VM State" do
     state.resume.should == 1
   end
 
+  it "
+    # gene_save_and_exit saves vm state and exits with 0 (success) or another value(failure)
+    (gene_save_and_exit '/tmp/gene_vm_state.json')
+    1
+  " do
+    mod = @compiler.parse_and_compile example.description
+    APP.run(mod).should == 0
+    state = VmState.from_file '/tmp/gene_vm_state.json'
+    state.resume.should == 1
+  end
+
 end

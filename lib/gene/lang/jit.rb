@@ -173,6 +173,11 @@ module Gene::Lang::Jit
       # TODO: clean up
 
       result
+    rescue VmExit => e
+      if e.message
+        puts "VM Exited: #{e.message}"
+      end
+      e.exit_code
     end
 
     # No need to compile, manually create registers, store arguments and invoke call instruction
@@ -643,6 +648,14 @@ module Gene::Lang::Jit
         file = @registers['default'][0]
         vm_state = Gene::Lang::Jit::VmState.from_vm self
         vm_state.save file
+      elsif name == 'gene_save_and_exit'
+        # advance the instruction pointer because it's skipped in the loop of run method
+        @exec_pos += 1
+
+        file = @registers['default'][0]
+        vm_state = Gene::Lang::Jit::VmState.from_vm self
+        vm_state.save file
+        raise VmExit.new(0)
       else
         raise "NOT IMPLEMENTED: #{name}"
       end
@@ -978,6 +991,16 @@ module Gene::Lang::Jit
         pop
       end
       handler
+    end
+  end
+
+  class VmExit < StandardError
+    attr :exit_code
+    attr :message
+
+    def initialize exit_code, message = nil
+      @exit_code = exit_code
+      @message = message
     end
   end
 end
