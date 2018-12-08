@@ -3,6 +3,7 @@ require 'gene/lang/jit/utils'
 require 'gene/lang/jit/application'
 require 'gene/lang/jit/compiler'
 require 'gene/lang/jit/vm_state'
+require 'gene/lang/jit/repl'
 
 require 'socket'
 
