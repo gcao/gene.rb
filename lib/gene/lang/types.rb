@@ -66,6 +66,15 @@ module Gene::Lang
       self.properties == other.properties
     end
 
+    # This is part of FFI.
+    # It enables methods defined in Gene to be directly invoked from Ruby.
+    # Not supported: keyword arguments
+    def method_missing method_name, *args
+      hierarchy = Gene::Lang::Jit::HierarchySearch.new(self.class.ancestors)
+      method = hierarchy.get_method(method_name.to_s)
+      VirtualMachine.new.process_function method, args, self: self
+    end
+
     def to_s
       parts = []
       type =

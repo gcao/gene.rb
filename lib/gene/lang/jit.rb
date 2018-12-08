@@ -3,7 +3,99 @@ require 'gene/lang/jit/utils'
 require 'gene/lang/jit/application'
 require 'gene/lang/jit/compiler'
 
+require 'socket'
+
 module Gene::Lang::Jit
+  # Code Manager that manages loading and resolving of modules and blocks
+  # When needed, it can be asked to free up all cached modules blocks etc
+  class CodeManager
+    # The modules can be cleaned up to save memory
+    # Context is saved if the module may potentially be reloaded (e.g. thru importing)
+    # key: module id
+    # val: [path, module]
+    attr_reader :module_mappings
+    # The blocks can be cleaned up to save memory
+    # key: block id
+    # val: [module id, block]
+    attr_reader :block_mappings
+    # key: module path
+    # val: module id
+    attr_reader :path_to_module_mappings
+
+    def initialize
+      @module_mappings = {}
+      @block_mappings = {}
+      @path_to_module_mappings = {}
+    end
+
+    # Load from path, e.g. a/b.gene, a/b.gmod
+    def load_from_path path, options = {}
+      path.sub! /.(gene|gmod)$/, ''
+      module_id = @path_to_module_mappings[path]
+      if module_id
+        return @module_mappings[module_id]
+      end
+
+      mod_file = "#{path}.gmod"
+      if File.exist? mod_file
+        mod = Gene::Lang::Jit::CompiledModule.from_json File.read(mod_file)
+      else
+        gene_file = "#{path}.gene"
+        parsed    = Gene::Parser.parse File.read(gene_file)
+        compiler  = Gene::Lang::Jit::Compiler.new
+        mod       = compiler.compile parsed, options
+      end
+
+      @module_mappings[mod.id] = mod
+      @path_to_module_mappings[path] = mod.id
+      add_blocks_from_module mod
+
+      mod
+    end
+
+    # # Load compiled module object, map to path if provided
+    # def load_compiled_module mod, path = nil
+    # end
+
+    # Compile String input and load
+    def compile_and_load input
+      mod = Gene::Lang::Jit::Compiler.new.compile input
+
+      @module_mappings[mod.id] = mod
+      add_blocks_from_module mod
+
+      mod
+    end
+
+    def load mod, path = nil
+      @module_mappings[mod.id] = mod
+
+      if path
+        @path_to_module_mappings[path] = mod.id
+      end
+
+      add_blocks_from_module mod
+    end
+
+    def get_block id
+      @block_mappings[id]
+    end
+
+    def add_block block
+      @block_mappings[block.id] = block
+    end
+
+    private
+
+    def add_blocks_from_module mod
+      mod.blocks.each do |id, block|
+        @block_mappings[id] = block
+      end
+    end
+  end
+
+  CODE_MGR = CodeManager.new
+
   class Registers < Hash
     attr_reader :id
 
@@ -39,23 +131,12 @@ module Gene::Lang::Jit
   # Represents a complete virtual machine that will be used to run
   # the instructions and hold the application state
   class VirtualMachine
-    attr_reader :application
-
-    def initialize application
-      @application   = application
+    def initialize
       @registers_mgr = RegistersManager.new
-      @modules       = {}
-      @blocks        = {}
-    end
-
-    def add_block block
-      @blocks[block.id] = block
     end
 
     def load_module mod, options = {}
-      mod.blocks.each do |_, block|
-        add_block block
-      end
+      CODE_MGR.load mod
 
       process mod.primary_block, options
     end
@@ -86,7 +167,52 @@ module Gene::Lang::Jit
       # Result should always be stored in the default register
       result = @registers['default']
       # TODO: clean up
+
       result
+    end
+
+    # No need to compile, manually create registers, store arguments and invoke call instruction
+    # Q: how about context?
+    # A: function should have a reference to the namespace and scope it inherits, a context will be
+    #    constructed from those automatically by 'call'
+    def process_function f, args, options = {}
+      fn_reg   = 'temp1'
+      self_reg = 'temp2'
+      args_reg = 'temp3'
+
+      block = CompiledBlock.new
+      CODE_MGR.add_block block
+      block.add_instr [INIT]
+      block.add_instr [WRITE, fn_reg, f]
+
+      if options[:self]
+        block.add_instr [WRITE, self_reg, options[:self]]
+      end
+
+      # Create argument object and add to a register
+      args_obj = Gene::Lang::Object.new
+      args_obj.data = args
+      block.add_instr [WRITE, args_reg, args_obj]
+
+      block.add_instr [DEFAULT, f.body]
+
+      # Call function
+      if options[:self]
+        block.add_instr [CALL, 'default', {
+          'fn_reg'     => fn_reg,
+          'self_reg'   => self_reg,
+          'args_reg'   => args_reg,
+          'return_reg' => 'default',
+        }]
+      else
+        block.add_instr [CALL, 'default', {
+          'fn_reg'     => fn_reg,
+          'args_reg'   => args_reg,
+          'return_reg' => 'default',
+        }]
+      end
+
+      process block, options
     end
 
     def self.instr name, &block
@@ -95,7 +221,7 @@ module Gene::Lang::Jit
     end
 
     instr 'init' do |options = {}|
-      @registers['context'] = @application.create_root_context
+      @registers['context'] = APP.create_root_context
     end
 
     instr 'get' do |reg, path, target_reg|
@@ -119,7 +245,11 @@ module Gene::Lang::Jit
     end
 
     instr 'global' do |_|
-      @registers['default'] = @application.global
+      @registers['default'] = APP.global
+    end
+
+    instr 'args' do |_|
+      @registers['default'] = ARGV
     end
 
     # Define a variable in current context
@@ -143,7 +273,11 @@ module Gene::Lang::Jit
       if name[-3..-1] == '...'
         @registers['default'] = Gene::Lang::Jit::Expandable.new context.get_member(name[0..-4])
       elsif name == 'gene'
-        @registers['default'] = @application.global.get_member 'gene'
+        @registers['default'] = APP.global.get_member 'gene'
+      elsif name == 'ruby'
+        @registers['default'] = APP.global.get_member 'ruby'
+      elsif name == 'fs'
+        @registers['default'] = APP.global.get_member 'fs'
       else
         @registers['default'] = context.get_member name
       end
@@ -164,7 +298,12 @@ module Gene::Lang::Jit
 
     instr 'get_child_member' do |reg, name|
       obj = @registers[reg]
-      @registers['default'] = obj.get_member name
+      if obj.is_a? ::Module
+        child = obj.const_get name
+      else
+        child = obj.get_member name
+      end
+      @registers['default'] = child
     end
 
     instr 'set_child_member' do |reg, name, value_reg|
@@ -215,10 +354,6 @@ module Gene::Lang::Jit
       obj.data       = data
 
       @registers['default'] = obj
-    end
-
-    instr 'todo' do |code|
-      raise "TODO: #{code}"
     end
 
     # 'start_scope',# start_scope parent: start a new scope, save to a register
@@ -342,10 +477,12 @@ module Gene::Lang::Jit
             # Only one argument is accepted
             args_reg    = options['args_reg']
             args        = caller_regs[args_reg]
-            @registers['default'] = args[0]
+            if args
+              @registers['default'] = args[0]
+            end
 
             block_id      = caller_regs[block_id_reg]
-            @block        = @blocks[block_id]
+            @block        = CODE_MGR.get_block(block_id)
 
             @instructions = @block.instructions
             @exec_pos     = fn.next_pos
@@ -388,7 +525,7 @@ module Gene::Lang::Jit
       end
 
       block_id      = caller_regs[block_id_reg]
-      @block        = @blocks[block_id]
+      @block        = CODE_MGR.get_block(block_id)
 
       @instructions = @block.instructions
       @exec_pos     = 0
@@ -414,7 +551,7 @@ module Gene::Lang::Jit
       @registers = @registers_mgr[id]
 
       # Change block and set the position
-      @block        = @blocks[block_id]
+      @block        = CODE_MGR.get_block(block_id)
 
       @instructions = @block.instructions
       @exec_pos     = pos
@@ -451,7 +588,7 @@ module Gene::Lang::Jit
 
       # Switch to caller's block
       caller_block_id, pos = @registers['return_addr']
-      @block        = @blocks[caller_block_id]
+      @block        = CODE_MGR.get_block(caller_block_id)
       @instructions = @block.instructions
       @exec_pos     = pos
       @jumped       = true
@@ -475,7 +612,14 @@ module Gene::Lang::Jit
 
       if name == 'gene_invoke'
         target, method, *args = @registers['default']
-        result = target.send method, *args
+        if target.is_a?(TCPServer) or target.is_a?(TCPSocket)
+          result = Object.instance_method(:send).bind(target).call method, *args
+        else
+          result = target.send method, *args
+        end
+      elsif name == 'gene_get_class'
+        class_name   = @registers['default'][0]
+        result = Class.const_get(class_name)
       elsif name == 'gene_file_read'
         file   = @registers['default'][0]
         result = File.read file
@@ -520,21 +664,18 @@ module Gene::Lang::Jit
 
     instr 'get_class' do |reg|
       obj = @registers[reg]
-      # @registers['default'] = obj.class
-      cls = obj.class
-      if cls == String
-        cls = @application.global.get_member('gene').get_member('String')
-      elsif cls == Array
-        cls = @application.global.get_member('gene').get_member('Array')
-      elsif cls == Hash
-        cls = @application.global.get_member('gene').get_member('Hash')
-      end
-      @registers['default'] = cls
+      @registers['default'] = APP.get_class obj
     end
 
+    # First check whether klass is a Gene Module
+    # If not, return null
     instr 'create_inheritance_hierarchy' do |reg|
       klass = @registers[reg]
-      @registers['default'] = Gene::Lang::Jit::HierarchySearch.new(klass.ancestors)
+      if klass.is_a? Gene::Lang::Jit::Module
+        @registers['default'] = Gene::Lang::Jit::HierarchySearch.new(klass.ancestors)
+      else
+        @registers['default'] = Gene::Lang::Jit::HierarchySearch.new([])
+      end
     end
 
     instr 'method' do |name, block_id|
@@ -556,7 +697,7 @@ module Gene::Lang::Jit
       @registers['default'] = instance
 
       hierarchy = Gene::Lang::Jit::HierarchySearch.new klass.ancestors
-      method    = hierarchy.method 'init', do_not_throw_error: true
+      method    = hierarchy.get_method 'init', do_not_throw_error: true
 
       if method
         # Invoke init method
@@ -576,7 +717,7 @@ module Gene::Lang::Jit
 
         @registers['args'] = caller_regs[args_reg]
 
-        @block        = @blocks[method.body]
+        @block        = CODE_MGR.get_block(method.body)
 
         @instructions = @block.instructions
         @exec_pos     = 0
@@ -584,8 +725,36 @@ module Gene::Lang::Jit
       end
     end
 
-    instr 'call_method' do |self_reg, method_reg, args_reg, hierarchy_reg|
+    instr 'call_dynamic_method' do |self_reg, method_name_reg, args_reg, hierarchy_reg|
+      method_name = @registers[method_name_reg].to_s
+      do_call_method self_reg, method_name, args_reg, hierarchy_reg
+    end
+
+    instr 'call_method' do |self_reg, method_name, args_reg, hierarchy_reg|
       caller_regs = @registers
+      self_       = caller_regs[self_reg]
+      hierarchy   = caller_regs[hierarchy_reg]
+      method      = hierarchy.get_method method_name, do_not_throw_error: true
+      args        = caller_regs[args_reg]
+
+      if not method
+        # Invoke native method
+        if args
+          if args.last.is_a? Gene::Lang::Jit::Function
+            # Convert last function to block
+            block  = args.pop
+            result = self_.send method_name, *args, &block
+          else
+            result = self_.send method_name, *args
+          end
+        else
+          result = self_.send method_name
+        end
+        caller_regs['default'] = result
+
+        next
+      end
+
       return_addr = [@block.id, @exec_pos + 1]
 
       @registers  = @registers_mgr.create
@@ -593,7 +762,7 @@ module Gene::Lang::Jit
       caller_context = caller_regs['context']
       scope   = Gene::Lang::Jit::Scope.new
 
-      context = caller_context.extend scope: scope, self: caller_regs[self_reg]
+      context = caller_context.extend scope: scope, self: self_
       @registers['context']     = context
 
       @registers['return_reg']  = [caller_regs.id, 'default']
@@ -601,11 +770,10 @@ module Gene::Lang::Jit
 
       @registers['args'] = caller_regs[args_reg]
 
-      method        = caller_regs[method_reg]
-      @block        = @blocks[method.body]
-
+      @registers['hierarchy'] = hierarchy
       @registers['method']    = method
-      @registers['hierarchy'] = caller_regs[hierarchy_reg]
+
+      @block        = CODE_MGR.get_block(method.body)
 
       @instructions = @block.instructions
       @exec_pos     = 0
@@ -695,7 +863,7 @@ module Gene::Lang::Jit
         @registers = @registers_mgr[id]
 
         # Change block and set the position
-        @block        = @blocks[block_id]
+        @block        = CODE_MGR.get_block(block_id)
 
         @instructions = @block.instructions
         @exec_pos     = pos
@@ -716,28 +884,8 @@ module Gene::Lang::Jit
     # 'if',         # if pos1 pos2: if default register's value is truthy, jump relatively to pos1, otherwise, jump to pos2
 
     instr 'load' do |reg, loaded_context_reg|
-      location = @registers[reg]
-      location.sub! /.(gene|gmod)$/, ''
-      if @modules[location]
-        @registers['default'] = @modules[location]
-        return
-      end
-
-      mod_file = "#{location}.gmod"
-      if File.exist? mod_file
-        mod = Gene::Lang::Jit::CompiledModule.from_json File.read(mod_file)
-      else
-        gene_file = "#{location}.gene"
-        parsed    = Gene::Parser.parse File.read(gene_file)
-        compiler  = Gene::Lang::Jit::Compiler.new
-        mod       = compiler.compile parsed, skip_init: true
-      end
-
-      mod.blocks.each do |id, block|
-        @blocks[block.id] = block
-      end
-
-      @registers['default'] = mod
+      path = @registers[reg]
+      @registers['default'] = CODE_MGR.load_from_path path, skip_init: true
 
       do_run 'default', 'save_context_to_reg' => loaded_context_reg
     end
@@ -745,9 +893,7 @@ module Gene::Lang::Jit
     instr 'compile' do |stmts_reg|
       stmts = Gene::Lang::Statements.new @registers[stmts_reg]
       mod   = Compiler.new.compile(stmts, skip_init: true)
-      mod.blocks.each do |id, block|
-        @blocks[block.id] = block
-      end
+      CODE_MGR.load mod
 
       @registers['default'] = mod
     end
@@ -776,7 +922,7 @@ module Gene::Lang::Jit
       @registers['return_addr'] = return_addr
 
       block_id      = mod.primary_block.id
-      @block        = @blocks[block_id]
+      @block        = CODE_MGR.get_block(block_id)
 
       @instructions = @block.instructions
       @exec_pos     = 0
@@ -799,8 +945,8 @@ module Gene::Lang::Jit
       end
     end
 
-    # Help to understand how instructions are related
-    instr 'comment' do |_|
+    instr 'last_result' do |_|
+      @registers['default'] = APP.last_result
     end
 
     # # Get information by name, save result to reg

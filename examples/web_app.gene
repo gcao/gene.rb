@@ -1,0 +1,19 @@
+#!/usr/bin/env gene --debug
+
+#< compile code and prettify compiled code
+gcompile examples/web_app.gene | jq . | ruby -e "puts ARGF.read.gsub(/\n          \s*/, '').gsub(/\n        \\]/, ']').gsub(/,([^\n])/, ', \\1')"
+>#
+
+# Start a http server
+(var server (new gene/net/HttpServer 8085))
+
+# TODO: Serve static content
+# (server .serve_static "README.md" "README.md")
+
+# TODO: Server whole directory
+# (server .serve_static "" "examples/www"})
+
+# TODO: Serve dynamic content
+
+# Start server
+(server .start)

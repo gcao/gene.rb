@@ -2,33 +2,25 @@ require 'forwardable'
 
 module Gene::Lang::Jit
   class Application
-    attr_reader :modules
-    attr_reader :primary_module
-
     attr_reader :global
-    attr_reader :context
+    attr_accessor :last_result
 
-    def initialize primary_module = nil
-      @modules        = []
-      @global         = Global.new
-      if primary_module
-        self.primary_module = primary_module
-      end
-      @vm = VirtualMachine.new(self)
+    def initialize
+      reset
     end
 
-    def primary_module= primary_module
-      @primary_module = primary_module
-      @modules << primary_module
+    # Application can be reset to initial state.
+    # This is mainly created for unit tests.
+    def reset
+      @global = Global.new
     end
 
-    def run options = {}
-      # @vm.load_module primary_module, options
-      run_module primary_module, options
+    def set_param name, value
+      @global.params.def_member name.to_s, value
     end
 
-    def run_module mod, options = {}
-      @vm.load_module mod, options
+    def run mod, options = {}
+      VirtualMachine.new.load_module mod, options
     end
 
     def create_root_context
@@ -37,18 +29,35 @@ module Gene::Lang::Jit
 
     def load_core_lib
       core_lib = "#{File.dirname(__FILE__)}/core"
-      mod_file = "#{core_lib}.gmod"
-      if File.exist? mod_file
-        mod = Gene::Lang::Jit::CompiledModule.from_json File.read(mod_file)
-      else
-        gene_file = "#{core_lib}.gene"
-        parsed    = Gene::Parser.parse File.read(gene_file)
-        compiler  = Gene::Lang::Jit::Compiler.new
-        mod       = compiler.compile parsed
-      end
+      mod = CODE_MGR.load_from_path core_lib
+      VirtualMachine.new.load_module mod
+      @core_lib_loaded = true
+    end
 
-      @modules << mod
-      @vm.load_module mod
+    def get_class obj
+      if @core_lib_loaded
+        case obj
+        when String
+          gene.get_member('String')
+        when Array
+          gene.get_member('Array')
+        when Hash
+          gene.get_member('Map')
+        when File
+          gene.get_member('File')
+        when Dir
+          gene.get_member('Dir')
+        else
+          obj.class
+        end
+      else
+        obj.class
+      end
+    end
+
+    # Cache gene object
+    def gene
+      @gene ||= global.get_member('gene')
     end
   end
 
@@ -128,11 +137,17 @@ module Gene::Lang::Jit
 
       if @members.include? name
         @members[name]
+      elsif member_resolver and found = member_resolver.call_with_self(self, name)
+        found
       elsif parent_namespace
         parent_namespace.get_member name
       else
         raise "#{name} is not defined."
       end
+    end
+
+    def member_resolver
+      @member_resolver ||= @members['member_resolver']
     end
 
     def set_member name, value, options = {}
@@ -163,6 +178,11 @@ module Gene::Lang::Jit
   class Global
     def initialize
       @members = {}
+      @members['params'] = Namespace.new
+    end
+
+    def params
+      @members['params']
     end
 
     def defined? name
@@ -244,6 +264,22 @@ module Gene::Lang::Jit
     end
   end
 
+  # A generic block that can represent a ns/module/class's body or any block of code
+  # It does not take arguments
+  # It may or may not inherit parent's scope
+  # It can probably be removed after execution
+  class Block
+    attr_reader :name, :body
+    attr_reader :inherit_scope
+    attr_accessor :namespace
+    attr_accessor :scope
+
+    def initialize name, body, options = {}
+      @name = name
+      @body = body
+    end
+  end
+
   class Function
     include NamespaceLike
 
@@ -254,6 +290,8 @@ module Gene::Lang::Jit
 
     attr_accessor :namespace
     attr_accessor :scope
+
+    attr_accessor :app
 
     def initialize name, body, options = {}
       @name = name
@@ -285,6 +323,31 @@ module Gene::Lang::Jit
     def parent_namespace= namespace
       @namespace = namespace
     end
+
+    def call *args
+      VirtualMachine.new.process_function self, args
+    end
+
+    def call_with_self _self, *args
+      VirtualMachine.new.process_function self, args, self: _self
+    end
+
+    def to_proc
+      Proc.new do |*args|
+        self.call *args
+      end
+    end
+
+    def to_s
+      "#<#{self.class.name} @name=\"#{name}\" ...>"
+    end
+    alias inspect to_s
+
+  end
+
+  # A function bounded to a self object
+  # TODO
+  class BoundedFunction
   end
 
   class Continuation
@@ -352,7 +415,7 @@ module Gene::Lang::Jit
       methods[method.name.to_s] = method
     end
 
-    def method name
+    def get_method name
       methods[name]
     end
 
@@ -429,7 +492,7 @@ module Gene::Lang::Jit
 
     def initialize(hierarchy)
       @hierarchy = hierarchy
-      @index     = -1
+      @index     = 0
     end
 
     def next
@@ -442,10 +505,10 @@ module Gene::Lang::Jit
     end
 
     # Find method in the hierarchy
-    def method name, options = {}
+    def get_method name, options = {}
       while index < hierarchy.length
         module_or_class = hierarchy[index]
-        method = module_or_class.method(name)
+        method = module_or_class.get_method(name)
         if method
           return method
         end
@@ -466,4 +529,40 @@ module Gene::Lang::Jit
     end
   end
 
+  class FileSystemObject
+    DIR  = "DIR"
+    FILE = "FILE"
+
+    attr_accessor :type
+    attr_reader :path
+
+    def initialize path
+      @path = path
+    end
+
+    # Mimic readonly namespace
+    def get_member name
+      if file?
+        raise "File object can not have child members: #{path}"
+      else
+        new_path = path + '/' + name
+        self.class.new new_path
+      end
+    end
+
+    def exist?
+      File.exist?(path)
+    end
+
+    def file?
+      File.file?(path)
+    end
+
+    def directory?
+      File.directory?(path)
+    end
+  end
+
+  # The global application object
+  APP = Gene::Lang::Jit::Application.new
 end

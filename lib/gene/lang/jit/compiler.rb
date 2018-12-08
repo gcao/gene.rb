@@ -234,7 +234,7 @@ module Gene::Lang::Jit
           compile_callcc block, source, options
         elsif type == "yield"
           compile_yield block, source, options
-        elsif type == "assert"
+        elsif type == "assert" || type == "assert_not"
           compile_assert block, source, options
         elsif type == "print"
           compile_print block, source, options
@@ -248,6 +248,9 @@ module Gene::Lang::Jit
         compile_string block, source, options
 
       elsif source.type.is_a? Gene::Types::Base
+        compile_invocation block, source, options
+
+      elsif source.type.is_a? Gene::Lang::Jit::Function
         compile_invocation block, source, options
 
       else
@@ -382,13 +385,15 @@ module Gene::Lang::Jit
       # Create a function object and store in namespace/scope
       block.add_instr [FN, name, body_block.id, source['options']]
 
-      compile_name block, name, {'type' => 'namespace'}
+      compile_name block, name, 'default', {'type' => 'namespace'}
     end
 
     # Options: type = namespace or scope
-    def compile_name block, name, options
+    def compile_name block, name, value_reg, options
       if name.include? '/'
-        value_reg = copy_and_return_reg block
+        if value_reg == 'default'
+          value_reg = copy_and_return_reg block
+        end
 
         first, *rest, last = name.split("/")
         if first == 'global'
@@ -496,7 +501,9 @@ module Gene::Lang::Jit
         block.add_instr [SYMBOL, source.to_s]
       else
         str = source.to_s
-        if str[0] == '@'
+        if str == '__'
+          block.add_instr [LAST_RESULT]
+        elsif str[0] == '@'
           block.add_instr [CALL_NATIVE, 'context', 'self']
           block.add_instr [GET, 'default', str[1..-1], 'default']
         elsif str[0] == ':'
@@ -505,6 +512,8 @@ module Gene::Lang::Jit
           block.add_instr [SYMBOL, str]
         elsif str == "self"
           block.add_instr [CALL_NATIVE, 'context', 'self']
+        elsif str == "ARGV"
+          block.add_instr [ARGS]
         else
           first, *rest = str.split '/'
           if first == 'global'
@@ -728,19 +737,10 @@ module Gene::Lang::Jit
 
       hierarchy_reg = copy_and_return_reg block
 
-      method_name     = source.data.first.to_s[1..-1]
-      method_name_reg = new_reg
+      method_name    = source.data.first.to_s[1..-1]
+      args_reg       = compile_args block, source, options, true
 
-      block.add_instr [WRITE, method_name_reg, method_name]
-
-      # Get the method object from the hierarchy and save to default register
-      block.add_instr [CALL_NATIVE, 'default', 'method', method_name_reg]
-
-      method_reg = copy_and_return_reg block
-
-      args_reg   = compile_args block, source, options, true
-
-      block.add_instr [CALL_METHOD, self_reg, method_reg, args_reg, hierarchy_reg]
+      block.add_instr [CALL_METHOD, self_reg, method_name, args_reg, hierarchy_reg]
     end
 
     # Get class of object
@@ -760,75 +760,61 @@ module Gene::Lang::Jit
 
       hierarchy_reg = copy_and_return_reg block
 
-      method_name     = source.type.to_s[1..-1]
-      method_name_reg = new_reg
+      method_name   = source.type.to_s[1..-1]
+      args_reg      = compile_args block, source, options
 
-      block.add_instr [WRITE, method_name_reg, method_name]
-
-      # Get the method object from the hierarchy and save to default register
-      block.add_instr [CALL_NATIVE, 'default', 'method', method_name_reg]
-
-      method_reg = copy_and_return_reg block
-
-      # Treat arguments the same way as function arguments
-      args_reg   = compile_args block, source, options
-
-      block.add_instr [CALL_METHOD, self_reg, method_reg, args_reg, hierarchy_reg]
+      block.add_instr [CALL_METHOD, self_reg, method_name, args_reg, hierarchy_reg]
     end
 
     # Get hierarchy from hierarchy register (if not found, throw error?)
     def compile_super block, source, options
       hierarchy_reg   = 'hierarchy'
+      # Advance the hierarch search object
+      block.add_instr [CALL_NATIVE, hierarchy_reg, 'next']
 
       # Get method name
       block.add_instr [CALL_NATIVE, 'method', 'name']
-
-      # Get the method object from the hierarchy and save to default register
-      block.add_instr [CALL_NATIVE, hierarchy_reg, 'method', 'default']
-
-      method_reg = block.add_instr [COPY, 'default', method_reg]
+      method_name_reg = copy_and_return_reg block
 
       # TODO: (super!) will re-use the arguments
       args_reg = compile_args block, source, options, true
 
       block.add_instr [CALL_NATIVE, 'context', 'self']
 
-      block.add_instr [CALL_METHOD, 'default', method_reg, args_reg, hierarchy_reg]
+      block.add_instr [CALL_DYNAMIC_METHOD, 'default', method_name_reg, args_reg, hierarchy_reg]
     end
 
     # Compile args
     # Save to a register
     # @return the regiser address
     def compile_args block, source, options, is_method = false
-      if source.properties and not is_literal?(source.properties)
-        compile_ block, source.properties, options
-        props_reg = copy_and_return_reg block
-      else
-        props_reg = source.properties
-      end
-
       args_data = is_method ? source.data[1..-1] : source.data
 
-      if args_data and not is_literal?(args_data)
+      if not args_data or args_data.length == 0
+        return
+      elsif args_data and not is_literal?(args_data)
         compile_ block, args_data, options
         data_reg = copy_and_return_reg block
       else
-        data_reg = args_data
+        data_reg = new_reg
+        block.add_instr [WRITE, data_reg, args_data]
       end
 
-      block.add_instr [CREATE_OBJ, nil, props_reg, data_reg]
-      args_reg = copy_and_return_reg block
-
-      args_reg
+      data_reg
     end
 
     def compile_namespace block, source, options
       name = source.data[0].to_s
       body = source.data[1..-1]
 
+      short_name = name
+      if name.index('/')
+        short_name = name[(name.index('/') + 1) .. -1]
+      end
+
       # Compile body as a block
       body_block      = CompiledBlock.new
-      body_block.name = name
+      body_block.name = short_name
 
       compile_ body_block, body, options
       body_block.add_instr [CALL_END]
@@ -836,9 +822,9 @@ module Gene::Lang::Jit
       @mod.add_block body_block
 
       # Create a class object and store in namespace/scope
-      block.add_instr [NS, name]
+      block.add_instr [NS, short_name]
       ns_reg = copy_and_return_reg block
-      compile_name block, name, {'type' => 'namespace'}
+      compile_name block, name, ns_reg, {'type' => 'namespace'}
 
       # Invoke block immediately and remove it to reduce memory usage
       block.add_instr [DEFAULT, body_block.id]
@@ -890,16 +876,13 @@ module Gene::Lang::Jit
 
     def compile_print block, source, options
       source.data.each do |item|
-        compile_ block, source.data[0], options
+        compile_ block, item, options
         block.add_instr [PRINT, 'default', false]
       end
       block.add_instr [DEFAULT, nil]
     end
 
     def compile_try block, source, options
-      #id = rand(10000) + 100000
-      #block.add_instr [COMMENT, id, 'begin', source.to_s]
-
       catches = block.add_instr [ADD_ERROR_HANDLERS,  []]
       jumpes = []
 
@@ -936,7 +919,10 @@ module Gene::Lang::Jit
     def compile_assert block, source, options
       expr = source.data[0]
       compile_ block, expr, options
-      jump = block.add_instr [JUMP_IF_TRUE, nil]
+
+      is_assert_not = source.type.name == 'assert_not'
+      instr_type = is_assert_not ? JUMP_IF_FALSE : JUMP_IF_TRUE
+      jump = block.add_instr [instr_type, nil]
 
       if source.data.length > 1
         compile_ block, source.data[1], options
@@ -949,7 +935,7 @@ module Gene::Lang::Jit
     end
 
     def compile_unknown block, source, options
-      block.add_instr [TODO, source.inspect]
+      raise "Not implemented: #{source.inspect}"
     end
 
     def is_literal? source
@@ -1004,12 +990,15 @@ module Gene::Lang::Jit
   end
 
   class CompiledModule
+    attr_reader :id
     attr_reader :blocks
     attr_reader :primary_block
 
     def initialize primary_block = nil
+      @id     = SecureRandom.uuid
       @blocks = {}
       if primary_block
+        add_block primary_block
         self.primary_block = primary_block
       end
     end
@@ -1069,7 +1058,7 @@ module Gene::Lang::Jit
   end
 
   class CompiledBlock
-    attr_accessor :id
+    attr_reader :id
     attr_accessor :name
     attr_writer :is_default
     attr_reader :instructions
