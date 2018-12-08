@@ -264,6 +264,22 @@ module Gene::Lang::Jit
     end
   end
 
+  # A generic block that can represent a ns/module/class's body or any block of code
+  # It does not take arguments
+  # It may or may not inherit parent's scope
+  # It can probably be removed after execution
+  class Block
+    attr_reader :name, :body
+    attr_reader :inherit_scope
+    attr_accessor :namespace
+    attr_accessor :scope
+
+    def initialize name, body, options = {}
+      @name = name
+      @body = body
+    end
+  end
+
   class Function
     include NamespaceLike
 
