@@ -2,6 +2,7 @@ require 'securerandom'
 require 'gene/lang/jit/utils'
 require 'gene/lang/jit/application'
 require 'gene/lang/jit/compiler'
+require 'gene/lang/jit/vm_state'
 
 require 'socket'
 
@@ -52,10 +53,6 @@ module Gene::Lang::Jit
 
       mod
     end
-
-    # # Load compiled module object, map to path if provided
-    # def load_compiled_module mod, path = nil
-    # end
 
     # Compile String input and load
     def compile_and_load input
@@ -142,16 +139,23 @@ module Gene::Lang::Jit
     end
 
     def process block, options
+      @options = options
+
       @block        = block
       @registers    = @registers_mgr.create
       @instructions = @block.instructions
 
       @exec_pos = 0
       @jumped   = false # Set to true if last instruction is a jump
+
+      run
+    end
+
+    def run
       while @exec_pos < @instructions.length
         instruction = @instructions[@exec_pos]
         type, arg0, *rest = instruction
-        if options[:debug]
+        if @options[:debug]
           puts "<#{@block.name}>#{@exec_pos.to_s.rjust(4)}: #{type} #{instruction[1..-1].to_s.gsub(/^\[/, '').gsub(/\]$/, '').gsub(/, /, ' ')}"
         end
 
@@ -635,6 +639,10 @@ module Gene::Lang::Jit
       elsif name == 'gene_env_set'
         name, value = @registers['default']
         ENV[name] = value
+      elsif name == 'gene_save_vm_state'
+        file = @registers['default'][0]
+        vm_state = Gene::Lang::Jit::VmState.from_vm self
+        vm_state.save file
       else
         raise "NOT IMPLEMENTED: #{name}"
       end

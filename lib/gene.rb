@@ -1,5 +1,6 @@
 require 'logem'
 
+require 'gene/utils'
 require 'gene/types'
 require 'gene/handlers'
 
