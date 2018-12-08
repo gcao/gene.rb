@@ -18,20 +18,21 @@ OptionParser.new do |opts|
 end.parse!
 
 if ARGV.length == 0
-  puts "Usage: #{__FILE__} [-d] [FILE TO RUN]"
+  require "gene/lang/jit/repl"
+
+  Gene::Lang::Jit::Repl.new.start
 else
   file = ARGV.shift
 
   if file =~ /\.gmod$/
     mod = Gene::Lang::Jit::CompiledModule.from_json JSON.parse(File.read(file))
-    app = Gene::Lang::Jit::Application.new
+    app = Gene::Lang::Jit::APP
+    app.load_core_lib
 
     if options[:debug]
       puts "Running #{file}..."
     end
 
-    app = Gene::Lang::Jit::APP
-    app.load_core_lib
     app.run mod, debug: options[:debug]
 
   elsif file =~ /\.gene$/

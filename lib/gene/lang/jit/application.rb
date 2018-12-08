@@ -3,7 +3,7 @@ require 'forwardable'
 module Gene::Lang::Jit
   class Application
     attr_reader :global
-    attr_reader :context
+    attr_accessor :last_result
 
     def initialize
       reset

@@ -499,7 +499,9 @@ module Gene::Lang::Jit
         block.add_instr [SYMBOL, source.to_s]
       else
         str = source.to_s
-        if str[0] == '@'
+        if str == '__'
+          block.add_instr [LAST_RESULT]
+        elsif str[0] == '@'
           block.add_instr [CALL_NATIVE, 'context', 'self']
           block.add_instr [GET, 'default', str[1..-1], 'default']
         elsif str[0] == ':'

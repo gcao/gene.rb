@@ -953,6 +953,10 @@ module Gene::Lang::Jit
     instr 'comment' do |_|
     end
 
+    instr 'last_result' do |_|
+      @registers['default'] = APP.last_result
+    end
+
     # # Get information by name, save result to reg
     # instr 'info_to_reg' do |name, reg|
     #   if name == 'abc'
