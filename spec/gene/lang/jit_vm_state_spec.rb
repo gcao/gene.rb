@@ -14,8 +14,10 @@ describe "JIT VM State" do
     1
   " do
     mod = @compiler.parse_and_compile example.description
+    # After save state it'll continue to run to the end and return 1
     APP.run(mod).should == 1
     state = VmState.from_file '/tmp/gene_vm_state.vmstate'
+    # Resume will start from the saved position and return 1
     state.resume.should == 1
   end
 
