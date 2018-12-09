@@ -15,11 +15,8 @@ examples/fibonacci.gene 25 ; examples/fibonacci.rb 25
 (if ((ARGV .length) > 0)
   (var n ((ARGV .get 0) .to_i))
   (var before (ruby/Time .now))
-  (print "fibonacci.gene: " (fibonacci n) "\n")
-  (print "Used time: "
-    ((ruby/Time .now) - before)
-    "\n"
-  )
+  (println "fibonacci.gene: " (fibonacci n))
+  (println "Used time: " ((ruby/Time .now) - before))
 else
-  (print "Usage: fibnacci.gene <number>\n")
+  (println "Usage: fibnacci.gene <number>")
 )

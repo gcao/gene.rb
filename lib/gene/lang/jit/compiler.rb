@@ -236,7 +236,7 @@ module Gene::Lang::Jit
           compile_yield block, source, options
         elsif type == "assert" || type == "assert_not"
           compile_assert block, source, options
-        elsif type == "print"
+        elsif type == "print" or type == "println"
           compile_print block, source, options
         elsif type.is_a?(String) && type =~ /^gene_.*/
           compile_internal block, source, options
@@ -878,6 +878,9 @@ module Gene::Lang::Jit
       source.data.each do |item|
         compile_ block, item, options
         block.add_instr [PRINT, 'default', false]
+      end
+      if source.type.to_s == 'println'
+        block.add_instr [PRINT, nil, true]
       end
       block.add_instr [DEFAULT, nil]
     end

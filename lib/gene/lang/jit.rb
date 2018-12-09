@@ -954,15 +954,27 @@ module Gene::Lang::Jit
     instr 'print' do |reg, new_line, is_error = false|
       if is_error
         if new_line
-          STDERR.puts @registers[reg]
+          if reg
+            STDERR.puts @registers[reg]
+          else
+            STDERR.puts
+          end
         else
-          STDERR.print @registers[reg]
+          if reg
+            STDERR.print @registers[reg]
+          end
         end
       else
         if new_line
-          puts @registers[reg]
+          if reg
+            puts @registers[reg]
+          else
+            puts
+          end
         else
-          print @registers[reg]
+          if reg
+            print @registers[reg]
+          end
         end
       end
     end
