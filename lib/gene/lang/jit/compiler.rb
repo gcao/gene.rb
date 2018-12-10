@@ -359,10 +359,13 @@ module Gene::Lang::Jit
     end
 
     def compile_fn block, source, options
+      name = source['name'].to_s
+      short_name = get_short_name name
+
       # Compile function body as a block
       # Function default args are evaluated in the block as well
       body_block      = CompiledBlock.new
-      body_block.name = source['name']
+      body_block.name = short_name
 
       # Arguments & default values
       args = source['args']
@@ -380,10 +383,8 @@ module Gene::Lang::Jit
 
       @mod.add_block body_block
 
-      name = source['name'].to_s
-
       # Create a function object and store in namespace/scope
-      block.add_instr [FN, name, body_block.id, source['options']]
+      block.add_instr [FN, short_name, body_block.id, source['options']]
 
       compile_name block, name, 'default', {'type' => 'namespace'}
     end
@@ -803,14 +804,19 @@ module Gene::Lang::Jit
       data_reg
     end
 
+    def get_short_name name
+      if name.index('/')
+        name[(name.index('/') + 1) .. -1]
+      else
+        name
+      end
+    end
+
     def compile_namespace block, source, options
       name = source.data[0].to_s
       body = source.data[1..-1]
 
-      short_name = name
-      if name.index('/')
-        short_name = name[(name.index('/') + 1) .. -1]
-      end
+      short_name = get_short_name name
 
       # Compile body as a block
       body_block      = CompiledBlock.new
