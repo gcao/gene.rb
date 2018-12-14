@@ -9,8 +9,8 @@ describe "JIT VM State" do
   end
 
   it "
-    # gene_save_vm_state saves vm state and continues to run
-    (gene_save_vm_state '/tmp/gene_vm_state.vmstate')
+    # $save_vm_state saves vm state and continues to run
+    ($save_vm_state '/tmp/gene_vm_state.vmstate')
     1
   " do
     mod = @compiler.parse_and_compile example.description
@@ -22,8 +22,8 @@ describe "JIT VM State" do
   end
 
   it "
-    # gene_save_and_exit saves vm state and exits with 0 (success) or another value(failure)
-    (gene_save_and_exit '/tmp/gene_vm_state.vmstate')
+    # $save_and_exit saves vm state and exits with 0 (success) or another value(failure)
+    ($save_and_exit '/tmp/gene_vm_state.vmstate')
     1
   " do
     mod = @compiler.parse_and_compile example.description
@@ -33,12 +33,12 @@ describe "JIT VM State" do
   end
 
   it "
-    # gene_save_and_exit works inside loop
+    # $save_and_exit works inside loop
     # It'll be invoked multiple times
     (var sum 0)
     (for (var i 1) (i < 4) (i += 1)
       (sum = (sum + i))
-      (gene_save_and_exit '/tmp/gene_vm_state.vmstate')
+      ($save_and_exit '/tmp/gene_vm_state.vmstate')
     )
     sum
   " do
@@ -53,9 +53,9 @@ describe "JIT VM State" do
   end
 
   it "
-    # gene_save_and_exit works inside function
+    # $save_and_exit works inside function
     (fn f a
-      (gene_save_and_exit '/tmp/gene_vm_state.vmstate')
+      ($save_and_exit '/tmp/gene_vm_state.vmstate')
       a
     )
     (f 1)

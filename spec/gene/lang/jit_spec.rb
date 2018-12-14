@@ -182,7 +182,7 @@ describe "JIT" do
     end
 
     it "
-      (gene_invoke 'abc' '[]' 1)
+      ($invoke 'abc' '[]' 1)
     " do
       mod = @compiler.parse_and_compile example.description
       APP.run(mod).should == 'b'
@@ -541,8 +541,7 @@ describe "JIT" do
     " do
       pending
       mod = @compiler.parse_and_compile example.description
-      p mod
-      APP.run(mod, debug: true).should == ['method', {'key' => 'val'}, [1, 2]]
+      APP.run(mod).should == ['method', {'key' => 'val'}, [1, 2]]
     end
 
     it "
@@ -972,12 +971,12 @@ describe "JIT" do
         # Else
         #   instance is created internally
         (init arg
-          (gene_invoke ruby/String 'new' arg)
+          ($invoke ruby/String 'new' arg)
         )
 
         (method_missing [method args...]
           # Call native method
-          (gene_invoke self method args...)
+          ($invoke self method args...)
         )
       )
       (new MyString 'hello')

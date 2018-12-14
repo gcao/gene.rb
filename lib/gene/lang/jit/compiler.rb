@@ -238,7 +238,7 @@ module Gene::Lang::Jit
           compile_assert block, source, options
         elsif type == "print" or type == "println"
           compile_print block, source, options
-        elsif type.is_a?(String) && type =~ /^gene_.*/
+        elsif type.is_a?(String) && type =~ /^\$.*/
           compile_internal block, source, options
         else
           compile_invocation block, source, options
@@ -414,9 +414,14 @@ module Gene::Lang::Jit
     end
 
     def compile_internal block, source, options
-      compile_ block, source.data, options
+      instr_type = source.type.to_s[1..-1]
 
-      block.add_instr [CALL_INTERNAL, source.type.to_s]
+      if source.data.empty?
+        block.add_instr [instr_type]
+      else
+        compile_ block, source.data, options
+        block.add_instr [instr_type, 'default']
+      end
     end
 
     def compile_invocation block, source, options

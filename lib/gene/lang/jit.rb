@@ -155,12 +155,12 @@ module Gene::Lang::Jit
     def run
       while @exec_pos < @instructions.length
         instruction = @instructions[@exec_pos]
-        type, arg0, *rest = instruction
+        type, *rest = instruction
         if @options[:debug]
           puts "<#{@block.name}>#{@exec_pos.to_s.rjust(4)}: #{type} #{instruction[1..-1].to_s.gsub(/^\[/, '').gsub(/\]$/, '').gsub(/, /, ' ')}"
         end
 
-        send "do_#{type}", arg0, *rest
+        send "do_#{type}", *rest
 
         if @jumped
           @jumped = false
@@ -254,11 +254,11 @@ module Gene::Lang::Jit
       end
     end
 
-    instr 'global' do |_|
+    instr 'global' do
       @registers['default'] = APP.global
     end
 
-    instr 'args' do |_|
+    instr 'args' do
       @registers['default'] = ARGV
     end
 
@@ -421,7 +421,7 @@ module Gene::Lang::Jit
       @registers['default'] = Gene::Types::Symbol.new(s)
     end
 
-    instr 'stream' do |_|
+    instr 'stream' do
       @registers['default'] = Gene::Types::Stream.new
     end
 
@@ -542,7 +542,7 @@ module Gene::Lang::Jit
       @jumped       = true
     end
 
-    instr 'call_end' do |_|
+    instr 'call_end' do
       # Copy the result to the return register
       id, reg = @registers['return_reg']
       if reg
@@ -613,54 +613,65 @@ module Gene::Lang::Jit
     instr 'call_native' do |target_reg, method, args_reg = nil|
       target = @registers[target_reg]
       args   = args_reg ? @registers[args_reg] : []
-      result = target.send method, *args
-      @registers['default'] = result
+      @registers['default'] = target.send method, *args
     end
 
-    instr 'call_internal' do |name|
-      result = Gene::UNDEFINED
+    instr 'get_ruby_class' do |reg|
+      class_name = @registers[reg][0]
+      @registers['default'] = Class.const_get(class_name)
+    end
 
-      if name == 'gene_invoke'
-        target, method, *args = @registers['default']
-        if target.is_a?(TCPServer) or target.is_a?(TCPSocket)
-          result = Object.instance_method(:send).bind(target).call method, *args
-        else
-          result = target.send method, *args
-        end
-      elsif name == 'gene_get_class'
-        class_name   = @registers['default'][0]
-        result = Class.const_get(class_name)
-      elsif name == 'gene_file_read'
-        file   = @registers['default'][0]
-        result = File.read file
-      elsif name == 'gene_file_read_lines'
-        file   = @registers['default'][0]
-        result = File.readlines file
-      elsif name == 'gene_file_write'
-        file, content = @registers['default']
-        File.write file, content
-      elsif name == 'gene_env_get'
-        name   = @registers['default'][0]
-        result = ENV[name]
-      elsif name == 'gene_env_set'
-        name, value = @registers['default']
-        ENV[name] = value
-      elsif name == 'gene_save_vm_state'
-        file = @registers['default'][0]
-        vm_state = Gene::Lang::Jit::VmState.from_vm self
-        vm_state.save file
-      elsif name == 'gene_save_and_exit'
-        # advance the instruction pointer because it's skipped in the loop of run method
-        @exec_pos += 1
+    instr 'file_read' do |reg|
+      file = @registers[reg][0]
+      @registers['default'] = File.read file
+    end
 
-        file = @registers['default'][0]
-        vm_state = Gene::Lang::Jit::VmState.from_vm self
-        vm_state.save file
-        raise VmExit.new(0)
+    instr 'file_read_lines' do |reg|
+      file = @registers[reg][0]
+      @registers['default'] = File.readlines file
+    end
+
+    instr 'file_write' do |reg|
+      file, content = @registers[reg]
+      File.write file, content
+      @registers['default'] = true
+    end
+
+    instr 'env_get' do |reg|
+      name   = @registers[reg][0]
+      @registers['default'] = ENV[name]
+    end
+
+    instr 'env_set' do |reg|
+      name, value = @registers[reg]
+      ENV[name] = value
+      @registers['default'] = true
+    end
+
+    instr 'save_vm_state' do |reg|
+      file = @registers[reg][0]
+      vm_state = Gene::Lang::Jit::VmState.from_vm self
+      vm_state.save file
+      @registers['default'] = true
+    end
+
+    instr 'save_and_exit' do |reg|
+      # advance the instruction pointer because it's skipped in the loop of run method
+      @exec_pos += 1
+
+      file = @registers[reg][0]
+      vm_state = Gene::Lang::Jit::VmState.from_vm self
+      vm_state.save file
+      raise VmExit.new(0)
+    end
+
+    instr 'invoke' do |reg|
+      target, method, *args = @registers[reg]
+      if target.is_a?(TCPServer) or target.is_a?(TCPSocket)
+        result = Object.instance_method(:send).bind(target).call method, *args
       else
-        raise "NOT IMPLEMENTED: #{name}"
+        result = target.send method, *args
       end
-
       @registers['default'] = result
     end
 
@@ -842,7 +853,7 @@ module Gene::Lang::Jit
     # Check whether the thrown exception is handled by the object in default register
     # If yes, mark the exception as caught/handled and continue
     # If not, jump to next catch block or out of current block
-    instr 'check_exception' do |_|
+    instr 'check_exception' do
       if true
         @error_handled = true
         # Clear catches for current try statement
@@ -855,7 +866,7 @@ module Gene::Lang::Jit
       end
     end
 
-    instr 'clear_exception' do |_|
+    instr 'clear_exception' do
       @error = nil
     end
 
@@ -979,7 +990,7 @@ module Gene::Lang::Jit
       end
     end
 
-    instr 'last_result' do |_|
+    instr 'last_result' do
       @registers['default'] = APP.last_result
     end
 

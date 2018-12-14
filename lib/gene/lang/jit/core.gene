@@ -4,15 +4,15 @@
 
   (class File
     (fn read file
-      (gene_file_read file)
+      ($file_read file)
     )
 
     (fn read_lines [file callback]
-      (gene_file_read_lines file)
+      ($file_read_lines file)
     )
 
     (fn write [file content]
-      (gene_file_write file content)
+      ($file_write file content)
     )
   )
 
@@ -21,30 +21,30 @@
 
   (class String
     (method length _
-      (gene_invoke self 'length')
+      ($invoke self 'length')
     )
 
     (method substr [start end]
       (if (! end) (end = ((.length) - start)))
-      (gene_invoke self '[]' start end)
+      ($invoke self '[]' start end)
     )
 
     (method split sep
-      (gene_invoke self 'split' sep)
+      ($invoke self 'split' sep)
     )
 
     (method to_i _
-      (gene_invoke self 'to_i')
+      ($invoke self 'to_i')
     )
   )
 
   (class Array
     (method length _
-      (gene_invoke self 'length')
+      ($invoke self 'length')
     )
 
     (method get i
-      (gene_invoke self '[]' i)
+      ($invoke self '[]' i)
     )
 
     (method each f
@@ -56,15 +56,15 @@
 
   (class Map
     (method size _
-      (gene_invoke self 'size')
+      ($invoke self 'size')
     )
 
     (method get key
-      (gene_invoke self '[]' key)
+      ($invoke self '[]' key)
     )
 
     (method each f
-      (var keys (gene_invoke self 'keys'))
+      (var keys ($invoke self 'keys'))
       (for (var i 0) (i < (.size)) (i += 1)
         (var key (keys .get i))
         (var val (.get key))
@@ -74,11 +74,18 @@
   )
 
   (fn Env name
-    (gene_env_get name)
+    ($env_get name)
   )
 
+  (fn Env/member_resolver name
+    ($env_get name)
+  )
+
+  # This will shadow access 'set' using Env/set
+  #
+  # To access environment variable named 'set', use (Env 'set')
   (fn Env/set [name value]
-    (gene_env_set name value)
+    ($env_set name value)
   )
 
   (ns net
@@ -95,22 +102,22 @@
       )
 
       (method start _
-        (var server (gene_invoke (gene_get_class "TCPServer") "new" "localhost" @port))
+        (var server ($invoke ($get_class "TCPServer") "new" "localhost" @port))
         (loop
-          (var socket (gene_invoke server "accept"))
-          (var req (gene_invoke socket "gets"))
+          (var socket ($invoke server "accept"))
+          (var req ($invoke socket "gets"))
           (var resp "Hello world!")
-          (gene_invoke socket "print"
+          ($invoke socket "print"
             (
               "HTTP/1.1 200 OK\r\n"
               "Content-Type: text/plain\r\n"
-              "Content-Length: " (gene_invoke resp "bytesize") "\r\n"
+              "Content-Length: " ($invoke resp "bytesize") "\r\n"
               "Connection: close\r\n"
               "\r\n"
               resp
             )
           )
-          (gene_invoke socket "close")
+          ($invoke socket "close")
         )
       )
     )
@@ -119,10 +126,10 @@
 
 (ns global/ruby
   (fn member_resolver name
-    (gene_get_class name)
+    ($get_ruby_class name)
   )
 )
 
-(var global/fs (gene_invoke ruby/Gene::Lang::Jit::FileSystemObject "new" ""))
+(var global/fs ($invoke ruby/Gene::Lang::Jit::FileSystemObject "new" ""))
 
 undefined
