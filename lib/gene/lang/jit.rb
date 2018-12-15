@@ -153,6 +153,10 @@ module Gene::Lang::Jit
     end
 
     def run
+      benchmarker = Gene::Benchmarker.new
+      loop_time   = benchmarker.loop_time
+      start_time  = Time.now
+
       while @exec_pos < @instructions.length
         instruction = @instructions[@exec_pos]
         type, *rest = instruction
@@ -160,14 +164,30 @@ module Gene::Lang::Jit
           puts "<#{@block.name}>#{@exec_pos.to_s.rjust(4)}: #{type} #{instruction[1..-1].to_s.gsub(/^\[/, '').gsub(/\]$/, '').gsub(/, /, ' ')}"
         end
 
+        time = Time.now
+        loop_time.report_start start_time
+        loop_time.report_partial time
+        start_time = Time.now
+
         send "do_#{type}", *rest
+
+        time = Time.now
+        benchmarker.op_start type, start_time
+        benchmarker.op_end type, time
+        start_time = Time.now
 
         if @jumped
           @jumped = false
         else
           @exec_pos += 1
         end
+
+        time = Time.now
+        loop_time.report_end time
+        start_time = Time.now
       end
+
+      benchmarker.display
 
       # Result should always be stored in the default register
       result = @registers['default']

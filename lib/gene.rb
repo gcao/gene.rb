@@ -7,6 +7,8 @@ require 'gene/handlers'
 require 'gene/parse_error'
 require 'gene/parser'
 
+require 'gene/benchmarker'
+
 require 'gene/abstract_interpreter'
 require 'gene/core_interpreter'
 require 'gene/ruby_interpreter'

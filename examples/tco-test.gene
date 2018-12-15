@@ -1,22 +1,22 @@
 #!/usr/bin/env gene
 
-#< Use below command to compare performance against dummy in Ruby
+#< Use below command to compare performance against tco in Ruby
 examples/tco-test.rb 10000 ; examples/tco-test.gene 10000
 >#
 
-(fn dummy n
+(fn tco n
   (if (n == 0)
     0
   else
-    (dummy (n - 1))
+    (tco (n - 1))
   )
 )
 
 (if ((ARGV .length) > 0)
   (var n ((ARGV .get 0) .to_i))
   (var before (ruby/Time .now))
-  (println "dummy.gene: " (dummy n))
+  (println "tco-test.gene: " (tco n))
   (println "Used time: " ((ruby/Time .now) - before))
 else
-  (println "Usage: dummy.gene <number>")
+  (println "Usage: tco-test.gene <number>")
 )
