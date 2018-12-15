@@ -17,6 +17,10 @@ OptionParser.new do |opts|
   end
 end.parse!
 
+if ENV['debug'] == 'yes'
+  options[:debug] = true
+end
+
 def process file
   if file =~ /\.gmod$/
     mod = Gene::Lang::Jit::CompiledModule.from_json JSON.parse(File.read(file))

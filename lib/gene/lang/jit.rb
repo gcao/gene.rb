@@ -153,6 +153,43 @@ module Gene::Lang::Jit
     end
 
     def run
+      if ENV['benchmark'] == 'yes'
+        run_with_benchmark
+      else
+        run_without_benchmark
+      end
+    end
+
+    def run_without_benchmark
+      while @exec_pos < @instructions.length
+        instruction = @instructions[@exec_pos]
+        type, *rest = instruction
+        if @options[:debug]
+          puts "<#{@block.name}>#{@exec_pos.to_s.rjust(4)}: #{type} #{instruction[1..-1].to_s.gsub(/^\[/, '').gsub(/\]$/, '').gsub(/, /, ' ')}"
+        end
+
+        send "do_#{type}", *rest
+
+        if @jumped
+          @jumped = false
+        else
+          @exec_pos += 1
+        end
+      end
+
+      # Result should always be stored in the default register
+      result = @registers['default']
+      # TODO: clean up
+
+      result
+    rescue VmExit => e
+      if e.message
+        puts "VM Exited: #{e.message}"
+      end
+      e.exit_code
+    end
+
+    def run_with_benchmark
       benchmarker = Gene::Benchmarker.new
       loop_time   = benchmarker.loop_time
       start_time  = Time.now
