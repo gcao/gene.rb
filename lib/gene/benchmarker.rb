@@ -58,12 +58,17 @@ class Gene::Benchmarker
     found.report_end time
   end
 
+  def total_time
+    loop_time.total_time + op_times.values.reduce(0) {|sum, op_time| sum + op_time.total_time }
+  end
+
   def sort_order
     ENV['SORT_TIME'] == 'average' ? 'average' : 'total'
   end
 
   def to_s
-    s = "<<< BENCHMARK BEGIN >>>\n"
+    s = "<<< BENCHMARK BEGIN >>>\n\n"
+    s << "#{format 'total'}: 100.000% #{format total_time}\n\n"
     times = op_times.values
     if sort_order == 'average'
       times.sort!{|first, second| second.average_time <=> first.average_time }
@@ -72,9 +77,9 @@ class Gene::Benchmarker
     end
     times.unshift loop_time
     times.each do |op_time|
-      s << "#{format op_time.name}: #{format op_time.total_time} / #{format op_time.count} = #{format op_time.average_time}\n"
+      s << "#{format op_time.name}: #{format_percentage op_time.total_time} #{format op_time.total_time} / #{format op_time.count} = #{format op_time.average_time}\n"
     end
-    s << "<<< BENCHMARK END   >>>\n"
+    s << "\n<<< BENCHMARK END   >>>\n"
   end
 
   def format input
@@ -85,6 +90,10 @@ class Gene::Benchmarker
     elsif input.is_a? Integer
       "%6i" % input
     end
+  end
+
+  def format_percentage time
+    ("%3.3f%" % (100 * time / total_time)).rjust(8, ' ')
   end
 
   def display
