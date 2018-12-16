@@ -220,6 +220,7 @@ module Gene::Lang::Jit
         end
 
         time = Time.now
+        loop_time.report_start start_time
         loop_time.report_end time
         start_time = Time.now
       end
