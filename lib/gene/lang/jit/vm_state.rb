@@ -25,7 +25,7 @@ module Gene::Lang::Jit
     end
 
     # Update application object
-    # Update CODE_MGR13k
+    # Update CODE_MGR
     # Kick it off
     def resume
       silence_warnings do

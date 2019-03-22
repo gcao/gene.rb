@@ -5,6 +5,8 @@ module Gene::Lang::Jit
   class Compiler
     include Utils
 
+    VERSION = "1.0"
+
     TEMPLATE_MODE = 'template_mode'
     RENDER_MODE   = 'render_mode'
 
@@ -1005,6 +1007,9 @@ module Gene::Lang::Jit
 
   class CompiledModule
     attr_reader :id
+    attr_reader :version
+    # Special attributes that may help VM when executes this module
+    attr_reader :metadata
     attr_reader :blocks
     attr_reader :primary_block
 
