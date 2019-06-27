@@ -1,11 +1,13 @@
-#!/usr/bin/env gene --debug
+#!/usr/bin/env gene
 
 #< compile code and prettify compiled code
 gcompile examples/web_app.gene | jq . | ruby -e "puts ARGF.read.gsub(/\n          \s*/, '').gsub(/\n        \\]/, ']').gsub(/,([^\n])/, ', \\1')"
 >#
 
+(var port 8085)
+
 # Start a http server
-(var server (new gene/net/HttpServer 8085))
+(var server (new gene/net/HttpServer port))
 
 # TODO: Serve static content
 # (server .serve_static "README.md" "README.md")
@@ -16,4 +18,5 @@ gcompile examples/web_app.gene | jq . | ruby -e "puts ARGF.read.gsub(/\n        
 # TODO: Serve dynamic content
 
 # Start server
+(println "Starting web server at " port " ...")
 (server .start)

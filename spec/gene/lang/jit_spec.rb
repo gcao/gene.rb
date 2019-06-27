@@ -363,6 +363,16 @@ describe "JIT" do
     end
 
     it "
+      # argument default value should work
+      (fn f [a = 1] a)
+      (f)
+    " do
+      pending
+      mod = @compiler.parse_and_compile example.description
+      APP.run(mod).should == 1
+    end
+
+    it "
       # Scope inheritance should work
       (fn g _ 1)
       (fn f _ (g))

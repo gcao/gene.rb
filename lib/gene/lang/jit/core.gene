@@ -102,7 +102,7 @@
       )
 
       (method start _
-        (var server ($invoke ($get_class "TCPServer") "new" "localhost" @port))
+        (var server ($invoke ruby/TCPServer "new" "localhost" @port))
         (loop
           (var socket ($invoke server "accept"))
           (var req ($invoke socket "gets"))
@@ -130,6 +130,6 @@
   )
 )
 
-(var global/fs ($invoke ruby/Gene::Lang::Jit::FileSystemObject "new" ""))
+(var global/fs ($invoke ($get_ruby_class "Gene::Lang::Jit::FileSystemObject") "new" ""))
 
 undefined

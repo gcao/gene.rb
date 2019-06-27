@@ -17,6 +17,10 @@ OptionParser.new do |opts|
   end
 end.parse!
 
+if ENV['debug'] == 'yes'
+  options[:debug] = true
+end
+
 if ARGV.length == 0
   Gene::Lang::Jit::Repl.new.start
 else
