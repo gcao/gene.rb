@@ -18,5 +18,5 @@ gcompile examples/web_app.gene | jq . | ruby -e "puts ARGF.read.gsub(/\n        
 # TODO: Serve dynamic content
 
 # Start server
-(println "Starting web server at " (port .to_s) " ...")
+(println "Starting web server at " port " ...")
 (server .start)
