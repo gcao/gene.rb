@@ -5,34 +5,34 @@ describe Gene::Macro::Interpreter do
     @interpreter = Gene::Macro::Interpreter.new
   end
 
-  describe "def: create or overwrite variable in current scope" do
-    it "(#def a 'value') # returns IGNORE" do
+  describe "var: create or overwrite variable in current scope" do
+    it "(#var a 'value') # returns IGNORE" do
       result = @interpreter.parse_and_process(example.description)
       result.should == Gene::UNDEFINED
     end
 
-    it "(#def a 'value'){^a [1 ##a]}" do
+    it "(#var a 'value'){^a [1 ##a]}" do
       result = @interpreter.parse_and_process(example.description)
       result['a'][1].should == 'value'
     end
 
-    it "(#def a 'value')(test ^attr ##a ##a)" do
+    it "(#var a 'value')(test ^attr ##a ##a)" do
       result = @interpreter.parse_and_process(example.description)
       result['attr'].should == 'value'
       result.data[0].should == 'value'
     end
 
-    it "(#def-retain a 'value')" do
+    it "(#var-retain a 'value')" do
       result = @interpreter.parse_and_process(example.description)
       result.should == 'value'
     end
 
-    it "(#def a 'value') ##a" do
+    it "(#var a 'value') ##a" do
       result = @interpreter.parse_and_process(example.description)
       result.should == 'value'
     end
 
-    it "(#def-multi [a 1] [b 2] [c])" do
+    it "(#var-multi [a 1] [b 2] [c])" do
       pending "Verify a=1, b=2 c=undefined"
     end
   end
@@ -69,13 +69,13 @@ describe Gene::Macro::Interpreter do
     end
   end
 
-  describe "def vs let" do
-    it "(#def a 'old') (#fn f _ (#def a 'new')) (##f) ##a" do
+  describe "var vs let" do
+    it "(#var a 'old') (#fn f _ (#var a 'new')) (##f) ##a" do
       result = @interpreter.parse_and_process(example.description)
       result.should == 'old'
     end
 
-    it "(#def a 'old') (#fn f _ (#let a 'new')) (##f) ##a" do
+    it "(#var a 'old') (#fn f _ (#let a 'new')) (##f) ##a" do
       result = @interpreter.parse_and_process(example.description)
       result.should == 'new'
     end
@@ -115,18 +115,18 @@ describe Gene::Macro::Interpreter do
       result.class.should == Gene::Macro::Function
     end
 
-    it "(#def fa (#fnx a ##a))(##fa 1)" do
+    it "(#var fa (#fnx a ##a))(##fa 1)" do
       result = @interpreter.parse_and_process(example.description)
       result.should == 1
     end
 
-    it "(#def fa (#fnx [a] ##a))(##fa 1)" do
+    it "(#var fa (#fnx [a] ##a))(##fa 1)" do
       result = @interpreter.parse_and_process(example.description)
       result.should == 1
     end
 
     # _ is a placeholder for arguments, will be ignored
-    it "(#def fa (#fnx _ ##_))(##fa 1)" do
+    it "(#var fa (#fnx _ ##_))(##fa 1)" do
       result = @interpreter.parse_and_process(example.description)
       result.should == nil
     end
@@ -138,14 +138,14 @@ describe Gene::Macro::Interpreter do
       result.class.should == Gene::Macro::Function
     end
 
-    it "(#def fa (#fnxx ##_))(##fa 1)" do
+    it "(#var fa (#fnxx ##_))(##fa 1)" do
       result = @interpreter.parse_and_process(example.description)
       result.should == nil
     end
   end
 
   describe "do: execute statements, return result of last executed statement" do
-    it "(#do (#def a 1) ##a)" do
+    it "(#do (#var a 1) ##a)" do
       result = @interpreter.parse_and_process(example.description)
       result.should == 1
     end
@@ -174,12 +174,12 @@ describe Gene::Macro::Interpreter do
       result.should == 2
     end
 
-    it "(#if true #then (#def a 1) ##a)" do
+    it "(#if true #then (#var a 1) ##a)" do
       result = @interpreter.parse_and_process(example.description)
       result.should == 1
     end
 
-    it "(#if false #then (#def a 1) ##a #else (#def a 2) ##a)" do
+    it "(#if false #then (#var a 1) ##a #else (#var a 2) ##a)" do
       result = @interpreter.parse_and_process(example.description)
       result.should == 2
     end
@@ -208,34 +208,34 @@ describe Gene::Macro::Interpreter do
   end
 
   describe "for: create for-loop" do
-    it "(#for (#def i 0)(#le ##i 100)(#incr i) #do ##i) # returns IGNORE" do
+    it "(#for (#var i 0)(#le ##i 100)(#incr i) #do ##i) # returns IGNORE" do
       result = @interpreter.parse_and_process(example.description)
       result.should == Gene::UNDEFINED
     end
 
-    it "(#for (#def i 0)(#le ##i 100)(#incr i) #do ##i) ##i" do
+    it "(#for (#var i 0)(#le ##i 100)(#incr i) #do ##i) ##i" do
       result = @interpreter.parse_and_process(example.description)
       result.should == 101
     end
 
-    it "(#for (#def i 0)(#le ##i 100) #do (#incr i)) ##i" do
+    it "(#for (#var i 0)(#le ##i 100) #do (#incr i)) ##i" do
       result = @interpreter.parse_and_process(example.description)
       result.should == 101
     end
 
-    it "(#def i 0)(#for _ (#le ##i 100) #do (#incr i)) ##i" do
+    it "(#var i 0)(#for _ (#le ##i 100) #do (#incr i)) ##i" do
       result = @interpreter.parse_and_process(example.description)
       result.should == 101
     end
 
-    it "(#for (#def i 0)(#lt ##i 5)(#incr i) #do (#yield ##i))" do
+    it "(#for (#var i 0)(#lt ##i 5)(#incr i) #do (#yield ##i))" do
       result = @interpreter.parse_and_process(example.description)
       result.should == [0, 1, 2, 3, 4]
     end
 
     it "
-      (#for (#def i 0)(#lt ##i 2)(#incr i) #do
-        (#for (#def j 0)(#lt ##j 2)(#incr j) #do
+      (#for (#var i 0)(#lt ##i 2)(#incr i) #do
+        (#for (#var j 0)(#lt ##j 2)(#incr j) #do
           (#yield ##i)
         )
       )
@@ -246,8 +246,8 @@ describe Gene::Macro::Interpreter do
 
     it "
       [
-        (#for (#def i 0)(#lt ##i 2)(#incr i) #do
-          (#for (#def j 0)(#lt ##j 2)(#incr j) #do
+        (#for (#var i 0)(#lt ##i 2)(#incr i) #do
+          (#for (#var j 0)(#lt ##j 2)(#incr j) #do
             (#yield ##i)
           )
         )
@@ -259,8 +259,8 @@ describe Gene::Macro::Interpreter do
 
     it "
       (x
-        (#for (#def i 0)(#lt ##i 2)(#incr i) #do
-          (#for (#def j 0)(#lt ##j 2)(#incr j) #do
+        (#for (#var i 0)(#lt ##i 2)(#incr i) #do
+          (#for (#var j 0)(#lt ##j 2)(#incr j) #do
             (#yield ##i)
           )
         )
@@ -364,7 +364,7 @@ describe Gene::Macro::Interpreter do
       result.should == 1
     end
 
-    it "(#def i 0)(#incr i)" do
+    it "(#var i 0)(#incr i)" do
       result = @interpreter.parse_and_process(example.description)
       result.should == 1
     end
@@ -374,12 +374,12 @@ describe Gene::Macro::Interpreter do
       result.should == 1
     end
 
-    it "(#def i 0)(#incr i 2)" do
+    it "(#var i 0)(#incr i 2)" do
       result = @interpreter.parse_and_process(example.description)
       result.should == 2
     end
 
-    it "(#def i 0)(#decr i)" do
+    it "(#var i 0)(#decr i)" do
       result = @interpreter.parse_and_process(example.description)
       result.should == -1
     end
@@ -389,7 +389,7 @@ describe Gene::Macro::Interpreter do
       result.should == -1
     end
 
-    it "(#def i 0)(#decr i 2)" do
+    it "(#var i 0)(#decr i 2)" do
       result = @interpreter.parse_and_process(example.description)
       result.should == -2
     end
@@ -435,9 +435,9 @@ describe Gene::Macro::Interpreter do
   describe "complex macros" do
     it '
       (#fn times [n callback]
-        (#for (#def i 0)(#lt ##i ##n)(#incr i) #do (##callback))
+        (#for (#var i 0)(#lt ##i ##n)(#incr i) #do (##callback))
       )
-      (#def result 0)
+      (#var result 0)
       (##times 2 (#fnxx (#incr result 2)))
       ##result
     ' do

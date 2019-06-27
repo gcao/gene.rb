@@ -1,6 +1,6 @@
 module Gene::Macro::Handlers
   %W(
-    DEF DEF_RETAIN
+    VAR VAR_RETAIN
     LET LET_RETAIN
     FN FNX FNXX RETURN
     DO
@@ -26,12 +26,12 @@ module Gene::Macro::Handlers
       elsif data == INPUT
         context.inputs[0] if context.inputs
 
-      elsif DEF === data
+      elsif VAR === data
         value = context.process_internal data.data[1]
         context.scope[data.data[0].to_s] = value
         Gene::Macro::IGNORE
 
-      elsif DEF_RETAIN === data
+      elsif VAR_RETAIN === data
         value = context.process_internal data.data[1]
         context.scope[data.data[0].to_s] = value
         value
