@@ -16,12 +16,12 @@ class Gene::Benchmarker
     end
 
     def report_partial time
-      @total_time += time - @recent_start_time
+      @total_time += time.to_f - @recent_start_time.to_f
     end
 
     def report_end time
       @count += 1
-      @total_time += time - @recent_start_time
+      @total_time += time.to_f - @recent_start_time.to_f
     end
 
     def average_time
@@ -59,7 +59,7 @@ class Gene::Benchmarker
   end
 
   def total_time
-    loop_time.total_time + op_times.values.reduce(0) {|sum, op_time| sum + op_time.total_time }
+    loop_time.total_time + op_times.values.reduce(0) {|sum, op_time| sum + op_time.total_time.to_f }
   end
 
   def sort_order
@@ -86,9 +86,9 @@ class Gene::Benchmarker
     if input.is_a? String
       "%20.20s" % input
     elsif input.is_a? Float
-      "%.6f" % input
+      "%9i ns" % (input * 1000000000)
     elsif input.is_a? Integer
-      "%6i" % input
+      "%8i" % input
     end
   end
 

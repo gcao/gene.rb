@@ -93,7 +93,7 @@ module Gene::Lang::Jit
 
       if options[TEMPLATE_MODE]
         compile_ block, source.type, options
-        type_reg = copy_and_return_reg block
+        kind_reg = copy_and_return_reg block
 
         compile_ block, source.properties, options
         props_reg = copy_and_return_reg block
@@ -101,7 +101,7 @@ module Gene::Lang::Jit
         compile_ block, source.data, options
         data_reg = 'default'
 
-        block.add_instr [CREATE_OBJ, type_reg, props_reg, data_reg]
+        block.add_instr [CREATE_OBJ, kind_reg, props_reg, data_reg]
 
       elsif op.is_a? Gene::Types::Symbol and op.name[0] == '.'
         compile_method_invocation block, source, options

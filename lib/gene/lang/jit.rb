@@ -404,8 +404,8 @@ module Gene::Lang::Jit
     # instr 'copy_release' do
     # end
 
-    instr 'create_obj' do |type_reg, properties_reg, data_reg|
-      type       = @registers[type_reg]
+    instr 'create_obj' do |kind_reg, properties_reg, data_reg|
+      kind       = @registers[kind_reg]
       if properties_reg.is_a? String
         properties = @registers[properties_reg]
       else
