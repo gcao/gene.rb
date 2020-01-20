@@ -4,6 +4,8 @@
 
 (fn test_function _ 1)
 
+(fn call_f _ (f))
+
 (module TestModule)
 
 (class TestClass)
